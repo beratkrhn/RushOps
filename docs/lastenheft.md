@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Version** | 0.2 (überarbeitet) |
+| **Version** | 0.3 |
 | **Stand** | 29.10.2026 |
 | **Status** | Entwurf, nicht final |
 | **Autor** | Berat Karahan |
@@ -40,7 +40,7 @@ RushOps übernimmt nur Spielmechaniken. Namen, Figuren, Texte, Grafiken und Soun
 | ID | Anforderung | Prio |
 |---|---|---|
 | F-GFX-01 | Pixelart mit einer festen, begrenzten Farbpalette für einen einheitlichen Look. | Muss |
-| F-GFX-02 | **Reine Top-down-Perspektive**: Figuren werden von oben gezeigt, das Sprite dreht sich in Zielrichtung. Es gibt keine separaten Sprites pro Blickrichtung. | Muss |
+| F-GFX-02 | **Schrägansicht von vorn oben** mit **8 Blickrichtungen**: Figuren zeigen je Richtung ein eigenes Sprite, das passend zur Ziel- bzw. Laufrichtung gewählt wird. Figuren werden nicht rotiert; Projektile und Effekte fliegen stufenlos in jede Richtung. | Muss |
 | F-GFX-03 | Pixelgenaue Darstellung ohne Verschwimmen oder Zittern (Pixel Perfect Camera). | Muss |
 | F-GFX-04 | Leuchteffekte über das 2D-Lichtsystem von URP (Perks, Mündungsfeuer, Explosionen, Zonen). | Soll |
 
@@ -287,3 +287,4 @@ Alle Werte sind *Startwerte*.
 |---|---|---|
 | 0.1 | 10/2026 | Erster Entwurf |
 | 0.2 | 29.10.2026 | Nur Hochformat; Sprache Deutsch; reine Top-down-Perspektive; unbegrenzte Munition, Perk „Maximale Munition“ durch „Schnellfeuer“ ersetzt; Insta-Kill und Doppelschaden als getrennte Perks; Nuke trifft nur sichtbare Gegner; Kill-Gates zählen global inkl. Nuke- und Explosions-Kills; Timer bei Schaltern sichtbar; Zonen-Kontrolle pausiert; Schießen beim Tragen erlaubt; Herzen statt Lebensbalken, Unverwundbarkeit nach Treffer; Wellen an festen Spawnpunkten, max. 10 Gegner; 3 Inseln × 3 Level; Bosse, Score mit Kombo und Sterne ergänzt; Zielhilfe ergänzt; Skins in 1.0 rein kosmetisch; Logo-Animation als Startsequenz; Anforderungs-IDs und Prioritäten eingeführt; Kapitelnummerierung bereinigt. |
+| 0.3 | 29.10.2026 | F-GFX-02: Schrägansicht mit 8 Richtungs-Sprites statt reiner Top-down-Ansicht mit rotierten Sprites (ADR 0006, Issue #58). |

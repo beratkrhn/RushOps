@@ -83,14 +83,15 @@ Ein Batchmode-Lauf schlägt fehl, solange das Projekt im Editor geöffnet ist.
 
 ## Pixelart
 
-Die Details stehen in ADR 0002. Kurzfassung:
+Die Details stehen in ADR 0006 (ersetzt Teile von ADR 0002). Kurzfassung:
 
-- Kachelgröße **16×16 px**, **Pixels Per Unit = 16** (1 Kachel = 1 Unity-Einheit).
+- Kachelgröße **32×32 px**, **Pixels Per Unit = 32** (1 Kachel = 1 Unity-Einheit).
 - Import: Filter Mode **Point**, Compression **None**, Mip Maps aus.
-- Referenzauflösung der Pixel Perfect Camera **180×320** (Hochformat 9:16).
-- Feste Palette unter `Assets/_Project/Art/Palettes/`. Keine Farben außerhalb der Palette.
-- Reine Top-down-Ansicht: Figuren schauen im Sprite nach **rechts (+X)** und werden zur Zielrichtung rotiert.
+- Referenzauflösung der Pixel Perfect Camera **360×640** (Hochformat 9:16).
+- Feste Palette (höchstens 32 Farben) unter `Assets/_Project/Art/Palettes/`. Keine Farben außerhalb der Palette.
+- Schrägansicht mit **8 Richtungs-Sprites** (`E`, `NE`, `N`, `NW`, `W`, `SW`, `S`, `SE`); Figuren werden nicht rotiert. Figuren-Leinwand 64×64, Pivot unten Mitte, Sortierung nach Y. Projektile und Effekte rotieren frei.
 - Assets werden per Skript in `Tools/` erzeugt, damit sie reproduzierbar sind. Erzeugte PNGs vor dem Commit hochskaliert ansehen.
+- Ausnahme: vom Menschen gelieferte Figuren (Export aus seinem Character-Tool) werden mit `Tools/import_character.py` übernommen, nicht neu gezeichnet.
 
 ## Git-Workflow
 
