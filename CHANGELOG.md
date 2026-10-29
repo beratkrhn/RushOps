@@ -54,6 +54,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Treffer-Feedback: Gegner blitzen bei Treffer weiß auf (Shader `RushOps/Sprite Flash`) und werden entlang der Schussrichtung zurückgestoßen; leichter Screenshake bei Schaden am Spieler; kurzer Hitstop (0,05 s) bei Gegnertod, abschaltbar und mit der Pause verträglich (Issue #12).
 - `FeelConfig` (`Data/Feel/FeelConfig.asset`): Blitz 0,08 s, Rückstoß 4 für 0,1 s, Shake 0,15 für 0,2 s, Hitstop an mit 0,05 s, Lautstärken und Tonhöhen-Streuung *(Startwerte)* (Issue #12).
 - Platzhalter-Soundeffekte für Schuss, Treffer und Tod, synthetisiert per `Tools/gen_sfx.py` (`Audio/SFX/`), abgespielt über `SfxPlayer`; `GameFeel` verbindet Spiel-Events mit Shake, Hitstop und Sounds (Issue #12).
+- Zielhilfe: Liegt ein lebender Gegner höchstens 10° neben der Zielrichtung und in 8 Einheiten Reichweite, geht der Schuss auf den nächstgelegenen (`AimAssist`, Auswahl in `AimAssistMath` mit EditMode-Tests); Winkel, Reichweite und Schalter in `WeaponConfig` *(Startwerte)*, zur Laufzeit per `AimAssist.Enabled` umschaltbar (Issue #14).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.

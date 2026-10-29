@@ -20,6 +20,16 @@ namespace RushOps.Combat
         [Tooltip("Damage per projectile hit.")]
         [SerializeField, Min(0)] private int _damage = 1;
 
+        [Header("Aim assist (F-STE-06)")]
+        [Tooltip("Correct shots towards an enemy close to the aim direction.")]
+        [SerializeField] private bool _aimAssistEnabled = true;
+
+        [Tooltip("Enemies at most this many degrees off the aim direction are aimed at.")]
+        [SerializeField, Range(0f, 45f)] private float _aimAssistAngle = 10f;
+
+        [Tooltip("Enemies at most this far from the muzzle in units are aimed at.")]
+        [SerializeField, Min(0f)] private float _aimAssistRange = 8f;
+
         /// <summary>Shots per second while the trigger is held.</summary>
         public float FireRate => _fireRate;
 
@@ -31,5 +41,14 @@ namespace RushOps.Combat
 
         /// <summary>Damage per projectile hit.</summary>
         public int Damage => _damage;
+
+        /// <summary>True if shots are corrected towards enemies close to the aim direction.</summary>
+        public bool AimAssistEnabled => _aimAssistEnabled;
+
+        /// <summary>Largest angle in degrees between aim direction and an enemy the assist corrects to.</summary>
+        public float AimAssistAngle => _aimAssistAngle;
+
+        /// <summary>Largest distance in units of an enemy the assist corrects to.</summary>
+        public float AimAssistRange => _aimAssistRange;
     }
 }
