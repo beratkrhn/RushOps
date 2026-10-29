@@ -25,6 +25,9 @@ namespace RushOps.Enemies
         private Action<Enemy> _release;
         private int _spawnCount;
 
+        /// <summary>Raised when a spawned enemy takes a hit, including the killing one.</summary>
+        public event Action<Enemy> EnemyHit;
+
         /// <summary>Raised when a spawned enemy dies.</summary>
         public event Action<Enemy> EnemyDied;
 
@@ -71,7 +74,13 @@ namespace RushOps.Enemies
             Enemy enemy = Instantiate(_prefab, transform);
             enemy.gameObject.SetActive(false);
             enemy.Died += OnEnemyDied;
+            enemy.Hit += OnEnemyHit;
             return enemy;
+        }
+
+        private void OnEnemyHit(Enemy enemy)
+        {
+            EnemyHit?.Invoke(enemy);
         }
 
         private void OnEnemyDied(Enemy enemy)
@@ -94,6 +103,7 @@ namespace RushOps.Enemies
             if (enemy != null)
             {
                 enemy.Died -= OnEnemyDied;
+                enemy.Hit -= OnEnemyHit;
                 Destroy(enemy.gameObject);
             }
         }

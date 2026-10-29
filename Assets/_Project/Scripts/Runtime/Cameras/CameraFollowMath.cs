@@ -45,5 +45,25 @@ namespace RushOps.Cameras
 
             return Mathf.Clamp(value, lower, upper);
         }
+
+        /// <summary>
+        /// Camera offset <paramref name="elapsed"/> seconds into a shake: smooth noise on both axes, scaled by
+        /// <paramref name="strength"/> and fading out quadratically until <paramref name="duration"/>; zero outside.
+        /// </summary>
+        public static Vector2 ShakeOffset(float elapsed, float duration, float strength, float frequency)
+        {
+            if (elapsed < 0f || elapsed >= duration || duration <= 0f)
+            {
+                return Vector2.zero;
+            }
+
+            float fade = 1f - elapsed / duration;
+            fade *= fade;
+            float t = elapsed * frequency;
+            // Separate noise rows per axis, so the camera does not only shake diagonally.
+            float x = Mathf.PerlinNoise(t, 0.37f) * 2f - 1f;
+            float y = Mathf.PerlinNoise(0.71f, t) * 2f - 1f;
+            return new Vector2(x, y) * (strength * fade);
+        }
     }
 }

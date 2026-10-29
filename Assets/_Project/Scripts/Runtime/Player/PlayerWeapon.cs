@@ -1,3 +1,4 @@
+using System;
 using RushOps.Combat;
 using UnityEngine;
 
@@ -24,6 +25,9 @@ namespace RushOps.Player
 
         private readonly FireRateTimer _timer = new FireRateTimer();
         private PlayerAim _aim;
+
+        /// <summary>Raised once per shot with its direction, e.g. for the shot sound.</summary>
+        public event Action<Vector2> Fired;
 
         /// <summary>Replaces the config, e.g. for tests or temporary modifiers.</summary>
         public WeaponConfig Config
@@ -61,6 +65,7 @@ namespace RushOps.Player
             for (int i = 0; i < shots; i++)
             {
                 _pool.Launch(origin, direction, _config.ProjectileSpeed, _config.MaxRange, _obstacles, _config.Damage);
+                Fired?.Invoke(direction);
             }
         }
 

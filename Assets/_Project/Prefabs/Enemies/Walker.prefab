@@ -63,7 +63,7 @@ SpriteRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a97c105638bdf8b4a8650670310a4cd3, type: 2}
+  - {fileID: 2100000, guid: 481ce180efa3848d2994a9d8877d8425, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -199,4 +199,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Enemies.Enemy
   _definition: {fileID: 11400000, guid: c86b4029f7715467683ba46d025777d6, type: 2}
+  _feel: {fileID: 11400000, guid: f065ac8c2f52144c28d2c95e91ead6c9, type: 2}
   _renderer: {fileID: 2158843549737963691}

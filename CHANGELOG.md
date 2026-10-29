@@ -51,6 +51,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Pause: Button oben rechts, Overlay mit „Fortsetzen“ und „Neustart“; die Spielzeit steht still, das Overlay blockiert die Touch-Steuerung; pausiert automatisch, wenn die App in den Hintergrund geht (`PauseController`) (Issue #11).
 - Pixel-Schrift `PixelFont`, selbst gezeichnet (5×7-Raster in `Tools/pixel_font.py`, A–Z, a–z, Umlaute, ß, Ziffern, Satzzeichen), als Bitmap-Font für uGUI `Text`; Atlas und Metriken per `Tools/gen_pixelart.py`, Font-Asset per `RushOps → Art → Pixel-Schrift aktualisieren`; Lizenz in `Art/Fonts/README.md` (Issue #11).
 - Pixelart für Herzen (voll, leer) und Pause-Symbol (Issue #11).
+- Treffer-Feedback: Gegner blitzen bei Treffer weiß auf (Shader `RushOps/Sprite Flash`) und werden entlang der Schussrichtung zurückgestoßen; leichter Screenshake bei Schaden am Spieler; kurzer Hitstop (0,05 s) bei Gegnertod, abschaltbar und mit der Pause verträglich (Issue #12).
+- `FeelConfig` (`Data/Feel/FeelConfig.asset`): Blitz 0,08 s, Rückstoß 4 für 0,1 s, Shake 0,15 für 0,2 s, Hitstop an mit 0,05 s, Lautstärken und Tonhöhen-Streuung *(Startwerte)* (Issue #12).
+- Platzhalter-Soundeffekte für Schuss, Treffer und Tod, synthetisiert per `Tools/gen_sfx.py` (`Audio/SFX/`), abgespielt über `SfxPlayer`; `GameFeel` verbindet Spiel-Events mit Shake, Hitstop und Sounds (Issue #12).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -69,6 +72,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Gegner aus dem Pool erscheinen um wenige Hundertstel versetzt, weil die Physik exakt übereinanderliegende Körper nicht trennen kann (Issue #10).
 - Sortierreihenfolge: Bodenmarkierungen liegen zwischen Boden und Figuren (Issue #10).
 - Kein Dash, solange die Spielzeit stillsteht (Pause) (Issue #11).
+- Gegner werden mit dem eigenen Sprite-Shader unbeleuchtet gezeichnet; bei nur globalem Licht sieht das gleich aus (Issue #12).
 
 ### Entfernt
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
