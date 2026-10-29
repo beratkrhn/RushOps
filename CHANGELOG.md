@@ -44,6 +44,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `EnemyDefinition` (Walker): Gesundheit 3, Tempo 2,5, Kontaktschaden 1, Todeseffekt 0,25 s, Punkte 10 *(Startwerte)*; `WeaponConfig`: Schaden 1; `NavigationConfig` (`Data/Navigation/`): Neuberechnung 0,1 s, Separation Radius 0,9 und Gewicht 1,2 *(Startwerte)* (Issue #9).
 - Physik-Layer `Enemies`; Projektile stoppen an Wänden und Gegnern (Issue #9).
 - `Arena_Test`: 10 Walker starten über die Arena verteilt (temporärer `DebugEnemySpawner` bis zu den Spawnpunkten in #10) (Issue #9).
+- Spawnpunkte: `SpawnPoint`-Objekte in der Szene (8 in `Arena_Test`, Ränder und Ecken) und `EnemySpawner`, der bis zu 10 Gegner gleichzeitig aktiv hält (angekündigte mitgezählt); vor jedem Spawn blinkt 0,6 s eine rote Bodenmarkierung (Issue #10).
+- Spawnpunkte im Kamerabild (plus 1 Einheit Rand) oder näher als 4 Einheiten am Spieler werden übersprungen; die Regel wird beim Erscheinen erneut geprüft (`SpawnRules`, mit EditMode-Tests) (Issue #10).
+- `SpawnerConfig` (`Data/Enemies/SpawnerConfig.asset`): höchstens 10 Gegner, Abstand 0,8 s, Ankündigung 0,6 s, Mindestabstand 4, Sichtrand 1 *(Startwerte)*; Pixelart `Sprites/Effects/SpawnMarker.png` (Issue #10).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -59,6 +62,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `Arena_Test`: Das Debug-Ziel ist jetzt der Spieler mit `PlayerMovement` und `PlayerMoveInput` (Issue #4).
 - Die Touch-Steuerung erscheint nur mit Touchscreen (Handy, Device Simulator); im Game View bleiben Maus und Tastatur wie bisher (Issue #7).
 - Kontaktschaden trifft schon bei der ersten Berührung, nicht erst im nächsten Physikschritt (Issue #9).
+- Gegner aus dem Pool erscheinen um wenige Hundertstel versetzt, weil die Physik exakt übereinanderliegende Körper nicht trennen kann (Issue #10).
+- Sortierreihenfolge: Bodenmarkierungen liegen zwischen Boden und Figuren (Issue #10).
 
 ### Entfernt
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
@@ -66,3 +71,4 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Temporärer `DebugTargetMover` (Issue #4).
 - `CLAUDE.md`: Prüfen per `Tools/unity-check.sh` statt Batchmode; Unity darf dabei offen bleiben (Issue #62).
 - Walker-Vorschaureihe in `Arena_Test` und `EnemyContactDamage`; ersetzt durch echte Walker (Issue #9).
+- Temporärer `DebugEnemySpawner`; ersetzt durch Spawnpunkte (Issue #10).

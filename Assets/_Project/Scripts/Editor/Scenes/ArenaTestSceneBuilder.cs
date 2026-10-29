@@ -26,7 +26,7 @@ namespace RushOps.Editor.Scenes
     /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, the player
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
-    /// and walkers that chase the player along a flow field.
+    /// and walkers that appear at spawn points and chase the player along a flow field.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
     /// </summary>
@@ -51,6 +51,8 @@ namespace RushOps.Editor.Scenes
         private const string WalkerDefinitionPath = "Assets/_Project/Data/Enemies/Walker.asset";
         private const string WalkerPrefabPath = "Assets/_Project/Prefabs/Enemies/Walker.prefab";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
+        private const string SpawnerConfigPath = "Assets/_Project/Data/Enemies/SpawnerConfig.asset";
+        private const string SpawnMarkerSpritePath = "Assets/_Project/Art/Sprites/Effects/SpawnMarker.png";
         private const string EnemiesLayer = "Enemies";
         // Walker body at the feet like the player's, a little smaller so walkers squeeze through gaps the player fits through.
         private const float WalkerColliderRadius = 0.28f;
@@ -78,20 +80,21 @@ namespace RushOps.Editor.Scenes
         private const int ReferenceHeight = 640;
         // Walls and characters share one sorting order, so the renderer sorts them by Y (ADR 0006).
         private const int FloorSortingOrder = 0;
-        private const int ActorSortingOrder = 1;
+        // Flat marks on the floor, e.g. spawn markers: above the floor, below everything standing on it.
+        private const int FloorMarkSortingOrder = 1;
+        private const int ActorSortingOrder = 2;
         // Projectiles fly at gun height, so they draw above walls and characters instead of sorting by Y.
-        private const int ProjectileSortingOrder = 2;
+        private const int ProjectileSortingOrder = 3;
         private const int ArenaWidth = 40;
         private const int ArenaHeight = 60;
         // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
         private const int PlainFloorWeight = 7;
         private static readonly Vector2Int StartCell = new Vector2Int(20, 30);
-        // Temporary walker start cells until spawn points exist (issue #10): spread over the arena, away from the start.
-        private static readonly Vector2Int[] WalkerStartCells =
+        // Spawn points along the arena edges and in the corners, inside the outer wall ring and clear of obstacles.
+        private static readonly Vector2Int[] SpawnCells =
         {
-            new Vector2Int(5, 5), new Vector2Int(35, 5), new Vector2Int(5, 55), new Vector2Int(35, 55),
-            new Vector2Int(20, 10), new Vector2Int(10, 20), new Vector2Int(30, 20), new Vector2Int(12, 45),
-            new Vector2Int(28, 45), new Vector2Int(20, 55),
+            new Vector2Int(3, 3), new Vector2Int(36, 3), new Vector2Int(3, 56), new Vector2Int(36, 56),
+            new Vector2Int(3, 30), new Vector2Int(36, 30), new Vector2Int(20, 3), new Vector2Int(20, 56),
         };
 
         // Obstacles as (x, y, width, height) in cells, inside the outer wall ring.
@@ -147,7 +150,7 @@ namespace RushOps.Editor.Scenes
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
             Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath));
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
-            CreateEnemies(walkerPrefab, navigator);
+            CreateEnemies(walkerPrefab, navigator, LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), target);
             CreateCamera(cameraConfig, target, walls);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -511,7 +514,7 @@ namespace RushOps.Editor.Scenes
             return navigator;
         }
 
-        private static void CreateEnemies(Enemy prefab, FlowFieldNavigator navigator)
+        private static void CreateEnemies(Enemy prefab, FlowFieldNavigator navigator, SpawnerConfig config, Transform player)
         {
             var go = new GameObject("EnemyPool");
             var pool = go.AddComponent<EnemyPool>();
@@ -520,17 +523,52 @@ namespace RushOps.Editor.Scenes
             serializedPool.FindProperty("_navigator").objectReferenceValue = navigator;
             serializedPool.ApplyModifiedPropertiesWithoutUndo();
 
-            var spawner = go.AddComponent<DebugEnemySpawner>();
-            var serializedSpawner = new SerializedObject(spawner);
-            serializedSpawner.FindProperty("_pool").objectReferenceValue = pool;
-            SerializedProperty positions = serializedSpawner.FindProperty("_positions");
-            positions.arraySize = WalkerStartCells.Length;
-            for (int i = 0; i < WalkerStartCells.Length; i++)
+            var marker = AssetDatabase.LoadAssetAtPath<Sprite>(SpawnMarkerSpritePath);
+            if (marker == null)
             {
-                positions.GetArrayElementAtIndex(i).vector2Value = WalkerStartCells[i] + new Vector2(0.5f, 0.5f);
+                throw new System.InvalidOperationException($"Spawn marker sprite not found at {SpawnMarkerSpritePath}");
+            }
+
+            var root = new GameObject("SpawnPoints").transform;
+            var points = new SpawnPoint[SpawnCells.Length];
+            for (int i = 0; i < SpawnCells.Length; i++)
+            {
+                points[i] = CreateSpawnPoint($"SpawnPoint_{i}", root, SpawnCells[i], marker);
+            }
+
+            var spawner = new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
+            var serializedSpawner = new SerializedObject(spawner);
+            serializedSpawner.FindProperty("_config").objectReferenceValue = config;
+            serializedSpawner.FindProperty("_pool").objectReferenceValue = pool;
+            serializedSpawner.FindProperty("_player").objectReferenceValue = player;
+            SerializedProperty pointsProperty = serializedSpawner.FindProperty("_points");
+            pointsProperty.arraySize = points.Length;
+            for (int i = 0; i < points.Length; i++)
+            {
+                pointsProperty.GetArrayElementAtIndex(i).objectReferenceValue = points[i];
             }
 
             serializedSpawner.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static SpawnPoint CreateSpawnPoint(string name, Transform parent, Vector2Int cell, Sprite marker)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
+
+            var markerGo = new GameObject("Marker");
+            markerGo.transform.SetParent(go.transform, false);
+            var renderer = markerGo.AddComponent<SpriteRenderer>();
+            renderer.sprite = marker;
+            renderer.sortingOrder = FloorMarkSortingOrder;
+            renderer.enabled = false;
+
+            var point = go.AddComponent<SpawnPoint>();
+            var serialized = new SerializedObject(point);
+            serialized.FindProperty("_marker").objectReferenceValue = renderer;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return point;
         }
 
         // Characters stand with their feet (sprite pivot) in the middle of the cell and sort by it.
