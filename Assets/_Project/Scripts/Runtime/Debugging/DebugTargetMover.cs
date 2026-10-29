@@ -1,3 +1,4 @@
+using RushOps.Characters;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -5,11 +6,13 @@ namespace RushOps.Debugging
 {
     /// <summary>
     /// Temporary stand-in for player movement so camera follow can be tested in the arena.
-    /// Moves with WASD, arrow keys or the left gamepad stick. Replaced by real player movement (issue #4).
+    /// Moves with WASD, arrow keys or the left gamepad stick and faces the sprite in the move direction.
+    /// Replaced by real player movement (issue #4).
     /// </summary>
     public class DebugTargetMover : MonoBehaviour
     {
         [SerializeField, Min(0f)] private float _speed = 5f;
+        [SerializeField] private DirectionalSpriteAnimator _view;
 
         private void Update()
         {
@@ -20,6 +23,10 @@ namespace RushOps.Debugging
             }
 
             transform.position += (Vector3)(direction * (_speed * Time.deltaTime));
+            if (_view != null)
+            {
+                _view.SetFacing(direction);
+            }
         }
 
         private static Vector2 ReadDirection()

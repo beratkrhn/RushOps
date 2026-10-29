@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using RushOps.Cameras;
+using RushOps.Characters;
 using RushOps.Debugging;
+using RushOps.Editor.Art;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -12,7 +14,8 @@ using UnityEngine.Tilemaps;
 namespace RushOps.Editor.Scenes
 {
     /// <summary>
-    /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow and a debug target.
+    /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, a debug target
+    /// showing the player and a row of walkers previewing all 8 directions.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
     /// </summary>
@@ -21,20 +24,24 @@ namespace RushOps.Editor.Scenes
         private const string ScenePath = "Assets/_Project/Scenes/Arena_Test.unity";
         private const string TilesDir = "Assets/_Project/Art/Tiles";
         private const int FloorVariantCount = 3;
-        private const string WallTexturePath = TilesDir + "/Wall.png";
-        private const string WallTilePath = TilesDir + "/Wall.asset";
-        private const string TargetTexturePath = "Assets/_Project/Art/Sprites/Player/Player.png";
+        private const string WallTopName = TilesDir + "/Wall_Top";
+        private const string WallFrontName = TilesDir + "/Wall_Front";
         private const string CameraConfigPath = "Assets/_Project/Data/Camera/CameraConfig.asset";
 
-        // Layout and render setup follow ADR 0002 (16 PPU, 180x320 reference resolution).
-        private const int PixelsPerUnit = 16;
-        private const int ReferenceWidth = 180;
-        private const int ReferenceHeight = 320;
+        // Layout and render setup follow ADR 0006 (32 PPU, 360x640 reference resolution).
+        private const int PixelsPerUnit = PixelArtImportRules.PixelsPerUnit;
+        private const int ReferenceWidth = 360;
+        private const int ReferenceHeight = 640;
+        // Walls and characters share one sorting order, so the renderer sorts them by Y (ADR 0006).
+        private const int FloorSortingOrder = 0;
+        private const int ActorSortingOrder = 1;
         private const int ArenaWidth = 40;
         private const int ArenaHeight = 60;
         // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
         private const int PlainFloorWeight = 7;
         private static readonly Vector2Int StartCell = new Vector2Int(20, 30);
+        // First cell of the walker preview row, one walker per direction to the east.
+        private static readonly Vector2Int WalkerPreviewCell = new Vector2Int(16, 26);
 
         // Obstacles as (x, y, width, height) in cells, inside the outer wall ring.
         private static readonly RectInt[] Obstacles =
@@ -63,12 +70,17 @@ namespace RushOps.Editor.Scenes
                 floorTiles[i] = CreateOrUpdateTile(basePath + ".asset", basePath + ".png", Tile.ColliderType.None);
             }
 
-            Tile wallTile = CreateOrUpdateTile(WallTilePath, WallTexturePath, Tile.ColliderType.Grid);
+            Tile wallTop = CreateOrUpdateTile(WallTopName + ".asset", WallTopName + ".png", Tile.ColliderType.Grid);
+            Tile wallFront = CreateOrUpdateTile(WallFrontName + ".asset", WallFrontName + ".png", Tile.ColliderType.Grid);
             CameraConfig cameraConfig = LoadOrCreateCameraConfig();
+            DirectionalAnimationBuilder.BuildAll();
+            var playerIdle = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerIdlePath);
+            var walkerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerWalkPath);
 
             CreateGlobalLight();
-            Tilemap walls = CreateArena(floorTiles, wallTile);
-            Transform target = CreateDebugTarget();
+            Tilemap walls = CreateArena(floorTiles, wallTop, wallFront);
+            Transform target = CreateDebugTarget(playerIdle);
+            CreateWalkerPreview(walkerWalk);
             CreateCamera(cameraConfig, target, walls);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -119,11 +131,11 @@ namespace RushOps.Editor.Scenes
             light.intensity = 1f;
         }
 
-        private static Tilemap CreateArena(Tile[] floorTiles, Tile wallTile)
+        private static Tilemap CreateArena(Tile[] floorTiles, Tile wallTop, Tile wallFront)
         {
             var grid = new GameObject("Grid", typeof(Grid));
 
-            Tilemap floor = CreateTilemap(grid.transform, "Floor", 0);
+            Tilemap floor = CreateTilemap(grid.transform, "Floor", FloorSortingOrder);
             for (int x = 0; x < ArenaWidth; x++)
             {
                 for (int y = 0; y < ArenaHeight; y++)
@@ -132,10 +144,12 @@ namespace RushOps.Editor.Scenes
                 }
             }
 
-            Tilemap walls = CreateTilemap(grid.transform, "Walls", 1);
+            Tilemap walls = CreateTilemap(grid.transform, "Walls", ActorSortingOrder);
+            walls.GetComponent<TilemapRenderer>().mode = TilemapRenderer.Mode.Individual;
             foreach (Vector3Int cell in WallCells())
             {
-                walls.SetTile(cell, wallTile);
+                // The front face shows only where no wall continues to the south.
+                walls.SetTile(cell, IsWall(cell.x, cell.y - 1) ? wallTop : wallFront);
             }
 
             walls.CompressBounds();
@@ -175,13 +189,19 @@ namespace RushOps.Editor.Scenes
             {
                 for (int y = 0; y < ArenaHeight; y++)
                 {
-                    bool border = x == 0 || y == 0 || x == ArenaWidth - 1 || y == ArenaHeight - 1;
-                    if (border || IsObstacle(x, y))
+                    if (IsWall(x, y))
                     {
                         yield return new Vector3Int(x, y, 0);
                     }
                 }
             }
+        }
+
+        private static bool IsWall(int x, int y)
+        {
+            bool inside = x >= 0 && y >= 0 && x < ArenaWidth && y < ArenaHeight;
+            bool border = x == 0 || y == 0 || x == ArenaWidth - 1 || y == ArenaHeight - 1;
+            return inside && (border || IsObstacle(x, y));
         }
 
         private static bool IsObstacle(int x, int y)
@@ -197,15 +217,46 @@ namespace RushOps.Editor.Scenes
             return false;
         }
 
-        private static Transform CreateDebugTarget()
+        private static Transform CreateDebugTarget(DirectionalAnimation idle)
         {
-            var go = new GameObject("DebugTarget");
-            go.transform.position = new Vector3(StartCell.x + 0.5f, StartCell.y + 0.5f, 0f);
+            DirectionalSpriteAnimator view = CreateCharacter("DebugTarget", null, StartCell, idle, Direction8.S);
+            var mover = view.gameObject.AddComponent<DebugTargetMover>();
+            var serialized = new SerializedObject(mover);
+            serialized.FindProperty("_view").objectReferenceValue = view;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return view.transform;
+        }
+
+        // Temporary art check until real walkers spawn (issue #9): one walker per direction.
+        private static void CreateWalkerPreview(DirectionalAnimation walk)
+        {
+            var root = new GameObject("Debug_WalkerPreview").transform;
+            for (int d = 0; d < Direction8Math.Count; d++)
+            {
+                var direction = (Direction8)d;
+                CreateCharacter($"Walker_{direction}", root, WalkerPreviewCell + new Vector2Int(d, 0), walk, direction);
+            }
+        }
+
+        // Characters stand with their feet (sprite pivot) in the middle of the cell and sort by it.
+        private static DirectionalSpriteAnimator CreateCharacter(
+            string name, Transform parent, Vector2Int cell, DirectionalAnimation animation, Direction8 direction)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = new Vector3(cell.x + 0.5f, cell.y + 0.5f, 0f);
+
             var renderer = go.AddComponent<SpriteRenderer>();
-            renderer.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(TargetTexturePath);
-            renderer.sortingOrder = 10;
-            go.AddComponent<DebugTargetMover>();
-            return go.transform;
+            renderer.sprite = animation.GetFrame(direction, 0);
+            renderer.sortingOrder = ActorSortingOrder;
+            renderer.spriteSortPoint = SpriteSortPoint.Pivot;
+
+            var view = go.AddComponent<DirectionalSpriteAnimator>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_animation").objectReferenceValue = animation;
+            serialized.FindProperty("_direction").enumValueIndex = (int)direction;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return view;
         }
 
         private static void CreateCamera(CameraConfig config, Transform target, Tilemap bounds)
