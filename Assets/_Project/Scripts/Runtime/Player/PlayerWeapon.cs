@@ -13,7 +13,7 @@ namespace RushOps.Player
         [SerializeField] private WeaponConfig _config;
         [SerializeField] private ProjectilePool _pool;
 
-        [Tooltip("Layers that stop projectiles, e.g. walls.")]
+        [Tooltip("Layers that stop projectiles, e.g. walls and enemies; enemies take damage.")]
         [SerializeField] private LayerMask _obstacles;
 
         [Tooltip("Height of the gun above the feet (transform pivot) in units.")]
@@ -60,7 +60,7 @@ namespace RushOps.Player
             Vector2 origin = MuzzlePosition(direction);
             for (int i = 0; i < shots; i++)
             {
-                _pool.Launch(origin, direction, _config.ProjectileSpeed, _config.MaxRange, _obstacles);
+                _pool.Launch(origin, direction, _config.ProjectileSpeed, _config.MaxRange, _obstacles, _config.Damage);
             }
         }
 

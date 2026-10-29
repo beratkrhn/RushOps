@@ -15,3 +15,4 @@ MonoBehaviour:
   _fireRate: 6
   _projectileSpeed: 14
   _maxRange: 10
+  _damage: 1

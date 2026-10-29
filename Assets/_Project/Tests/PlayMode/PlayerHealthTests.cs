@@ -39,15 +39,18 @@ namespace RushOps.Tests.PlayMode
         [UnityTest]
         public IEnumerator TouchingWalker_LosesOneHeartThenBlinksAndIsInvulnerable()
         {
-            EnemyContactDamage walker = Object.FindFirstObjectByType<EnemyContactDamage>();
+            Enemy walker = Object.FindFirstObjectByType<Enemy>();
             Assert.IsNotNull(walker, "Arena_Test has no walker with contact damage");
             int reported = -1;
             _health.HealthChanged += (current, max) => reported = current;
 
-            _health.GetComponent<Rigidbody2D>().position = walker.transform.position;
-            yield return new WaitForFixedUpdate();
-            yield return new WaitForFixedUpdate();
-            yield return null;
+            // Right next to the walker; exactly on top of it the physics has no contact normal.
+            _health.GetComponent<Rigidbody2D>().position = walker.transform.position + new Vector3(0.5f, 0f, 0f);
+            float timeout = Time.time + 0.5f;
+            while (Time.time < timeout && _health.Current == _health.Max)
+            {
+                yield return null;
+            }
 
             Assert.AreEqual(_health.Max - walker.ContactDamage, _health.Current);
             Assert.AreEqual(_health.Current, reported);

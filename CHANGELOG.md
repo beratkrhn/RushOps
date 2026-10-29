@@ -38,6 +38,12 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Reine Gesundheitslogik `Health` (Schaden, Unverwundbarkeitsfenster, Heilen bis Maximum, Tod) mit EditMode-Tests, auch für Gegner nutzbar (Issue #8).
 - `EnemyDefinition` (`Data/Enemies/Walker.asset`) mit Kontaktschaden 1 Herz *(Startwert)*; die Vorschau-Walker in `Arena_Test` verletzen bei Berührung (Issue #8).
 - Neue Werte in `PlayerConfig`: 5 Herzen, Unverwundbarkeit 1,0 s, Blinkintervall 0,1 s, Tod-Moment 1,0 s *(Startwerte)* (Issue #8).
+- Walker verfolgen den Spieler über ein Flow-Field auf dem Wand-Raster (ADR 0003): `FlowField` (Dijkstra, 8 Richtungen, keine abgeschnittenen Wandecken, ohne Allokationen) mit EditMode-Tests, `FlowFieldNavigator` rechnet bei Kachelwechsel des Spielers neu, höchstens alle 0,1 s; Walker steuern auf die Mitte der nächsten Kachel und bleiben so nicht an Ecken hängen (Issue #9).
+- Separation: Walker drücken sich gegenseitig weg (`SteeringMath`) und blockieren sich über ihre Kollider; sie blockieren auch den Spieler, schieben ihn aber kaum (Masse 10 zu 1) (Issue #9).
+- Walker-Prefab (`Prefabs/Enemies/Walker.prefab`) aus dem `EnemyPool`: Gesundheit, nimmt Projektilschaden (`IDamageable`), stirbt mit kurzem Schrumpf- und Ausblend-Effekt und kehrt in den Pool zurück; Event `Died` (Issue #9).
+- `EnemyDefinition` (Walker): Gesundheit 3, Tempo 2,5, Kontaktschaden 1, Todeseffekt 0,25 s, Punkte 10 *(Startwerte)*; `WeaponConfig`: Schaden 1; `NavigationConfig` (`Data/Navigation/`): Neuberechnung 0,1 s, Separation Radius 0,9 und Gewicht 1,2 *(Startwerte)* (Issue #9).
+- Physik-Layer `Enemies`; Projektile stoppen an Wänden und Gegnern (Issue #9).
+- `Arena_Test`: 10 Walker starten über die Arena verteilt (temporärer `DebugEnemySpawner` bis zu den Spawnpunkten in #10) (Issue #9).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -52,9 +58,11 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `Arena_Test`: Debug-Ziel zeigt den Spieler-Character und blickt in Laufrichtung; Reihe mit 8 Walkern als Grafikvorschau (Issue #58).
 - `Arena_Test`: Das Debug-Ziel ist jetzt der Spieler mit `PlayerMovement` und `PlayerMoveInput` (Issue #4).
 - Die Touch-Steuerung erscheint nur mit Touchscreen (Handy, Device Simulator); im Game View bleiben Maus und Tastatur wie bisher (Issue #7).
+- Kontaktschaden trifft schon bei der ersten Berührung, nicht erst im nächsten Physikschritt (Issue #9).
 
 ### Entfernt
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
 - 16-px-Spieler, Top-down-Walker und einteiliges Wand-Tile aus Issue #3 (Issue #58).
 - Temporärer `DebugTargetMover` (Issue #4).
 - `CLAUDE.md`: Prüfen per `Tools/unity-check.sh` statt Batchmode; Unity darf dabei offen bleiben (Issue #62).
+- Walker-Vorschaureihe in `Arena_Test` und `EnemyContactDamage`; ersetzt durch echte Walker (Issue #9).
