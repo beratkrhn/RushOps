@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using System.IO;
 using RushOps.Cameras;
 using RushOps.Characters;
-using RushOps.Debugging;
 using RushOps.Editor.Art;
+using RushOps.Player;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
@@ -14,8 +15,8 @@ using UnityEngine.Tilemaps;
 namespace RushOps.Editor.Scenes
 {
     /// <summary>
-    /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, a debug target
-    /// showing the player and a row of walkers previewing all 8 directions.
+    /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, the player
+    /// moved by the <c>Player/Move</c> input action and a row of walkers previewing all 8 directions.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
     /// </summary>
@@ -27,6 +28,12 @@ namespace RushOps.Editor.Scenes
         private const string WallTopName = TilesDir + "/Wall_Top";
         private const string WallFrontName = TilesDir + "/Wall_Front";
         private const string CameraConfigPath = "Assets/_Project/Data/Camera/CameraConfig.asset";
+        private const string PlayerConfigPath = "Assets/_Project/Data/Player/PlayerConfig.asset";
+        private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
+        private const string MoveActionPath = "Player/Move";
+        // Physics body at the feet (sprite pivot), smaller than a tile so the player fits through 1-tile gaps.
+        private const float PlayerColliderRadius = 0.3f;
+        private static readonly Vector2 PlayerColliderOffset = new Vector2(0f, 0.3f);
 
         // Layout and render setup follow ADR 0006 (32 PPU, 360x640 reference resolution).
         private const int PixelsPerUnit = PixelArtImportRules.PixelsPerUnit;
@@ -72,14 +79,16 @@ namespace RushOps.Editor.Scenes
 
             Tile wallTop = CreateOrUpdateTile(WallTopName + ".asset", WallTopName + ".png", Tile.ColliderType.Grid);
             Tile wallFront = CreateOrUpdateTile(WallFrontName + ".asset", WallFrontName + ".png", Tile.ColliderType.Grid);
-            CameraConfig cameraConfig = LoadOrCreateCameraConfig();
+            CameraConfig cameraConfig = LoadOrCreateConfig<CameraConfig>(CameraConfigPath);
+            PlayerConfig playerConfig = LoadOrCreateConfig<PlayerConfig>(PlayerConfigPath);
+            InputActionReference moveAction = LoadActionReference(InputActionsPath, MoveActionPath);
             DirectionalAnimationBuilder.BuildAll();
             var playerIdle = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerIdlePath);
             var walkerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerWalkPath);
 
             CreateGlobalLight();
             Tilemap walls = CreateArena(floorTiles, wallTop, wallFront);
-            Transform target = CreateDebugTarget(playerIdle);
+            Transform target = CreatePlayer(playerIdle, playerConfig, moveAction);
             CreateWalkerPreview(walkerWalk);
             CreateCamera(cameraConfig, target, walls);
 
@@ -104,23 +113,44 @@ namespace RushOps.Editor.Scenes
             return tile;
         }
 
-        private static CameraConfig LoadOrCreateCameraConfig()
+        // Existing configs are kept, so tuned values survive a scene rebuild.
+        private static T LoadOrCreateConfig<T>(string path) where T : ScriptableObject
         {
-            var config = AssetDatabase.LoadAssetAtPath<CameraConfig>(CameraConfigPath);
+            var config = AssetDatabase.LoadAssetAtPath<T>(path);
             if (config != null)
             {
                 return config;
             }
 
-            string folder = Path.GetDirectoryName(CameraConfigPath).Replace('\\', '/');
+            string folder = Path.GetDirectoryName(path).Replace('\\', '/');
             if (!AssetDatabase.IsValidFolder(folder))
             {
                 AssetDatabase.CreateFolder(Path.GetDirectoryName(folder).Replace('\\', '/'), Path.GetFileName(folder));
             }
 
-            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<CameraConfig>(), CameraConfigPath);
+            AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<T>(), path);
             AssetDatabase.SaveAssets();
-            return AssetDatabase.LoadAssetAtPath<CameraConfig>(CameraConfigPath);
+            return AssetDatabase.LoadAssetAtPath<T>(path);
+        }
+
+        private static InputActionReference LoadActionReference(string assetPath, string actionPath)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(assetPath);
+            InputAction action = asset != null ? asset.FindAction(actionPath) : null;
+            if (action == null)
+            {
+                throw new System.InvalidOperationException($"Input action {actionPath} not found in {assetPath}");
+            }
+
+            foreach (Object subAsset in AssetDatabase.LoadAllAssetsAtPath(assetPath))
+            {
+                if (subAsset is InputActionReference reference && reference.action != null && reference.action.id == action.id)
+                {
+                    return reference;
+                }
+            }
+
+            throw new System.InvalidOperationException($"No InputActionReference for {actionPath} in {assetPath}");
         }
 
         private static void CreateGlobalLight()
@@ -217,14 +247,37 @@ namespace RushOps.Editor.Scenes
             return false;
         }
 
-        private static Transform CreateDebugTarget(DirectionalAnimation idle)
+        private static Transform CreatePlayer(DirectionalAnimation idle, PlayerConfig config, InputActionReference moveAction)
         {
-            DirectionalSpriteAnimator view = CreateCharacter("DebugTarget", null, StartCell, idle, Direction8.S);
-            var mover = view.gameObject.AddComponent<DebugTargetMover>();
-            var serialized = new SerializedObject(mover);
-            serialized.FindProperty("_view").objectReferenceValue = view;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            return view.transform;
+            DirectionalSpriteAnimator view = CreateCharacter("Player", null, StartCell, idle, Direction8.S);
+            GameObject go = view.gameObject;
+            go.tag = "Player";
+
+            var body = go.AddComponent<Rigidbody2D>();
+            body.bodyType = RigidbodyType2D.Dynamic;
+            body.gravityScale = 0f;
+            body.freezeRotation = true;
+            // Continuous detection keeps fast movement (e.g. dash) from tunneling through walls.
+            body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            body.interpolation = RigidbodyInterpolation2D.Interpolate;
+            body.sleepMode = RigidbodySleepMode2D.NeverSleep;
+
+            var collider = go.AddComponent<CircleCollider2D>();
+            collider.radius = PlayerColliderRadius;
+            collider.offset = PlayerColliderOffset;
+
+            var movement = go.AddComponent<PlayerMovement>();
+            var serializedMovement = new SerializedObject(movement);
+            serializedMovement.FindProperty("_config").objectReferenceValue = config;
+            serializedMovement.FindProperty("_view").objectReferenceValue = view;
+            serializedMovement.ApplyModifiedPropertiesWithoutUndo();
+
+            var input = go.AddComponent<PlayerMoveInput>();
+            var serializedInput = new SerializedObject(input);
+            serializedInput.FindProperty("_moveAction").objectReferenceValue = moveAction;
+            serializedInput.ApplyModifiedPropertiesWithoutUndo();
+
+            return go.transform;
         }
 
         // Temporary art check until real walkers spawn (issue #9): one walker per direction.

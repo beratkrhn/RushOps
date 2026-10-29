@@ -3,6 +3,7 @@
     "rootNamespace": "RushOps.Editor",
     "references": [
         "RushOps.Runtime",
+        "Unity.InputSystem",
         "Unity.RenderPipelines.Universal.Runtime",
         "Unity.RenderPipelines.Universal.2D.Runtime"
     ],

@@ -18,6 +18,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Richtungs-Sprites: `Direction8`/`Direction8Math` (Vektor → 8 Richtungen), `DirectionalAnimation` (ScriptableObject, Frames pro Richtung, Bildrate) und `DirectionalSpriteAnimator`; Animationen unter `Data/Animations/` per `RushOps → Art → Richtungs-Animationen aktualisieren` (Issue #58).
 - Walker in Schrägansicht (8 Richtungen × 4 Lauf-Frames) und Wand-Tiles mit Vorderseite (Issue #58).
 - ADR 0006: Schrägansicht mit 8 Richtungs-Sprites und 32-px-Raster (Issue #58).
+- Spielerbewegung über die Input-Action `Player/Move` (Gamepad-Stick, WASD, Pfeiltasten): analoges Tempo je nach Stick-Auslenkung, kurze Beschleunigung und Abbremsung, Wandkollision über `Rigidbody2D` mit kontinuierlicher Kollisionserkennung (Issue #4).
+- `PlayerConfig` (`Data/Player/PlayerConfig.asset`) mit Tempo 5, Beschleunigung 40 und Abbremsung 50 *(Startwerte)* (Issue #4).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -29,7 +31,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Darstellung von reiner Top-down-Ansicht mit rotierten Sprites auf Schrägansicht mit 8 Richtungs-Sprites umgestellt; Lastenheft F-GFX-02 (v0.3), ADR 0002 teilweise ersetzt (Issue #58).
 - Raster 32×32 px, 32 PPU, Pixel Perfect Camera 360×640; Palette auf 32 Farben erweitert; Figuren mit Pivot an den Füßen, Sortierung nach Y (Issue #58).
 - `Arena_Test`: Debug-Ziel zeigt den Spieler-Character und blickt in Laufrichtung; Reihe mit 8 Walkern als Grafikvorschau (Issue #58).
+- `Arena_Test`: Das Debug-Ziel ist jetzt der Spieler mit `PlayerMovement` und `PlayerMoveInput` (Issue #4).
 
 ### Entfernt
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
 - 16-px-Spieler, Top-down-Walker und einteiliges Wand-Tile aus Issue #3 (Issue #58).
+- Temporärer `DebugTargetMover` (Issue #4).
