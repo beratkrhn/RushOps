@@ -15,9 +15,15 @@ namespace RushOps.Enemies
         [SerializeField] private FlowFieldNavigator _navigator;
         [SerializeField, Min(0)] private int _defaultCapacity = 10;
         [SerializeField, Min(1)] private int _maxSize = 32;
+        [Tooltip("Each spawn is shifted by up to this distance in units. Physics cannot separate bodies placed exactly on top of each other.")]
+        [SerializeField, Min(0f)] private float _spawnJitter = 0.05f;
+
+        // Golden angle in radians: consecutive spawns get well spread offsets.
+        private const float GoldenAngle = 2.39996323f;
 
         private ObjectPool<Enemy> _pool;
         private Action<Enemy> _release;
+        private int _spawnCount;
 
         /// <summary>Raised when a spawned enemy dies.</summary>
         public event Action<Enemy> EnemyDied;
@@ -34,7 +40,9 @@ namespace RushOps.Enemies
             }
 
             Enemy enemy = _pool.Get();
-            enemy.Spawn(position, _navigator, _release);
+            float angle = ++_spawnCount * GoldenAngle;
+            Vector2 jitter = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * _spawnJitter;
+            enemy.Spawn(position + jitter, _navigator, _release);
             return enemy;
         }
 

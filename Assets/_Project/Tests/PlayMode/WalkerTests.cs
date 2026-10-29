@@ -29,14 +29,16 @@ namespace RushOps.Tests.PlayMode
             _player = Object.FindFirstObjectByType<PlayerHealth>();
             Assert.IsNotNull(_pool, "Arena_Test has no EnemyPool");
             Assert.IsNotNull(_navigator, "Arena_Test has no FlowFieldNavigator");
+            // These tests place walkers themselves.
+            Object.FindFirstObjectByType<EnemySpawner>().enabled = false;
             _player.GetComponent<PlayerMoveInput>().enabled = false;
             _player.GetComponent<PlayerAimInput>().enabled = false;
         }
 
         [Test]
-        public void Start_TenWalkersActive()
+        public void Start_NoWalkersBeforeSpawnMarkers()
         {
-            Assert.AreEqual(10, _pool.CountActive);
+            Assert.AreEqual(0, _pool.CountActive);
         }
 
         [Test]
@@ -87,10 +89,9 @@ namespace RushOps.Tests.PlayMode
         [UnityTest]
         public IEnumerator Walker_Shot_DiesAndReturnsToPool()
         {
-            Enemy walker = Object.FindFirstObjectByType<Enemy>();
-            KillAllExcept(walker);
-            yield return new WaitForSeconds(walker.Definition.DeathDuration + 0.1f);
-            Assert.AreEqual(1, _pool.CountActive, "killed walkers returned to the pool");
+            Enemy walker = _pool.Spawn(new Vector2(5.5f, 5.5f));
+            yield return null;
+            Assert.AreEqual(1, _pool.CountActive);
             bool died = false;
             walker.Died += _ => died = true;
 
@@ -111,8 +112,7 @@ namespace RushOps.Tests.PlayMode
         [UnityTest]
         public IEnumerator Projectile_HitsWalker()
         {
-            Enemy walker = Object.FindFirstObjectByType<Enemy>();
-            KillAllExcept(walker);
+            Enemy walker = _pool.Spawn(new Vector2(5.5f, 5.5f));
             yield return null;
             walker.GetComponent<EnemyMovement>().Stop();
             Vector2 target = walker.transform.position + new Vector3(0f, 0.3f, 0f);

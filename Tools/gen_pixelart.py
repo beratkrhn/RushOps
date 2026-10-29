@@ -11,6 +11,7 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Walker_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
+  Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
   Sprites/UI/Stick_Base.png                32x32 ring of the virtual stick
   Sprites/UI/Stick_Knob.png                16x16 knob of the virtual stick
   Sprites/UI/Dash_Button.png               24x24 dash button with icon
@@ -105,7 +106,8 @@ class Canvas:
             for x in range(x0, x1 + 1):
                 self.set(x, y, color)
 
-    def ellipse(self, cx: float, cy: float, rx: float, ry: float, color: str) -> None:
+    def ellipse(self, cx: float, cy: float, rx: float, ry: float, color: str | None) -> None:
+        """Fills an ellipse; None clears it, e.g. to cut a ring."""
         for y in range(self.height):
             for x in range(self.width):
                 if ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1.0:
@@ -262,6 +264,20 @@ def muzzle_flash() -> Canvas:
     return c
 
 
+def spawn_marker() -> Canvas:
+    """Flat warning ring on the floor, squashed for the oblique view, with four inward ticks."""
+    c = Canvas(32, 32)
+    c.ellipse(16.0, 16.0, 13.0, 8.0, "red_0")
+    c.ellipse(16.0, 16.0, 11.0, 6.5, "red_1")
+    c.ellipse(16.0, 16.0, 9.0, 5.0, None)
+    for x, y in [(16, 9), (16, 22), (3, 16), (28, 16)]:
+        c.set(x, y, "orange")
+    for x, y in [(15, 10), (17, 10), (15, 21), (17, 21)]:
+        c.set(x, y, "red_1")
+    c.ellipse(16.0, 16.0, 2.0, 1.2, "red_0")
+    return c
+
+
 # --- Touch controls ----------------------------------------------------------
 
 def stick_base() -> Canvas:
@@ -402,6 +418,7 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Effects/MuzzleFlash.png": muzzle_flash().to_image(),
         "Tiles/Wall_Top.png": wall_top().to_image(),
         "Tiles/Wall_Front.png": wall_front().to_image(),
+        "Sprites/Effects/SpawnMarker.png": spawn_marker().to_image(),
         "Sprites/UI/Stick_Base.png": stick_base().to_image(),
         "Sprites/UI/Stick_Knob.png": stick_knob().to_image(),
         "Sprites/UI/Dash_Button.png": dash_button().to_image(),
