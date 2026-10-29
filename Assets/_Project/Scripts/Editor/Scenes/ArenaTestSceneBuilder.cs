@@ -5,20 +5,25 @@ using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Editor.Art;
 using RushOps.Player;
+using RushOps.UI;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.OnScreen;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 namespace RushOps.Editor.Scenes
 {
     /// <summary>
     /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, the player
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
-    /// dashing via <c>Player/Dash</c>,
+    /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
     /// and a row of walkers previewing all 8 directions.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
@@ -41,6 +46,14 @@ namespace RushOps.Editor.Scenes
         private const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
         private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
         private const string BulletPrefabPath = "Assets/_Project/Prefabs/Projectiles/Bullet.prefab";
+        private const string TouchControlsConfigPath = "Assets/_Project/Data/UI/TouchControlsConfig.asset";
+        private const string UiSpritesDir = "Assets/_Project/Art/Sprites/UI";
+        // On-screen controls write to the virtual gamepad, which the Player actions already bind.
+        private const string MoveStickControl = "<Gamepad>/leftStick";
+        private const string AimStickControl = "<Gamepad>/rightStick";
+        private const string DashButtonControl = "<Gamepad>/buttonSouth";
+        // UI draws above the world; the touch controls get the first slot for later HUD canvases to stack on.
+        private const int TouchControlsSortingOrder = 10;
         private const string WallsLayer = "Walls";
         private const string PlayerLayer = "Player";
         private const string ProjectilesLayer = "Projectiles";
@@ -114,6 +127,7 @@ namespace RushOps.Editor.Scenes
             Tilemap walls = CreateArena(floorTiles, wallTop, wallFront);
             ProjectilePool pool = CreateProjectilePool(bulletPrefab);
             Transform target = CreatePlayer(playerIdle, playerConfig, weaponConfig, pool, actions);
+            CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
             CreateWalkerPreview(walkerWalk);
             CreateCamera(cameraConfig, target, walls);
 
@@ -441,6 +455,122 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_target").objectReferenceValue = target;
             serialized.FindProperty("_boundsTilemap").objectReferenceValue = bounds;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreateTouchControls(TouchControlsConfig config, PlayerDash dash)
+        {
+            var eventSystem = new GameObject("EventSystem", typeof(EventSystem));
+            eventSystem.AddComponent<InputSystemUIInputModule>().AssignDefaultActions();
+
+            var root = new GameObject("TouchControls", typeof(RectTransform));
+            var canvas = root.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.pixelPerfect = true;
+            canvas.sortingOrder = TouchControlsSortingOrder;
+            var scaler = root.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
+            // Match the width, so the sticks keep their size relative to the thumbs on taller phones.
+            scaler.matchWidthOrHeight = 0f;
+            root.AddComponent<GraphicRaycaster>();
+
+            RectTransform safeArea = CreateUiRect("SafeArea", root.transform, Vector2.zero, Vector2.one);
+            safeArea.gameObject.AddComponent<SafeAreaFitter>();
+
+            CreateStick("LeftStick", safeArea, StickSide.Left, MoveStickControl, config, new Vector2(0f, 0f), new Vector2(0.5f, 1f));
+            VirtualStick aimStick = CreateStick(
+                "RightStick", safeArea, StickSide.Right, AimStickControl, config, new Vector2(0.5f, 0f), new Vector2(1f, 1f));
+            CreateDashButton(aimStick, dash);
+
+            var visibility = root.AddComponent<TouchControlsVisibility>();
+            var serialized = new SerializedObject(visibility);
+            serialized.FindProperty("_controls").objectReferenceValue = safeArea.gameObject;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // The zone is the stick's half of the safe area and receives its touches; base and knob only show the stick.
+        private static VirtualStick CreateStick(
+            string name, RectTransform parent, StickSide side, string controlPath, TouchControlsConfig config,
+            Vector2 anchorMin, Vector2 anchorMax)
+        {
+            RectTransform zone = CreateUiRect(name, parent, anchorMin, anchorMax);
+            var touchArea = zone.gameObject.AddComponent<Image>();
+            touchArea.color = Color.clear;
+
+            Image baseImage = CreateUiImage("Base", zone, "Stick_Base.png", Vector2.zero);
+            var visual = baseImage.gameObject.AddComponent<CanvasGroup>();
+            visual.blocksRaycasts = false;
+            visual.interactable = false;
+            Image knob = CreateUiImage("Knob", baseImage.rectTransform, "Stick_Knob.png", new Vector2(0.5f, 0.5f));
+
+            var stick = zone.gameObject.AddComponent<VirtualStick>();
+            // Set the serialized path: the controlPath setter would create a virtual gamepad in the editor.
+            var serialized = new SerializedObject(stick);
+            serialized.FindProperty("_controlPath").stringValue = controlPath;
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_side").enumValueIndex = (int)side;
+            serialized.FindProperty("_base").objectReferenceValue = baseImage.rectTransform;
+            serialized.FindProperty("_knob").objectReferenceValue = knob.rectTransform;
+            serialized.FindProperty("_visual").objectReferenceValue = visual;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return stick;
+        }
+
+        // A child of the right stick's zone, drawn after the stick, so it receives the touches on it first.
+        private static void CreateDashButton(VirtualStick stick, PlayerDash dash)
+        {
+            Image button = CreateUiImage("DashButton", (RectTransform)stick.transform, "Dash_Button.png", Vector2.zero);
+            button.raycastTarget = true;
+            var onScreenButton = new SerializedObject(button.gameObject.AddComponent<OnScreenButton>());
+            onScreenButton.FindProperty("m_ControlPath").stringValue = DashButtonControl;
+            onScreenButton.ApplyModifiedPropertiesWithoutUndo();
+
+            Image overlay = CreateUiImage("Cooldown", button.rectTransform, "Dash_Cooldown.png", Vector2.zero);
+            overlay.rectTransform.anchorMax = Vector2.one;
+            overlay.rectTransform.sizeDelta = Vector2.zero;
+            overlay.type = Image.Type.Filled;
+            overlay.fillMethod = Image.FillMethod.Radial360;
+            overlay.fillOrigin = (int)Image.Origin360.Top;
+            overlay.fillClockwise = false;
+            overlay.fillAmount = 0f;
+            overlay.enabled = false;
+
+            var view = button.gameObject.AddComponent<DashButtonView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_dash").objectReferenceValue = dash;
+            serialized.FindProperty("_stick").objectReferenceValue = stick;
+            serialized.FindProperty("_cooldownOverlay").objectReferenceValue = overlay;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static RectTransform CreateUiRect(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            var rect = (RectTransform)go.transform;
+            rect.SetParent(parent, false);
+            rect.anchorMin = anchorMin;
+            rect.anchorMax = anchorMax;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            return rect;
+        }
+
+        // Anchored at one point with the pivot in the center; the components size and place it from the config.
+        private static Image CreateUiImage(string name, RectTransform parent, string spriteFile, Vector2 anchor)
+        {
+            string path = $"{UiSpritesDir}/{spriteFile}";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null)
+            {
+                throw new System.InvalidOperationException($"UI sprite not found at {path}");
+            }
+
+            RectTransform rect = CreateUiRect(name, parent, anchor, anchor);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            var image = rect.gameObject.AddComponent<Image>();
+            image.sprite = sprite;
+            image.raycastTarget = false;
+            return image;
         }
 
         private struct PlayerActions
