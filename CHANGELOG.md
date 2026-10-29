@@ -9,8 +9,13 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Git LFS für Grafik-, Audio- und Schriftdateien.
 - Ordnerstruktur unter `Assets/_Project/`.
 - Assembly Definitions `RushOps.Runtime`, `RushOps.Editor`, `RushOps.Tests.EditMode`, `RushOps.Tests.PlayMode` inklusive Beispieltests (Issue #1).
+- Testszene `Arena_Test` (40×60 Kacheln, Wände mit `TilemapCollider2D` + `CompositeCollider2D`, Hindernisse), per Editor-Skript `RushOps → Szenen → Arena_Test erzeugen` reproduzierbar (Issue #2).
+- Pixel Perfect Camera (180×320, 16 PPU) mit weichem Folgen, Klemmen an die Levelgrenzen und Pixel-Snapping; Folgezeit in `CameraConfig` (Issue #2).
+- Platzhalter-Tiles und Debug-Ziel per `Tools/gen_placeholder_arena.py`; temporärer `DebugTargetMover` (WASD/Pfeiltasten/Gamepad) bis zur Spielerbewegung (Issue #2).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
 - `bundleVersion` auf 0.1.0, Firmenname gesetzt.
 - `SampleScene` von `Assets/Scenes/` nach `Assets/_Project/Scenes/` verschoben (Issue #1).
+- ADR 0002: Verhalten bei abweichendem Seitenverhältnis festgelegt (mehr Welt zeigen, keine Balken) (Issue #2).
+- `Arena_Test` ist die erste Szene in den Build Settings (Issue #2).

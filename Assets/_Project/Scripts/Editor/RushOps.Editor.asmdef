@@ -2,7 +2,9 @@
     "name": "RushOps.Editor",
     "rootNamespace": "RushOps.Editor",
     "references": [
-        "RushOps.Runtime"
+        "RushOps.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
+        "Unity.RenderPipelines.Universal.2D.Runtime"
     ],
     "includePlatforms": [
         "Editor"
