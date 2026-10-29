@@ -26,6 +26,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Unity CLI und Unity-Pipeline-Paket (`com.unity.pipeline` 0.9.1-exp.1, nur Editor): `Tools/unity-check.sh` kompiliert und testet im offenen Editor, ohne Unity zu schließen, und fällt sonst auf den Batchmode zurück (Issue #62).
 - EditMode-Test `PipelineBuildGuardTests` stellt sicher, dass das Pipeline-Paket nicht in Spiel-Builds landet (Issue #62).
 - ADR 0007: Unity CLI und Pipeline-Paket für Kompilieren und Tests (Issue #62).
+- Dash mit i-Frames über die Input-Action `Player/Dash` (Leertaste, rechte Maustaste, Gamepad Süd/rechte Schultertaste): in Laufrichtung, im Stand in Blickrichtung; Wände stoppen den Dash; `PlayerDash` bietet `IsInvulnerable` für Schadensquellen, `Lock`/`Unlock` zum Sperren (für den Objekt-Transport) und `CooldownProgress` für den Dash-Button (Issue #6).
+- Dash-Werte in `PlayerConfig`: Distanz 3, Dauer 0,2 s, i-Frames 0,3 s, Abklingzeit 1,0 s ab Dash-Beginn *(Startwerte)* (Issue #6).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
