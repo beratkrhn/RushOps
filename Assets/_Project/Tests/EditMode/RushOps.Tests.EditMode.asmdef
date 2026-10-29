@@ -3,6 +3,7 @@
     "rootNamespace": "RushOps.Tests.EditMode",
     "references": [
         "RushOps.Runtime",
+        "RushOps.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
