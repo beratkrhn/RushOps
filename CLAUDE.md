@@ -65,8 +65,33 @@ Tools/        Python-Skripte für Asset-Erzeugung (Pixelart, SFX), nicht Teil de
 - **Jede neue Datei unter `Assets/` braucht ihre `.meta`-Datei.** Beim Anlegen, Verschieben oder Löschen immer die `.meta` mitnehmen. GUIDs in bestehenden `.meta`-Dateien nie ändern.
 - Szenen und Prefabs bevorzugt **per Editor-Skript** erzeugen oder ändern (`Scripts/Editor/`), statt YAML von Hand zu bearbeiten. Kleine Werteänderungen im YAML sind in Ordnung; neue Objekte mit `fileID`-Verweisen nicht von Hand.
 - Ist der Unity-Editor offen, können Dateiänderungen von außen kollidieren. Vor größeren Änderungen an Szenen nachfragen, ob der Editor geschlossen ist.
+- Ist der Editor offen, Editor-Skripte (z. B. Szenen-Builder) bevorzugt über `unity command editor invoke_menu` im offenen Editor ausführen statt Szenendateien von außen zu überschreiben.
 
-### Unity im Batchmode (macOS)
+### Kompilieren und Testen (Unity CLI, ADR 0007)
+
+```bash
+Tools/unity-check.sh            # kompilieren (Warnungen = Fehler), EditMode- und PlayMode-Tests
+Tools/unity-check.sh compile    # nur kompilieren; auch: editmode, playmode
+```
+
+- Ist Unity mit dem Projekt offen, läuft alles **im offenen Editor** über das Pipeline-Paket (etwa 20 s). Unity muss dafür nicht geschlossen werden. Vor PlayMode-Tests sollte die offene Szene gespeichert sein.
+- Ist kein Editor offen, fällt das Skript auf `unity run` / `unity test` im Batchmode zurück (etwa 2 min).
+- Exit-Codes: `0` ok, `1` Compile-Fehler oder -Warnungen, `8` Tests rot, `6` Lauf nicht abgeschlossen. Details liegen als JSON/XML unter `Logs/check-*`.
+- Voraussetzung: Unity CLI (`brew install --cask unity-cli`, Befehl `unity`).
+
+Weitere nützliche Befehle gegen den offenen Editor:
+
+```bash
+unity command editor invoke_menu --path "RushOps/Szenen/Arena_Test erzeugen"   # Editor-Skript per Menü
+unity command console get --level warn --tail 20                                # Console lesen
+unity command                                                                   # alle Befehle auflisten
+```
+
+Bei `unity command` immer das Flag `--project-path .` mitgeben, wenn mehrere Editoren offen sein können. `editor.playmode set_run_in_background` nicht benutzen (ändert die PlayerSettings). Die Define-Symbole `ENABLE_RUNTIME_PIPELINE*` nie setzen; das Paket gehört nicht in Spiel-Builds.
+
+### Rückfallweg: Unity direkt im Batchmode (macOS)
+
+Nur nötig, falls CLI oder Pipeline nicht funktionieren. Schlägt fehl, solange das Projekt im Editor geöffnet ist.
 
 ```bash
 UNITY="/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/MacOS/Unity"
@@ -78,8 +103,6 @@ UNITY="/Applications/Unity/Hub/Editor/6000.3.10f1/Unity.app/Contents/MacOS/Unity
 "$UNITY" -batchmode -nographics -projectPath . -runTests -testPlatform EditMode \
   -testResults Logs/editmode-results.xml -logFile -
 ```
-
-Ein Batchmode-Lauf schlägt fehl, solange das Projekt im Editor geöffnet ist.
 
 ## Pixelart
 
@@ -111,7 +134,7 @@ Das GitHub-Repo ist `beratkrhn/RushOps`. Für GitHub-Zugriffe die REST-API über
 4. **Unklarheiten zuerst klären:** Widersprechen sich Issue und Lastenheft, oder fehlt eine Designentscheidung, nachfragen statt raten. Kann das Issue nicht umgesetzt werden (z. B. Abhängigkeit fehlt), Label `blocked` setzen, Grund als Kommentar ins Issue schreiben und stoppen. Ist eine Story größer als etwa zwei Tage, eine Aufteilung vorschlagen.
 5. **Starten:** Label `in-progress` setzen (`gh api repos/beratkrhn/RushOps/issues/<N>/labels -f "labels[]=in-progress"`), Branch `feature/<N>-<kurz>` (bzw. `fix/…`) von `main` anlegen.
 6. **Umsetzen** nach den Regeln dieser Datei, in kleinen Conventional Commits.
-7. **Prüfen:** Kompilieren und EditMode- sowie PlayMode-Tests per Batchmode. Ist Unity geöffnet, den Menschen bitten, es zu schließen. Alle Fehler beheben, bevor ein PR entsteht.
+7. **Prüfen:** `Tools/unity-check.sh` (kompilieren ohne Warnungen, EditMode- und PlayMode-Tests). Unity darf dabei offen bleiben. Nur wenn das Skript im Batchmode-Rückfall landet und das Projekt trotzdem geöffnet ist, den Menschen bitten, Unity zu schließen. Alle Fehler beheben, bevor ein PR entsteht.
 8. **Abschließen:** `CHANGELOG.md` ergänzen, pushen, PR nach Vorlage öffnen (`Closes #<N>`). Im Abschnitt „So testest du das“ konkrete Schritte für den manuellen Test im Editor oder auf dem Gerät aufschreiben.
 9. **Stoppen.** Kein weiteres Issue beginnen, bevor der PR gemergt ist, außer der Mensch sagt es ausdrücklich. Dem Menschen kurz sagen, was fertig ist und was er testen soll.
 
