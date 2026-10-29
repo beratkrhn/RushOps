@@ -11,6 +11,10 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Walker_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
+  Sprites/UI/Stick_Base.png                32x32 ring of the virtual stick
+  Sprites/UI/Stick_Knob.png                16x16 knob of the virtual stick
+  Sprites/UI/Dash_Button.png               24x24 dash button with icon
+  Sprites/UI/Dash_Cooldown.png             24x24 disc covering the button during the cooldown
   Tiles/Floor_0..2.png                     32x32 floor variants
   Tiles/Wall_Top.png                       32x32 wall seen from above
   Tiles/Wall_Front.png                     32x32 wall top plus front face
@@ -258,6 +262,50 @@ def muzzle_flash() -> Canvas:
     return c
 
 
+# --- Touch controls ----------------------------------------------------------
+
+def stick_base() -> Canvas:
+    """Hollow ring: the area the knob moves in."""
+    c = Canvas(32, 32)
+    c.ellipse(16.0, 16.0, 15.0, 15.0, "slate_3")
+    c.ellipse(16.0, 16.0, 13.0, 13.0, "slate_1")
+    c.ellipse(16.0, 16.0, 11.0, 11.0, "slate_0")
+    c.ellipse(16.0, 16.0, 3.0, 3.0, "slate_2")
+    c.outline()
+    return c
+
+
+def stick_knob() -> Canvas:
+    c = Canvas(16, 16)
+    c.ellipse(8.0, 8.0, 7.0, 7.0, "slate_3")
+    c.ellipse(8.0, 7.5, 5.5, 5.5, "slate_4")
+    c.ellipse(7.0, 6.0, 2.5, 2.0, "slate_5")
+    c.outline()
+    return c
+
+
+def dash_button() -> Canvas:
+    """Round button with a double chevron pointing right."""
+    c = Canvas(24, 24)
+    c.ellipse(12.0, 12.0, 11.0, 11.0, "blue_0")
+    c.ellipse(12.0, 11.5, 9.5, 9.5, "blue_1")
+    # Two 2 px thick chevrons (">>"), 7 rows tall.
+    for x0 in (6, 11):
+        for i in range(7):
+            x = x0 + 3 - abs(i - 3)
+            c.set(x, 8 + i, "white")
+            c.set(x + 1, 8 + i, "white")
+    c.outline()
+    return c
+
+
+def dash_cooldown() -> Canvas:
+    """Dark disc of the button size, filled radially to show the remaining cooldown."""
+    c = Canvas(24, 24)
+    c.ellipse(12.0, 12.0, 12.0, 12.0, "night")
+    return c
+
+
 # --- Tiles ---------------------------------------------------------------------
 
 def floor(variant: int) -> Canvas:
@@ -354,6 +402,10 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Effects/MuzzleFlash.png": muzzle_flash().to_image(),
         "Tiles/Wall_Top.png": wall_top().to_image(),
         "Tiles/Wall_Front.png": wall_front().to_image(),
+        "Sprites/UI/Stick_Base.png": stick_base().to_image(),
+        "Sprites/UI/Stick_Knob.png": stick_knob().to_image(),
+        "Sprites/UI/Dash_Button.png": dash_button().to_image(),
+        "Sprites/UI/Dash_Cooldown.png": dash_cooldown().to_image(),
     }
     for d, name in enumerate(DIRECTIONS):
         for frame in range(4):
