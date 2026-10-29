@@ -32,6 +32,18 @@ namespace RushOps.Player
         [Tooltip("Seconds from the start of a dash until the next dash is possible.")]
         [SerializeField, Min(0f)] private float _dashCooldown = 1f;
 
+        [Tooltip("Hearts at the start of a level (F-SPF-01).")]
+        [SerializeField, Min(1)] private int _maxHearts = 5;
+
+        [Tooltip("Seconds without damage after a hit (F-SPF-02).")]
+        [SerializeField, Min(0f)] private float _hitInvulnerability = 1f;
+
+        [Tooltip("Seconds per on or off phase while the player blinks after a hit.")]
+        [SerializeField, Min(0.01f)] private float _blinkInterval = 0.1f;
+
+        [Tooltip("Seconds of the death moment before the level restarts (F-SPF-03).")]
+        [SerializeField, Min(0f)] private float _deathRestartDelay = 1f;
+
         /// <summary>Top speed in units per second at full stick deflection.</summary>
         public float MoveSpeed => _moveSpeed;
 
@@ -55,5 +67,17 @@ namespace RushOps.Player
 
         /// <summary>Seconds from the start of a dash until the next dash is possible.</summary>
         public float DashCooldown => _dashCooldown;
+
+        /// <summary>Hearts at the start of a level.</summary>
+        public int MaxHearts => _maxHearts;
+
+        /// <summary>Seconds without damage after a hit.</summary>
+        public float HitInvulnerability => _hitInvulnerability;
+
+        /// <summary>Seconds per on or off phase of the blinking after a hit.</summary>
+        public float BlinkInterval => _blinkInterval;
+
+        /// <summary>Seconds of the death moment before the level restarts.</summary>
+        public float DeathRestartDelay => _deathRestartDelay;
     }
 }

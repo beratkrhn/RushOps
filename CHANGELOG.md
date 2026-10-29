@@ -34,6 +34,10 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `TouchControlsConfig` (`Data/UI/TouchControlsConfig.asset`): Modus floating, Stick-Durchmesser 96, Knopf 50 %, Randabstand 24, Dash-Button 72 mit Abstand 16 (Referenzeinheiten bei 360×640), Abdunkelung 0,5 *(Startwerte)* (Issue #7).
 - Pixelart für Stick-Ring, Stick-Knopf, Dash-Button und Abklingzeit-Overlay unter `Art/Sprites/UI/` per `Tools/gen_pixelart.py` (Issue #7).
 - ADR 0008: Touch-Steuerung als On-Screen-Controls in uGUI (Issue #7).
+- Herzen, Schaden und Neustart: `PlayerHealth` mit 5 Herzen, Kontaktschaden von Gegnern (`IContactDamage`), danach 1,0 s Unverwundbarkeit mit Blinken; Dash-i-Frames schützen ebenfalls; bei 0 Herzen stoppt der Spieler, färbt sich rot und nach 1,0 s startet das Level neu (`LevelRestarter`); Event `HealthChanged` für das HUD (Issue #8).
+- Reine Gesundheitslogik `Health` (Schaden, Unverwundbarkeitsfenster, Heilen bis Maximum, Tod) mit EditMode-Tests, auch für Gegner nutzbar (Issue #8).
+- `EnemyDefinition` (`Data/Enemies/Walker.asset`) mit Kontaktschaden 1 Herz *(Startwert)*; die Vorschau-Walker in `Arena_Test` verletzen bei Berührung (Issue #8).
+- Neue Werte in `PlayerConfig`: 5 Herzen, Unverwundbarkeit 1,0 s, Blinkintervall 0,1 s, Tod-Moment 1,0 s *(Startwerte)* (Issue #8).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.

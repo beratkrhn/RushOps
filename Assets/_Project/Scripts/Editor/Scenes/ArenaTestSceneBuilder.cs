@@ -4,6 +4,7 @@ using RushOps.Cameras;
 using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Editor.Art;
+using RushOps.Enemies;
 using RushOps.Player;
 using RushOps.UI;
 using UnityEditor;
@@ -46,6 +47,9 @@ namespace RushOps.Editor.Scenes
         private const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
         private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
         private const string BulletPrefabPath = "Assets/_Project/Prefabs/Projectiles/Bullet.prefab";
+        private const string WalkerDefinitionPath = "Assets/_Project/Data/Enemies/Walker.asset";
+        // Contact hurtbox of a walker at its feet, slightly smaller than the player's body.
+        private const float WalkerHurtboxRadius = 0.3f;
         private const string TouchControlsConfigPath = "Assets/_Project/Data/UI/TouchControlsConfig.asset";
         private const string UiSpritesDir = "Assets/_Project/Art/Sprites/UI";
         // On-screen controls write to the virtual gamepad, which the Player actions already bind.
@@ -128,7 +132,8 @@ namespace RushOps.Editor.Scenes
             ProjectilePool pool = CreateProjectilePool(bulletPrefab);
             Transform target = CreatePlayer(playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
-            CreateWalkerPreview(walkerWalk);
+            CreateLevelRestarter(target.GetComponent<PlayerHealth>());
+            CreateWalkerPreview(walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath));
             CreateCamera(cameraConfig, target, walls);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -355,11 +360,24 @@ namespace RushOps.Editor.Scenes
             serializedAimInput.FindProperty("_pressAction").objectReferenceValue = actions.AimPress;
             serializedAimInput.ApplyModifiedPropertiesWithoutUndo();
 
-            go.AddComponent<PlayerDash>();
+            var dash = go.AddComponent<PlayerDash>();
             var dashInput = go.AddComponent<PlayerDashInput>();
             var serializedDashInput = new SerializedObject(dashInput);
             serializedDashInput.FindProperty("_dashAction").objectReferenceValue = actions.Dash;
             serializedDashInput.ApplyModifiedPropertiesWithoutUndo();
+
+            var health = go.AddComponent<PlayerHealth>();
+            var serializedHealth = new SerializedObject(health);
+            serializedHealth.FindProperty("_renderer").objectReferenceValue = go.GetComponent<SpriteRenderer>();
+            Behaviour[] disableOnDeath = { input, aimInput, dashInput, weapon, dash, movement };
+            SerializedProperty disabled = serializedHealth.FindProperty("_disableOnDeath");
+            disabled.arraySize = disableOnDeath.Length;
+            for (int i = 0; i < disableOnDeath.Length; i++)
+            {
+                disabled.GetArrayElementAtIndex(i).objectReferenceValue = disableOnDeath[i];
+            }
+
+            serializedHealth.ApplyModifiedPropertiesWithoutUndo();
 
             return go.transform;
         }
@@ -396,14 +414,30 @@ namespace RushOps.Editor.Scenes
             return pool;
         }
 
+        private static void CreateLevelRestarter(PlayerHealth player)
+        {
+            var go = new GameObject("LevelRestarter");
+            var restarter = go.AddComponent<LevelRestarter>();
+            var serialized = new SerializedObject(restarter);
+            serialized.FindProperty("_player").objectReferenceValue = player;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         // Temporary art check until real walkers spawn (issue #9): one walker per direction.
-        private static void CreateWalkerPreview(DirectionalAnimation walk)
+        // They already hurt on touch, so damage can be tried in the editor.
+        private static void CreateWalkerPreview(DirectionalAnimation walk, EnemyDefinition definition)
         {
             var root = new GameObject("Debug_WalkerPreview").transform;
             for (int d = 0; d < Direction8Math.Count; d++)
             {
                 var direction = (Direction8)d;
-                CreateCharacter($"Walker_{direction}", root, WalkerPreviewCell + new Vector2Int(d, 0), walk, direction);
+                DirectionalSpriteAnimator walker = CreateCharacter(
+                    $"Walker_{direction}", root, WalkerPreviewCell + new Vector2Int(d, 0), walk, direction);
+                var hurtbox = walker.gameObject.AddComponent<CircleCollider2D>();
+                hurtbox.isTrigger = true;
+                hurtbox.radius = WalkerHurtboxRadius;
+                hurtbox.offset = PlayerColliderOffset;
+                walker.gameObject.AddComponent<EnemyContactDamage>().Definition = definition;
             }
         }
 
