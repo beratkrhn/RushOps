@@ -1,25 +1,28 @@
 #!/usr/bin/env python3
-"""Generates the RushOps palette and the v0.1.0 pixel art (issue #3).
+"""Generates the RushOps palette and the scripted pixel art (ADR 0006).
 
 Everything is drawn from code so the art is reproducible. All colors come from
 PALETTE; the script refuses to write an image that uses any other color.
+The player character is not drawn here: it comes from the product owner's
+character tool and is imported with Tools/import_character.py.
 
 Output (under Assets/_Project/Art/):
-  Palettes/RushOps_Palette.png        one pixel per palette color, in order
-  Sprites/Player/Player.png           16x16, facing right (+X)
-  Sprites/Enemies/Walker_Walk_0..3.png 16x16, 4-frame walk cycle, facing right
-  Sprites/Projectiles/Bullet.png      8x8
-  Sprites/Effects/MuzzleFlash.png     8x8
-  Tiles/Floor_0..2.png                16x16 floor variants
-  Tiles/Wall.png                      16x16
+  Palettes/RushOps_Palette.png             one pixel per palette color, in order
+  Sprites/Enemies/Walker_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames
+  Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
+  Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
+  Tiles/Floor_0..2.png                     32x32 floor variants
+  Tiles/Wall_Top.png                       32x32 wall seen from above
+  Tiles/Wall_Front.png                     32x32 wall top plus front face
 
 Usage:
   python3 Tools/gen_pixelart.py [--preview PATH]
 
---preview writes an upscaled contact sheet (player and walker on the floor)
-for a visual check before committing. It is not part of the project.
+--preview writes an upscaled contact sheet (characters on the floor next to
+walls) for a visual check before committing. It is not part of the project.
 """
 import argparse
+import math
 import random
 from pathlib import Path
 
@@ -28,7 +31,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 ART_DIR = ROOT / "Assets/_Project/Art"
 
-# Fixed palette (ADR 0002). Order matters: it is the order in the palette PNG.
+# Fixed palette (ADR 0006, at most 32 colors). Order matters: it is the order in the palette PNG.
 PALETTE = {
     "outline": (13, 11, 20),
     "night": (31, 29, 43),
@@ -54,16 +57,30 @@ PALETTE = {
     "orange": (232, 134, 47),
     "yellow": (246, 208, 77),
     "glow": (255, 246, 194),
+    # Colors of the player character (issue #58).
+    "navy_0": (13, 43, 69),
+    "navy_1": (32, 60, 86),
+    "dusk": (84, 78, 104),
+    "mauve": (141, 105, 122),
+    "clay": (208, 129, 89),
+    "apricot": (255, 170, 94),
+    "peach": (255, 212, 163),
+    "cream": (255, 236, 214),
 }
 
-CLEAR = None
-TILE = 16
+TILE = 32
+CHARACTER = 64
+# Character feet rest this many pixels above the bottom edge (ADR 0006).
+FOOT_MARGIN = 5
+
+# Directions in counter-clockwise order from +X, matching RushOps.Characters.Direction8.
+DIRECTIONS = ["E", "NE", "N", "NW", "W", "SW", "S", "SE"]
 
 
 class Canvas:
     """Indexed drawing surface: each pixel holds a palette key or None."""
 
-    def __init__(self, width: int, height: int, fill: str | None = CLEAR):
+    def __init__(self, width: int, height: int, fill: str | None = None):
         self.width = width
         self.height = height
         self.px = [[fill] * width for _ in range(height)]
@@ -84,13 +101,11 @@ class Canvas:
             for x in range(x0, x1 + 1):
                 self.set(x, y, color)
 
-    def ellipse(self, cx: float, cy: float, rx: float, ry: float, color: str, shade: str | None = None) -> None:
-        """Fills an ellipse; pixels near the rim get `shade` if given."""
+    def ellipse(self, cx: float, cy: float, rx: float, ry: float, color: str) -> None:
         for y in range(self.height):
             for x in range(self.width):
-                d = ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2
-                if d <= 1.0:
-                    self.set(x, y, shade if shade and d > 0.55 else color)
+                if ((x + 0.5 - cx) / rx) ** 2 + ((y + 0.5 - cy) / ry) ** 2 <= 1.0:
+                    self.set(x, y, color)
 
     def outline(self, color: str = "outline") -> None:
         """Adds a 1 px outline around all filled pixels (4-neighbourhood)."""
@@ -115,118 +130,200 @@ class Canvas:
         return img
 
 
-# --- Characters --------------------------------------------------------------
-# Top-down view, facing right (+X). Image y grows downwards, so the character's
-# right hand side is the lower half of the image.
+# --- Characters in 3/4 view -----------------------------------------------------
+# Body parts are spheres and capsules in a small 3D space: f = forward, s = to the
+# character's right, z = up, all in pixels. They are turned to the facing angle,
+# projected obliquely (ground depth is squashed to half height) and painted far to
+# near, so all 8 directions come out of the same model.
 
-def player() -> Canvas:
-    c = Canvas(TILE, TILE)
-    # Rifle held on the right hand side, barrel pointing right.
-    c.rect(8, 9, 11, 10, "night")
-    c.rect(12, 9, 14, 9, "slate_3")
-    c.set(9, 9, "slate_2")
-    # Shoulders/torso (vest), wide across the facing direction.
-    c.ellipse(6.0, 8.0, 2.6, 5.0, "blue_1", shade="blue_0")
-    # Sleeves reaching to the rifle: front hand on the barrel, rear hand at the grip.
-    for x, y in [(8, 4), (9, 5), (10, 6), (11, 7)]:
-        c.set(x, y, "blue_1")
-    c.set(12, 8, "skin_1")
-    c.set(8, 11, "blue_1")
-    c.set(9, 11, "skin_1")
-    # Helmet.
-    c.ellipse(7.0, 8.0, 2.0, 2.0, "slate_3", shade="slate_2")
-    c.set(6, 7, "slate_4")
-    c.outline()
+# Material ramps: (shadow, base, light).
+RAMP = {
+    "skin": ("green_0", "green_1", "green_2"),
+    "shirt": ("brown_0", "brown_1", "mauve"),
+    "pants": ("navy_0", "navy_1", "dusk"),
+    "shoe": ("night", "night", "slate_0"),
+}
+
+
+class Model:
+    """Collects sphere samples and rasterises them for one facing angle."""
+
+    def __init__(self, angle_deg: float):
+        a = math.radians(angle_deg)
+        self.forward = (math.cos(a), math.sin(a))
+        self.right = (math.sin(a), -math.cos(a))
+        self.samples = []
+
+    def ground(self, f: float, s: float) -> tuple[float, float]:
+        """Local (forward, right) offset to world ground (east, north)."""
+        return (f * self.forward[0] + s * self.right[0], f * self.forward[1] + s * self.right[1])
+
+    def project(self, f: float, s: float, z: float) -> tuple[float, float, float]:
+        """Local point to canvas (x, y) plus its depth (north, larger = farther)."""
+        east, north = self.ground(f, s)
+        return CHARACTER / 2 + east, CHARACTER - FOOT_MARGIN - 0.5 - z - north * 0.5, north
+
+    def sphere(self, f: float, s: float, z: float, r: float, material: str) -> None:
+        self.samples.append((*self.project(f, s, z), z, r, material))
+
+    def capsule(self, a: tuple, b: tuple, r: float, material: str) -> None:
+        """Capsule between local points a and b, each (f, s, z)."""
+        steps = max(1, int(math.dist(a, b) * 2))
+        for i in range(steps + 1):
+            t = i / steps
+            self.sphere(*(a[k] + (b[k] - a[k]) * t for k in range(3)), r, material)
+
+    def paint(self, canvas: Canvas) -> None:
+        # Far (north) first; within the same depth, lower parts first.
+        for sx, sy, north, z, r, material in sorted(self.samples, key=lambda p: (-p[2], p[3])):
+            shadow, base, light = RAMP[material]
+            for y in range(int(sy - r) - 1, int(sy + r) + 2):
+                for x in range(int(sx - r) - 1, int(sx + r) + 2):
+                    dx, dy = x + 0.5 - sx, y + 0.5 - sy
+                    if dx * dx + dy * dy > r * r:
+                        continue
+                    # Light from above: lower rim in shadow, upper left rim lit.
+                    if dy > r * 0.45:
+                        color = shadow
+                    elif dy < -r * 0.55 and dx < r * 0.2:
+                        color = light
+                    else:
+                        color = base
+                    canvas.set(x, y, color)
+
+
+def walker_frame(direction: int, frame: int) -> Canvas:
+    """Walker in one of 8 directions, frame 0..3 of a slow shamble."""
+    m = Model(direction * 45.0)
+    phase = frame / 4 * 2 * math.pi
+    stride = 4.0 * math.sin(phase)
+    bob = 1.0 if frame % 2 == 1 else 0.0
+    sway = math.sin(phase)
+
+    # Legs and shoes.
+    for side, step in ((-3.5, stride), (3.5, -stride)):
+        m.capsule((0, side, 18 - bob), (step, side, 4), 3.8, "pants")
+        m.sphere(step + 1.0, side, 2.5, 3.0, "shoe")
+    # Torso, slightly hunched forward.
+    for side in (-3.5, 3.5):
+        m.capsule((0, side + sway * 0.5, 19 - bob), (1.5, side + sway, 34 - bob), 6.0, "shirt")
+    # Arms reaching forward, swinging against the legs.
+    for side, reach in ((-8.0, -stride * 0.5), (8.0, stride * 0.5)):
+        shoulder = (1.5, side + sway, 33 - bob)
+        elbow = (7.0 + reach * 0.5, side * 0.85 + sway, 31 - bob)
+        hand = (14.0 + reach, side * 0.75 + sway, 30 - bob)
+        m.capsule(shoulder, elbow, 2.9, "shirt")
+        m.capsule(elbow, hand, 2.5, "skin")
+    # Head, hanging forward.
+    head = (3.0, sway, 42 - bob)
+    m.sphere(*head, 6.8, "skin")
+
+    c = Canvas(CHARACTER, CHARACTER)
+    m.paint(c)
+
+    # Glowing eyes, only where they face the viewer.
+    _, _, head_north = m.project(*head)
+    for s in (-2.4, 2.4):
+        x, y, north = m.project(head[0] + 5.4, head[1] + s, head[2] + 0.5)
+        if north <= head_north + 0.5:
+            c.set(int(x), int(y), "red_1")
+    # Blood stain on the chest when the chest is visible.
+    x, y, north = m.project(7.0, sway + 1.5, 27 - bob)
+    if north <= 0.5:
+        c.set(int(x), int(y), "red_0")
+        c.set(int(x) + 1, int(y) + 1, "red_0")
+    c.outline("navy_0")
     return c
 
 
-def walker_frame(frame: int) -> Canvas:
-    """One frame of the walker's 4-frame shuffle: arms reach in turn, body sways."""
-    c = Canvas(TILE, TILE)
-    # Per frame: (upper arm reach, lower arm reach, stepping foot row, body sway in y).
-    reach_up, reach_down, foot_row, sway = [
-        (13, 11, 6, 0),
-        (12, 12, None, 1),
-        (11, 13, 10, 0),
-        (12, 12, None, -1),
-    ][frame]
-    cy = 8.0 + sway
-    if foot_row is not None:
-        c.set(10, foot_row, "brown_0")
-    # Arms stretched forward, the classic shamble.
-    c.rect(8, 5, reach_up - 1, 5, "green_1")
-    c.set(reach_up, 5, "green_2")
-    c.rect(8, 11, reach_down - 1, 11, "green_1")
-    c.set(reach_down, 11, "green_2")
-    # Torn shirt.
-    c.ellipse(6.0, cy, 2.5, 4.6, "brown_1", shade="brown_0")
-    c.set(5, round(cy) - 3, "red_0")
-    c.set(4, round(cy) + 2, "red_0")
-    # Bald green head, pushed forward, with glowing eyes on the facing side.
-    c.ellipse(7.5, cy, 2.1, 2.1, "green_1", shade="green_0")
-    c.set(6, round(cy) - 1, "green_2")
-    c.set(8, round(cy) - 2, "red_1")
-    c.set(8, round(cy) + 1, "red_1")
-    c.outline()
-    return c
-
-
-# --- Projectile and effects --------------------------------------------------
+# --- Projectile and effects --------------------------------------------------------
 
 def bullet() -> Canvas:
-    c = Canvas(8, 8)
-    c.rect(2, 3, 2, 4, "orange")
-    c.rect(3, 3, 4, 4, "yellow")
-    c.rect(5, 3, 5, 4, "glow")
+    c = Canvas(16, 16)
+    c.rect(3, 7, 5, 8, "orange")
+    c.rect(6, 7, 9, 8, "yellow")
+    c.rect(10, 7, 11, 8, "glow")
+    c.set(12, 7, "glow")
+    c.set(12, 8, "yellow")
     return c
 
 
 def muzzle_flash() -> Canvas:
-    c = Canvas(8, 8)
-    for x, y in [(1, 3), (1, 4), (3, 1), (3, 6), (7, 3), (7, 4), (5, 2), (5, 5)]:
+    c = Canvas(16, 16)
+    c.ellipse(7.0, 8.0, 5.5, 4.0, "orange")
+    for x, y in [(12, 7), (13, 8), (14, 8), (13, 7), (6, 3), (6, 12), (9, 4), (9, 11)]:
         c.set(x, y, "orange")
-    c.rect(2, 2, 6, 5, "yellow")
-    c.set(2, 2, "orange")
-    c.set(2, 5, "orange")
-    c.rect(2, 3, 5, 4, "glow")
+    c.ellipse(7.5, 8.0, 4.0, 2.6, "yellow")
+    c.ellipse(7.0, 8.0, 2.4, 1.5, "glow")
     return c
 
 
-# --- Tiles ------------------------------------------------------------------
+# --- Tiles ---------------------------------------------------------------------
 
 def floor(variant: int) -> Canvas:
-    """Worn concrete. Variant 0 is plain, 1 has a crack, 2 has a stain."""
-    c = Canvas(TILE, TILE, fill="slate_1")
-    rng = random.Random(1000 + variant)
+    """Worn stone floor. Variant 0 is plain, 1 has a crack, 2 has a stain."""
+    c = Canvas(TILE, TILE, fill="slate_3")
+    rng = random.Random(2000 + variant)
+    # Faint slab seams on the tile border keep the grid readable.
+    for i in range(TILE):
+        if rng.random() < 0.8:
+            c.set(i, TILE - 1, "slate_2")
+        if rng.random() < 0.8:
+            c.set(TILE - 1, i, "slate_2")
+    for _ in range(26):
+        c.set(rng.randrange(TILE - 1), rng.randrange(TILE - 1), "slate_2")
     for _ in range(10):
-        c.set(rng.randrange(TILE), rng.randrange(TILE), "slate_0")
-    for _ in range(4):
-        c.set(rng.randrange(TILE), rng.randrange(TILE), "slate_2")
+        c.set(rng.randrange(TILE - 1), rng.randrange(TILE - 1), "slate_4")
     if variant == 1:
-        for x, y in [(3, 4), (4, 5), (5, 5), (6, 6), (7, 7), (7, 8), (8, 9), (9, 9), (10, 10), (11, 12)]:
-            c.set(x, y, "night")
-        c.set(8, 8, "slate_0")
+        x, y = 6, 7
+        for step in range(18):
+            c.set(x, y, "slate_1")
+            x += 1
+            y += 1 if step % 3 != 2 else 0
+        c.set(15, 10, "slate_2")
+        c.set(20, 18, "slate_2")
     elif variant == 2:
-        c.ellipse(9.0, 7.0, 3.5, 2.5, "slate_0")
-        c.set(6, 10, "slate_0")
-        c.set(12, 4, "slate_0")
+        # Irregular stain: a short random walk of darker pixels.
+        x, y = 16, 14
+        for _ in range(60):
+            c.set(x, y, "slate_2")
+            x = min(max(x + rng.choice((-1, 0, 1)), 9), 24)
+            y = min(max(y + rng.choice((-1, 0, 1)), 9), 21)
     return c
 
 
-def wall() -> Canvas:
-    """Top of a stone wall: staggered blocks with light from above-left."""
-    c = Canvas(TILE, TILE, fill="slate_3")
-    for row in range(4):
-        y0 = row * 4
-        offset = 0 if row % 2 == 0 else 4
-        c.rect(0, y0 + 3, TILE - 1, y0 + 3, "slate_2")
-        for seam in (offset, offset + 8):
-            c.rect(seam % TILE, y0, seam % TILE, y0 + 2, "slate_2")
-        for x in range(TILE):
-            if c.get(x, y0) == "slate_3":
-                c.set(x, y0, "slate_4")
-    for x, y in [(5, 1), (13, 9), (2, 13)]:
-        c.set(x, y, "slate_2")
+def wall_top_face(c: Canvas, y0: int, y1: int) -> None:
+    """Top of the wall between rows y0..y1: pale stone with block seams."""
+    c.rect(0, y0, TILE - 1, y1, "slate_4")
+    rng = random.Random(3000 + y0)
+    for _ in range(8):
+        c.set(rng.randrange(TILE), rng.randrange(y0, y1 + 1), "slate_3")
+    for x in (0, 16):
+        c.rect(x, y0, x, y1, "slate_3")
+
+
+def wall_top() -> Canvas:
+    c = Canvas(TILE, TILE)
+    wall_top_face(c, 0, TILE - 1)
+    c.rect(0, TILE // 2, TILE - 1, TILE // 2, "slate_3")
+    return c
+
+
+def wall_front() -> Canvas:
+    """Wall with nothing to the south: top face above, brick front face below."""
+    c = Canvas(TILE, TILE)
+    top = 11
+    wall_top_face(c, 0, top - 1)
+    c.rect(0, top - 1, TILE - 1, top - 1, "slate_5")
+    c.rect(0, top, TILE - 1, TILE - 1, "slate_2")
+    for row, y in enumerate(range(top, TILE, 5)):
+        c.rect(0, y + 4, TILE - 1, y + 4, "slate_1")
+        offset = 0 if row % 2 == 0 else 8
+        for x in range(offset, TILE, 16):
+            c.rect(x, y, x, min(y + 3, TILE - 1), "slate_1")
+        c.rect(0, y, TILE - 1, y, "dusk")
+    # Darker foot where the wall meets the floor.
+    c.rect(0, TILE - 2, TILE - 1, TILE - 1, "slate_0")
     return c
 
 
@@ -250,38 +347,53 @@ def assert_in_palette(img: Image.Image, name: str) -> None:
                 raise ValueError(f"{name}: color {(r, g, b, a)} at {(x, y)} is not in the palette")
 
 
-
 def outputs() -> dict[str, Image.Image]:
     files = {
         "Palettes/RushOps_Palette.png": palette_image(),
-        "Sprites/Player/Player.png": player().to_image(),
         "Sprites/Projectiles/Bullet.png": bullet().to_image(),
         "Sprites/Effects/MuzzleFlash.png": muzzle_flash().to_image(),
-        "Tiles/Wall.png": wall().to_image(),
+        "Tiles/Wall_Top.png": wall_top().to_image(),
+        "Tiles/Wall_Front.png": wall_front().to_image(),
     }
-    for frame in range(4):
-        files[f"Sprites/Enemies/Walker_Walk_{frame}.png"] = walker_frame(frame).to_image()
+    for d, name in enumerate(DIRECTIONS):
+        for frame in range(4):
+            files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
     for variant in range(3):
         files[f"Tiles/Floor_{variant}.png"] = floor(variant).to_image()
     return files
 
 
-def preview(files: dict[str, Image.Image], path: Path, scale: int = 8) -> None:
-    """Floor patch with player, walker frames, bullet and flash, plus the palette."""
-    floors = [files[f"Tiles/Floor_{v}.png"] for v in range(3)]
-    sheet = Image.new("RGBA", (8 * TILE, 4 * TILE), PALETTE["night"] + (255,))
-    for ty in range(3):
-        for tx in range(8):
-            tile = files["Tiles/Wall.png"] if ty == 0 and tx >= 6 else floors[(tx * 7 + ty * 3) % 3]
+def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
+    """Floor patch with a wall block, the player (if imported) and walkers in all directions."""
+    cols, rows = 10, 6
+    sheet = Image.new("RGBA", (cols * TILE, rows * TILE), PALETTE["night"] + (255,))
+    for ty in range(rows):
+        for tx in range(cols):
+            if ty == 1 and 2 <= tx <= 6:
+                tile = files["Tiles/Wall_Top.png"]
+            elif ty == 2 and 2 <= tx <= 6:
+                tile = files["Tiles/Wall_Front.png"]
+            else:
+                tile = files[f"Tiles/Floor_{(tx * 7 + ty * 3) % 5 % 3}.png"]
             sheet.paste(tile, (tx * TILE, ty * TILE))
-    sheet.alpha_composite(files["Sprites/Player/Player.png"], (TILE, TILE))
-    sheet.alpha_composite(files["Sprites/Effects/MuzzleFlash.png"], (2 * TILE, TILE + 5))
-    sheet.alpha_composite(files["Sprites/Projectiles/Bullet.png"], (2 * TILE + 8, TILE + 5))
-    for frame in range(4):
-        sheet.alpha_composite(files[f"Sprites/Enemies/Walker_Walk_{frame}.png"], ((frame + 4) * TILE, 2 * TILE))
-    sheet.alpha_composite(files[f"Sprites/Enemies/Walker_Walk_0.png"], (4 * TILE, TILE))
-    pal = files["Palettes/RushOps_Palette.png"].resize((len(PALETTE) * 4, 4), Image.NEAREST)
-    sheet.paste(pal, (4, 3 * TILE + 6))
+
+    def put(img: Image.Image, cell_x: int, cell_y: int) -> None:
+        # Feet on the lower part of the cell, as with a bottom-center pivot.
+        x = cell_x * TILE + TILE // 2 - img.width // 2
+        y = (cell_y + 1) * TILE - img.height + FOOT_MARGIN - 4
+        sheet.alpha_composite(img, (x, y))
+
+    for i, name in enumerate(DIRECTIONS):
+        put(files[f"Sprites/Enemies/Walker_Walk_{name}_{i % 4}.png"], 1 + i, 5)
+    player_dir = ART_DIR / "Sprites/Player"
+    if (player_dir / "Player_Idle_SE.png").exists():
+        put(Image.open(player_dir / "Player_Idle_N.png").convert("RGBA"), 4, 0)
+        put(Image.open(player_dir / "Player_Idle_SE.png").convert("RGBA"), 1, 3)
+    put(files["Sprites/Enemies/Walker_Walk_SW_0.png"], 3, 3)
+    sheet.alpha_composite(files["Sprites/Effects/MuzzleFlash.png"], (6 * TILE, 3 * TILE + 8))
+    sheet.alpha_composite(files["Sprites/Projectiles/Bullet.png"], (6 * TILE + 20, 3 * TILE + 8))
+    pal = files["Palettes/RushOps_Palette.png"].resize((len(PALETTE) * 6, 6), Image.NEAREST)
+    sheet.paste(pal, (4, 4))
     sheet.resize((sheet.width * scale, sheet.height * scale), Image.NEAREST).save(path)
 
 
