@@ -1,0 +1,42 @@
+name: User Story
+description: Neue Funktion aus Sicht der spielenden Person
+title: "[Story] "
+labels: ["story"]
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: Story
+      description: "Als … möchte ich …, damit …"
+      placeholder: Als Spieler möchte ich eine Ausweichrolle ausführen, damit ich Gegnern entkommen kann.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Akzeptanzkriterien
+      description: Überprüfbare Bedingungen, eine pro Zeile.
+      placeholder: |
+        - [ ] Dash erfolgt in Laufrichtung
+        - [ ] 0,3 s i-Frames (konfigurierbar)
+    validations:
+      required: true
+  - type: input
+    id: requirements
+    attributes:
+      label: Anforderungen im Lastenheft
+      placeholder: F-STE-03, F-STE-04
+  - type: textarea
+    id: notes
+    attributes:
+      label: Technische Hinweise
+      description: Optional – Ansatz, betroffene Systeme, offene Fragen.
+  - type: dropdown
+    id: size
+    attributes:
+      label: Größe
+      options:
+        - S (unter 2 h)
+        - M (halber Tag)
+        - L (1–2 Tage)
+        - XL (aufteilen!)

@@ -1,0 +1,49 @@
+name: Bug
+description: Etwas funktioniert nicht wie erwartet
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: Was passiert?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Was sollte passieren?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Schritte zum Reproduzieren
+      placeholder: |
+        1. Level 1-1 starten
+        2. …
+    validations:
+      required: true
+  - type: input
+    id: build
+    attributes:
+      label: Version / Commit
+      placeholder: v0.1.0 oder Commit-Hash
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Plattform
+      multiple: true
+      options:
+        - Unity-Editor
+        - iOS
+        - Android
+  - type: input
+    id: device
+    attributes:
+      label: Gerät
+      placeholder: z. B. iPhone 13, Pixel 7
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs, Screenshots, Videos

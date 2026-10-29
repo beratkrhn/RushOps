@@ -1,0 +1,48 @@
+# Zeilenenden vereinheitlichen
+* text=auto
+
+# Unity-YAML und Code: immer LF
+*.cs              text eol=lf diff=csharp
+*.shader          text eol=lf
+*.hlsl            text eol=lf
+*.asmdef          text eol=lf
+*.json            text eol=lf
+*.md              text eol=lf
+*.inputactions    text eol=lf
+*.meta            text eol=lf
+*.unity           text eol=lf merge=unityyamlmerge linguist-generated
+*.prefab          text eol=lf merge=unityyamlmerge linguist-generated
+*.asset           text eol=lf merge=unityyamlmerge linguist-generated
+*.mat             text eol=lf merge=unityyamlmerge linguist-generated
+*.anim            text eol=lf merge=unityyamlmerge linguist-generated
+*.controller      text eol=lf merge=unityyamlmerge linguist-generated
+*.overrideController text eol=lf merge=unityyamlmerge linguist-generated
+*.physicsMaterial2D text eol=lf merge=unityyamlmerge linguist-generated
+*.spriteatlas     text eol=lf merge=unityyamlmerge linguist-generated
+*.spriteatlasv2   text eol=lf merge=unityyamlmerge linguist-generated
+*.playable        text eol=lf merge=unityyamlmerge linguist-generated
+*.mixer           text eol=lf merge=unityyamlmerge linguist-generated
+
+# Grafik (Git LFS)
+*.png      filter=lfs diff=lfs merge=lfs -text
+*.jpg      filter=lfs diff=lfs merge=lfs -text
+*.jpeg     filter=lfs diff=lfs merge=lfs -text
+*.gif      filter=lfs diff=lfs merge=lfs -text
+*.psd      filter=lfs diff=lfs merge=lfs -text
+*.aseprite filter=lfs diff=lfs merge=lfs -text
+*.ase      filter=lfs diff=lfs merge=lfs -text
+*.tga      filter=lfs diff=lfs merge=lfs -text
+*.exr      filter=lfs diff=lfs merge=lfs -text
+
+# Audio (Git LFS)
+*.wav  filter=lfs diff=lfs merge=lfs -text
+*.ogg  filter=lfs diff=lfs merge=lfs -text
+*.mp3  filter=lfs diff=lfs merge=lfs -text
+*.aif  filter=lfs diff=lfs merge=lfs -text
+*.aiff filter=lfs diff=lfs merge=lfs -text
+
+# Schriften und Sonstiges (Git LFS)
+*.ttf  filter=lfs diff=lfs merge=lfs -text
+*.otf  filter=lfs diff=lfs merge=lfs -text
+*.fbx  filter=lfs diff=lfs merge=lfs -text
+*.zip  filter=lfs diff=lfs merge=lfs -text
