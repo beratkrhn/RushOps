@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using RushOps.Cameras;
 using RushOps.Characters;
+using RushOps.Combat;
 using RushOps.Editor.Art;
 using RushOps.Player;
 using UnityEditor;
@@ -16,7 +17,8 @@ namespace RushOps.Editor.Scenes
 {
     /// <summary>
     /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, the player
-    /// moved by the <c>Player/Move</c> input action and a row of walkers previewing all 8 directions.
+    /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
+    /// and a row of walkers previewing all 8 directions.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
     /// </summary>
@@ -31,6 +33,15 @@ namespace RushOps.Editor.Scenes
         private const string PlayerConfigPath = "Assets/_Project/Data/Player/PlayerConfig.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
         private const string MoveActionPath = "Player/Move";
+        private const string AimActionPath = "Player/Aim";
+        private const string AimPointActionPath = "Player/AimPoint";
+        private const string AimPressActionPath = "Player/AimPress";
+        private const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
+        private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
+        private const string BulletPrefabPath = "Assets/_Project/Prefabs/Projectiles/Bullet.prefab";
+        private const string WallsLayer = "Walls";
+        private const string PlayerLayer = "Player";
+        private const string ProjectilesLayer = "Projectiles";
         // Physics body at the feet (sprite pivot), smaller than a tile so the player fits through 1-tile gaps.
         private const float PlayerColliderRadius = 0.3f;
         private static readonly Vector2 PlayerColliderOffset = new Vector2(0f, 0.3f);
@@ -42,6 +53,8 @@ namespace RushOps.Editor.Scenes
         // Walls and characters share one sorting order, so the renderer sorts them by Y (ADR 0006).
         private const int FloorSortingOrder = 0;
         private const int ActorSortingOrder = 1;
+        // Projectiles fly at gun height, so they draw above walls and characters instead of sorting by Y.
+        private const int ProjectileSortingOrder = 2;
         private const int ArenaWidth = 40;
         private const int ArenaHeight = 60;
         // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
@@ -81,14 +94,23 @@ namespace RushOps.Editor.Scenes
             Tile wallFront = CreateOrUpdateTile(WallFrontName + ".asset", WallFrontName + ".png", Tile.ColliderType.Grid);
             CameraConfig cameraConfig = LoadOrCreateConfig<CameraConfig>(CameraConfigPath);
             PlayerConfig playerConfig = LoadOrCreateConfig<PlayerConfig>(PlayerConfigPath);
-            InputActionReference moveAction = LoadActionReference(InputActionsPath, MoveActionPath);
+            WeaponConfig weaponConfig = LoadOrCreateConfig<WeaponConfig>(WeaponConfigPath);
+            var actions = new PlayerActions
+            {
+                Move = LoadActionReference(InputActionsPath, MoveActionPath),
+                Aim = LoadActionReference(InputActionsPath, AimActionPath),
+                AimPoint = LoadActionReference(InputActionsPath, AimPointActionPath),
+                AimPress = LoadActionReference(InputActionsPath, AimPressActionPath),
+            };
+            Projectile bulletPrefab = CreateOrUpdateBulletPrefab();
             DirectionalAnimationBuilder.BuildAll();
             var playerIdle = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerIdlePath);
             var walkerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerWalkPath);
 
             CreateGlobalLight();
             Tilemap walls = CreateArena(floorTiles, wallTop, wallFront);
-            Transform target = CreatePlayer(playerIdle, playerConfig, moveAction);
+            ProjectilePool pool = CreateProjectilePool(bulletPrefab);
+            Transform target = CreatePlayer(playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateWalkerPreview(walkerWalk);
             CreateCamera(cameraConfig, target, walls);
 
@@ -122,15 +144,33 @@ namespace RushOps.Editor.Scenes
                 return config;
             }
 
-            string folder = Path.GetDirectoryName(path).Replace('\\', '/');
-            if (!AssetDatabase.IsValidFolder(folder))
-            {
-                AssetDatabase.CreateFolder(Path.GetDirectoryName(folder).Replace('\\', '/'), Path.GetFileName(folder));
-            }
-
+            EnsureFolder(Path.GetDirectoryName(path).Replace('\\', '/'));
             AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<T>(), path);
             AssetDatabase.SaveAssets();
             return AssetDatabase.LoadAssetAtPath<T>(path);
+        }
+
+        private static void EnsureFolder(string folder)
+        {
+            if (AssetDatabase.IsValidFolder(folder))
+            {
+                return;
+            }
+
+            string parent = Path.GetDirectoryName(folder).Replace('\\', '/');
+            EnsureFolder(parent);
+            AssetDatabase.CreateFolder(parent, Path.GetFileName(folder));
+        }
+
+        private static int RequireLayer(string name)
+        {
+            int layer = LayerMask.NameToLayer(name);
+            if (layer < 0)
+            {
+                throw new System.InvalidOperationException($"Layer {name} is missing in the Tag Manager");
+            }
+
+            return layer;
         }
 
         private static InputActionReference LoadActionReference(string assetPath, string actionPath)
@@ -175,6 +215,7 @@ namespace RushOps.Editor.Scenes
             }
 
             Tilemap walls = CreateTilemap(grid.transform, "Walls", ActorSortingOrder);
+            walls.gameObject.layer = RequireLayer(WallsLayer);
             walls.GetComponent<TilemapRenderer>().mode = TilemapRenderer.Mode.Individual;
             foreach (Vector3Int cell in WallCells())
             {
@@ -247,11 +288,13 @@ namespace RushOps.Editor.Scenes
             return false;
         }
 
-        private static Transform CreatePlayer(DirectionalAnimation idle, PlayerConfig config, InputActionReference moveAction)
+        private static Transform CreatePlayer(
+            DirectionalAnimation idle, PlayerConfig config, WeaponConfig weaponConfig, ProjectilePool pool, PlayerActions actions)
         {
             DirectionalSpriteAnimator view = CreateCharacter("Player", null, StartCell, idle, Direction8.S);
             GameObject go = view.gameObject;
             go.tag = "Player";
+            go.layer = RequireLayer(PlayerLayer);
 
             var body = go.AddComponent<Rigidbody2D>();
             body.bodyType = RigidbodyType2D.Dynamic;
@@ -269,15 +312,65 @@ namespace RushOps.Editor.Scenes
             var movement = go.AddComponent<PlayerMovement>();
             var serializedMovement = new SerializedObject(movement);
             serializedMovement.FindProperty("_config").objectReferenceValue = config;
-            serializedMovement.FindProperty("_view").objectReferenceValue = view;
             serializedMovement.ApplyModifiedPropertiesWithoutUndo();
 
             var input = go.AddComponent<PlayerMoveInput>();
             var serializedInput = new SerializedObject(input);
-            serializedInput.FindProperty("_moveAction").objectReferenceValue = moveAction;
+            serializedInput.FindProperty("_moveAction").objectReferenceValue = actions.Move;
             serializedInput.ApplyModifiedPropertiesWithoutUndo();
 
+            var aim = go.AddComponent<PlayerAim>();
+            var serializedAim = new SerializedObject(aim);
+            serializedAim.FindProperty("_view").objectReferenceValue = view;
+            serializedAim.ApplyModifiedPropertiesWithoutUndo();
+
+            var weapon = go.AddComponent<PlayerWeapon>();
+            var serializedWeapon = new SerializedObject(weapon);
+            serializedWeapon.FindProperty("_config").objectReferenceValue = weaponConfig;
+            serializedWeapon.FindProperty("_pool").objectReferenceValue = pool;
+            serializedWeapon.FindProperty("_obstacles").intValue = 1 << RequireLayer(WallsLayer);
+            serializedWeapon.ApplyModifiedPropertiesWithoutUndo();
+
+            var aimInput = go.AddComponent<PlayerAimInput>();
+            var serializedAimInput = new SerializedObject(aimInput);
+            serializedAimInput.FindProperty("_aimAction").objectReferenceValue = actions.Aim;
+            serializedAimInput.FindProperty("_pointAction").objectReferenceValue = actions.AimPoint;
+            serializedAimInput.FindProperty("_pressAction").objectReferenceValue = actions.AimPress;
+            serializedAimInput.ApplyModifiedPropertiesWithoutUndo();
+
             return go.transform;
+        }
+
+        // Rebuilt on every run, so the prefab stays reproducible from code.
+        private static Projectile CreateOrUpdateBulletPrefab()
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(BulletSpritePath);
+            if (sprite == null)
+            {
+                throw new System.InvalidOperationException($"Bullet sprite not found at {BulletSpritePath}");
+            }
+
+            var go = new GameObject("Bullet");
+            go.layer = RequireLayer(ProjectilesLayer);
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = sprite;
+            renderer.sortingOrder = ProjectileSortingOrder;
+            go.AddComponent<Projectile>();
+
+            EnsureFolder(Path.GetDirectoryName(BulletPrefabPath).Replace('\\', '/'));
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, BulletPrefabPath);
+            Object.DestroyImmediate(go);
+            return prefab.GetComponent<Projectile>();
+        }
+
+        private static ProjectilePool CreateProjectilePool(Projectile prefab)
+        {
+            var go = new GameObject("ProjectilePool");
+            var pool = go.AddComponent<ProjectilePool>();
+            var serialized = new SerializedObject(pool);
+            serialized.FindProperty("_prefab").objectReferenceValue = prefab;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return pool;
         }
 
         // Temporary art check until real walkers spawn (issue #9): one walker per direction.
@@ -339,6 +432,14 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_target").objectReferenceValue = target;
             serialized.FindProperty("_boundsTilemap").objectReferenceValue = bounds;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private struct PlayerActions
+        {
+            public InputActionReference Move;
+            public InputActionReference Aim;
+            public InputActionReference AimPoint;
+            public InputActionReference AimPress;
         }
 
         private static void AddToBuildSettings(string path)

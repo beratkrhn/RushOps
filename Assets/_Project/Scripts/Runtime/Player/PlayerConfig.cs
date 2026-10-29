@@ -17,6 +17,9 @@ namespace RushOps.Player
         [Tooltip("How fast the speed falls when the stick is released or eased off, in units per second squared.")]
         [SerializeField, Min(0f)] private float _deceleration = 50f;
 
+        [Tooltip("Aim stick deflection (0..1) up to which the player neither aims nor fires.")]
+        [SerializeField, Range(0f, 1f)] private float _aimDeadzone = 0.3f;
+
         /// <summary>Top speed in units per second at full stick deflection.</summary>
         public float MoveSpeed => _moveSpeed;
 
@@ -25,5 +28,8 @@ namespace RushOps.Player
 
         /// <summary>Speed loss towards a slower target speed in units per second squared.</summary>
         public float Deceleration => _deceleration;
+
+        /// <summary>Aim stick deflection (0..1) up to which the player neither aims nor fires.</summary>
+        public float AimDeadzone => _aimDeadzone;
     }
 }

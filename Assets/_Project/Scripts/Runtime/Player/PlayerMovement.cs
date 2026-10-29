@@ -1,4 +1,3 @@
-using RushOps.Characters;
 using UnityEngine;
 
 namespace RushOps.Player
@@ -6,12 +5,12 @@ namespace RushOps.Player
     /// <summary>
     /// Moves the player's <see cref="Rigidbody2D"/> from a move input, so walls block it through physics.
     /// The input comes from an adapter such as <see cref="PlayerMoveInput"/>; this component does not read devices.
+    /// The sprite's facing is handled by <see cref="PlayerAim"/>.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     public class PlayerMovement : MonoBehaviour
     {
         [SerializeField] private PlayerConfig _config;
-        [SerializeField] private DirectionalSpriteAnimator _view;
 
         private Rigidbody2D _body;
         private Vector2 _moveInput;
@@ -36,14 +35,6 @@ namespace RushOps.Player
         private void Awake()
         {
             _body = GetComponent<Rigidbody2D>();
-        }
-
-        private void Update()
-        {
-            if (_view != null)
-            {
-                _view.SetFacing(_moveInput);
-            }
         }
 
         private void FixedUpdate()

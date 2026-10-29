@@ -20,6 +20,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - ADR 0006: Schrägansicht mit 8 Richtungs-Sprites und 32-px-Raster (Issue #58).
 - Spielerbewegung über die Input-Action `Player/Move` (Gamepad-Stick, WASD, Pfeiltasten): analoges Tempo je nach Stick-Auslenkung, kurze Beschleunigung und Abbremsung, Wandkollision über `Rigidbody2D` mit kontinuierlicher Kollisionserkennung (Issue #4).
 - `PlayerConfig` (`Data/Player/PlayerConfig.asset`) mit Tempo 5, Beschleunigung 40 und Abbremsung 50 *(Startwerte)* (Issue #4).
+- Zielen und automatisches Feuern: Input-Actions `Player/Aim` (rechter Gamepad-Stick) sowie `Player/AimPoint`/`Player/AimPress` (Maus im Editor); der Spieler zeigt das Richtungs-Sprite zur Zielrichtung, ohne Zieleingabe zur Laufrichtung; gefeuert wird, solange die Auslenkung über der Totzone liegt; unbegrenzte Munition, kein Nachladen (Issue #5).
+- `WeaponConfig` (`Data/Weapons/WeaponConfig.asset`) mit Feuerrate 6/s, Projektiltempo 14 und Reichweite 10 *(Startwerte)*; Totzone 0,3 in `PlayerConfig` (Issue #5).
+- Projektile (`Prefabs/Projectiles/Bullet.prefab`) aus einem Object Pool, stoppen an Wänden und verschwinden nach maximaler Reichweite; neue Physik-Layer `Walls`, `Player`, `Projectiles` (Issue #5).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -28,6 +31,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - ADR 0002: Verhalten bei abweichendem Seitenverhältnis festgelegt (mehr Welt zeigen, keine Balken) (Issue #2).
 - `Arena_Test` ist die erste Szene in den Build Settings (Issue #2).
 - `Arena_Test` nutzt die neuen Boden- und Wand-Tiles (Bodenvarianten deterministisch verteilt); das Debug-Ziel zeigt das Spieler-Sprite (Issue #3).
+- Die Blickrichtung des Spielers setzt jetzt `PlayerAim` statt `PlayerMovement` (Issue #5).
 - Darstellung von reiner Top-down-Ansicht mit rotierten Sprites auf Schrägansicht mit 8 Richtungs-Sprites umgestellt; Lastenheft F-GFX-02 (v0.3), ADR 0002 teilweise ersetzt (Issue #58).
 - Raster 32×32 px, 32 PPU, Pixel Perfect Camera 360×640; Palette auf 32 Farben erweitert; Figuren mit Pivot an den Füßen, Sortierung nach Y (Issue #58).
 - `Arena_Test`: Debug-Ziel zeigt den Spieler-Character und blickt in Laufrichtung; Reihe mit 8 Walkern als Grafikvorschau (Issue #58).
