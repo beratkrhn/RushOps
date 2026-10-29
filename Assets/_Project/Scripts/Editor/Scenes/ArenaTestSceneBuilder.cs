@@ -9,6 +9,7 @@ using RushOps.Navigation;
 using RushOps.Player;
 using RushOps.UI;
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -26,6 +27,7 @@ namespace RushOps.Editor.Scenes
     /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, the player
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
+    /// a HUD with hearts and a pause menu,
     /// and walkers that appear at spawn points and chase the player along a flow field.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
@@ -65,8 +67,24 @@ namespace RushOps.Editor.Scenes
         private const string MoveStickControl = "<Gamepad>/leftStick";
         private const string AimStickControl = "<Gamepad>/rightStick";
         private const string DashButtonControl = "<Gamepad>/buttonSouth";
-        // UI draws above the world; the touch controls get the first slot for later HUD canvases to stack on.
+        // UI draws above the world; the HUD sits above the touch controls, so the pause overlay blocks them.
         private const int TouchControlsSortingOrder = 10;
+        private const int HudSortingOrder = 20;
+        private const string HudConfigPath = "Assets/_Project/Data/UI/HudConfig.asset";
+        // HUD art is drawn at whole multiples of its pixel size (reference units at 360x640).
+        private const int HudPixelScale = 2;
+        private const int TitlePixelScale = 3;
+        private const float HudMargin = 8f;
+        private const float HeartSpacing = 2f;
+        // Touch target of the pause button, larger than its icon.
+        private const float PauseButtonSize = 44f;
+        private static readonly Vector2 MenuButtonSize = new Vector2(140f, 30f);
+        // Palette colors (Art/Palettes/RushOps_Palette.png).
+        private static readonly Color PaletteNight = new Color32(31, 29, 43, 255);
+        private static readonly Color PaletteSlate2 = new Color32(77, 76, 99, 255);
+        private static readonly Color PaletteWhite = new Color32(244, 241, 232, 255);
+        // The overlay darkens the frozen game behind the menu.
+        private const float OverlayAlpha = 0.8f;
         private const string WallsLayer = "Walls";
         private const string PlayerLayer = "Player";
         private const string ProjectilesLayer = "Projectiles";
@@ -147,6 +165,7 @@ namespace RushOps.Editor.Scenes
             ProjectilePool pool = CreateProjectilePool(bulletPrefab);
             Transform target = CreatePlayer(playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
+            CreateHud(LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), PixelFontBuilder.Build());
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
             Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath));
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
@@ -650,6 +669,155 @@ namespace RushOps.Editor.Scenes
             var serialized = new SerializedObject(visibility);
             serialized.FindProperty("_controls").objectReferenceValue = safeArea.gameObject;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreateHud(HudConfig config, PlayerHealth player, Font font)
+        {
+            var root = new GameObject("HUD", typeof(RectTransform));
+            var canvas = root.AddComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.pixelPerfect = true;
+            canvas.sortingOrder = HudSortingOrder;
+            var scaler = root.AddComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(ReferenceWidth, ReferenceHeight);
+            scaler.matchWidthOrHeight = 0f;
+            root.AddComponent<GraphicRaycaster>();
+            var pause = root.AddComponent<PauseController>();
+
+            RectTransform safeArea = CreateUiRect("SafeArea", root.transform, Vector2.zero, Vector2.one);
+            safeArea.gameObject.AddComponent<SafeAreaFitter>();
+            CreateHearts(safeArea, config, player);
+            CreatePauseButton(safeArea, pause);
+            GameObject overlay = CreatePauseOverlay((RectTransform)root.transform, pause, font);
+
+            var serialized = new SerializedObject(pause);
+            serialized.FindProperty("_overlay").objectReferenceValue = overlay;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreateHearts(RectTransform parent, HudConfig config, PlayerHealth player)
+        {
+            Sprite full = LoadUiSprite("Heart_Full.png");
+            Sprite empty = LoadUiSprite("Heart_Empty.png");
+            var topLeft = new Vector2(0f, 1f);
+            RectTransform row = CreateUiRect("Hearts", parent, topLeft, topLeft);
+            row.pivot = topLeft;
+            row.anchoredPosition = new Vector2(HudMargin, -HudMargin);
+
+            int count = player.GetComponent<PlayerMovement>().Config.MaxHearts;
+            Vector2 size = full.rect.size * HudPixelScale;
+            var hearts = new Image[count];
+            for (int i = 0; i < count; i++)
+            {
+                RectTransform heart = CreateUiRect($"Heart_{i}", row, topLeft, topLeft);
+                heart.pivot = topLeft;
+                heart.sizeDelta = size;
+                heart.anchoredPosition = new Vector2(i * (size.x + HeartSpacing), 0f);
+                hearts[i] = heart.gameObject.AddComponent<Image>();
+                hearts[i].sprite = full;
+                hearts[i].raycastTarget = false;
+            }
+
+            var view = row.gameObject.AddComponent<HeartsView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_player").objectReferenceValue = player;
+            serialized.FindProperty("_full").objectReferenceValue = full;
+            serialized.FindProperty("_empty").objectReferenceValue = empty;
+            SerializedProperty images = serialized.FindProperty("_hearts");
+            images.arraySize = count;
+            for (int i = 0; i < count; i++)
+            {
+                images.GetArrayElementAtIndex(i).objectReferenceValue = hearts[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreatePauseButton(RectTransform parent, PauseController pause)
+        {
+            var topRight = new Vector2(1f, 1f);
+            RectTransform rect = CreateUiRect("PauseButton", parent, topRight, topRight);
+            rect.pivot = topRight;
+            rect.sizeDelta = new Vector2(PauseButtonSize, PauseButtonSize);
+            rect.anchoredPosition = new Vector2(-HudMargin * 0.5f, -HudMargin * 0.5f);
+            var hitArea = rect.gameObject.AddComponent<Image>();
+            hitArea.color = Color.clear;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = hitArea;
+            UnityEventTools.AddPersistentListener(button.onClick, pause.Pause);
+
+            Sprite icon = LoadUiSprite("Pause_Icon.png");
+            var center = new Vector2(0.5f, 0.5f);
+            RectTransform iconRect = CreateUiRect("Icon", rect, center, center);
+            iconRect.sizeDelta = icon.rect.size * HudPixelScale;
+            var iconImage = iconRect.gameObject.AddComponent<Image>();
+            iconImage.sprite = icon;
+            iconImage.raycastTarget = false;
+        }
+
+        // Covers the whole screen, so it also blocks the touch controls; the menu sits in the center, inside any safe area.
+        private static GameObject CreatePauseOverlay(RectTransform parent, PauseController pause, Font font)
+        {
+            RectTransform overlay = CreateUiRect("PauseOverlay", parent, Vector2.zero, Vector2.one);
+            var background = overlay.gameObject.AddComponent<Image>();
+            Color dim = PaletteNight;
+            dim.a = OverlayAlpha;
+            background.color = dim;
+
+            CreateText("Title", overlay, font, "PAUSE", TitlePixelScale, new Vector2(0f, 60f));
+            CreateMenuButton("ResumeButton", overlay, font, "Fortsetzen", new Vector2(0f, 0f), pause.Resume);
+            CreateMenuButton("RestartButton", overlay, font, "Neustart", new Vector2(0f, -MenuButtonSize.y - 12f), pause.Restart);
+            overlay.gameObject.SetActive(false);
+            return overlay.gameObject;
+        }
+
+        private static void CreateMenuButton(
+            string name, RectTransform parent, Font font, string label, Vector2 position, UnityEngine.Events.UnityAction action)
+        {
+            var center = new Vector2(0.5f, 0.5f);
+            RectTransform rect = CreateUiRect(name, parent, center, center);
+            rect.sizeDelta = MenuButtonSize;
+            rect.anchoredPosition = position;
+            var image = rect.gameObject.AddComponent<Image>();
+            image.color = PaletteSlate2;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            UnityEventTools.AddPersistentListener(button.onClick, action);
+            CreateText("Label", rect, font, label, HudPixelScale, Vector2.zero);
+        }
+
+        // The bitmap font renders at its pixel size; the scale enlarges it by whole pixels.
+        private static Text CreateText(string name, RectTransform parent, Font font, string content, int scale, Vector2 position)
+        {
+            var center = new Vector2(0.5f, 0.5f);
+            RectTransform rect = CreateUiRect(name, parent, center, center);
+            rect.sizeDelta = new Vector2(MenuButtonSize.x, MenuButtonSize.y) / scale;
+            rect.anchoredPosition = position;
+            rect.localScale = new Vector3(scale, scale, 1f);
+            var text = rect.gameObject.AddComponent<Text>();
+            text.font = font;
+            text.fontSize = PixelFontBuilder.NativeSize;
+            text.text = content;
+            text.color = PaletteWhite;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            text.raycastTarget = false;
+            return text;
+        }
+
+        private static Sprite LoadUiSprite(string file)
+        {
+            string path = $"{UiSpritesDir}/{file}";
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null)
+            {
+                throw new System.InvalidOperationException($"UI sprite not found at {path}");
+            }
+
+            return sprite;
         }
 
         // The zone is the stick's half of the safe area and receives its touches; base and knob only show the stick.
