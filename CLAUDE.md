@@ -106,7 +106,7 @@ Die Details stehen in ADR 0006 (ersetzt Teile von ADR 0002). Kurzfassung:
 Das GitHub-Repo ist `beratkrhn/RushOps`. Für GitHub-Zugriffe die REST-API über `gh api` verwenden.
 
 1. **Ausgangslage prüfen:** `git checkout main && git pull`. Ist das Arbeitsverzeichnis nicht sauber oder gibt es noch einen offenen PR von mir, der nicht gemergt ist: nachfragen, bevor es weitergeht.
-2. **Issue bestimmen:** `Tools/next-issue.sh` ausführen. Regel: ältester offener Milestone, Label `story`, niedrigste Nummer, ohne `blocked`, `needs-design` oder `in-progress`. Hat der Mensch eine Nummer genannt, diese nehmen.
+2. **Issue bestimmen:** `Tools/next-issue.sh` ausführen. Regel: ältester offener Milestone, Label `story`, Issues mit Label `priority` zuerst, dann niedrigste Nummer, ohne `blocked`, `needs-design` oder `in-progress`. Hat der Mensch eine Nummer genannt, diese nehmen.
 3. **Issue lesen:** `gh api repos/beratkrhn/RushOps/issues/<N>` und den passenden Abschnitt in `docs/backlog/`. Die referenzierten Anforderungen im Lastenheft nachlesen.
 4. **Unklarheiten zuerst klären:** Widersprechen sich Issue und Lastenheft, oder fehlt eine Designentscheidung, nachfragen statt raten. Kann das Issue nicht umgesetzt werden (z. B. Abhängigkeit fehlt), Label `blocked` setzen, Grund als Kommentar ins Issue schreiben und stoppen. Ist eine Story größer als etwa zwei Tage, eine Aufteilung vorschlagen.
 5. **Starten:** Label `in-progress` setzen (`gh api repos/beratkrhn/RushOps/issues/<N>/labels -f "labels[]=in-progress"`), Branch `feature/<N>-<kurz>` (bzw. `fix/…`) von `main` anlegen.
