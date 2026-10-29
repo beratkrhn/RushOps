@@ -5,6 +5,7 @@ using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Editor.Art;
 using RushOps.Enemies;
+using RushOps.Navigation;
 using RushOps.Player;
 using RushOps.UI;
 using UnityEditor;
@@ -25,7 +26,7 @@ namespace RushOps.Editor.Scenes
     /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, the player
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
-    /// and a row of walkers previewing all 8 directions.
+    /// and walkers that chase the player along a flow field.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
     /// </summary>
@@ -48,8 +49,14 @@ namespace RushOps.Editor.Scenes
         private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
         private const string BulletPrefabPath = "Assets/_Project/Prefabs/Projectiles/Bullet.prefab";
         private const string WalkerDefinitionPath = "Assets/_Project/Data/Enemies/Walker.asset";
-        // Contact hurtbox of a walker at its feet, slightly smaller than the player's body.
-        private const float WalkerHurtboxRadius = 0.3f;
+        private const string WalkerPrefabPath = "Assets/_Project/Prefabs/Enemies/Walker.prefab";
+        private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
+        private const string EnemiesLayer = "Enemies";
+        // Walker body at the feet like the player's, a little smaller so walkers squeeze through gaps the player fits through.
+        private const float WalkerColliderRadius = 0.28f;
+        // The player is far heavier than walkers: walkers block it but barely push it around.
+        private const float PlayerMass = 10f;
+        private const float WalkerMass = 1f;
         private const string TouchControlsConfigPath = "Assets/_Project/Data/UI/TouchControlsConfig.asset";
         private const string UiSpritesDir = "Assets/_Project/Art/Sprites/UI";
         // On-screen controls write to the virtual gamepad, which the Player actions already bind.
@@ -79,8 +86,13 @@ namespace RushOps.Editor.Scenes
         // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
         private const int PlainFloorWeight = 7;
         private static readonly Vector2Int StartCell = new Vector2Int(20, 30);
-        // First cell of the walker preview row, one walker per direction to the east.
-        private static readonly Vector2Int WalkerPreviewCell = new Vector2Int(16, 26);
+        // Temporary walker start cells until spawn points exist (issue #10): spread over the arena, away from the start.
+        private static readonly Vector2Int[] WalkerStartCells =
+        {
+            new Vector2Int(5, 5), new Vector2Int(35, 5), new Vector2Int(5, 55), new Vector2Int(35, 55),
+            new Vector2Int(20, 10), new Vector2Int(10, 20), new Vector2Int(30, 20), new Vector2Int(12, 45),
+            new Vector2Int(28, 45), new Vector2Int(20, 55),
+        };
 
         // Obstacles as (x, y, width, height) in cells, inside the outer wall ring.
         private static readonly RectInt[] Obstacles =
@@ -133,7 +145,9 @@ namespace RushOps.Editor.Scenes
             Transform target = CreatePlayer(playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
-            CreateWalkerPreview(walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath));
+            Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath));
+            FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
+            CreateEnemies(walkerPrefab, navigator);
             CreateCamera(cameraConfig, target, walls);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -193,6 +207,31 @@ namespace RushOps.Editor.Scenes
             }
 
             return layer;
+        }
+
+        // Adds the layer in the first free user slot if the Tag Manager lacks it, so the scene builds on a fresh checkout.
+        private static int EnsureLayer(string name)
+        {
+            int layer = LayerMask.NameToLayer(name);
+            if (layer >= 0)
+            {
+                return layer;
+            }
+
+            var tagManager = new SerializedObject(AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/TagManager.asset")[0]);
+            SerializedProperty layers = tagManager.FindProperty("layers");
+            for (int i = 8; i < layers.arraySize; i++)
+            {
+                SerializedProperty slot = layers.GetArrayElementAtIndex(i);
+                if (string.IsNullOrEmpty(slot.stringValue))
+                {
+                    slot.stringValue = name;
+                    tagManager.ApplyModifiedPropertiesWithoutUndo();
+                    return i;
+                }
+            }
+
+            throw new System.InvalidOperationException($"No free layer slot for {name}");
         }
 
         private static InputActionReference LoadActionReference(string assetPath, string actionPath)
@@ -326,6 +365,7 @@ namespace RushOps.Editor.Scenes
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
             body.sleepMode = RigidbodySleepMode2D.NeverSleep;
+            body.mass = PlayerMass;
 
             var collider = go.AddComponent<CircleCollider2D>();
             collider.radius = PlayerColliderRadius;
@@ -350,7 +390,7 @@ namespace RushOps.Editor.Scenes
             var serializedWeapon = new SerializedObject(weapon);
             serializedWeapon.FindProperty("_config").objectReferenceValue = weaponConfig;
             serializedWeapon.FindProperty("_pool").objectReferenceValue = pool;
-            serializedWeapon.FindProperty("_obstacles").intValue = 1 << RequireLayer(WallsLayer);
+            serializedWeapon.FindProperty("_obstacles").intValue = (1 << RequireLayer(WallsLayer)) | (1 << EnsureLayer(EnemiesLayer));
             serializedWeapon.ApplyModifiedPropertiesWithoutUndo();
 
             var aimInput = go.AddComponent<PlayerAimInput>();
@@ -423,22 +463,74 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        // Temporary art check until real walkers spawn (issue #9): one walker per direction.
-        // They already hurt on touch, so damage can be tried in the editor.
-        private static void CreateWalkerPreview(DirectionalAnimation walk, EnemyDefinition definition)
+        // Rebuilt on every run, so the prefab stays reproducible from code.
+        private static Enemy CreateOrUpdateWalkerPrefab(DirectionalAnimation walk, EnemyDefinition definition)
         {
-            var root = new GameObject("Debug_WalkerPreview").transform;
-            for (int d = 0; d < Direction8Math.Count; d++)
+            DirectionalSpriteAnimator view = CreateCharacter("Walker", null, Vector2Int.zero, walk, Direction8.S);
+            GameObject go = view.gameObject;
+            go.transform.position = Vector3.zero;
+            go.layer = EnsureLayer(EnemiesLayer);
+
+            var body = go.AddComponent<Rigidbody2D>();
+            body.bodyType = RigidbodyType2D.Dynamic;
+            body.gravityScale = 0f;
+            body.freezeRotation = true;
+            body.mass = WalkerMass;
+            body.interpolation = RigidbodyInterpolation2D.Interpolate;
+
+            var collider = go.AddComponent<CircleCollider2D>();
+            collider.radius = WalkerColliderRadius;
+            collider.offset = PlayerColliderOffset;
+
+            var movement = go.AddComponent<EnemyMovement>();
+            var serializedMovement = new SerializedObject(movement);
+            serializedMovement.FindProperty("_view").objectReferenceValue = view;
+            serializedMovement.ApplyModifiedPropertiesWithoutUndo();
+
+            var enemy = go.AddComponent<Enemy>();
+            var serializedEnemy = new SerializedObject(enemy);
+            serializedEnemy.FindProperty("_definition").objectReferenceValue = definition;
+            serializedEnemy.FindProperty("_renderer").objectReferenceValue = go.GetComponent<SpriteRenderer>();
+            serializedEnemy.ApplyModifiedPropertiesWithoutUndo();
+
+            EnsureFolder(Path.GetDirectoryName(WalkerPrefabPath).Replace('\\', '/'));
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, WalkerPrefabPath);
+            Object.DestroyImmediate(go);
+            return prefab.GetComponent<Enemy>();
+        }
+
+        private static FlowFieldNavigator CreateNavigator(NavigationConfig config, Tilemap walls, Transform target)
+        {
+            var go = new GameObject("FlowFieldNavigator");
+            var navigator = go.AddComponent<FlowFieldNavigator>();
+            var serialized = new SerializedObject(navigator);
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_obstacles").objectReferenceValue = walls;
+            serialized.FindProperty("_target").objectReferenceValue = target;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return navigator;
+        }
+
+        private static void CreateEnemies(Enemy prefab, FlowFieldNavigator navigator)
+        {
+            var go = new GameObject("EnemyPool");
+            var pool = go.AddComponent<EnemyPool>();
+            var serializedPool = new SerializedObject(pool);
+            serializedPool.FindProperty("_prefab").objectReferenceValue = prefab;
+            serializedPool.FindProperty("_navigator").objectReferenceValue = navigator;
+            serializedPool.ApplyModifiedPropertiesWithoutUndo();
+
+            var spawner = go.AddComponent<DebugEnemySpawner>();
+            var serializedSpawner = new SerializedObject(spawner);
+            serializedSpawner.FindProperty("_pool").objectReferenceValue = pool;
+            SerializedProperty positions = serializedSpawner.FindProperty("_positions");
+            positions.arraySize = WalkerStartCells.Length;
+            for (int i = 0; i < WalkerStartCells.Length; i++)
             {
-                var direction = (Direction8)d;
-                DirectionalSpriteAnimator walker = CreateCharacter(
-                    $"Walker_{direction}", root, WalkerPreviewCell + new Vector2Int(d, 0), walk, direction);
-                var hurtbox = walker.gameObject.AddComponent<CircleCollider2D>();
-                hurtbox.isTrigger = true;
-                hurtbox.radius = WalkerHurtboxRadius;
-                hurtbox.offset = PlayerColliderOffset;
-                walker.gameObject.AddComponent<EnemyContactDamage>().Definition = definition;
+                positions.GetArrayElementAtIndex(i).vector2Value = WalkerStartCells[i] + new Vector2(0.5f, 0.5f);
             }
+
+            serializedSpawner.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // Characters stand with their feet (sprite pivot) in the middle of the cell and sort by it.

@@ -3,7 +3,7 @@ using UnityEngine;
 namespace RushOps.Combat
 {
     /// <summary>
-    /// Balancing values for a weapon: fire rate and projectile flight.
+    /// Balancing values for a weapon: fire rate, projectile flight and damage.
     /// </summary>
     [CreateAssetMenu(fileName = "WeaponConfig", menuName = "RushOps/Weapon Config")]
     public class WeaponConfig : ScriptableObject
@@ -17,6 +17,9 @@ namespace RushOps.Combat
         [Tooltip("Distance in units after which a projectile disappears.")]
         [SerializeField, Min(0f)] private float _maxRange = 10f;
 
+        [Tooltip("Damage per projectile hit.")]
+        [SerializeField, Min(0)] private int _damage = 1;
+
         /// <summary>Shots per second while the trigger is held.</summary>
         public float FireRate => _fireRate;
 
@@ -25,5 +28,8 @@ namespace RushOps.Combat
 
         /// <summary>Distance in units after which a projectile disappears.</summary>
         public float MaxRange => _maxRange;
+
+        /// <summary>Damage per projectile hit.</summary>
+        public int Damage => _damage;
     }
 }

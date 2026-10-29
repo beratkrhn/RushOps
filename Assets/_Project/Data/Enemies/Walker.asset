@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efeae419fe4b34a408d019f33584047a, type: 3}
   m_Name: Walker
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Enemies.EnemyDefinition
+  _health: 3
+  _moveSpeed: 2.5
   _contactDamage: 1
+  _deathDuration: 0.25
+  _points: 10

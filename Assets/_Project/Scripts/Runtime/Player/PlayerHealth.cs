@@ -97,9 +97,20 @@ namespace RushOps.Player
             }
         }
 
+        // Enter hurts on the first touch; Stay hurts again once the invulnerability ends while still touching.
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            TryContact(collision.collider);
+        }
+
         private void OnCollisionStay2D(Collision2D collision)
         {
             TryContact(collision.collider);
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            TryContact(other);
         }
 
         private void OnTriggerStay2D(Collider2D other)
