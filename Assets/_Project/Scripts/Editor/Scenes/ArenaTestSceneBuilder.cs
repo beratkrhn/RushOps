@@ -4,7 +4,9 @@ using RushOps.Cameras;
 using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Editor.Art;
+using RushOps.Audio;
 using RushOps.Enemies;
+using RushOps.Feel;
 using RushOps.Navigation;
 using RushOps.Player;
 using RushOps.UI;
@@ -27,7 +29,7 @@ namespace RushOps.Editor.Scenes
     /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, the player
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
-    /// a HUD with hearts and a pause menu,
+    /// a HUD with hearts and a pause menu, hit feedback (flash, knockback, shake, hitstop, sounds),
     /// and walkers that appear at spawn points and chase the player along a flow field.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
@@ -53,6 +55,10 @@ namespace RushOps.Editor.Scenes
         private const string WalkerDefinitionPath = "Assets/_Project/Data/Enemies/Walker.asset";
         private const string WalkerPrefabPath = "Assets/_Project/Prefabs/Enemies/Walker.prefab";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
+        private const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
+        private const string FlashShaderName = "RushOps/Sprite Flash";
+        private const string FlashMaterialPath = "Assets/_Project/Art/Shaders/SpriteFlash.mat";
+        private const string SfxDir = "Assets/_Project/Audio/SFX";
         private const string SpawnerConfigPath = "Assets/_Project/Data/Enemies/SpawnerConfig.asset";
         private const string SpawnMarkerSpritePath = "Assets/_Project/Art/Sprites/Effects/SpawnMarker.png";
         private const string EnemiesLayer = "Enemies";
@@ -165,12 +171,15 @@ namespace RushOps.Editor.Scenes
             ProjectilePool pool = CreateProjectilePool(bulletPrefab);
             Transform target = CreatePlayer(playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
-            CreateHud(LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), PixelFontBuilder.Build());
+            PauseController pause = CreateHud(LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), PixelFontBuilder.Build());
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
-            Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath));
+            FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
+            Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(
+                walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig, LoadOrCreateFlashMaterial());
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
-            CreateEnemies(walkerPrefab, navigator, LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), target);
-            CreateCamera(cameraConfig, target, walls);
+            EnemyPool enemyPool = CreateEnemies(walkerPrefab, navigator, LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), target);
+            CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
+            CreateGameFeel(feelConfig, target, enemyPool, cameraFollow, pause);
 
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddToBuildSettings(ScenePath);
@@ -486,10 +495,12 @@ namespace RushOps.Editor.Scenes
         }
 
         // Rebuilt on every run, so the prefab stays reproducible from code.
-        private static Enemy CreateOrUpdateWalkerPrefab(DirectionalAnimation walk, EnemyDefinition definition)
+        private static Enemy CreateOrUpdateWalkerPrefab(
+            DirectionalAnimation walk, EnemyDefinition definition, FeelConfig feel, Material flashMaterial)
         {
             DirectionalSpriteAnimator view = CreateCharacter("Walker", null, Vector2Int.zero, walk, Direction8.S);
             GameObject go = view.gameObject;
+            go.GetComponent<SpriteRenderer>().sharedMaterial = flashMaterial;
             go.transform.position = Vector3.zero;
             go.layer = EnsureLayer(EnemiesLayer);
 
@@ -512,6 +523,7 @@ namespace RushOps.Editor.Scenes
             var enemy = go.AddComponent<Enemy>();
             var serializedEnemy = new SerializedObject(enemy);
             serializedEnemy.FindProperty("_definition").objectReferenceValue = definition;
+            serializedEnemy.FindProperty("_feel").objectReferenceValue = feel;
             serializedEnemy.FindProperty("_renderer").objectReferenceValue = go.GetComponent<SpriteRenderer>();
             serializedEnemy.ApplyModifiedPropertiesWithoutUndo();
 
@@ -533,7 +545,7 @@ namespace RushOps.Editor.Scenes
             return navigator;
         }
 
-        private static void CreateEnemies(Enemy prefab, FlowFieldNavigator navigator, SpawnerConfig config, Transform player)
+        private static EnemyPool CreateEnemies(Enemy prefab, FlowFieldNavigator navigator, SpawnerConfig config, Transform player)
         {
             var go = new GameObject("EnemyPool");
             var pool = go.AddComponent<EnemyPool>();
@@ -568,6 +580,7 @@ namespace RushOps.Editor.Scenes
             }
 
             serializedSpawner.ApplyModifiedPropertiesWithoutUndo();
+            return pool;
         }
 
         private static SpawnPoint CreateSpawnPoint(string name, Transform parent, Vector2Int cell, Sprite marker)
@@ -611,7 +624,7 @@ namespace RushOps.Editor.Scenes
             return view;
         }
 
-        private static void CreateCamera(CameraConfig config, Transform target, Tilemap bounds)
+        private static CameraFollow CreateCamera(CameraConfig config, Transform target, Tilemap bounds)
         {
             var go = new GameObject("Main Camera");
             go.tag = "MainCamera";
@@ -638,6 +651,64 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_target").objectReferenceValue = target;
             serialized.FindProperty("_boundsTilemap").objectReferenceValue = bounds;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            return follow;
+        }
+
+        private static void CreateGameFeel(FeelConfig config, Transform player, EnemyPool enemies, CameraFollow camera, PauseController pause)
+        {
+            var go = new GameObject("GameFeel");
+            var hitstop = go.AddComponent<Hitstop>();
+            var serializedHitstop = new SerializedObject(hitstop);
+            serializedHitstop.FindProperty("_pause").objectReferenceValue = pause;
+            serializedHitstop.ApplyModifiedPropertiesWithoutUndo();
+
+            var sfx = go.AddComponent<SfxPlayer>();
+            go.GetComponent<AudioSource>().playOnAwake = false;
+
+            var feel = go.AddComponent<GameFeel>();
+            var serialized = new SerializedObject(feel);
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_player").objectReferenceValue = player.GetComponent<PlayerHealth>();
+            serialized.FindProperty("_weapon").objectReferenceValue = player.GetComponent<PlayerWeapon>();
+            serialized.FindProperty("_enemies").objectReferenceValue = enemies;
+            serialized.FindProperty("_camera").objectReferenceValue = camera;
+            serialized.FindProperty("_hitstop").objectReferenceValue = hitstop;
+            serialized.FindProperty("_sfx").objectReferenceValue = sfx;
+            serialized.FindProperty("_shotClip").objectReferenceValue = LoadClip("Shot.wav");
+            serialized.FindProperty("_hitClip").objectReferenceValue = LoadClip("Hit.wav");
+            serialized.FindProperty("_deathClip").objectReferenceValue = LoadClip("Death.wav");
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static AudioClip LoadClip(string file)
+        {
+            string path = $"{SfxDir}/{file}";
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            if (clip == null)
+            {
+                throw new System.InvalidOperationException($"Sound not found at {path}; run Tools/gen_sfx.py");
+            }
+
+            return clip;
+        }
+
+        private static Material LoadOrCreateFlashMaterial()
+        {
+            var material = AssetDatabase.LoadAssetAtPath<Material>(FlashMaterialPath);
+            if (material != null)
+            {
+                return material;
+            }
+
+            Shader shader = Shader.Find(FlashShaderName);
+            if (shader == null)
+            {
+                throw new System.InvalidOperationException($"Shader {FlashShaderName} not found");
+            }
+
+            material = new Material(shader);
+            AssetDatabase.CreateAsset(material, FlashMaterialPath);
+            return material;
         }
 
         private static void CreateTouchControls(TouchControlsConfig config, PlayerDash dash)
@@ -671,7 +742,7 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static void CreateHud(HudConfig config, PlayerHealth player, Font font)
+        private static PauseController CreateHud(HudConfig config, PlayerHealth player, Font font)
         {
             var root = new GameObject("HUD", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
@@ -694,6 +765,7 @@ namespace RushOps.Editor.Scenes
             var serialized = new SerializedObject(pause);
             serialized.FindProperty("_overlay").objectReferenceValue = overlay;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            return pause;
         }
 
         private static void CreateHearts(RectTransform parent, HudConfig config, PlayerHealth player)

@@ -6,6 +6,7 @@ namespace RushOps.Cameras
 {
     /// <summary>
     /// Smoothly follows a target, keeps the view inside the level bounds and snaps to the pixel grid.
+    /// <see cref="Shake"/> adds a short wobble on top, e.g. when the player takes damage.
     /// </summary>
     [RequireComponent(typeof(Camera))]
     public class CameraFollow : MonoBehaviour
@@ -21,6 +22,10 @@ namespace RushOps.Cameras
         private bool _hasBounds;
         private Vector2 _position;
         private Vector2 _velocity;
+        private float _shakeElapsed = -1f;
+        private float _shakeDuration;
+        private float _shakeStrength;
+        private float _shakeFrequency;
 
         /// <summary>The transform the camera follows. Setting it moves the camera to the target immediately.</summary>
         public Transform Target
@@ -44,6 +49,21 @@ namespace RushOps.Cameras
                 float halfHeight = _camera.orthographicSize;
                 return new Vector2(halfHeight * _camera.aspect, halfHeight);
             }
+        }
+
+        /// <summary>Current shake offset in units; zero when not shaking.</summary>
+        public Vector2 ShakeOffset { get; private set; }
+
+        /// <summary>
+        /// Shakes the view for <paramref name="duration"/> seconds of real time, up to <paramref name="strength"/>
+        /// units, fading out. A new shake replaces a running one. The shake may briefly show beyond the level bounds.
+        /// </summary>
+        public void Shake(float strength, float duration, float frequency)
+        {
+            _shakeElapsed = 0f;
+            _shakeStrength = strength;
+            _shakeDuration = duration;
+            _shakeFrequency = frequency;
         }
 
         /// <summary>Overrides the level bounds, e.g. when a level is loaded at runtime.</summary>
@@ -81,7 +101,25 @@ namespace RushOps.Cameras
 
             Vector2 desired = ClampIfBounded(_target.position);
             _position = Vector2.SmoothDamp(_position, desired, ref _velocity, _config.SmoothTime);
+            UpdateShake();
             Apply(ClampIfBounded(_position));
+        }
+
+        // Real time, so the shake keeps going during a hitstop.
+        private void UpdateShake()
+        {
+            if (_shakeElapsed < 0f)
+            {
+                return;
+            }
+
+            _shakeElapsed += Time.unscaledDeltaTime;
+            ShakeOffset = CameraFollowMath.ShakeOffset(_shakeElapsed, _shakeDuration, _shakeStrength, _shakeFrequency);
+            if (_shakeElapsed >= _shakeDuration)
+            {
+                _shakeElapsed = -1f;
+                ShakeOffset = Vector2.zero;
+            }
         }
 
         private void SnapToTarget()
@@ -103,7 +141,8 @@ namespace RushOps.Cameras
         private void Apply(Vector2 position)
         {
             _position = position;
-            Vector2 snapped = CameraFollowMath.SnapToPixelGrid(position, _pixelsPerUnit);
+            // The offset is not stored in _position, so the follow does not drift with the shake.
+            Vector2 snapped = CameraFollowMath.SnapToPixelGrid(position + ShakeOffset, _pixelsPerUnit);
             transform.position = new Vector3(snapped.x, snapped.y, transform.position.z);
         }
 

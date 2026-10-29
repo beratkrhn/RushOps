@@ -1,5 +1,6 @@
 using System;
 using RushOps.Combat;
+using RushOps.Feel;
 using RushOps.Navigation;
 using UnityEngine;
 
@@ -7,24 +8,37 @@ namespace RushOps.Enemies
 {
     /// <summary>
     /// A pooled enemy (F-GEG-01, F-GEG-04, NF-02): health and contact damage from its <see cref="EnemyDefinition"/>,
-    /// takes projectile hits, and on death plays a short shrink-and-fade effect before it hands itself back to its
-    /// pool. Movement is done by <see cref="EnemyMovement"/>; this component switches it on and off.
+    /// takes projectile hits with a white flash and a knockback (issue #12), and on death plays a short
+    /// shrink-and-fade effect before it hands itself back to its pool. Movement is done by
+    /// <see cref="EnemyMovement"/>; this component switches it on and off. The flash needs a material with
+    /// the <c>RushOps/Sprite Flash</c> shader on the renderer.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(EnemyMovement))]
     public class Enemy : MonoBehaviour, IDamageable, IContactDamage
     {
         [SerializeField] private EnemyDefinition _definition;
+        [SerializeField] private FeelConfig _feel;
         [SerializeField] private SpriteRenderer _renderer;
+
+        private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount");
 
         private Health _health;
         private EnemyMovement _movement;
         private Rigidbody2D _body;
         private Action<Enemy> _release;
         private float _dyingTime = -1f;
+        private float _sinceHit = -1f;
+        private MaterialPropertyBlock _block;
+
+        /// <summary>Raised on every hit that counted, including the killing one (then <see cref="IsDead"/> is true).</summary>
+        public event Action<Enemy> Hit;
 
         /// <summary>Raised when the enemy dies, before the death effect.</summary>
         public event Action<Enemy> Died;
+
+        /// <summary>True while the enemy shows the white hit flash.</summary>
+        public bool IsFlashing => _sinceHit >= 0f;
 
         /// <summary>Enemy type.</summary>
         public EnemyDefinition Definition => _definition;
@@ -47,6 +61,7 @@ namespace RushOps.Enemies
             _release = release;
             _health = new Health(_definition != null ? _definition.Health : 1);
             _dyingTime = -1f;
+            SetFlash(-1f);
             transform.position = position;
             transform.localScale = Vector3.one;
             _body.position = position;
@@ -64,11 +79,17 @@ namespace RushOps.Enemies
                 return false;
             }
 
+            SetFlash(0f);
             if (_health.IsDead)
             {
                 Die();
             }
+            else if (_feel != null)
+            {
+                _movement.Knockback(direction.normalized * _feel.KnockbackSpeed, _feel.KnockbackDuration);
+            }
 
+            Hit?.Invoke(this);
             return true;
         }
 
@@ -80,6 +101,15 @@ namespace RushOps.Enemies
 
         private void Update()
         {
+            if (_sinceHit >= 0f)
+            {
+                _sinceHit += Time.deltaTime;
+                if (FeelMath.FlashAmount(_sinceHit, _feel != null ? _feel.HitFlashDuration : 0f) <= 0f)
+                {
+                    SetFlash(-1f);
+                }
+            }
+
             if (_dyingTime < 0f)
             {
                 return;
@@ -118,6 +148,22 @@ namespace RushOps.Enemies
             {
                 gameObject.SetActive(false);
             }
+        }
+
+        // 0 starts the flash, a negative value ends it.
+        private void SetFlash(float sinceHit)
+        {
+            bool wasFlashing = IsFlashing;
+            _sinceHit = sinceHit;
+            if (_renderer == null || wasFlashing == IsFlashing)
+            {
+                return;
+            }
+
+            _block ??= new MaterialPropertyBlock();
+            _renderer.GetPropertyBlock(_block);
+            _block.SetFloat(FlashAmountId, IsFlashing ? 1f : 0f);
+            _renderer.SetPropertyBlock(_block);
         }
 
         private void SetAlpha(float alpha)
