@@ -12,6 +12,10 @@ Output (under Assets/_Project/Art/):
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
+  Sprites/UI/Heart_Full.png                12x11 HUD heart
+  Sprites/UI/Heart_Empty.png               12x11 HUD heart, lost
+  Sprites/UI/Pause_Icon.png                12x12 pause symbol
+  Fonts/PixelFont.png + PixelFont.json     glyph atlas and metrics of the pixel font (Tools/pixel_font.py)
   Sprites/UI/Stick_Base.png                32x32 ring of the virtual stick
   Sprites/UI/Stick_Knob.png                16x16 knob of the virtual stick
   Sprites/UI/Dash_Button.png               24x24 dash button with icon
@@ -27,11 +31,14 @@ Usage:
 walls) for a visual check before committing. It is not part of the project.
 """
 import argparse
+import json
 import math
 import random
 from pathlib import Path
 
 from PIL import Image
+
+import pixel_font
 
 ROOT = Path(__file__).resolve().parent.parent
 ART_DIR = ROOT / "Assets/_Project/Art"
@@ -315,6 +322,69 @@ def dash_button() -> Canvas:
     return c
 
 
+HEART_SHAPE = [
+    ".##...##..",
+    "####.####.",
+    "#########.",
+    "#########.",
+    ".#######..",
+    "..#####...",
+    "...###....",
+    "....#.....",
+]
+
+
+def heart(full: bool) -> Canvas:
+    """HUD heart: red with a highlight when full, a dark hollow when lost."""
+    c = Canvas(12, 11)
+    for y, row in enumerate(HEART_SHAPE):
+        for x, ch in enumerate(row):
+            if ch == "#":
+                c.set(x + 1, y + 1, "red_1" if full else "night")
+    if full:
+        for x, y in [(2, 2), (2, 3), (3, 2)]:
+            c.set(x, y, "white")
+        for x, y in [(6, 6), (7, 5), (8, 4), (9, 3), (9, 4)]:
+            c.set(x, y, "red_0")
+    c.outline()
+    return c
+
+
+def pause_icon() -> Canvas:
+    c = Canvas(12, 12)
+    c.rect(2, 1, 4, 10, "white")
+    c.rect(7, 1, 9, 10, "white")
+    c.outline()
+    return c
+
+
+def font_atlas() -> tuple[Image.Image, dict]:
+    """Glyph atlas of the pixel font in white, and the metrics Unity needs to build the font asset."""
+    cell_w, cell_h, columns = 8, 10, 16
+    chars = list(pixel_font.GLYPHS)
+    rows = (len(chars) + columns - 1) // columns
+    c = Canvas(cell_w * columns, cell_h * rows)
+    glyphs = []
+    for i, ch in enumerate(chars):
+        _, rows_ = pixel_font.trimmed(pixel_font.GLYPHS[ch])
+        width = len(rows_[0])
+        x0, y0 = (i % columns) * cell_w, (i // columns) * cell_h
+        for y, row in enumerate(rows_):
+            for x, px in enumerate(row):
+                if px == "#":
+                    c.set(x0 + x, y0 + y, "white")
+        glyphs.append({
+            "char": ord(ch), "x": x0, "y": y0, "width": width, "height": len(rows_),
+            # Bottom of the glyph relative to the baseline; descenders hang below it.
+            "minY": pixel_font.CAP_HEIGHT - len(rows_), "advance": width + 1,
+        })
+    metrics = {
+        "atlasWidth": c.width, "atlasHeight": c.height, "lineHeight": pixel_font.LINE_HEIGHT,
+        "ascent": pixel_font.CAP_HEIGHT, "spaceAdvance": pixel_font.SPACE_ADVANCE, "glyphs": glyphs,
+    }
+    return c.to_image(), metrics
+
+
 def dash_cooldown() -> Canvas:
     """Dark disc of the button size, filled radially to show the remaining cooldown."""
     c = Canvas(24, 24)
@@ -419,6 +489,10 @@ def outputs() -> dict[str, Image.Image]:
         "Tiles/Wall_Top.png": wall_top().to_image(),
         "Tiles/Wall_Front.png": wall_front().to_image(),
         "Sprites/Effects/SpawnMarker.png": spawn_marker().to_image(),
+        "Sprites/UI/Heart_Full.png": heart(True).to_image(),
+        "Sprites/UI/Heart_Empty.png": heart(False).to_image(),
+        "Sprites/UI/Pause_Icon.png": pause_icon().to_image(),
+        "Fonts/PixelFont.png": font_atlas()[0],
         "Sprites/UI/Stick_Base.png": stick_base().to_image(),
         "Sprites/UI/Stick_Knob.png": stick_knob().to_image(),
         "Sprites/UI/Dash_Button.png": dash_button().to_image(),
@@ -478,6 +552,10 @@ def main() -> None:
         out.parent.mkdir(parents=True, exist_ok=True)
         img.save(out)
         print(f"Wrote {out.relative_to(ROOT)}")
+
+    metrics_path = ART_DIR / "Fonts/PixelFont.json"
+    metrics_path.write_text(json.dumps(font_atlas()[1], indent=1) + "\n")
+    print(f"Wrote {metrics_path.relative_to(ROOT)}")
 
     if args.preview:
         preview(files, args.preview)

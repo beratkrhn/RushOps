@@ -27,7 +27,8 @@ namespace RushOps.Player
         private void Update()
         {
             InputAction action = _dashAction != null ? _dashAction.action : null;
-            if (action != null && action.WasPressedThisFrame())
+            // No dash while the game time stands still, e.g. in the pause menu.
+            if (action != null && Time.timeScale > 0f && action.WasPressedThisFrame())
             {
                 _dash.TryDash();
             }

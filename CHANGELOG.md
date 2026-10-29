@@ -47,6 +47,10 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Spawnpunkte: `SpawnPoint`-Objekte in der Szene (8 in `Arena_Test`, Ränder und Ecken) und `EnemySpawner`, der bis zu 10 Gegner gleichzeitig aktiv hält (angekündigte mitgezählt); vor jedem Spawn blinkt 0,6 s eine rote Bodenmarkierung (Issue #10).
 - Spawnpunkte im Kamerabild (plus 1 Einheit Rand) oder näher als 4 Einheiten am Spieler werden übersprungen; die Regel wird beim Erscheinen erneut geprüft (`SpawnRules`, mit EditMode-Tests) (Issue #10).
 - `SpawnerConfig` (`Data/Enemies/SpawnerConfig.asset`): höchstens 10 Gegner, Abstand 0,8 s, Ankündigung 0,6 s, Mindestabstand 4, Sichtrand 1 *(Startwerte)*; Pixelart `Sprites/Effects/SpawnMarker.png` (Issue #10).
+- HUD (eigener Canvas über der Touch-Steuerung, in der Safe Area): Herzen oben links, ein verlorenes Herz blinkt 0,6 s rot (`HeartsView`, `HudConfig` in `Data/UI/`) (Issue #11).
+- Pause: Button oben rechts, Overlay mit „Fortsetzen“ und „Neustart“; die Spielzeit steht still, das Overlay blockiert die Touch-Steuerung; pausiert automatisch, wenn die App in den Hintergrund geht (`PauseController`) (Issue #11).
+- Pixel-Schrift `PixelFont`, selbst gezeichnet (5×7-Raster in `Tools/pixel_font.py`, A–Z, a–z, Umlaute, ß, Ziffern, Satzzeichen), als Bitmap-Font für uGUI `Text`; Atlas und Metriken per `Tools/gen_pixelart.py`, Font-Asset per `RushOps → Art → Pixel-Schrift aktualisieren`; Lizenz in `Art/Fonts/README.md` (Issue #11).
+- Pixelart für Herzen (voll, leer) und Pause-Symbol (Issue #11).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -64,6 +68,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Kontaktschaden trifft schon bei der ersten Berührung, nicht erst im nächsten Physikschritt (Issue #9).
 - Gegner aus dem Pool erscheinen um wenige Hundertstel versetzt, weil die Physik exakt übereinanderliegende Körper nicht trennen kann (Issue #10).
 - Sortierreihenfolge: Bodenmarkierungen liegen zwischen Boden und Figuren (Issue #10).
+- Kein Dash, solange die Spielzeit stillsteht (Pause) (Issue #11).
 
 ### Entfernt
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
