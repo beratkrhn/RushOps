@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Prints the next issue to work on.
-# Rule: oldest open milestone (by SemVer), label "story", lowest issue number,
-# skipping issues labeled "blocked", "needs-design" or "in-progress".
+# Rule: oldest open milestone (by SemVer), label "story", issues labeled "priority" first,
+# then lowest issue number, skipping issues labeled "blocked", "needs-design" or "in-progress".
 # Requires the GitHub CLI (gh), authenticated via `gh auth login`.
 # Uses only the REST API, so it also works where GraphQL is unavailable.
 set -euo pipefail
@@ -17,7 +17,8 @@ while IFS=$'\t' read -r ms_number ms_title; do
   next=$(gh api "repos/$REPO/issues?milestone=$ms_number&state=open&labels=story&per_page=100" \
     --jq '[.[] | select(.pull_request == null)
                | select([.labels[].name] | any(. == "blocked" or . == "needs-design" or . == "in-progress") | not)]
-          | sort_by(.number) | .[0] // empty | "#\(.number) \(.title)"')
+          | sort_by([([.labels[].name] | any(. == "priority") | not), .number])
+          | .[0] // empty | "#\(.number) \(.title)"')
   if [[ -n "$next" ]]; then
     echo "Milestone: $ms_title"
     echo "Nächstes Issue: $next"
