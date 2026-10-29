@@ -19,12 +19,11 @@ namespace RushOps.Editor.Scenes
     public static class ArenaTestSceneBuilder
     {
         private const string ScenePath = "Assets/_Project/Scenes/Arena_Test.unity";
-        private const string TilesDir = "Assets/_Project/Art/Tiles/Placeholder";
-        private const string FloorTexturePath = TilesDir + "/Placeholder_Floor.png";
-        private const string WallTexturePath = TilesDir + "/Placeholder_Wall.png";
-        private const string FloorTilePath = TilesDir + "/Placeholder_Floor.asset";
-        private const string WallTilePath = TilesDir + "/Placeholder_Wall.asset";
-        private const string TargetTexturePath = "Assets/_Project/Art/Sprites/Placeholder/Placeholder_Target.png";
+        private const string TilesDir = "Assets/_Project/Art/Tiles";
+        private const int FloorVariantCount = 3;
+        private const string WallTexturePath = TilesDir + "/Wall.png";
+        private const string WallTilePath = TilesDir + "/Wall.asset";
+        private const string TargetTexturePath = "Assets/_Project/Art/Sprites/Player/Player.png";
         private const string CameraConfigPath = "Assets/_Project/Data/Camera/CameraConfig.asset";
 
         // Layout and render setup follow ADR 0002 (16 PPU, 180x320 reference resolution).
@@ -33,6 +32,8 @@ namespace RushOps.Editor.Scenes
         private const int ReferenceHeight = 320;
         private const int ArenaWidth = 40;
         private const int ArenaHeight = 60;
+        // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
+        private const int PlainFloorWeight = 7;
         private static readonly Vector2Int StartCell = new Vector2Int(20, 30);
 
         // Obstacles as (x, y, width, height) in cells, inside the outer wall ring.
@@ -55,16 +56,18 @@ namespace RushOps.Editor.Scenes
             // Create the scene first: NewScene unloads assets loaded before it, which would drop the references below.
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-            ConfigureSpriteImport(FloorTexturePath);
-            ConfigureSpriteImport(WallTexturePath);
-            ConfigureSpriteImport(TargetTexturePath);
+            var floorTiles = new Tile[FloorVariantCount];
+            for (int i = 0; i < FloorVariantCount; i++)
+            {
+                string basePath = $"{TilesDir}/Floor_{i}";
+                floorTiles[i] = CreateOrUpdateTile(basePath + ".asset", basePath + ".png", Tile.ColliderType.None);
+            }
 
-            Tile floorTile = CreateOrUpdateTile(FloorTilePath, FloorTexturePath, Tile.ColliderType.None);
             Tile wallTile = CreateOrUpdateTile(WallTilePath, WallTexturePath, Tile.ColliderType.Grid);
             CameraConfig cameraConfig = LoadOrCreateCameraConfig();
 
             CreateGlobalLight();
-            Tilemap walls = CreateArena(floorTile, wallTile);
+            Tilemap walls = CreateArena(floorTiles, wallTile);
             Transform target = CreateDebugTarget();
             CreateCamera(cameraConfig, target, walls);
 
@@ -72,20 +75,6 @@ namespace RushOps.Editor.Scenes
             AddToBuildSettings(ScenePath);
             AssetDatabase.SaveAssets();
             Debug.Log($"[ArenaTestSceneBuilder] Saved {ScenePath}");
-        }
-
-        private static void ConfigureSpriteImport(string path)
-        {
-            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
-            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
-            importer.textureType = TextureImporterType.Sprite;
-            importer.spriteImportMode = SpriteImportMode.Single;
-            importer.spritePixelsPerUnit = PixelsPerUnit;
-            importer.filterMode = FilterMode.Point;
-            importer.textureCompression = TextureImporterCompression.Uncompressed;
-            importer.mipmapEnabled = false;
-            importer.alphaIsTransparency = true;
-            importer.SaveAndReimport();
         }
 
         private static Tile CreateOrUpdateTile(string tilePath, string texturePath, Tile.ColliderType colliderType)
@@ -130,12 +119,18 @@ namespace RushOps.Editor.Scenes
             light.intensity = 1f;
         }
 
-        private static Tilemap CreateArena(Tile floorTile, Tile wallTile)
+        private static Tilemap CreateArena(Tile[] floorTiles, Tile wallTile)
         {
             var grid = new GameObject("Grid", typeof(Grid));
 
             Tilemap floor = CreateTilemap(grid.transform, "Floor", 0);
-            floor.BoxFill(Vector3Int.zero, floorTile, 0, 0, ArenaWidth - 1, ArenaHeight - 1);
+            for (int x = 0; x < ArenaWidth; x++)
+            {
+                for (int y = 0; y < ArenaHeight; y++)
+                {
+                    floor.SetTile(new Vector3Int(x, y, 0), floorTiles[FloorVariant(x, y)]);
+                }
+            }
 
             Tilemap walls = CreateTilemap(grid.transform, "Walls", 1);
             foreach (Vector3Int cell in WallCells())
@@ -153,6 +148,17 @@ namespace RushOps.Editor.Scenes
             tilemapCollider.compositeOperation = Collider2D.CompositeOperation.Merge;
 
             return walls;
+        }
+
+        // Deterministic per cell, so rebuilding the scene yields the same floor.
+        private static int FloorVariant(int x, int y)
+        {
+            uint hash = unchecked((uint)(x * 73856093) ^ (uint)(y * 19349663));
+            hash ^= hash >> 13;
+            hash = unchecked(hash * 0x5bd1e995u);
+            hash ^= hash >> 15;
+            int roll = (int)(hash % 10u);
+            return roll < PlainFloorWeight ? 0 : 1 + roll % (FloorVariantCount - 1);
         }
 
         private static Tilemap CreateTilemap(Transform parent, string name, int sortingOrder)
