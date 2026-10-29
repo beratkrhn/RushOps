@@ -10,3 +10,4 @@ Jede größere technische Entscheidung wird als kurzes Dokument festgehalten, da
 | [0004](0004-datengetrieben-scriptableobjects.md) | Spieldaten in ScriptableObjects | angenommen |
 | [0005](0005-savegame-json.md) | Spielstand als versioniertes JSON | angenommen |
 | [0006](0006-schraegansicht-8-richtungen.md) | Schrägansicht mit 8 Richtungs-Sprites und 32-px-Raster | angenommen |
+| [0007](0007-unity-cli-pipeline.md) | Unity CLI und Pipeline-Paket für Kompilieren und Tests | angenommen |

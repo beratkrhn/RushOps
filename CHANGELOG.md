@@ -23,6 +23,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Zielen und automatisches Feuern: Input-Actions `Player/Aim` (rechter Gamepad-Stick) sowie `Player/AimPoint`/`Player/AimPress` (Maus im Editor); der Spieler zeigt das Richtungs-Sprite zur Zielrichtung, ohne Zieleingabe zur Laufrichtung; gefeuert wird, solange die Auslenkung über der Totzone liegt; unbegrenzte Munition, kein Nachladen (Issue #5).
 - `WeaponConfig` (`Data/Weapons/WeaponConfig.asset`) mit Feuerrate 6/s, Projektiltempo 14 und Reichweite 10 *(Startwerte)*; Totzone 0,3 in `PlayerConfig` (Issue #5).
 - Projektile (`Prefabs/Projectiles/Bullet.prefab`) aus einem Object Pool, stoppen an Wänden und verschwinden nach maximaler Reichweite; neue Physik-Layer `Walls`, `Player`, `Projectiles` (Issue #5).
+- Unity CLI und Unity-Pipeline-Paket (`com.unity.pipeline` 0.9.1-exp.1, nur Editor): `Tools/unity-check.sh` kompiliert und testet im offenen Editor, ohne Unity zu schließen, und fällt sonst auf den Batchmode zurück (Issue #62).
+- EditMode-Test `PipelineBuildGuardTests` stellt sicher, dass das Pipeline-Paket nicht in Spiel-Builds landet (Issue #62).
+- ADR 0007: Unity CLI und Pipeline-Paket für Kompilieren und Tests (Issue #62).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -41,3 +44,4 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
 - 16-px-Spieler, Top-down-Walker und einteiliges Wand-Tile aus Issue #3 (Issue #58).
 - Temporärer `DebugTargetMover` (Issue #4).
+- `CLAUDE.md`: Prüfen per `Tools/unity-check.sh` statt Batchmode; Unity darf dabei offen bleiben (Issue #62).
