@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using RushOps.Navigation;
 using UnityEngine;
 using UnityEngine.Pool;
@@ -21,6 +22,7 @@ namespace RushOps.Enemies
         // Golden angle in radians: consecutive spawns get well spread offsets.
         private const float GoldenAngle = 2.39996323f;
 
+        private readonly List<Enemy> _active = new List<Enemy>();
         private ObjectPool<Enemy> _pool;
         private Action<Enemy> _release;
         private int _spawnCount;
@@ -33,6 +35,9 @@ namespace RushOps.Enemies
 
         /// <summary>Number of enemies currently in the level, including dying ones.</summary>
         public int CountActive => _pool != null ? _pool.CountActive : 0;
+
+        /// <summary>Enemies currently in the level, including dying ones, e.g. for the aim assist.</summary>
+        public IReadOnlyList<Enemy> Active => _active;
 
         /// <summary>Takes an enemy from the pool and spawns it at <paramref name="position"/>; null without prefab.</summary>
         public Enemy Spawn(Vector2 position)
@@ -88,13 +93,15 @@ namespace RushOps.Enemies
             EnemyDied?.Invoke(enemy);
         }
 
-        private static void OnGet(Enemy enemy)
+        private void OnGet(Enemy enemy)
         {
             enemy.gameObject.SetActive(true);
+            _active.Add(enemy);
         }
 
-        private static void OnRelease(Enemy enemy)
+        private void OnRelease(Enemy enemy)
         {
+            _active.Remove(enemy);
             enemy.gameObject.SetActive(false);
         }
 

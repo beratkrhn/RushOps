@@ -16,3 +16,6 @@ MonoBehaviour:
   _projectileSpeed: 14
   _maxRange: 10
   _damage: 1
+  _aimAssistEnabled: 1
+  _aimAssistAngle: 10
+  _aimAssistRange: 8

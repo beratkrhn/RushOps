@@ -26,6 +26,7 @@ namespace RushOps.Enemies
         private Health _health;
         private EnemyMovement _movement;
         private Rigidbody2D _body;
+        private Collider2D _collider;
         private Action<Enemy> _release;
         private float _dyingTime = -1f;
         private float _sinceHit = -1f;
@@ -48,6 +49,9 @@ namespace RushOps.Enemies
 
         /// <summary>True from the killing hit until the enemy returns to the pool.</summary>
         public bool IsDead => _health != null && _health.IsDead;
+
+        /// <summary>Center of the body, where shots should go; the transform sits at the feet.</summary>
+        public Vector2 AimPoint => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
 
         /// <inheritdoc />
         public int ContactDamage => _definition != null && !IsDead ? _definition.ContactDamage : 0;
@@ -97,6 +101,7 @@ namespace RushOps.Enemies
         {
             _movement = GetComponent<EnemyMovement>();
             _body = GetComponent<Rigidbody2D>();
+            _collider = GetComponent<Collider2D>();
         }
 
         private void Update()

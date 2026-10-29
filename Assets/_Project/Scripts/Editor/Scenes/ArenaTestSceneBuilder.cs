@@ -178,6 +178,9 @@ namespace RushOps.Editor.Scenes
                 walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig, LoadOrCreateFlashMaterial());
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
             EnemyPool enemyPool = CreateEnemies(walkerPrefab, navigator, LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), target);
+            var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
+            aimAssist.FindProperty("_enemies").objectReferenceValue = enemyPool;
+            aimAssist.ApplyModifiedPropertiesWithoutUndo();
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
             CreateGameFeel(feelConfig, target, enemyPool, cameraFollow, pause);
 
@@ -424,6 +427,7 @@ namespace RushOps.Editor.Scenes
             serializedWeapon.FindProperty("_obstacles").intValue = (1 << RequireLayer(WallsLayer)) | (1 << EnsureLayer(EnemiesLayer));
             serializedWeapon.ApplyModifiedPropertiesWithoutUndo();
 
+            go.AddComponent<AimAssist>();
             var aimInput = go.AddComponent<PlayerAimInput>();
             var serializedAimInput = new SerializedObject(aimInput);
             serializedAimInput.FindProperty("_aimAction").objectReferenceValue = actions.Aim;

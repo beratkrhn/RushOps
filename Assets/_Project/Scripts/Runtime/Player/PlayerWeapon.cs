@@ -25,6 +25,7 @@ namespace RushOps.Player
 
         private readonly FireRateTimer _timer = new FireRateTimer();
         private PlayerAim _aim;
+        private AimAssist _assist;
 
         /// <summary>Raised once per shot with its direction, e.g. for the shot sound.</summary>
         public event Action<Vector2> Fired;
@@ -45,6 +46,7 @@ namespace RushOps.Player
         private void Awake()
         {
             _aim = GetComponent<PlayerAim>();
+            _assist = GetComponent<AimAssist>();
         }
 
         private void Update()
@@ -62,6 +64,11 @@ namespace RushOps.Player
 
             Vector2 direction = _aim.AimDirection;
             Vector2 origin = MuzzlePosition(direction);
+            if (_assist != null)
+            {
+                direction = _assist.Adjust(origin, direction, _config);
+            }
+
             for (int i = 0; i < shots; i++)
             {
                 _pool.Launch(origin, direction, _config.ProjectileSpeed, _config.MaxRange, _obstacles, _config.Damage);
