@@ -12,6 +12,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Testszene `Arena_Test` (40×60 Kacheln, Wände mit `TilemapCollider2D` + `CompositeCollider2D`, Hindernisse), per Editor-Skript `RushOps → Szenen → Arena_Test erzeugen` reproduzierbar (Issue #2).
 - Pixel Perfect Camera (180×320, 16 PPU) mit weichem Folgen, Klemmen an die Levelgrenzen und Pixel-Snapping; Folgezeit in `CameraConfig` (Issue #2).
 - Platzhalter-Tiles und Debug-Ziel per `Tools/gen_placeholder_arena.py`; temporärer `DebugTargetMover` (WASD/Pfeiltasten/Gamepad) bis zur Spielerbewegung (Issue #2).
+- Feste Palette mit 24 Farben (`Art/Palettes/RushOps_Palette.png`) und Pixelart per `Tools/gen_pixelart.py`: Spieler, Walker mit 4-Frame-Laufanimation, Projektil, Mündungsfeuer, drei Bodenvarianten, Wand (Issue #3).
+- `PixelArtImportPostprocessor` setzt für alle PNGs unter `Art/` die Importeinstellungen aus ADR 0002; EditMode-Tests prüfen Importeinstellungen, Palettentreue und Sprite-Größen (Issue #3).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -19,3 +21,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `SampleScene` von `Assets/Scenes/` nach `Assets/_Project/Scenes/` verschoben (Issue #1).
 - ADR 0002: Verhalten bei abweichendem Seitenverhältnis festgelegt (mehr Welt zeigen, keine Balken) (Issue #2).
 - `Arena_Test` ist die erste Szene in den Build Settings (Issue #2).
+- `Arena_Test` nutzt die neuen Boden- und Wand-Tiles (Bodenvarianten deterministisch verteilt); das Debug-Ziel zeigt das Spieler-Sprite (Issue #3).
+
+### Entfernt
+- Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).

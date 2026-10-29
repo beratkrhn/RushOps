@@ -4,4 +4,6 @@ Python-Skripte zur reproduzierbaren Erzeugung von Assets (Pixelart, Soundeffekte
 
 | Skript | Erzeugt |
 |---|---|
-| `gen_placeholder_arena.py` | Platzhalter-Tiles (Boden, Wand) und Debug-Ziel für `Arena_Test`. Wird durch die echte Pixelart aus Issue #3 ersetzt. |
+| `gen_pixelart.py` | Palette (`Art/Palettes/RushOps_Palette.png`, 24 Farben) und die Pixelart für v0.1.0: Spieler, Walker (4 Lauf-Frames), Projektil, Mündungsfeuer, Boden (3 Varianten), Wand. Bricht ab, wenn eine Farbe außerhalb der Palette liegt. Mit `--preview <pfad>` entsteht ein hochskaliertes Vorschaubild. |
+
+Nach dem Erzeugen setzt Unity die Importeinstellungen automatisch (`PixelArtImportPostprocessor`: Sprite, 16 PPU, Point, keine Kompression, keine Mip Maps). Neue Farben kommen nur über `PALETTE` im Skript hinzu, und die Palette bleibt bei 16–24 Farben (ADR 0002, Test `PixelArtPaletteTests`).
