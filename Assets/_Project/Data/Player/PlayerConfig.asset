@@ -20,3 +20,7 @@ MonoBehaviour:
   _dashDuration: 0.2
   _dashInvulnerability: 0.3
   _dashCooldown: 1
+  _maxHearts: 5
+  _hitInvulnerability: 1
+  _blinkInterval: 0.1
+  _deathRestartDelay: 1
