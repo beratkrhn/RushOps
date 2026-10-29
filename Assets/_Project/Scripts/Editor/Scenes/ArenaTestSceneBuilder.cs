@@ -18,6 +18,7 @@ namespace RushOps.Editor.Scenes
     /// <summary>
     /// Builds the <c>Arena_Test</c> scene: tilemap arena, pixel perfect camera with follow, the player
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
+    /// dashing via <c>Player/Dash</c>,
     /// and a row of walkers previewing all 8 directions.
     /// Re-running overwrites the scene, so the scene stays reproducible from code.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
@@ -36,6 +37,7 @@ namespace RushOps.Editor.Scenes
         private const string AimActionPath = "Player/Aim";
         private const string AimPointActionPath = "Player/AimPoint";
         private const string AimPressActionPath = "Player/AimPress";
+        private const string DashActionPath = "Player/Dash";
         private const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
         private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
         private const string BulletPrefabPath = "Assets/_Project/Prefabs/Projectiles/Bullet.prefab";
@@ -101,6 +103,7 @@ namespace RushOps.Editor.Scenes
                 Aim = LoadActionReference(InputActionsPath, AimActionPath),
                 AimPoint = LoadActionReference(InputActionsPath, AimPointActionPath),
                 AimPress = LoadActionReference(InputActionsPath, AimPressActionPath),
+                Dash = LoadActionReference(InputActionsPath, DashActionPath),
             };
             Projectile bulletPrefab = CreateOrUpdateBulletPrefab();
             DirectionalAnimationBuilder.BuildAll();
@@ -338,6 +341,12 @@ namespace RushOps.Editor.Scenes
             serializedAimInput.FindProperty("_pressAction").objectReferenceValue = actions.AimPress;
             serializedAimInput.ApplyModifiedPropertiesWithoutUndo();
 
+            go.AddComponent<PlayerDash>();
+            var dashInput = go.AddComponent<PlayerDashInput>();
+            var serializedDashInput = new SerializedObject(dashInput);
+            serializedDashInput.FindProperty("_dashAction").objectReferenceValue = actions.Dash;
+            serializedDashInput.ApplyModifiedPropertiesWithoutUndo();
+
             return go.transform;
         }
 
@@ -440,6 +449,7 @@ namespace RushOps.Editor.Scenes
             public InputActionReference Aim;
             public InputActionReference AimPoint;
             public InputActionReference AimPress;
+            public InputActionReference Dash;
         }
 
         private static void AddToBuildSettings(string path)
