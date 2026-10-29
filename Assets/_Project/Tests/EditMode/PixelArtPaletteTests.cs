@@ -11,9 +11,6 @@ namespace RushOps.Tests.EditMode
         private const string ArtDir = "Assets/_Project/Art";
         private const string PalettePath = ArtDir + "/Palettes/RushOps_Palette.png";
 
-        // Temporary art from issue #2 predates the palette.
-        private const string PlaceholderFolder = "/Placeholder/";
-
         [Test]
         public void Palette_Has16To24DistinctOpaqueColors()
         {
@@ -37,11 +34,6 @@ namespace RushOps.Tests.EditMode
             foreach (string path in Directory.GetFiles(ArtDir, "*.png", SearchOption.AllDirectories))
             {
                 string normalized = path.Replace('\\', '/');
-                if (normalized.Contains(PlaceholderFolder))
-                {
-                    continue;
-                }
-
                 foreach (Color32 pixel in LoadPixels(normalized, out _, out _))
                 {
                     bool transparent = pixel.a == 0;

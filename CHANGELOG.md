@@ -22,3 +22,6 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - ADR 0002: Verhalten bei abweichendem Seitenverhältnis festgelegt (mehr Welt zeigen, keine Balken) (Issue #2).
 - `Arena_Test` ist die erste Szene in den Build Settings (Issue #2).
 - `Arena_Test` nutzt die neuen Boden- und Wand-Tiles (Bodenvarianten deterministisch verteilt); das Debug-Ziel zeigt das Spieler-Sprite (Issue #3).
+
+### Entfernt
+- Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
