@@ -9,7 +9,7 @@ namespace RushOps.Editor.Art
     public class PixelArtImportPostprocessor : AssetPostprocessor
     {
         // Bump when the rules change, so Unity reimports affected textures.
-        private const uint Version = 1;
+        private const uint Version = 2;
 
         public override uint GetVersion()
         {

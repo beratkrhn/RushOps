@@ -20,6 +20,16 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(expected, PixelArtImportRules.AppliesTo(path));
         }
 
+        [TestCase("Assets/_Project/Art/Sprites/Player/Player_Idle_S.png", true)]
+        [TestCase("Assets/_Project/Art/Sprites/Enemies/Walker_Walk_N_0.png", true)]
+        [TestCase("Assets/_Project/Art/Sprites/Projectiles/Bullet.png", false)]
+        [TestCase("Assets/_Project/Art/Tiles/Wall_Front.png", false)]
+        [TestCase("Assets/_Project/Art/Sprites/Player/Notes.txt", false)]
+        public void UsesFootPivot_OnlyForCharacterSprites(string path, bool expected)
+        {
+            Assert.AreEqual(expected, PixelArtImportRules.UsesFootPivot(path));
+        }
+
         [Test]
         public void ArtTextures_UsePixelArtImportSettings()
         {

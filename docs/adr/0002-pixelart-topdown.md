@@ -1,6 +1,6 @@
 # ADR 0002: Pixelart-Spezifikation und reine Top-down-Ansicht
 
-- **Status:** angenommen
+- **Status:** teilweise ersetzt durch [ADR 0006](0006-schraegansicht-8-richtungen.md) (Perspektive, Raster, Figurengrößen). Der Nachtrag zu Seitenverhältnissen gilt weiter.
 - **Datum:** 2026-10-29
 
 ## Kontext
