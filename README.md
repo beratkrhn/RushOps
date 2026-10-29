@@ -11,6 +11,7 @@ In Entwicklung. Aktueller Meilenstein: **v0.1.0 – Vertical Slice** (siehe [`do
 ## Dokumentation
 
 - [Lastenheft](docs/lastenheft.md)
+- Backlog: [v0.1.0](docs/backlog/v0.1.0.md) · [v0.2.0](docs/backlog/v0.2.0.md) · [v0.3.0](docs/backlog/v0.3.0.md) · [Roadmap bis 1.0.0](docs/backlog/roadmap.md)
 - [Architekturentscheidungen (ADRs)](docs/adr/)
 - [Changelog](CHANGELOG.md)
 - [Arbeitsweise und Konventionen](CLAUDE.md)

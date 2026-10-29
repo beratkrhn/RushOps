@@ -100,6 +100,22 @@ Die Details stehen in ADR 0002. Kurzfassung:
 - PRs verweisen auf das Issue (`Closes #12`) und folgen der PR-Vorlage.
 - Versionen nach SemVer, ein Milestone pro Version, Tag `vX.Y.Z` bei Release. `bundleVersion` in den ProjectSettings passt zur Version.
 
+## Ablauf bei „Mach das nächste Issue“
+
+Das GitHub-Repo ist `beratkrhn/RushOps`. Für GitHub-Zugriffe die REST-API über `gh api` verwenden.
+
+1. **Ausgangslage prüfen:** `git checkout main && git pull`. Ist das Arbeitsverzeichnis nicht sauber oder gibt es noch einen offenen PR von mir, der nicht gemergt ist: nachfragen, bevor es weitergeht.
+2. **Issue bestimmen:** `Tools/next-issue.sh` ausführen. Regel: ältester offener Milestone, Label `story`, niedrigste Nummer, ohne `blocked`, `needs-design` oder `in-progress`. Hat der Mensch eine Nummer genannt, diese nehmen.
+3. **Issue lesen:** `gh api repos/beratkrhn/RushOps/issues/<N>` und den passenden Abschnitt in `docs/backlog/`. Die referenzierten Anforderungen im Lastenheft nachlesen.
+4. **Unklarheiten zuerst klären:** Widersprechen sich Issue und Lastenheft, oder fehlt eine Designentscheidung, nachfragen statt raten. Kann das Issue nicht umgesetzt werden (z. B. Abhängigkeit fehlt), Label `blocked` setzen, Grund als Kommentar ins Issue schreiben und stoppen. Ist eine Story größer als etwa zwei Tage, eine Aufteilung vorschlagen.
+5. **Starten:** Label `in-progress` setzen (`gh api repos/beratkrhn/RushOps/issues/<N>/labels -f "labels[]=in-progress"`), Branch `feature/<N>-<kurz>` (bzw. `fix/…`) von `main` anlegen.
+6. **Umsetzen** nach den Regeln dieser Datei, in kleinen Conventional Commits.
+7. **Prüfen:** Kompilieren und EditMode- sowie PlayMode-Tests per Batchmode. Ist Unity geöffnet, den Menschen bitten, es zu schließen. Alle Fehler beheben, bevor ein PR entsteht.
+8. **Abschließen:** `CHANGELOG.md` ergänzen, pushen, PR nach Vorlage öffnen (`Closes #<N>`). Im Abschnitt „So testest du das“ konkrete Schritte für den manuellen Test im Editor oder auf dem Gerät aufschreiben.
+9. **Stoppen.** Kein weiteres Issue beginnen, bevor der PR gemergt ist, außer der Mensch sagt es ausdrücklich. Dem Menschen kurz sagen, was fertig ist und was er testen soll.
+
+Bei „Mach die nächsten N Issues“ werden die Issues nacheinander abgearbeitet, jedes auf eigenem Branch mit eigenem PR. Baut ein Issue auf einem ungemergten vorherigen auf, wird der neue Branch vom vorherigen abgezweigt und das im PR vermerkt.
+
 ## Definition of Done (pro Story)
 
 1. Akzeptanzkriterien des Issues erfüllt.
