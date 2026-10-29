@@ -28,6 +28,12 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - ADR 0007: Unity CLI und Pipeline-Paket für Kompilieren und Tests (Issue #62).
 - Dash mit i-Frames über die Input-Action `Player/Dash` (Leertaste, rechte Maustaste, Gamepad Süd/rechte Schultertaste): in Laufrichtung, im Stand in Blickrichtung; Wände stoppen den Dash; `PlayerDash` bietet `IsInvulnerable` für Schadensquellen, `Lock`/`Unlock` zum Sperren (für den Objekt-Transport) und `CooldownProgress` für den Dash-Button (Issue #6).
 - Dash-Werte in `PlayerConfig`: Distanz 3, Dauer 0,2 s, i-Frames 0,3 s, Abklingzeit 1,0 s ab Dash-Beginn *(Startwerte)* (Issue #6).
+- Touch-Steuerung: linker und rechter virtueller Stick als On-Screen-Controls des Input Systems (schreiben in ein virtuelles Gamepad, Multitouch), Modus **floating** (Stick erscheint am Berührungspunkt der jeweiligen Bildschirmhälfte, Standard) und **fest** (Stick in der unteren Ecke); untätige Sticks werden abgedunkelt (Issue #7).
+- Dash-Button oberhalb des rechten Sticks mit radialer Anzeige der Abklingzeit (Issue #7).
+- Safe Area: `SafeAreaFitter` hält Sticks und Dash-Button aus Notch, Kamera-Aussparung und Home-Indikator heraus (Issue #7).
+- `TouchControlsConfig` (`Data/UI/TouchControlsConfig.asset`): Modus floating, Stick-Durchmesser 96, Knopf 50 %, Randabstand 24, Dash-Button 72 mit Abstand 16 (Referenzeinheiten bei 360×640), Abdunkelung 0,5 *(Startwerte)* (Issue #7).
+- Pixelart für Stick-Ring, Stick-Knopf, Dash-Button und Abklingzeit-Overlay unter `Art/Sprites/UI/` per `Tools/gen_pixelart.py` (Issue #7).
+- ADR 0008: Touch-Steuerung als On-Screen-Controls in uGUI (Issue #7).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -41,6 +47,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Raster 32×32 px, 32 PPU, Pixel Perfect Camera 360×640; Palette auf 32 Farben erweitert; Figuren mit Pivot an den Füßen, Sortierung nach Y (Issue #58).
 - `Arena_Test`: Debug-Ziel zeigt den Spieler-Character und blickt in Laufrichtung; Reihe mit 8 Walkern als Grafikvorschau (Issue #58).
 - `Arena_Test`: Das Debug-Ziel ist jetzt der Spieler mit `PlayerMovement` und `PlayerMoveInput` (Issue #4).
+- Die Touch-Steuerung erscheint nur mit Touchscreen (Handy, Device Simulator); im Game View bleiben Maus und Tastatur wie bisher (Issue #7).
 
 ### Entfernt
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
