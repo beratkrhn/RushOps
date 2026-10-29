@@ -15,6 +15,7 @@ namespace RushOps.Player
 
         private PlayerMovement _movement;
         private Vector2 _aimInput;
+        private Vector2 _facing = Vector2.down;
 
         /// <summary>Aim stick direction and deflection (0..1). Zero means not aiming.</summary>
         public Vector2 AimInput
@@ -29,18 +30,36 @@ namespace RushOps.Player
         /// <summary>Unit vector of the aim direction; zero while not aiming.</summary>
         public Vector2 AimDirection => IsAiming ? _aimInput.normalized : Vector2.zero;
 
+        /// <summary>
+        /// Unit vector the player faces: the aim direction while aiming, otherwise the last move direction.
+        /// Unlike the sprite it is not snapped to 8 directions.
+        /// </summary>
+        public Vector2 FacingDirection => _facing;
+
         private float Deadzone => _movement.Config != null ? _movement.Config.AimDeadzone : 0f;
 
         private void Awake()
         {
             _movement = GetComponent<PlayerMovement>();
+            if (_view != null)
+            {
+                _facing = Direction8Math.ToVector(_view.Direction);
+            }
         }
 
         private void Update()
         {
+            Vector2 facing = PlayerAimMath.FacingVector(_movement.MoveInput, _aimInput, Deadzone);
+            // normalized is zero for (near) zero vectors, which keep the last facing.
+            Vector2 unit = facing.normalized;
+            if (unit != Vector2.zero)
+            {
+                _facing = unit;
+            }
+
             if (_view != null)
             {
-                _view.SetFacing(PlayerAimMath.FacingVector(_movement.MoveInput, _aimInput, Deadzone));
+                _view.SetFacing(facing);
             }
         }
 
