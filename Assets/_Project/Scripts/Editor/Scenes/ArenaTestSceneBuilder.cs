@@ -31,7 +31,8 @@ namespace RushOps.Editor.Scenes
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
     /// a HUD with hearts and a pause menu, hit feedback (flash, knockback, shake, hitstop, sounds),
     /// and walkers that appear at spawn points and chase the player along a flow field.
-    /// Re-running overwrites the scene, so the scene stays reproducible from code.
+    /// Re-running overwrites the scene, so the scene stays reproducible from code. Other test levels reuse
+    /// <see cref="BuildScene"/> with their own <see cref="ArenaLayout"/>.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
     /// </summary>
     public static class ArenaTestSceneBuilder
@@ -91,7 +92,7 @@ namespace RushOps.Editor.Scenes
         private static readonly Color PaletteWhite = new Color32(244, 241, 232, 255);
         // The overlay darkens the frozen game behind the menu.
         private const float OverlayAlpha = 0.8f;
-        private const string WallsLayer = "Walls";
+        internal const string WallsLayer = "Walls";
         private const string PlayerLayer = "Player";
         private const string ProjectilesLayer = "Projectiles";
         // Physics body at the feet (sprite pivot), smaller than a tile so the player fits through 1-tile gaps.
@@ -106,37 +107,44 @@ namespace RushOps.Editor.Scenes
         private const int FloorSortingOrder = 0;
         // Flat marks on the floor, e.g. spawn markers: above the floor, below everything standing on it.
         private const int FloorMarkSortingOrder = 1;
-        private const int ActorSortingOrder = 2;
+        internal const int ActorSortingOrder = 2;
         // Projectiles fly at gun height, so they draw above walls and characters instead of sorting by Y.
         private const int ProjectileSortingOrder = 3;
-        private const int ArenaWidth = 40;
-        private const int ArenaHeight = 60;
         // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
         private const int PlainFloorWeight = 7;
-        private static readonly Vector2Int StartCell = new Vector2Int(20, 30);
-        // Spawn points along the arena edges and in the corners, inside the outer wall ring and clear of obstacles.
-        private static readonly Vector2Int[] SpawnCells =
-        {
-            new Vector2Int(3, 3), new Vector2Int(36, 3), new Vector2Int(3, 56), new Vector2Int(36, 56),
-            new Vector2Int(3, 30), new Vector2Int(36, 30), new Vector2Int(20, 3), new Vector2Int(20, 56),
-        };
-
-        // Obstacles as (x, y, width, height) in cells, inside the outer wall ring.
-        private static readonly RectInt[] Obstacles =
-        {
-            new RectInt(6, 8, 4, 2),
-            new RectInt(14, 12, 2, 2),
-            new RectInt(28, 10, 3, 5),
-            new RectInt(16, 20, 8, 2),
-            new RectInt(8, 30, 2, 8),
-            new RectInt(30, 28, 4, 4),
-            new RectInt(18, 40, 2, 6),
-            new RectInt(6, 48, 6, 2),
-            new RectInt(26, 50, 5, 2),
-        };
+        private static readonly ArenaLayout Layout = new ArenaLayout(
+            40, 60, new Vector2Int(20, 30),
+            // Spawn points along the arena edges and in the corners, inside the outer wall ring and clear of obstacles.
+            new[]
+            {
+                new Vector2Int(3, 3), new Vector2Int(36, 3), new Vector2Int(3, 56), new Vector2Int(36, 56),
+                new Vector2Int(3, 30), new Vector2Int(36, 30), new Vector2Int(20, 3), new Vector2Int(20, 56),
+            },
+            new[]
+            {
+                new RectInt(6, 8, 4, 2),
+                new RectInt(14, 12, 2, 2),
+                new RectInt(28, 10, 3, 5),
+                new RectInt(16, 20, 8, 2),
+                new RectInt(8, 30, 2, 8),
+                new RectInt(30, 28, 4, 4),
+                new RectInt(18, 40, 2, 6),
+                new RectInt(6, 48, 6, 2),
+                new RectInt(26, 50, 5, 2),
+            });
 
         [MenuItem("RushOps/Szenen/Arena_Test erzeugen")]
         public static void Build()
+        {
+            BuildScene(ScenePath, Layout, true, null);
+        }
+
+        /// <summary>
+        /// Builds a playable arena from <paramref name="layout"/>, lets <paramref name="extend"/> add level objects and
+        /// saves it at <paramref name="scenePath"/>. The scene is added to the build settings, as the first scene if
+        /// <paramref name="firstInBuild"/>.
+        /// </summary>
+        internal static void BuildScene(string scenePath, ArenaLayout layout, bool firstInBuild, System.Action<ArenaScene> extend)
         {
             // Create the scene first: NewScene unloads assets loaded before it, which would drop the references below.
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -167,9 +175,9 @@ namespace RushOps.Editor.Scenes
             var walkerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerWalkPath);
 
             CreateGlobalLight();
-            Tilemap walls = CreateArena(floorTiles, wallTop, wallFront);
+            Tilemap walls = CreateArena(layout, floorTiles, wallTop, wallFront);
             ProjectilePool pool = CreateProjectilePool(bulletPrefab);
-            Transform target = CreatePlayer(playerIdle, playerConfig, weaponConfig, pool, actions);
+            Transform target = CreatePlayer(layout.StartCell, playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
             PauseController pause = CreateHud(LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), PixelFontBuilder.Build());
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
@@ -177,17 +185,19 @@ namespace RushOps.Editor.Scenes
             Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(
                 walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig, LoadOrCreateFlashMaterial());
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
-            EnemyPool enemyPool = CreateEnemies(walkerPrefab, navigator, LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), target);
+            EnemyPool enemyPool = CreateEnemies(
+                layout.SpawnCells, walkerPrefab, navigator, LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), target);
             var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
             aimAssist.FindProperty("_enemies").objectReferenceValue = enemyPool;
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
-            CreateGameFeel(feelConfig, target, enemyPool, cameraFollow, pause);
+            SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPool, cameraFollow, pause);
+            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPool, sfx));
 
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            AddToBuildSettings(ScenePath);
+            EditorSceneManager.SaveScene(scene, scenePath);
+            AddToBuildSettings(scenePath, firstInBuild);
             AssetDatabase.SaveAssets();
-            Debug.Log($"[ArenaTestSceneBuilder] Saved {ScenePath}");
+            Debug.Log($"[ArenaTestSceneBuilder] Saved {scenePath}");
         }
 
         private static Tile CreateOrUpdateTile(string tilePath, string texturePath, Tile.ColliderType colliderType)
@@ -206,7 +216,7 @@ namespace RushOps.Editor.Scenes
         }
 
         // Existing configs are kept, so tuned values survive a scene rebuild.
-        private static T LoadOrCreateConfig<T>(string path) where T : ScriptableObject
+        internal static T LoadOrCreateConfig<T>(string path) where T : ScriptableObject
         {
             var config = AssetDatabase.LoadAssetAtPath<T>(path);
             if (config != null)
@@ -220,7 +230,7 @@ namespace RushOps.Editor.Scenes
             return AssetDatabase.LoadAssetAtPath<T>(path);
         }
 
-        private static void EnsureFolder(string folder)
+        internal static void EnsureFolder(string folder)
         {
             if (AssetDatabase.IsValidFolder(folder))
             {
@@ -232,7 +242,7 @@ namespace RushOps.Editor.Scenes
             AssetDatabase.CreateFolder(parent, Path.GetFileName(folder));
         }
 
-        private static int RequireLayer(string name)
+        internal static int RequireLayer(string name)
         {
             int layer = LayerMask.NameToLayer(name);
             if (layer < 0)
@@ -296,14 +306,14 @@ namespace RushOps.Editor.Scenes
             light.intensity = 1f;
         }
 
-        private static Tilemap CreateArena(Tile[] floorTiles, Tile wallTop, Tile wallFront)
+        private static Tilemap CreateArena(ArenaLayout layout, Tile[] floorTiles, Tile wallTop, Tile wallFront)
         {
             var grid = new GameObject("Grid", typeof(Grid));
 
             Tilemap floor = CreateTilemap(grid.transform, "Floor", FloorSortingOrder);
-            for (int x = 0; x < ArenaWidth; x++)
+            for (int x = 0; x < layout.Width; x++)
             {
-                for (int y = 0; y < ArenaHeight; y++)
+                for (int y = 0; y < layout.Height; y++)
                 {
                     floor.SetTile(new Vector3Int(x, y, 0), floorTiles[FloorVariant(x, y)]);
                 }
@@ -312,10 +322,16 @@ namespace RushOps.Editor.Scenes
             Tilemap walls = CreateTilemap(grid.transform, "Walls", ActorSortingOrder);
             walls.gameObject.layer = RequireLayer(WallsLayer);
             walls.GetComponent<TilemapRenderer>().mode = TilemapRenderer.Mode.Individual;
-            foreach (Vector3Int cell in WallCells())
+            for (int x = 0; x < layout.Width; x++)
             {
-                // The front face shows only where no wall continues to the south.
-                walls.SetTile(cell, IsWall(cell.x, cell.y - 1) ? wallTop : wallFront);
+                for (int y = 0; y < layout.Height; y++)
+                {
+                    if (layout.IsWall(x, y))
+                    {
+                        // The front face shows only where no wall continues to the south.
+                        walls.SetTile(new Vector3Int(x, y, 0), layout.IsWall(x, y - 1) ? wallTop : wallFront);
+                    }
+                }
             }
 
             walls.CompressBounds();
@@ -349,44 +365,10 @@ namespace RushOps.Editor.Scenes
             return go.GetComponent<Tilemap>();
         }
 
-        private static IEnumerable<Vector3Int> WallCells()
-        {
-            for (int x = 0; x < ArenaWidth; x++)
-            {
-                for (int y = 0; y < ArenaHeight; y++)
-                {
-                    if (IsWall(x, y))
-                    {
-                        yield return new Vector3Int(x, y, 0);
-                    }
-                }
-            }
-        }
-
-        private static bool IsWall(int x, int y)
-        {
-            bool inside = x >= 0 && y >= 0 && x < ArenaWidth && y < ArenaHeight;
-            bool border = x == 0 || y == 0 || x == ArenaWidth - 1 || y == ArenaHeight - 1;
-            return inside && (border || IsObstacle(x, y));
-        }
-
-        private static bool IsObstacle(int x, int y)
-        {
-            foreach (RectInt obstacle in Obstacles)
-            {
-                if (obstacle.Contains(new Vector2Int(x, y)))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         private static Transform CreatePlayer(
-            DirectionalAnimation idle, PlayerConfig config, WeaponConfig weaponConfig, ProjectilePool pool, PlayerActions actions)
+            Vector2Int startCell, DirectionalAnimation idle, PlayerConfig config, WeaponConfig weaponConfig, ProjectilePool pool, PlayerActions actions)
         {
-            DirectionalSpriteAnimator view = CreateCharacter("Player", null, StartCell, idle, Direction8.S);
+            DirectionalSpriteAnimator view = CreateCharacter("Player", null, startCell, idle, Direction8.S);
             GameObject go = view.gameObject;
             go.tag = "Player";
             go.layer = RequireLayer(PlayerLayer);
@@ -549,7 +531,7 @@ namespace RushOps.Editor.Scenes
             return navigator;
         }
 
-        private static EnemyPool CreateEnemies(Enemy prefab, FlowFieldNavigator navigator, SpawnerConfig config, Transform player)
+        private static EnemyPool CreateEnemies(Vector2Int[] spawnCells, Enemy prefab, FlowFieldNavigator navigator, SpawnerConfig config, Transform player)
         {
             var go = new GameObject("EnemyPool");
             var pool = go.AddComponent<EnemyPool>();
@@ -565,10 +547,10 @@ namespace RushOps.Editor.Scenes
             }
 
             var root = new GameObject("SpawnPoints").transform;
-            var points = new SpawnPoint[SpawnCells.Length];
-            for (int i = 0; i < SpawnCells.Length; i++)
+            var points = new SpawnPoint[spawnCells.Length];
+            for (int i = 0; i < spawnCells.Length; i++)
             {
-                points[i] = CreateSpawnPoint($"SpawnPoint_{i}", root, SpawnCells[i], marker);
+                points[i] = CreateSpawnPoint($"SpawnPoint_{i}", root, spawnCells[i], marker);
             }
 
             var spawner = new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
@@ -658,7 +640,7 @@ namespace RushOps.Editor.Scenes
             return follow;
         }
 
-        private static void CreateGameFeel(FeelConfig config, Transform player, EnemyPool enemies, CameraFollow camera, PauseController pause)
+        private static SfxPlayer CreateGameFeel(FeelConfig config, Transform player, EnemyPool enemies, CameraFollow camera, PauseController pause)
         {
             var go = new GameObject("GameFeel");
             var hitstop = go.AddComponent<Hitstop>();
@@ -682,9 +664,10 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_hitClip").objectReferenceValue = LoadClip("Hit.wav");
             serialized.FindProperty("_deathClip").objectReferenceValue = LoadClip("Death.wav");
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            return sfx;
         }
 
-        private static AudioClip LoadClip(string file)
+        internal static AudioClip LoadClip(string file)
         {
             string path = $"{SfxDir}/{file}";
             var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
@@ -718,6 +701,7 @@ namespace RushOps.Editor.Scenes
         private static void CreateTouchControls(TouchControlsConfig config, PlayerDash dash)
         {
             var eventSystem = new GameObject("EventSystem", typeof(EventSystem));
+            ForgetCachedDefaultUiActions();
             eventSystem.AddComponent<InputSystemUIInputModule>().AssignDefaultActions();
 
             var root = new GameObject("TouchControls", typeof(RectTransform));
@@ -744,6 +728,15 @@ namespace RushOps.Editor.Scenes
             var serialized = new SerializedObject(visibility);
             serialized.FindProperty("_controls").objectReferenceValue = safeArea.gameObject;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // The UI module caches its default actions in a static field. NewScene unloads that asset, so a second scene
+        // built in the same domain would get references to a destroyed asset. Dropping the cache makes it create new ones.
+        private static void ForgetCachedDefaultUiActions()
+        {
+            System.Reflection.FieldInfo cache = typeof(InputSystemUIInputModule).GetField(
+                "defaultActions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+            cache?.SetValue(null, null);
         }
 
         private static PauseController CreateHud(HudConfig config, PlayerHealth player, Font font)
@@ -1003,7 +996,7 @@ namespace RushOps.Editor.Scenes
             public InputActionReference Dash;
         }
 
-        private static void AddToBuildSettings(string path)
+        private static void AddToBuildSettings(string path, bool first)
         {
             var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (scenes.Exists(s => s.path == path))
@@ -1011,7 +1004,7 @@ namespace RushOps.Editor.Scenes
                 return;
             }
 
-            scenes.Insert(0, new EditorBuildSettingsScene(path, true));
+            scenes.Insert(first ? 0 : scenes.Count, new EditorBuildSettingsScene(path, true));
             EditorBuildSettings.scenes = scenes.ToArray();
         }
     }
