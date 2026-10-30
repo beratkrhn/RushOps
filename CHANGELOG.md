@@ -62,6 +62,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `GateConfig` (`Data/Levels/GateConfig.asset`): Öffnungsdauer 0,6 s, davon 0,15 s Wackeln mit 0,04 Einheiten, Lautstärke 1 *(Startwerte)* (Issue #17).
 - `DebugGateCondition`: Testbedingung, erfüllt einige Sekunden nach Aktivierung einer Zone oder sofort per Kontextmenü (Issue #17).
 - Testlevel `Arena_Zonen` (24×84 Kacheln, drei Zonen von Süden nach Norden, zwei Tore mit Debug-Bedingung nach 5 s), per `RushOps → Szenen → Arena_Zonen erzeugen` reproduzierbar; Spawnpunkte vorerst nur in Zone 1 (Issue #17).
+- Wellen pro Zone: `WaveDefinition` (ScriptableObject) mit Wellen aus Gegnertyp und Anzahl, Spawn-Intervall, Pause zwischen Wellen und Verhalten nach der letzten Welle (alle wiederholen, letzte wiederholen, enden); eine Welle gilt als geschafft, wenn alle ihre Gegner tot sind. Jede `Zone` hat eigene Spawnpunkte und Wellen, die starten, sobald sie aktiv wird, und stoppen, sobald ihr Tor offen ist (Issue #18).
+- `WaveDirector` hält das globale Limit von 10 Gegnern (Bosse ausgenommen, neues Feld `EnemyDefinition.IsBoss`); überzählige Spawns warten in einer Warteschlange; Spawnpunkte im Sichtbereich oder nahe am Spieler werden weiter übersprungen. Reine Logik in `WaveSequence` und `SpawnQueue` mit EditMode-Tests (Issue #18).
+- Wellen *(Startwerte)* unter `Data/Waves/`: `Arena_Test` 12/16/20 Walker, Intervall 0,6 s, Pause 3 s, wiederholt; `Arena_Zonen` Zone 1 4/6/8 (1,0 s, 4 s), Zone 2 6/10/12 (0,8 s, 3 s), beide wiederholen die letzte Welle, Zone 3 8/12/16 (0,6 s, 3 s) endet (Issue #18).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -83,8 +86,10 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Gegner werden mit dem eigenen Sprite-Shader unbeleuchtet gezeichnet; bei nur globalem Licht sieht das gleich aus (Issue #12).
 - Bundle-ID `com.beratkrhn.rushops` (iOS und Android), Mindestversionen Android 8.0 (API 26) und iOS 15, Android mit IL2CPP und ARM64, keine Autorotation; Lastenheft v0.4 (Issue #13).
 - Der Arena-Builder baut Szenen aus einem `ArenaLayout`, damit weitere Testlevel ihn mitnutzen; mehrere Szenen lassen sich nacheinander im selben Editor-Durchlauf bauen (Issue #17).
+- `Arena_Zonen`: Debug-Tore öffnen sich erst 20 s nach Aktivierung der Zone davor, damit Zeit für ein paar Wellen bleibt (Issue #18).
 
 ### Entfernt
+- `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
 - 16-px-Spieler, Top-down-Walker und einteiliges Wand-Tile aus Issue #3 (Issue #58).
 - Temporärer `DebugTargetMover` (Issue #4).

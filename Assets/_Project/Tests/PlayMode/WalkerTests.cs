@@ -30,7 +30,7 @@ namespace RushOps.Tests.PlayMode
             Assert.IsNotNull(_pool, "Arena_Test has no EnemyPool");
             Assert.IsNotNull(_navigator, "Arena_Test has no FlowFieldNavigator");
             // These tests place walkers themselves.
-            Object.FindFirstObjectByType<EnemySpawner>().enabled = false;
+            Object.FindFirstObjectByType<WaveDirector>().enabled = false;
             _player.GetComponent<PlayerMoveInput>().enabled = false;
             _player.GetComponent<PlayerAimInput>().enabled = false;
         }

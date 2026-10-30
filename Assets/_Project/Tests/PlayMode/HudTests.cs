@@ -29,7 +29,7 @@ namespace RushOps.Tests.PlayMode
             _pause = Object.FindFirstObjectByType<PauseController>();
             Assert.IsNotNull(_hearts, "Arena_Test has no HeartsView");
             Assert.IsNotNull(_pause, "Arena_Test has no PauseController");
-            Object.FindFirstObjectByType<EnemySpawner>().enabled = false;
+            Object.FindFirstObjectByType<WaveDirector>().enabled = false;
         }
 
         [TearDown]

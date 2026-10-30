@@ -25,7 +25,7 @@ namespace RushOps.Tests.PlayMode
             yield return SceneManager.LoadSceneAsync(SceneName, LoadSceneMode.Single);
             yield return null;
 
-            Object.FindFirstObjectByType<EnemySpawner>().enabled = false;
+            Object.FindFirstObjectByType<WaveDirector>().enabled = false;
             _pool = Object.FindFirstObjectByType<EnemyPool>();
             _weapon = Object.FindFirstObjectByType<PlayerWeapon>();
             _aim = _weapon.GetComponent<PlayerAim>();

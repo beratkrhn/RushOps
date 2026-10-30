@@ -33,6 +33,9 @@ namespace RushOps.Enemies
         /// <summary>Raised when a spawned enemy dies.</summary>
         public event Action<Enemy> EnemyDied;
 
+        /// <summary>Enemy type of the pooled prefab; null without prefab.</summary>
+        public EnemyDefinition Definition => _prefab != null ? _prefab.Definition : null;
+
         /// <summary>Number of enemies currently in the level, including dying ones.</summary>
         public int CountActive => _pool != null ? _pool.CountActive : 0;
 
