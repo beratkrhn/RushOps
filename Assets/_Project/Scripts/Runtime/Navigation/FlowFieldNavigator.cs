@@ -6,7 +6,7 @@ namespace RushOps.Navigation
 {
     /// <summary>
     /// Runs one <see cref="FlowField"/> towards the target (the player) for all enemies (ADR 0003, F-GEG-01).
-    /// Cells with a tile on the obstacle tilemap are blocked. The field is recomputed when the target changes
+    /// Cells with a tile on the obstacle tilemap are blocked, as are cells of closed gates (<see cref="SetBlocked"/>). The field is recomputed when the target changes
     /// cell, at most every <see cref="NavigationConfig.RecomputeInterval"/>. Enemies register themselves and ask
     /// <see cref="Steer"/> for their move direction, which adds separation from the other registered enemies.
     /// </summary>
@@ -18,6 +18,7 @@ namespace RushOps.Navigation
         [SerializeField] private Transform _target;
 
         private readonly List<Transform> _agents = new List<Transform>();
+        private readonly HashSet<Vector3Int> _blocked = new HashSet<Vector3Int>();
         private Vector2[] _positions = new Vector2[16];
         private FlowField _field;
         private Vector3Int _origin;
@@ -109,6 +110,49 @@ namespace RushOps.Navigation
             return toNext.sqrMagnitude > 1e-6f ? toNext.normalized : step;
         }
 
+        /// <summary>
+        /// Blocks or frees the cells whose centers lie in <paramref name="area"/> (world units), e.g. a closed gate,
+        /// and rebuilds the field.
+        /// </summary>
+        public void SetBlocked(Bounds area, bool blocked)
+        {
+            if (_obstacles == null)
+            {
+                return;
+            }
+
+            Vector3Int min = _obstacles.WorldToCell(area.min);
+            Vector3Int max = _obstacles.WorldToCell(area.max);
+            for (int x = min.x; x <= max.x; x++)
+            {
+                for (int y = min.y; y <= max.y; y++)
+                {
+                    var cell = new Vector3Int(x, y, 0);
+                    if (!area.Contains(_obstacles.GetCellCenterWorld(cell)))
+                    {
+                        continue;
+                    }
+
+                    if (blocked)
+                    {
+                        _blocked.Add(cell);
+                    }
+                    else
+                    {
+                        _blocked.Remove(cell);
+                    }
+                }
+            }
+
+            Rebuild();
+        }
+
+        /// <summary>True if the tilemap cell <paramref name="cell"/> is blocked via <see cref="SetBlocked"/>.</summary>
+        public bool IsBlocked(Vector3Int cell)
+        {
+            return _blocked.Contains(cell);
+        }
+
         /// <summary>Re-reads the obstacle tilemap and recomputes the field, e.g. after a gate opened.</summary>
         public void Rebuild()
         {
@@ -155,7 +199,8 @@ namespace RushOps.Navigation
             {
                 for (int y = 0; y < bounds.size.y; y++)
                 {
-                    bool blocked = _obstacles.HasTile(new Vector3Int(_origin.x + x, _origin.y + y, 0));
+                    var cell = new Vector3Int(_origin.x + x, _origin.y + y, 0);
+                    bool blocked = _obstacles.HasTile(cell) || _blocked.Contains(cell);
                     _field.SetWalkable(new Vector2Int(x, y), !blocked);
                 }
             }

@@ -8,6 +8,7 @@ Output (under Assets/_Project/Audio/SFX/):
   Shot.wav    short bright blip with a falling pitch
   Hit.wav     dull thump with a noise burst
   Death.wav   lower, longer squelch with a falling saw tone
+  GateOpen.wav  rattling chain with a heavy rising clunk at the end (issue #17)
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -72,6 +73,24 @@ def death(rng: random.Random) -> list[float]:
     return out
 
 
+def gate_open(rng: random.Random) -> list[float]:
+    length = 0.7
+    out = []
+    smoothed = 0.0
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        # Chain rattle: noise bursts at a fast clicking rate that slows down.
+        click = 1.0 if math.sin(2 * math.pi * (38 - 20 * t / length) * t) > 0.7 else 0.0
+        smoothed += 0.35 * (rng.uniform(-1, 1) - smoothed)
+        rattle = smoothed * click * (1 - 0.5 * t / length)
+        # Low clunk when the bars hit the bottom.
+        tc = t - 0.55
+        clunk = math.sin(sweep(140, 60, tc, 0.15)) * envelope(tc, 0.15, 0.003) if tc >= 0 else 0.0
+        hum = 0.25 * math.sin(2 * math.pi * 90 * t) * min(1.0, t / 0.05) * (1 - t / length)
+        out.append(0.6 * rattle + 0.9 * clunk + hum)
+    return out
+
+
 def write(path: Path, samples: list[float]) -> None:
     peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
@@ -84,7 +103,7 @@ def write(path: Path, samples: list[float]) -> None:
 def main() -> None:
     SFX_DIR.mkdir(parents=True, exist_ok=True)
     rng = random.Random(12)
-    for name, make in (("Shot", shot), ("Hit", hit), ("Death", death)):
+    for name, make in (("Shot", shot), ("Hit", hit), ("Death", death), ("GateOpen", gate_open)):
         path = SFX_DIR / f"{name}.wav"
         write(path, make(rng))
         print(f"Wrote {path.relative_to(ROOT)}")
