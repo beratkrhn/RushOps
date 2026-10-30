@@ -222,7 +222,15 @@ namespace RushOps.Editor.Scenes
         /// <summary>Hands <paramref name="zones"/> to the arena's wave director.</summary>
         internal static void AssignZones(ArenaScene arena, Zone[] zones)
         {
-            var serialized = new SerializedObject(arena.Director);
+            SetZones(new SerializedObject(arena.Director), zones);
+            var tracker = new SerializedObject(arena.Tracker);
+            tracker.FindProperty("_sfx").objectReferenceValue = arena.Sfx;
+            tracker.FindProperty("_doneClip").objectReferenceValue = LoadClip("MissionDone.wav");
+            SetZones(tracker, zones);
+        }
+
+        private static void SetZones(SerializedObject serialized, Zone[] zones)
+        {
             SerializedProperty property = serialized.FindProperty("_zones");
             property.arraySize = zones.Length;
             for (int i = 0; i < zones.Length; i++)
@@ -231,6 +239,17 @@ namespace RushOps.Editor.Scenes
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static LevelKills CreateLevelKills(EnemyPool pool)
+        {
+            var kills = new GameObject("LevelKills").AddComponent<LevelKills>();
+            var serialized = new SerializedObject(kills);
+            SerializedProperty pools = serialized.FindProperty("_pools");
+            pools.arraySize = 1;
+            pools.GetArrayElementAtIndex(0).objectReferenceValue = pool;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return kills;
         }
 
         /// <summary>
@@ -273,7 +292,9 @@ namespace RushOps.Editor.Scenes
             ProjectilePool pool = CreateProjectilePool(bulletPrefab);
             Transform target = CreatePlayer(layout.StartCell, playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
-            PauseController pause = CreateHud(LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), PixelFontBuilder.Build());
+            PauseController pause = CreateHud(
+                LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), PixelFontBuilder.Build(),
+                out MissionTracker tracker);
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
             Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(
@@ -281,12 +302,13 @@ namespace RushOps.Editor.Scenes
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
             EnemyPool enemyPool = CreateEnemyPool(walkerPrefab, navigator);
             WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPool, target);
+            LevelKills kills = CreateLevelKills(enemyPool);
             var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
             aimAssist.FindProperty("_enemies").objectReferenceValue = enemyPool;
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
             SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPool, cameraFollow, pause);
-            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPool, director, sfx));
+            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPool, director, kills, tracker, sfx));
 
             EditorSceneManager.SaveScene(scene, scenePath);
             AddToBuildSettings(scenePath, firstInBuild);
@@ -820,7 +842,7 @@ namespace RushOps.Editor.Scenes
             cache?.SetValue(null, null);
         }
 
-        private static PauseController CreateHud(HudConfig config, PlayerHealth player, Font font)
+        private static PauseController CreateHud(HudConfig config, PlayerHealth player, Font font, out MissionTracker tracker)
         {
             var root = new GameObject("HUD", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
@@ -839,6 +861,7 @@ namespace RushOps.Editor.Scenes
             CreateHearts(safeArea, config, player);
             CreatePauseButton(safeArea, pause);
             CreateFpsCounter(safeArea, font);
+            tracker = CreateMissionTracker(safeArea, config, font);
             GameObject overlay = CreatePauseOverlay((RectTransform)root.transform, pause, font);
 
             var serialized = new SerializedObject(pause);
@@ -884,6 +907,26 @@ namespace RushOps.Editor.Scenes
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Top right below the pause button, growing to the left; zones, sound and clip are set by AssignZones.
+        private static MissionTracker CreateMissionTracker(RectTransform parent, HudConfig config, Font font)
+        {
+            Text label = CreateText("MissionTracker", parent, font, MissionText.KillGate(0, 10), HudPixelScale, Vector2.zero);
+            var topRight = new Vector2(1f, 1f);
+            label.rectTransform.anchorMin = topRight;
+            label.rectTransform.anchorMax = topRight;
+            label.rectTransform.pivot = topRight;
+            label.rectTransform.anchoredPosition = new Vector2(-HudMargin, -PauseButtonSize);
+            label.alignment = TextAnchor.UpperRight;
+            label.enabled = false;
+
+            var tracker = label.gameObject.AddComponent<MissionTracker>();
+            var serialized = new SerializedObject(tracker);
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_label").objectReferenceValue = label;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return tracker;
         }
 
         // Top center, between hearts and pause button; hides itself in release builds.

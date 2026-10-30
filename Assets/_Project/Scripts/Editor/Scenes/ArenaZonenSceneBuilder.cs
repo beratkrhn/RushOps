@@ -6,10 +6,10 @@ using UnityEngine;
 namespace RushOps.Editor.Scenes
 {
     /// <summary>
-    /// Builds the <c>Arena_Zonen</c> test level (issues #17, #18): the arena of <see cref="ArenaTestSceneBuilder"/> in a
-    /// tall layout with three zones stacked from south to north, separated by two gates. Each zone has its own spawn
-    /// points and waves. Both gates open by a <see cref="DebugGateCondition"/> some seconds after the zone in front
-    /// of them became active.
+    /// Builds the <c>Arena_Zonen</c> test level (issues #17, #18, #19): the arena of <see cref="ArenaTestSceneBuilder"/>
+    /// in a tall layout with three zones stacked from south to north, separated by two gates. Each zone has its own
+    /// spawn points and waves. The first gate is a kill gate; the second opens by a <see cref="DebugGateCondition"/>
+    /// some seconds after the zone in front of it became active.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaZonenSceneBuilder.Build</c>
     /// </summary>
     public static class ArenaZonenSceneBuilder
@@ -26,6 +26,8 @@ namespace RushOps.Editor.Scenes
         // Debug gates open this many seconds after the zone in front of them became active, leaving time for some waves.
         private const float DebugGateDelay = 20f;
         private const string WavesDir = "Assets/_Project/Data/Waves";
+        // Kills since level start that open the first gate.
+        private const int KillGateKills = 10;
 
         // Spawn points per zone, at the far end and the sides, away from where the player comes in.
         private static readonly Vector2Int[][] ZoneSpawnCells =
@@ -79,7 +81,7 @@ namespace RushOps.Editor.Scenes
             var gates = new Gate[DividerRows.Length];
             for (int i = 0; i < gates.Length; i++)
             {
-                gates[i] = CreateGate($"Gate_{i + 1}", gatesRoot, DividerRows[i], config, bars, openClip, arena);
+                gates[i] = CreateGate($"Gate_{i + 1}", gatesRoot, DividerRows[i], config, bars, openClip, arena, i == 0);
             }
 
             // Zones span the inner columns, from the row above the previous divider up to their own divider.
@@ -94,7 +96,7 @@ namespace RushOps.Editor.Scenes
                 var area = new RectInt(1, bottom, Width - 2, top - bottom);
                 Zone zone = ArenaTestSceneBuilder.CreateZone(arena, $"Zone_{i + 1}", zonesRoot, area, ZoneSpawnCells[i], waves[i], exit);
                 zones[i] = zone;
-                if (exit != null)
+                if (exit != null && exit.GetComponent<DebugGateCondition>() != null)
                 {
                     var condition = new SerializedObject(exit.GetComponent<DebugGateCondition>());
                     condition.FindProperty("_zone").objectReferenceValue = zone;
@@ -127,7 +129,8 @@ namespace RushOps.Editor.Scenes
         }
 
         private static Gate CreateGate(
-            string name, Transform parent, int row, GateConfig config, Sprite barSprite, AudioClip openClip, ArenaScene arena)
+            string name, Transform parent, int row, GateConfig config, Sprite barSprite, AudioClip openClip, ArenaScene arena,
+            bool killGate)
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
@@ -148,11 +151,25 @@ namespace RushOps.Editor.Scenes
                 bars[i].sortingOrder = ArenaTestSceneBuilder.ActorSortingOrder;
             }
 
-            go.AddComponent<DebugGateCondition>();
+            MonoBehaviour condition;
+            if (killGate)
+            {
+                var kills = go.AddComponent<KillGateCondition>();
+                var serializedKills = new SerializedObject(kills);
+                serializedKills.FindProperty("_kills").objectReferenceValue = arena.Kills;
+                serializedKills.FindProperty("_requiredKills").intValue = KillGateKills;
+                serializedKills.ApplyModifiedPropertiesWithoutUndo();
+                condition = kills;
+            }
+            else
+            {
+                condition = go.AddComponent<DebugGateCondition>();
+            }
+
             var gate = go.AddComponent<Gate>();
             var serialized = new SerializedObject(gate);
             serialized.FindProperty("_config").objectReferenceValue = config;
-            serialized.FindProperty("_condition").objectReferenceValue = go.GetComponent<DebugGateCondition>();
+            serialized.FindProperty("_condition").objectReferenceValue = condition;
             serialized.FindProperty("_size").vector2IntValue = new Vector2Int(GateWidth, 1);
             serialized.FindProperty("_blocker").objectReferenceValue = blocker;
             serialized.FindProperty("_navigator").objectReferenceValue = arena.Navigator;

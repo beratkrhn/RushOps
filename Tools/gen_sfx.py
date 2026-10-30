@@ -9,6 +9,7 @@ Output (under Assets/_Project/Audio/SFX/):
   Hit.wav     dull thump with a noise burst
   Death.wav   lower, longer squelch with a falling saw tone
   GateOpen.wav  rattling chain with a heavy rising clunk at the end (issue #17)
+  MissionDone.wav  bright rising three-note chime when a kill gate opens (issue #19)
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -91,6 +92,27 @@ def gate_open(rng: random.Random) -> list[float]:
     return out
 
 
+def mission_done(rng: random.Random) -> list[float]:
+    # Rising major arpeggio in square waves, the last note held: reads as "goal reached" over the battle noise.
+    notes = [(523.25, 0.0), (659.25, 0.09), (783.99, 0.18), (1046.5, 0.27)]
+    length = 0.75
+    out = []
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        sample = 0.0
+        for freq, start in notes:
+            if t < start:
+                continue
+            tn = t - start
+            note_len = length - start if freq == notes[-1][0] else 0.16
+            if tn > note_len:
+                continue
+            square = 1.0 if math.sin(2 * math.pi * freq * tn) >= 0 else -1.0
+            sample += 0.35 * square * envelope(tn, note_len, 0.003)
+        out.append(sample + 0.02 * rng.uniform(-1, 1) * max(0.0, 1 - t / 0.05))
+    return out
+
+
 def write(path: Path, samples: list[float]) -> None:
     peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
@@ -103,7 +125,8 @@ def write(path: Path, samples: list[float]) -> None:
 def main() -> None:
     SFX_DIR.mkdir(parents=True, exist_ok=True)
     rng = random.Random(12)
-    for name, make in (("Shot", shot), ("Hit", hit), ("Death", death), ("GateOpen", gate_open)):
+    for name, make in (("Shot", shot), ("Hit", hit), ("Death", death), ("GateOpen", gate_open),
+                       ("MissionDone", mission_done)):
         path = SFX_DIR / f"{name}.wav"
         write(path, make(rng))
         print(f"Wrote {path.relative_to(ROOT)}")

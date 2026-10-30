@@ -4,6 +4,7 @@ using NUnit.Framework;
 using RushOps.Enemies;
 using RushOps.Levels;
 using RushOps.Navigation;
+using RushOps.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.TestTools;
@@ -60,7 +61,7 @@ namespace RushOps.Tests.PlayMode
         public IEnumerator DebugGate_Forced_OpensFreesPassageAndCompletesZone()
         {
             yield return null;
-            Gate gate = Find<Gate>("Gate_1");
+            Gate gate = Find<Gate>("Gate_2");
             FlowFieldNavigator navigator = Object.FindFirstObjectByType<FlowFieldNavigator>();
             bool opened = false;
             gate.Opened += _ => opened = true;
@@ -74,7 +75,55 @@ namespace RushOps.Tests.PlayMode
             Assert.AreEqual(GateState.Open, gate.State);
             Assert.IsNull(Physics2D.OverlapPoint(gate.transform.position, LayerMask.GetMask("Walls")), "Open gate still blocks");
             Assert.IsTrue(navigator.Field.IsWalkable(navigator.CellOf(gate.transform.position)));
-            Assert.AreEqual(ZoneState.Completed, Find<Zone>("Zone_1").State);
+            Assert.AreEqual(ZoneState.Completed, Find<Zone>("Zone_2").State);
+        }
+
+        [UnityTest]
+        public IEnumerator KillGate_OpensAfterRequiredKills_TrackerShowsProgress()
+        {
+            yield return null;
+            Gate gate = Find<Gate>("Gate_1");
+            var condition = gate.GetComponent<KillGateCondition>();
+            Assert.IsNotNull(condition, "Gate_1 should be a kill gate");
+            KillCounter counter = Object.FindFirstObjectByType<LevelKills>().Counter;
+            MissionTracker tracker = Object.FindFirstObjectByType<MissionTracker>();
+            Assert.AreEqual(MissionText.KillGate(0, condition.RequiredKills), tracker.Text);
+
+            for (int i = 0; i < condition.RequiredKills - 1; i++)
+            {
+                counter.Register();
+            }
+
+            yield return null;
+            Assert.AreEqual(GateState.Closed, gate.State);
+            Assert.AreEqual(MissionText.KillGate(condition.RequiredKills - 1, condition.RequiredKills), tracker.Text);
+
+            counter.Register();
+            yield return null;
+            yield return null;
+
+            Assert.AreNotEqual(GateState.Closed, gate.State);
+            Assert.AreEqual(MissionText.GateOpen, tracker.Text);
+        }
+
+        [UnityTest]
+        public IEnumerator KilledEnemy_CountsTowardsLevelKills()
+        {
+            yield return null;
+            KillCounter counter = Object.FindFirstObjectByType<LevelKills>().Counter;
+            WaveDirector director = Object.FindFirstObjectByType<WaveDirector>();
+            Enemy spawned = null;
+            director.Spawned += (enemy, point) => spawned = enemy;
+            float timeout = Time.time + 10f;
+            while (Time.time < timeout && spawned == null)
+            {
+                yield return null;
+            }
+
+            Assert.IsNotNull(spawned, "no enemy spawned");
+            ((RushOps.Combat.IDamageable)spawned).TakeHit(1000, Vector2.zero);
+
+            Assert.AreEqual(1, counter.Count);
         }
 
         [UnityTest]
@@ -101,7 +150,13 @@ namespace RushOps.Tests.PlayMode
             WaveDirector director = Object.FindFirstObjectByType<WaveDirector>();
             Zone first = Find<Zone>("Zone_1");
             Zone second = Find<Zone>("Zone_2");
-            Find<Gate>("Gate_1").GetComponent<DebugGateCondition>().Force();
+            Gate gate = Find<Gate>("Gate_1");
+            KillCounter counter = Object.FindFirstObjectByType<LevelKills>().Counter;
+            for (int i = 0; i < gate.GetComponent<KillGateCondition>().RequiredKills; i++)
+            {
+                counter.Register();
+            }
+
             yield return new WaitForSeconds(1.5f);
             Assert.AreEqual(WavePhase.Finished, director.SequenceOf(first).Phase, "waves of a completed zone stop");
 
