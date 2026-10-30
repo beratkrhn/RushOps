@@ -58,6 +58,10 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Build: `RushOps → Build → Android-APK (Development|Release) bauen` (auch per `-executeMethod`) wendet die Player-Einstellungen aus Code an und baut nach `Builds/Android/` (Issue #13).
 - FPS-Anzeige oben mittig, nur in Development-Builds und im Editor (Issue #13).
 - Vorlage für das Testprotokoll `docs/testprotokolle/v0.1.0.md` (Issue #13).
+- Zonen und Tore: `Zone` wird aktiv, sobald der Spieler sie betritt (Event `Zone.Activated`), und abgeschlossen, wenn ihr Ausgangstor aufgeht (`Zone.Completed`); `Gate` blockiert Spieler, Gegner und Schüsse und öffnet sich, sobald seine `IGateCondition` erfüllt ist: Gitter wackelt und versinkt, Platzhalter-Sound `GateOpen.wav`, das Flow-Field gibt die Zellen wieder frei (`FlowFieldNavigator.SetBlocked`). Reine Logik in `ZoneLogic`/`GateLogic`/`GateMath` mit EditMode-Tests (Issue #17).
+- `GateConfig` (`Data/Levels/GateConfig.asset`): Öffnungsdauer 0,6 s, davon 0,15 s Wackeln mit 0,04 Einheiten, Lautstärke 1 *(Startwerte)* (Issue #17).
+- `DebugGateCondition`: Testbedingung, erfüllt einige Sekunden nach Aktivierung einer Zone oder sofort per Kontextmenü (Issue #17).
+- Testlevel `Arena_Zonen` (24×84 Kacheln, drei Zonen von Süden nach Norden, zwei Tore mit Debug-Bedingung nach 5 s), per `RushOps → Szenen → Arena_Zonen erzeugen` reproduzierbar; Spawnpunkte vorerst nur in Zone 1 (Issue #17).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -78,6 +82,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Kein Dash, solange die Spielzeit stillsteht (Pause) (Issue #11).
 - Gegner werden mit dem eigenen Sprite-Shader unbeleuchtet gezeichnet; bei nur globalem Licht sieht das gleich aus (Issue #12).
 - Bundle-ID `com.beratkrhn.rushops` (iOS und Android), Mindestversionen Android 8.0 (API 26) und iOS 15, Android mit IL2CPP und ARM64, keine Autorotation; Lastenheft v0.4 (Issue #13).
+- Der Arena-Builder baut Szenen aus einem `ArenaLayout`, damit weitere Testlevel ihn mitnutzen; mehrere Szenen lassen sich nacheinander im selben Editor-Durchlauf bauen (Issue #17).
 
 ### Entfernt
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
