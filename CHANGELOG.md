@@ -55,6 +55,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `FeelConfig` (`Data/Feel/FeelConfig.asset`): Blitz 0,08 s, Rückstoß 4 für 0,1 s, Shake 0,15 für 0,2 s, Hitstop an mit 0,05 s, Lautstärken und Tonhöhen-Streuung *(Startwerte)* (Issue #12).
 - Platzhalter-Soundeffekte für Schuss, Treffer und Tod, synthetisiert per `Tools/gen_sfx.py` (`Audio/SFX/`), abgespielt über `SfxPlayer`; `GameFeel` verbindet Spiel-Events mit Shake, Hitstop und Sounds (Issue #12).
 - Zielhilfe: Liegt ein lebender Gegner höchstens 10° neben der Zielrichtung und in 8 Einheiten Reichweite, geht der Schuss auf den nächstgelegenen (`AimAssist`, Auswahl in `AimAssistMath` mit EditMode-Tests); Winkel, Reichweite und Schalter in `WeaponConfig` *(Startwerte)*, zur Laufzeit per `AimAssist.Enabled` umschaltbar (Issue #14).
+- Build: `RushOps → Build → Android-APK (Development|Release) bauen` (auch per `-executeMethod`) wendet die Player-Einstellungen aus Code an und baut nach `Builds/Android/` (Issue #13).
+- FPS-Anzeige oben mittig, nur in Development-Builds und im Editor (Issue #13).
+- Vorlage für das Testprotokoll `docs/testprotokolle/v0.1.0.md` (Issue #13).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -74,6 +77,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Sortierreihenfolge: Bodenmarkierungen liegen zwischen Boden und Figuren (Issue #10).
 - Kein Dash, solange die Spielzeit stillsteht (Pause) (Issue #11).
 - Gegner werden mit dem eigenen Sprite-Shader unbeleuchtet gezeichnet; bei nur globalem Licht sieht das gleich aus (Issue #12).
+- Bundle-ID `com.beratkrhn.rushops` (iOS und Android), Mindestversionen Android 8.0 (API 26) und iOS 15, Android mit IL2CPP und ARM64, keine Autorotation; Lastenheft v0.4 (Issue #13).
 
 ### Entfernt
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).

@@ -764,6 +764,7 @@ namespace RushOps.Editor.Scenes
             safeArea.gameObject.AddComponent<SafeAreaFitter>();
             CreateHearts(safeArea, config, player);
             CreatePauseButton(safeArea, pause);
+            CreateFpsCounter(safeArea, font);
             GameObject overlay = CreatePauseOverlay((RectTransform)root.transform, pause, font);
 
             var serialized = new SerializedObject(pause);
@@ -809,6 +810,18 @@ namespace RushOps.Editor.Scenes
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Top center, between hearts and pause button; hides itself in release builds.
+        private static void CreateFpsCounter(RectTransform parent, Font font)
+        {
+            Text text = CreateText("FpsCounter", parent, font, "FPS", HudPixelScale, Vector2.zero);
+            var top = new Vector2(0.5f, 1f);
+            text.rectTransform.anchorMin = top;
+            text.rectTransform.anchorMax = top;
+            text.rectTransform.pivot = top;
+            text.rectTransform.anchoredPosition = new Vector2(0f, -HudMargin);
+            text.gameObject.AddComponent<FpsCounter>();
         }
 
         private static void CreatePauseButton(RectTransform parent, PauseController pause)
