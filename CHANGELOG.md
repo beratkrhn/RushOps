@@ -65,6 +65,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Wellen pro Zone: `WaveDefinition` (ScriptableObject) mit Wellen aus Gegnertyp und Anzahl, Spawn-Intervall, Pause zwischen Wellen und Verhalten nach der letzten Welle (alle wiederholen, letzte wiederholen, enden); eine Welle gilt als geschafft, wenn alle ihre Gegner tot sind. Jede `Zone` hat eigene Spawnpunkte und Wellen, die starten, sobald sie aktiv wird, und stoppen, sobald ihr Tor offen ist (Issue #18).
 - `WaveDirector` hält das globale Limit von 10 Gegnern (Bosse ausgenommen, neues Feld `EnemyDefinition.IsBoss`); überzählige Spawns warten in einer Warteschlange; Spawnpunkte im Sichtbereich oder nahe am Spieler werden weiter übersprungen. Reine Logik in `WaveSequence` und `SpawnQueue` mit EditMode-Tests (Issue #18).
 - Wellen *(Startwerte)* unter `Data/Waves/`: `Arena_Test` 12/16/20 Walker, Intervall 0,6 s, Pause 3 s, wiederholt; `Arena_Zonen` Zone 1 4/6/8 (1,0 s, 4 s), Zone 2 6/10/12 (0,8 s, 3 s), beide wiederholen die letzte Welle, Zone 3 8/12/16 (0,6 s, 3 s) endet (Issue #18).
+- Kill-Gates: `KillCounter` zählt jeden Gegnertod im Level ab Levelstart, egal wodurch (gespeist von `LevelKills` über `Enemy.Died`); `KillGateCondition` öffnet ein Tor nach einer einstellbaren Kill-Zahl (global, nicht pro Zone). Reine Logik in `KillCounter`/`KillGoal` mit EditMode-Tests (Issue #19).
+- Missions-Tracker oben rechts: „Tor gesperrt: 4/10 Kills“ für das Ausgangstor der aktuellen Zone, beim Öffnen „Tor offen!“ mit Platzhalter-Sound `MissionDone.wav` (zusätzlich zum Tor-Sound), danach ausgeblendet; Anzeigedauer 2,5 s und Lautstärke 1 in `HudConfig` *(Startwerte)* (Issue #19).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -87,6 +89,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Bundle-ID `com.beratkrhn.rushops` (iOS und Android), Mindestversionen Android 8.0 (API 26) und iOS 15, Android mit IL2CPP und ARM64, keine Autorotation; Lastenheft v0.4 (Issue #13).
 - Der Arena-Builder baut Szenen aus einem `ArenaLayout`, damit weitere Testlevel ihn mitnutzen; mehrere Szenen lassen sich nacheinander im selben Editor-Durchlauf bauen (Issue #17).
 - `Arena_Zonen`: Debug-Tore öffnen sich erst 20 s nach Aktivierung der Zone davor, damit Zeit für ein paar Wellen bleibt (Issue #18).
+- `Arena_Zonen`: Tor 1 ist ein Kill-Gate mit 10 Kills *(Startwert)*, Tor 2 bleibt ein Debug-Tor (Issue #19).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
