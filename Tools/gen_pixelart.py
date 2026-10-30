@@ -461,6 +461,27 @@ def wall_front() -> Canvas:
     return c
 
 
+def gate_bars() -> Canvas:
+    """One cell of a gate (issue #17): iron portcullis under a hazard-striped beam, floor visible between the bars."""
+    c = Canvas(TILE, TILE)
+    beam = 8
+    # Beam on top with yellow and dark hazard stripes, so gates stand out from walls.
+    c.rect(0, 0, TILE - 1, beam - 1, "yellow")
+    for x in range(-beam, TILE, 8):
+        for y in range(beam):
+            for w in range(4):
+                c.set(x + y + w, y, "outline")
+    c.rect(0, beam, TILE - 1, beam, "brown_0")
+    # Vertical bars with a lit left edge and a crossbar.
+    for x in range(2, TILE, 6):
+        c.rect(x, beam + 1, x + 2, TILE - 2, "slate_1")
+        c.rect(x, beam + 1, x, TILE - 2, "slate_4")
+        c.set(x + 1, TILE - 1, "slate_0")
+    c.rect(0, 19, TILE - 1, 20, "slate_1")
+    c.rect(0, 19, TILE - 1, 19, "slate_4")
+    return c
+
+
 # --- Output ------------------------------------------------------------------
 
 def palette_image() -> Image.Image:
@@ -489,6 +510,7 @@ def outputs() -> dict[str, Image.Image]:
         "Tiles/Wall_Top.png": wall_top().to_image(),
         "Tiles/Wall_Front.png": wall_front().to_image(),
         "Sprites/Effects/SpawnMarker.png": spawn_marker().to_image(),
+        "Sprites/Level/Gate_Bars.png": gate_bars().to_image(),
         "Sprites/UI/Heart_Full.png": heart(True).to_image(),
         "Sprites/UI/Heart_Empty.png": heart(False).to_image(),
         "Sprites/UI/Pause_Icon.png": pause_icon().to_image(),
