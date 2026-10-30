@@ -3,7 +3,7 @@ using UnityEngine;
 namespace RushOps.Editor.Scenes
 {
     /// <summary>
-    /// Floor plan of a test arena in cells: size, outer wall ring, inner walls, player start and spawn points.
+    /// Floor plan of a test arena in cells: size, outer wall ring, inner walls and player start.
     /// Cell (x, y) covers the world square from (x, y) to (x + 1, y + 1).
     /// </summary>
     internal sealed class ArenaLayout
@@ -12,14 +12,13 @@ namespace RushOps.Editor.Scenes
 
         /// <summary>
         /// Creates a layout of <paramref name="width"/> x <paramref name="height"/> cells with a wall ring around it,
-        /// inner <paramref name="walls"/> as (x, y, width, height) rectangles and the given start and spawn cells.
+        /// inner <paramref name="walls"/> as (x, y, width, height) rectangles and the player on <paramref name="startCell"/>.
         /// </summary>
-        public ArenaLayout(int width, int height, Vector2Int startCell, Vector2Int[] spawnCells, RectInt[] walls)
+        public ArenaLayout(int width, int height, Vector2Int startCell, RectInt[] walls)
         {
             Width = width;
             Height = height;
             StartCell = startCell;
-            SpawnCells = spawnCells;
             _walls = walls;
         }
 
@@ -31,9 +30,6 @@ namespace RushOps.Editor.Scenes
 
         /// <summary>Cell the player starts on.</summary>
         public Vector2Int StartCell { get; }
-
-        /// <summary>Cells with an enemy spawn point.</summary>
-        public Vector2Int[] SpawnCells { get; }
 
         /// <summary>True if (x, y) is inside the arena and part of the wall ring or an inner wall.</summary>
         public bool IsWall(int x, int y)

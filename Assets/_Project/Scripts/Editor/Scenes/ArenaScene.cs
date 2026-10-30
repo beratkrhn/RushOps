@@ -9,12 +9,14 @@ namespace RushOps.Editor.Scenes
     /// <summary>Objects of an arena built by <see cref="ArenaTestSceneBuilder.BuildScene"/>, for builders that add level objects to it.</summary>
     internal sealed class ArenaScene
     {
-        public ArenaScene(Tilemap walls, Transform player, FlowFieldNavigator navigator, EnemyPool enemies, SfxPlayer sfx)
+        public ArenaScene(
+            Tilemap walls, Transform player, FlowFieldNavigator navigator, EnemyPool enemies, WaveDirector director, SfxPlayer sfx)
         {
             Walls = walls;
             Player = player;
             Navigator = navigator;
             Enemies = enemies;
+            Director = director;
             Sfx = sfx;
         }
 
@@ -29,6 +31,9 @@ namespace RushOps.Editor.Scenes
 
         /// <summary>Pool of the spawned enemies.</summary>
         public EnemyPool Enemies { get; }
+
+        /// <summary>Runs the waves; the level builder hands it the zones.</summary>
+        public WaveDirector Director { get; }
 
         /// <summary>Player for 2D sound effects.</summary>
         public SfxPlayer Sfx { get; }

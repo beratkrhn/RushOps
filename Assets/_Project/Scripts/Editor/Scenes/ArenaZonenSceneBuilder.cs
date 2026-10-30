@@ -1,3 +1,4 @@
+using RushOps.Enemies;
 using RushOps.Levels;
 using UnityEditor;
 using UnityEngine;
@@ -5,9 +6,10 @@ using UnityEngine;
 namespace RushOps.Editor.Scenes
 {
     /// <summary>
-    /// Builds the <c>Arena_Zonen</c> test level (issue #17): the arena of <see cref="ArenaTestSceneBuilder"/> in a
-    /// tall layout with three zones stacked from south to north, separated by two gates. Both gates open by a
-    /// <see cref="DebugGateCondition"/> a few seconds after the zone in front of them became active.
+    /// Builds the <c>Arena_Zonen</c> test level (issues #17, #18): the arena of <see cref="ArenaTestSceneBuilder"/> in a
+    /// tall layout with three zones stacked from south to north, separated by two gates. Each zone has its own spawn
+    /// points and waves. Both gates open by a <see cref="DebugGateCondition"/> some seconds after the zone in front
+    /// of them became active.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaZonenSceneBuilder.Build</c>
     /// </summary>
     public static class ArenaZonenSceneBuilder
@@ -21,17 +23,20 @@ namespace RushOps.Editor.Scenes
         private static readonly int[] DividerRows = { 27, 55 };
         private const int GateX = 10;
         private const int GateWidth = 4;
-        // Debug gates open this many seconds after the zone in front of them became active.
-        private const float DebugGateDelay = 5f;
+        // Debug gates open this many seconds after the zone in front of them became active, leaving time for some waves.
+        private const float DebugGateDelay = 20f;
+        private const string WavesDir = "Assets/_Project/Data/Waves";
+
+        // Spawn points per zone, at the far end and the sides, away from where the player comes in.
+        private static readonly Vector2Int[][] ZoneSpawnCells =
+        {
+            new[] { new Vector2Int(2, 25), new Vector2Int(21, 25), new Vector2Int(12, 24), new Vector2Int(2, 19), new Vector2Int(21, 19) },
+            new[] { new Vector2Int(2, 53), new Vector2Int(21, 53), new Vector2Int(12, 52), new Vector2Int(2, 41), new Vector2Int(21, 41) },
+            new[] { new Vector2Int(2, 81), new Vector2Int(21, 81), new Vector2Int(12, 80), new Vector2Int(2, 70), new Vector2Int(21, 70) },
+        };
 
         private static readonly ArenaLayout Layout = new ArenaLayout(
             Width, Height, new Vector2Int(12, 4),
-            // Spawn points only in the first zone; waves per zone follow in issue #18.
-            new[]
-            {
-                new Vector2Int(2, 25), new Vector2Int(21, 25), new Vector2Int(12, 24),
-                new Vector2Int(2, 19), new Vector2Int(21, 19),
-            },
             new[]
             {
                 // Zone 1
@@ -78,13 +83,17 @@ namespace RushOps.Editor.Scenes
             }
 
             // Zones span the inner columns, from the row above the previous divider up to their own divider.
+            WaveDefinition[] waves = CreateWaves();
             var zonesRoot = new GameObject("Zones").transform;
+            var zones = new Zone[gates.Length + 1];
             int bottom = 1;
-            for (int i = 0; i <= gates.Length; i++)
+            for (int i = 0; i < zones.Length; i++)
             {
                 int top = i < gates.Length ? DividerRows[i] + 1 : Height - 1;
                 Gate exit = i < gates.Length ? gates[i] : null;
-                Zone zone = CreateZone($"Zone_{i + 1}", zonesRoot, bottom, top, exit, arena.Player);
+                var area = new RectInt(1, bottom, Width - 2, top - bottom);
+                Zone zone = ArenaTestSceneBuilder.CreateZone(arena, $"Zone_{i + 1}", zonesRoot, area, ZoneSpawnCells[i], waves[i], exit);
+                zones[i] = zone;
                 if (exit != null)
                 {
                     var condition = new SerializedObject(exit.GetComponent<DebugGateCondition>());
@@ -95,21 +104,26 @@ namespace RushOps.Editor.Scenes
 
                 bottom = top;
             }
+
+            ArenaTestSceneBuilder.AssignZones(arena, zones);
         }
 
-        // Zone from row bottom (inclusive) to row top (exclusive) over the inner columns.
-        private static Zone CreateZone(string name, Transform parent, int bottom, int top, Gate exit, Transform player)
+        // Waves grow from zone to zone; the first two repeat their last wave until the gate opens, the last one ends.
+        private static WaveDefinition[] CreateWaves()
         {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent, false);
-            go.transform.position = new Vector3(Width * 0.5f, (bottom + top) * 0.5f, 0f);
-            var zone = go.AddComponent<Zone>();
-            var serialized = new SerializedObject(zone);
-            serialized.FindProperty("_size").vector2Value = new Vector2(Width - 2, top - bottom);
-            serialized.FindProperty("_player").objectReferenceValue = player;
-            serialized.FindProperty("_exitGate").objectReferenceValue = exit;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            return zone;
+            var walker = ArenaTestSceneBuilder.LoadOrCreateConfig<EnemyDefinition>(ArenaTestSceneBuilder.WalkerDefinitionPath);
+            return new[]
+            {
+                ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone1.asset", w => w.Configure(
+                    new[] { new Wave(new WaveEntry(walker, 4)), new Wave(new WaveEntry(walker, 6)), new Wave(new WaveEntry(walker, 8)) },
+                    1f, 4f, AfterLastWave.RepeatLast)),
+                ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone2.asset", w => w.Configure(
+                    new[] { new Wave(new WaveEntry(walker, 6)), new Wave(new WaveEntry(walker, 10)), new Wave(new WaveEntry(walker, 12)) },
+                    0.8f, 3f, AfterLastWave.RepeatLast)),
+                ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone3.asset", w => w.Configure(
+                    new[] { new Wave(new WaveEntry(walker, 8)), new Wave(new WaveEntry(walker, 12)), new Wave(new WaveEntry(walker, 16)) },
+                    0.6f, 3f, AfterLastWave.End)),
+            };
         }
 
         private static Gate CreateGate(

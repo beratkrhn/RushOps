@@ -7,6 +7,7 @@ using RushOps.Editor.Art;
 using RushOps.Audio;
 using RushOps.Enemies;
 using RushOps.Feel;
+using RushOps.Levels;
 using RushOps.Navigation;
 using RushOps.Player;
 using RushOps.UI;
@@ -30,7 +31,8 @@ namespace RushOps.Editor.Scenes
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
     /// a HUD with hearts and a pause menu, hit feedback (flash, knockback, shake, hitstop, sounds),
-    /// and walkers that appear at spawn points and chase the player along a flow field.
+    /// and walkers that come in waves from the spawn points of one zone covering the arena and chase the player
+    /// along a flow field.
     /// Re-running overwrites the scene, so the scene stays reproducible from code. Other test levels reuse
     /// <see cref="BuildScene"/> with their own <see cref="ArenaLayout"/>.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
@@ -53,7 +55,7 @@ namespace RushOps.Editor.Scenes
         private const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
         private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
         private const string BulletPrefabPath = "Assets/_Project/Prefabs/Projectiles/Bullet.prefab";
-        private const string WalkerDefinitionPath = "Assets/_Project/Data/Enemies/Walker.asset";
+        internal const string WalkerDefinitionPath = "Assets/_Project/Data/Enemies/Walker.asset";
         private const string WalkerPrefabPath = "Assets/_Project/Prefabs/Enemies/Walker.prefab";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
         private const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
@@ -62,6 +64,7 @@ namespace RushOps.Editor.Scenes
         private const string SfxDir = "Assets/_Project/Audio/SFX";
         private const string SpawnerConfigPath = "Assets/_Project/Data/Enemies/SpawnerConfig.asset";
         private const string SpawnMarkerSpritePath = "Assets/_Project/Art/Sprites/Effects/SpawnMarker.png";
+        private const string WavesPath = "Assets/_Project/Data/Waves/Arena_Test.asset";
         private const string EnemiesLayer = "Enemies";
         // Walker body at the feet like the player's, a little smaller so walkers squeeze through gaps the player fits through.
         private const float WalkerColliderRadius = 0.28f;
@@ -112,14 +115,15 @@ namespace RushOps.Editor.Scenes
         private const int ProjectileSortingOrder = 3;
         // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
         private const int PlainFloorWeight = 7;
+        // Spawn points along the arena edges and in the corners, inside the outer wall ring and clear of obstacles.
+        private static readonly Vector2Int[] SpawnCells =
+        {
+            new Vector2Int(3, 3), new Vector2Int(36, 3), new Vector2Int(3, 56), new Vector2Int(36, 56),
+            new Vector2Int(3, 30), new Vector2Int(36, 30), new Vector2Int(20, 3), new Vector2Int(20, 56),
+        };
+
         private static readonly ArenaLayout Layout = new ArenaLayout(
             40, 60, new Vector2Int(20, 30),
-            // Spawn points along the arena edges and in the corners, inside the outer wall ring and clear of obstacles.
-            new[]
-            {
-                new Vector2Int(3, 3), new Vector2Int(36, 3), new Vector2Int(3, 56), new Vector2Int(36, 56),
-                new Vector2Int(3, 30), new Vector2Int(36, 30), new Vector2Int(20, 3), new Vector2Int(20, 56),
-            },
             new[]
             {
                 new RectInt(6, 8, 4, 2),
@@ -136,7 +140,97 @@ namespace RushOps.Editor.Scenes
         [MenuItem("RushOps/Szenen/Arena_Test erzeugen")]
         public static void Build()
         {
-            BuildScene(ScenePath, Layout, true, null);
+            BuildScene(ScenePath, Layout, true, AddArenaZone);
+        }
+
+        // One zone over the whole arena whose waves never end, so there is always something to shoot at.
+        private static void AddArenaZone(ArenaScene arena)
+        {
+            var walker = LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath);
+            WaveDefinition waves = LoadOrCreateWaves(WavesPath, w => w.Configure(
+                new[]
+                {
+                    new Wave(new WaveEntry(walker, 12)),
+                    new Wave(new WaveEntry(walker, 16)),
+                    new Wave(new WaveEntry(walker, 20)),
+                },
+                0.6f, 3f, AfterLastWave.RepeatAll));
+            var area = new RectInt(1, 1, Layout.Width - 2, Layout.Height - 2);
+            Zone zone = CreateZone(arena, "Zone", null, area, SpawnCells, waves, null);
+            AssignZones(arena, new[] { zone });
+        }
+
+        /// <summary>
+        /// Loads the waves at <paramref name="path"/>, or creates them and fills them via <paramref name="configure"/>.
+        /// Existing waves are kept, so tuned values survive a scene rebuild.
+        /// </summary>
+        internal static WaveDefinition LoadOrCreateWaves(string path, System.Action<WaveDefinition> configure)
+        {
+            var waves = AssetDatabase.LoadAssetAtPath<WaveDefinition>(path);
+            if (waves != null)
+            {
+                return waves;
+            }
+
+            waves = LoadOrCreateConfig<WaveDefinition>(path);
+            configure(waves);
+            EditorUtility.SetDirty(waves);
+            AssetDatabase.SaveAssets();
+            return waves;
+        }
+
+        /// <summary>
+        /// Creates a zone over the cells <paramref name="area"/> with spawn points on <paramref name="spawnCells"/> and
+        /// the given waves; it completes when <paramref name="exit"/> opens.
+        /// </summary>
+        internal static Zone CreateZone(
+            ArenaScene arena, string name, Transform parent, RectInt area, Vector2Int[] spawnCells, WaveDefinition waves, Gate exit)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(parent, false);
+            go.transform.position = new Vector3(area.center.x, area.center.y, 0f);
+
+            var marker = AssetDatabase.LoadAssetAtPath<Sprite>(SpawnMarkerSpritePath);
+            if (marker == null)
+            {
+                throw new System.InvalidOperationException($"Spawn marker sprite not found at {SpawnMarkerSpritePath}");
+            }
+
+            var points = new SpawnPoint[spawnCells.Length];
+            for (int i = 0; i < spawnCells.Length; i++)
+            {
+                points[i] = CreateSpawnPoint($"SpawnPoint_{i}", go.transform, spawnCells[i], marker);
+            }
+
+            var zone = go.AddComponent<Zone>();
+            var serialized = new SerializedObject(zone);
+            serialized.FindProperty("_size").vector2Value = new Vector2(area.width, area.height);
+            serialized.FindProperty("_player").objectReferenceValue = arena.Player;
+            serialized.FindProperty("_exitGate").objectReferenceValue = exit;
+            serialized.FindProperty("_waves").objectReferenceValue = waves;
+            SerializedProperty pointsProperty = serialized.FindProperty("_spawnPoints");
+            pointsProperty.arraySize = points.Length;
+            for (int i = 0; i < points.Length; i++)
+            {
+                pointsProperty.GetArrayElementAtIndex(i).objectReferenceValue = points[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return zone;
+        }
+
+        /// <summary>Hands <paramref name="zones"/> to the arena's wave director.</summary>
+        internal static void AssignZones(ArenaScene arena, Zone[] zones)
+        {
+            var serialized = new SerializedObject(arena.Director);
+            SerializedProperty property = serialized.FindProperty("_zones");
+            property.arraySize = zones.Length;
+            for (int i = 0; i < zones.Length; i++)
+            {
+                property.GetArrayElementAtIndex(i).objectReferenceValue = zones[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         /// <summary>
@@ -185,14 +279,14 @@ namespace RushOps.Editor.Scenes
             Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(
                 walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig, LoadOrCreateFlashMaterial());
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
-            EnemyPool enemyPool = CreateEnemies(
-                layout.SpawnCells, walkerPrefab, navigator, LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), target);
+            EnemyPool enemyPool = CreateEnemyPool(walkerPrefab, navigator);
+            WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPool, target);
             var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
             aimAssist.FindProperty("_enemies").objectReferenceValue = enemyPool;
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
             SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPool, cameraFollow, pause);
-            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPool, sfx));
+            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPool, director, sfx));
 
             EditorSceneManager.SaveScene(scene, scenePath);
             AddToBuildSettings(scenePath, firstInBuild);
@@ -531,7 +625,7 @@ namespace RushOps.Editor.Scenes
             return navigator;
         }
 
-        private static EnemyPool CreateEnemies(Vector2Int[] spawnCells, Enemy prefab, FlowFieldNavigator navigator, SpawnerConfig config, Transform player)
+        private static EnemyPool CreateEnemyPool(Enemy prefab, FlowFieldNavigator navigator)
         {
             var go = new GameObject("EnemyPool");
             var pool = go.AddComponent<EnemyPool>();
@@ -539,34 +633,21 @@ namespace RushOps.Editor.Scenes
             serializedPool.FindProperty("_prefab").objectReferenceValue = prefab;
             serializedPool.FindProperty("_navigator").objectReferenceValue = navigator;
             serializedPool.ApplyModifiedPropertiesWithoutUndo();
-
-            var marker = AssetDatabase.LoadAssetAtPath<Sprite>(SpawnMarkerSpritePath);
-            if (marker == null)
-            {
-                throw new System.InvalidOperationException($"Spawn marker sprite not found at {SpawnMarkerSpritePath}");
-            }
-
-            var root = new GameObject("SpawnPoints").transform;
-            var points = new SpawnPoint[spawnCells.Length];
-            for (int i = 0; i < spawnCells.Length; i++)
-            {
-                points[i] = CreateSpawnPoint($"SpawnPoint_{i}", root, spawnCells[i], marker);
-            }
-
-            var spawner = new GameObject("EnemySpawner").AddComponent<EnemySpawner>();
-            var serializedSpawner = new SerializedObject(spawner);
-            serializedSpawner.FindProperty("_config").objectReferenceValue = config;
-            serializedSpawner.FindProperty("_pool").objectReferenceValue = pool;
-            serializedSpawner.FindProperty("_player").objectReferenceValue = player;
-            SerializedProperty pointsProperty = serializedSpawner.FindProperty("_points");
-            pointsProperty.arraySize = points.Length;
-            for (int i = 0; i < points.Length; i++)
-            {
-                pointsProperty.GetArrayElementAtIndex(i).objectReferenceValue = points[i];
-            }
-
-            serializedSpawner.ApplyModifiedPropertiesWithoutUndo();
             return pool;
+        }
+
+        // Zones are handed over by the level builders via AssignZones.
+        private static WaveDirector CreateWaveDirector(SpawnerConfig config, EnemyPool pool, Transform player)
+        {
+            var director = new GameObject("WaveDirector").AddComponent<WaveDirector>();
+            var serialized = new SerializedObject(director);
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_player").objectReferenceValue = player;
+            SerializedProperty pools = serialized.FindProperty("_pools");
+            pools.arraySize = 1;
+            pools.GetArrayElementAtIndex(0).objectReferenceValue = pool;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return director;
         }
 
         private static SpawnPoint CreateSpawnPoint(string name, Transform parent, Vector2Int cell, Sprite marker)
