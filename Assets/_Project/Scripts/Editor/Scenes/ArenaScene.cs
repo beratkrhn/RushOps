@@ -1,6 +1,8 @@
 using RushOps.Audio;
 using RushOps.Enemies;
+using RushOps.Levels;
 using RushOps.Navigation;
+using RushOps.UI;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -10,13 +12,16 @@ namespace RushOps.Editor.Scenes
     internal sealed class ArenaScene
     {
         public ArenaScene(
-            Tilemap walls, Transform player, FlowFieldNavigator navigator, EnemyPool enemies, WaveDirector director, SfxPlayer sfx)
+            Tilemap walls, Transform player, FlowFieldNavigator navigator, EnemyPool enemies, WaveDirector director,
+            LevelKills kills, MissionTracker tracker, SfxPlayer sfx)
         {
             Walls = walls;
             Player = player;
             Navigator = navigator;
             Enemies = enemies;
             Director = director;
+            Kills = kills;
+            Tracker = tracker;
             Sfx = sfx;
         }
 
@@ -34,6 +39,12 @@ namespace RushOps.Editor.Scenes
 
         /// <summary>Runs the waves; the level builder hands it the zones.</summary>
         public WaveDirector Director { get; }
+
+        /// <summary>Counts the kills of the level for kill gates.</summary>
+        public LevelKills Kills { get; }
+
+        /// <summary>Mission tracker in the HUD; the level builder hands it the zones.</summary>
+        public MissionTracker Tracker { get; }
 
         /// <summary>Player for 2D sound effects.</summary>
         public SfxPlayer Sfx { get; }
