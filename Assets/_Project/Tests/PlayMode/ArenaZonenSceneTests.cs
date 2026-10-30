@@ -1,5 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
+using RushOps.Enemies;
 using RushOps.Levels;
 using RushOps.Navigation;
 using UnityEngine;
@@ -90,6 +92,30 @@ namespace RushOps.Tests.PlayMode
 
             Assert.AreSame(zone, activated);
             Assert.AreEqual(ZoneState.Active, zone.State);
+        }
+
+        [UnityTest]
+        public IEnumerator SecondZone_AfterGateOpened_SpawnsOnlyFromItsOwnPoints()
+        {
+            yield return null;
+            WaveDirector director = Object.FindFirstObjectByType<WaveDirector>();
+            Zone first = Find<Zone>("Zone_1");
+            Zone second = Find<Zone>("Zone_2");
+            Find<Gate>("Gate_1").GetComponent<DebugGateCondition>().Force();
+            yield return new WaitForSeconds(1.5f);
+            Assert.AreEqual(WavePhase.Finished, director.SequenceOf(first).Phase, "waves of a completed zone stop");
+
+            var points = new List<SpawnPoint>();
+            director.Spawned += (enemy, point) => points.Add(point);
+            second.Player.GetComponent<Rigidbody2D>().position = second.transform.position;
+            float timeout = Time.time + 8f;
+            while (Time.time < timeout && points.Count < 3)
+            {
+                yield return null;
+            }
+
+            Assert.GreaterOrEqual(points.Count, 3, "zone 2 did not spawn");
+            CollectionAssert.IsSubsetOf(points, second.SpawnPoints);
         }
 
         private static T Find<T>(string name) where T : Component

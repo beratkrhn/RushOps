@@ -1,11 +1,13 @@
 using System;
+using RushOps.Enemies;
 using UnityEngine;
 
 namespace RushOps.Levels
 {
     /// <summary>
     /// A section of a level (F-LVL-02): a rectangle around the transform. It becomes active when the player
-    /// enters it and completes when its exit gate opens. Waves of the zone start and stop on these events.
+    /// enters it and completes when its exit gate opens. The <see cref="WaveDirector"/> runs the zone's waves from
+    /// its own spawn points in between (F-GEG-02).
     /// </summary>
     public class Zone : MonoBehaviour
     {
@@ -14,6 +16,10 @@ namespace RushOps.Levels
         [SerializeField] private Transform _player;
         [Tooltip("Gate that leads out of this zone; the zone completes when it opens. Empty for the last zone.")]
         [SerializeField] private Gate _exitGate;
+        [Tooltip("Spawn points of this zone; enemies of its waves appear only here.")]
+        [SerializeField] private SpawnPoint[] _spawnPoints = Array.Empty<SpawnPoint>();
+        [Tooltip("Waves that run while the zone is active. Empty for a zone without enemies.")]
+        [SerializeField] private WaveDefinition _waves;
 
         private readonly ZoneLogic _logic = new ZoneLogic();
 
@@ -31,6 +37,12 @@ namespace RushOps.Levels
 
         /// <summary>Gate that leads out of this zone, or null.</summary>
         public Gate ExitGate => _exitGate;
+
+        /// <summary>Spawn points of this zone.</summary>
+        public SpawnPoint[] SpawnPoints => _spawnPoints ?? Array.Empty<SpawnPoint>();
+
+        /// <summary>Waves of this zone, or null.</summary>
+        public WaveDefinition Waves => _waves;
 
         /// <summary>The player whose position activates the zone.</summary>
         public Transform Player

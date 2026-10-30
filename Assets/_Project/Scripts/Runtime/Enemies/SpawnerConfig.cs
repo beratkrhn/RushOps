@@ -2,15 +2,15 @@ using UnityEngine;
 
 namespace RushOps.Enemies
 {
-    /// <summary>Values of the enemy spawner (F-GEG-02, F-GEG-03). Wave logic follows in v0.2.0.</summary>
+    /// <summary>
+    /// Values of the <see cref="WaveDirector"/> shared by all zones (F-GEG-02, F-GEG-03). The waves themselves
+    /// are set per zone in a <see cref="WaveDefinition"/>.
+    /// </summary>
     [CreateAssetMenu(fileName = "SpawnerConfig", menuName = "RushOps/Spawner Config")]
     public class SpawnerConfig : ScriptableObject
     {
-        [Tooltip("Most enemies alive at once, including announced ones (F-GEG-03). Bosses will not count.")]
+        [Tooltip("Most enemies alive at once, including announced ones (F-GEG-03). Bosses do not count; further spawns wait in a queue.")]
         [SerializeField, Min(0)] private int _maxActive = 10;
-
-        [Tooltip("Seconds between two spawn announcements.")]
-        [SerializeField, Min(0f)] private float _spawnInterval = 0.8f;
 
         [Tooltip("Seconds the marker blinks on the spawn point before the enemy appears.")]
         [SerializeField, Min(0f)] private float _telegraphDuration = 0.6f;
@@ -26,9 +26,6 @@ namespace RushOps.Enemies
 
         /// <summary>Most enemies alive at once, including announced ones.</summary>
         public int MaxActive => _maxActive;
-
-        /// <summary>Seconds between two spawn announcements.</summary>
-        public float SpawnInterval => _spawnInterval;
 
         /// <summary>Seconds the marker shows before the enemy appears.</summary>
         public float TelegraphDuration => _telegraphDuration;
