@@ -81,6 +81,11 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Explosionseffekt (6 Frames, 160×160, zeigt den Schadensradius) aus einem Object Pool, mit Screenshake und Explosions-Sound über `GameFeel` (Issue #22).
 - Boomer-Grafik per `Tools/gen_pixelart.py`: 64×64, 8 Richtungen × 4 Frames, aufgeblähter Bauch, der pulsiert, mit leuchtenden Beulen (Issue #22).
 - Platzhalter-Sounds per `Tools/gen_sfx.py`: `BoomerSpawn` (Blubbern), `BoomerApproach` als eigenes Warnsignal (schneller werdende Zweiton-Piepser über Zündschnur-Zischen, Annäherung ab 5 Kacheln) und `Explosion` (Issue #22, F-AUD-03).
+- Perk-Drops: Jeder getötete Zombie lässt mit **8 %** Wahrscheinlichkeit einen Perk fallen, welcher, entscheidet ein gewichteter Pool (Speed-Boost 25, Medkit 20, Doppelschaden 20, Schnellfeuer 15, Schutzschild 10, Insta-Kill 7, Nuke 3) *(Startwerte)*. Die Wirkungen folgen mit Issue #24 ff. (Issue #23, F-PRK-01, F-PRK-02).
+- `PerkDefinition` (ScriptableObject: ID, Name, Icon, Typ sofort/temporär, Dauer, Gewicht) für alle sieben Perks unter `Data/Perks/` und `LootConfig` (`Data/Perks/LootConfig.asset`: Drop-Chance, Perk-Liste, Liegedauer 10 s, Blinken in den letzten 3 s, Schweben und Leuchten) (Issue #23).
+- `PerkPool` als reine C#-Klasse mit Drop-Chance und gewichteter Auswahl über eine injizierbare Zufallsquelle (`IRandomSource`), `PickupLifetime` für Despawn und Blinken; EditMode-Tests für Drop-Chance, Gewichtsverteilung und Timer (Issue #23).
+- Perk-Pickups aus einem Object Pool: erscheinen an der Todesposition, auf Wand- oder Torkacheln stattdessen auf der nächsten begehbaren Kachel (`FlowField.TryFindNearestWalkable`); das Icon schwebt über einem pulsierenden Lichtschein, wird bei Berührung durch den Spieler aufgesammelt (Sound über `GameFeel`), blinkt in den letzten 3 s und verschwindet nach 10 s (Issue #23, F-PRK-01, F-PRK-03).
+- Perk-Icons (7 Stück, 24×24) und Lichtschein per `Tools/gen_pixelart.py`, Sound `PerkPickup` per `Tools/gen_sfx.py` (Issue #23).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
