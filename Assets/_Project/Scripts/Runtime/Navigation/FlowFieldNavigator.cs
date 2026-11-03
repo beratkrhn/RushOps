@@ -63,12 +63,12 @@ namespace RushOps.Navigation
         /// <summary>
         /// Move direction (length 0..1) for <paramref name="agent"/> whose body center is at <paramref name="position"/>:
         /// along the field, straight at the target when close or off the field, plus separation from the other
-        /// registered enemies.
+        /// registered enemies, scaled by <paramref name="separationScale"/> (0 = ignore the others, e.g. a heavy brute).
         /// </summary>
-        public Vector2 Steer(Transform agent, Vector2 position)
+        public Vector2 Steer(Transform agent, Vector2 position, float separationScale = 1f)
         {
             Vector2 path = PathDirection(position);
-            if (_config == null)
+            if (_config == null || separationScale <= 0f)
             {
                 return path;
             }
@@ -76,7 +76,7 @@ namespace RushOps.Navigation
             RefreshPositions();
             int self = _agents.IndexOf(agent);
             Vector2 separation = SteeringMath.Separation(agent.position, _positions, _agents.Count, self, _config.SeparationRadius);
-            return SteeringMath.Combine(path, separation, _config.SeparationWeight);
+            return SteeringMath.Combine(path, separation, _config.SeparationWeight * separationScale);
         }
 
         /// <summary>

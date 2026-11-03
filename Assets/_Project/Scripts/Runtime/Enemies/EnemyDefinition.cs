@@ -24,6 +24,16 @@ namespace RushOps.Enemies
         [Tooltip("Bosses do not count towards the limit of enemies alive at once (F-GEG-03).")]
         [SerializeField] private bool _isBoss;
 
+        [Header("Body")]
+        [Tooltip("Physics mass; heavier enemies shove lighter ones aside instead of getting stuck behind them. The player weighs 10.")]
+        [SerializeField, Min(0.01f)] private float _mass = 1f;
+
+        [Tooltip("Share of the hit knockback this enemy takes: 1 = full, 0 = none.")]
+        [SerializeField, Range(0f, 1f)] private float _knockbackScale = 1f;
+
+        [Tooltip("How much this enemy steers away from nearby enemies: 1 = full separation, 0 = walks straight through the crowd.")]
+        [SerializeField, Range(0f, 1f)] private float _separationScale = 1f;
+
         [Header("Sound")]
         [Tooltip("Placeholder sound when the enemy appears; none if empty.")]
         [SerializeField] private AudioClip _spawnClip;
@@ -51,6 +61,15 @@ namespace RushOps.Enemies
 
         /// <summary>True for bosses, which do not count towards the enemy limit.</summary>
         public bool IsBoss => _isBoss;
+
+        /// <summary>Physics mass of the body.</summary>
+        public float Mass => _mass;
+
+        /// <summary>Share of the hit knockback this enemy takes, 0..1.</summary>
+        public float KnockbackScale => _knockbackScale;
+
+        /// <summary>Share of the separation from nearby enemies this enemy follows, 0..1.</summary>
+        public float SeparationScale => _separationScale;
 
         /// <summary>Sound when the enemy appears; may be null.</summary>
         public AudioClip SpawnClip => _spawnClip;

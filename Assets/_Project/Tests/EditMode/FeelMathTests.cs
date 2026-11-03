@@ -62,6 +62,19 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(expected, FeelMath.KnockbackFactor(elapsed, 0.1f), 1e-5f);
         }
 
+        [TestCase(1f, 4f)]
+        [TestCase(0.2f, 0.8f)]
+        [TestCase(0f, 0f)]
+        [TestCase(2f, 4f)]
+        [TestCase(-1f, 0f)]
+        public void KnockbackVelocity_ScalesSpeedAlongDirection(float scale, float expectedSpeed)
+        {
+            Vector2 velocity = FeelMath.KnockbackVelocity(new Vector2(0f, 3f), 4f, scale);
+
+            Assert.AreEqual(0f, velocity.x, 1e-5f);
+            Assert.AreEqual(expectedSpeed, velocity.y, 1e-5f);
+        }
+
         [TestCase(0f, 0.94f)]
         [TestCase(0.5f, 1f)]
         [TestCase(1f, 1.06f)]

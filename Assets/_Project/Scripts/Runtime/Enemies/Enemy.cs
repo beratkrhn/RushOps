@@ -77,10 +77,16 @@ namespace RushOps.Enemies
             _body.position = position;
             _body.linearVelocity = Vector2.zero;
             _body.simulated = true;
+            if (_definition != null)
+            {
+                _body.mass = _definition.Mass;
+            }
+
             SetAlpha(1f);
             _target = navigator != null ? navigator.Target : null;
             _approach.Reset(_definition != null ? _definition.ApproachDistance : 0f);
-            _movement.Begin(navigator, _definition != null ? _definition.MoveSpeed : 0f);
+            _movement.Begin(
+                navigator, _definition != null ? _definition.MoveSpeed : 0f, _definition != null ? _definition.SeparationScale : 1f);
         }
 
         /// <inheritdoc />
@@ -98,7 +104,12 @@ namespace RushOps.Enemies
             }
             else if (_feel != null)
             {
-                _movement.Knockback(direction.normalized * _feel.KnockbackSpeed, _feel.KnockbackDuration);
+                float scale = _definition != null ? _definition.KnockbackScale : 1f;
+                Vector2 velocity = FeelMath.KnockbackVelocity(direction, _feel.KnockbackSpeed, scale);
+                if (velocity != Vector2.zero)
+                {
+                    _movement.Knockback(velocity, _feel.KnockbackDuration);
+                }
             }
 
             Hit?.Invoke(this);
