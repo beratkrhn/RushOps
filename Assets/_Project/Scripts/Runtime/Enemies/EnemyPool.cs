@@ -27,6 +27,12 @@ namespace RushOps.Enemies
         private Action<Enemy> _release;
         private int _spawnCount;
 
+        /// <summary>Raised when an enemy appeared in the level.</summary>
+        public event Action<Enemy> EnemySpawned;
+
+        /// <summary>Raised when a spawned enemy first comes close to the player (<see cref="Enemy.Approached"/>).</summary>
+        public event Action<Enemy> EnemyApproached;
+
         /// <summary>Raised when a spawned enemy takes a hit, including the killing one.</summary>
         public event Action<Enemy> EnemyHit;
 
@@ -54,6 +60,7 @@ namespace RushOps.Enemies
             float angle = ++_spawnCount * GoldenAngle;
             Vector2 jitter = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * _spawnJitter;
             enemy.Spawn(position + jitter, _navigator, _release);
+            EnemySpawned?.Invoke(enemy);
             return enemy;
         }
 
@@ -83,6 +90,7 @@ namespace RushOps.Enemies
             enemy.gameObject.SetActive(false);
             enemy.Died += OnEnemyDied;
             enemy.Hit += OnEnemyHit;
+            enemy.Approached += OnEnemyApproached;
             return enemy;
         }
 
@@ -94,6 +102,11 @@ namespace RushOps.Enemies
         private void OnEnemyDied(Enemy enemy)
         {
             EnemyDied?.Invoke(enemy);
+        }
+
+        private void OnEnemyApproached(Enemy enemy)
+        {
+            EnemyApproached?.Invoke(enemy);
         }
 
         private void OnGet(Enemy enemy)
@@ -114,6 +127,7 @@ namespace RushOps.Enemies
             {
                 enemy.Died -= OnEnemyDied;
                 enemy.Hit -= OnEnemyHit;
+                enemy.Approached -= OnEnemyApproached;
                 Destroy(enemy.gameObject);
             }
         }
