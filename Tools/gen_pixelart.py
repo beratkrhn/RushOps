@@ -14,6 +14,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Boomer_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames, pulsing belly (issue #22)
   Sprites/Effects/Explosion_<F>.png         160x160, 6 frames of the boomer blast, radius 2.5 tiles (issue #22)
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
+  Sprites/Projectiles/Bullet_DoubleDamage.png 16x16, red and thicker, during double damage (issue #25)
+  Sprites/Projectiles/Bullet_InstaKill.png 16x16, pale and longer, during insta-kill (issue #25)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
@@ -428,6 +430,30 @@ def bullet() -> Canvas:
     c.rect(10, 7, 11, 8, "glow")
     c.set(12, 7, "glow")
     c.set(12, 8, "yellow")
+    return c
+
+
+def bullet_double_damage() -> Canvas:
+    """Bullet during double damage: red like the perk icon and one pixel thicker."""
+    c = Canvas(16, 16)
+    c.rect(2, 7, 4, 8, "red_0")
+    c.rect(5, 6, 8, 9, "red_1")
+    c.rect(9, 6, 11, 9, "orange")
+    c.rect(12, 7, 13, 8, "glow")
+    c.set(11, 6, "yellow")
+    c.set(11, 9, "yellow")
+    return c
+
+
+def bullet_insta_kill() -> Canvas:
+    """Bullet during insta-kill: pale like the skull of the perk icon, with a long trail and a dark edge."""
+    c = Canvas(16, 16)
+    c.rect(1, 7, 3, 8, "slate_3")
+    c.rect(4, 7, 7, 8, "slate_5")
+    c.rect(8, 7, 12, 8, "white")
+    c.set(13, 7, "white")
+    c.set(13, 8, "slate_5")
+    c.outline()
     return c
 
 
@@ -919,6 +945,8 @@ def outputs() -> dict[str, Image.Image]:
     files = {
         "Palettes/RushOps_Palette.png": palette_image(),
         "Sprites/Projectiles/Bullet.png": bullet().to_image(),
+        "Sprites/Projectiles/Bullet_DoubleDamage.png": bullet_double_damage().to_image(),
+        "Sprites/Projectiles/Bullet_InstaKill.png": bullet_insta_kill().to_image(),
         "Sprites/Effects/MuzzleFlash.png": muzzle_flash().to_image(),
         "Tiles/Wall_Top.png": wall_top().to_image(),
         "Tiles/Wall_Front.png": wall_front().to_image(),
@@ -983,6 +1011,8 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
     put(files["Sprites/Enemies/Walker_Walk_SW_0.png"], 3, 3)
     sheet.alpha_composite(files["Sprites/Effects/MuzzleFlash.png"], (6 * TILE, 3 * TILE + 8))
     sheet.alpha_composite(files["Sprites/Projectiles/Bullet.png"], (6 * TILE + 20, 3 * TILE + 8))
+    sheet.alpha_composite(files["Sprites/Projectiles/Bullet_DoubleDamage.png"], (7 * TILE + 4, 3 * TILE + 8))
+    sheet.alpha_composite(files["Sprites/Projectiles/Bullet_InstaKill.png"], (7 * TILE + 20, 3 * TILE + 8))
     for i, perk in enumerate(PERK_IDS):
         x, y = (8 + i % 4) * TILE, (1 + i // 4 * 2) * TILE
         sheet.alpha_composite(files["Sprites/Pickups/Perk_Glow.png"], (x, y + 24))

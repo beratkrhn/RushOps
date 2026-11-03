@@ -89,6 +89,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Perk-Effekte: Aufgesammelte Perks wirken jetzt. **Speed-Boost** erhöht das Lauftempo 15 s lang um ×1,5, **Medkit** gibt sofort +2 Herzen (nicht über das Maximum) *(Startwerte)*. Verschiedene Perks laufen parallel; wird derselbe Perk erneut aufgesammelt, beginnt seine Dauer von vorn (Issue #24, F-PRK-04).
 - `ActivePerks` als reine C#-Klasse für die laufenden Perk-Timer (Ablauf, Auffrischen, paralleles Wirken, Multiplikator je Effekt) mit EditMode-Tests; `PlayerPerks` am Spieler wendet die Perks an. `PerkDefinition` hat dafür zwei neue Felder: Effekt (`PerkEffect`) und Stärke (Issue #24).
 - HUD: Unter den Herzen zeigt je ein Slot einen laufenden Perk mit Icon und einem Ring, der mit der Restzeit kleiner wird (`ActivePerksView`). Die Slot-Sprites erzeugt `Tools/gen_pixelart.py` (Issue #24, F-HUD-02).
+- Offensive Perks wirken jetzt: **Doppelschaden** verdoppelt den Waffenschaden, **Schnellfeuer** verdoppelt die Feuerrate, **Insta-Kill** lässt jeden Treffer töten, jeweils 10 s *(Startwerte)*. Insta-Kill wirkt nicht auf Bosse, Doppelschaden schon (Issue #25, F-PRK-04, F-BOS-02). Die Perks lassen sich frei kombinieren.
+- `WeaponMath` (Schuss- und Trefferschaden, Feuerrate, Projektil-Optik) und `ShotModifiers` als reine Logik mit EditMode-Tests; `PlayerWeapon.Modifiers` wird von `PlayerPerks` gesetzt. `IDamageable.TakeHit` kennt dafür einen tödlichen Treffer (Issue #25).
+- Projektile zeigen aktive Perks: rot und dicker bei Doppelschaden, hell mit langer Spur bei Insta-Kill. Die Sprites erzeugt `Tools/gen_pixelart.py` (Issue #25).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.

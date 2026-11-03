@@ -186,5 +186,28 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(0f, _perks.Remaining("speed_boost"));
             CollectionAssert.IsEmpty(_expired);
         }
+
+        [Test]
+        public void HasEffect_TrueOnlyWhileAPerkWithThatEffectRuns()
+        {
+            Assert.IsFalse(_perks.HasEffect(PerkEffect.InstaKill));
+
+            _perks.Activate("insta_kill", PerkEffect.InstaKill, 1f, 10f);
+            Assert.IsTrue(_perks.HasEffect(PerkEffect.InstaKill));
+            Assert.IsFalse(_perks.HasEffect(PerkEffect.DoubleDamage));
+
+            _perks.Tick(10f);
+            Assert.IsFalse(_perks.HasEffect(PerkEffect.InstaKill));
+        }
+
+        [Test]
+        public void Multiplier_DifferentOffensivePerks_ActIndependently()
+        {
+            _perks.Activate("double_damage", PerkEffect.DoubleDamage, 2f, 10f);
+            _perks.Activate("rapid_fire", PerkEffect.RapidFire, 2f, 10f);
+
+            Assert.AreEqual(2f, _perks.Multiplier(PerkEffect.DoubleDamage), 1e-5f);
+            Assert.AreEqual(2f, _perks.Multiplier(PerkEffect.RapidFire), 1e-5f);
+        }
     }
 }

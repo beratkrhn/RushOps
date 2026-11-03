@@ -1,5 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
 using NUnit.Framework;
+using RushOps.Combat;
 using RushOps.Enemies;
 using RushOps.Perks;
 using RushOps.Player;
@@ -17,6 +19,8 @@ namespace RushOps.Tests.PlayMode
         private PlayerPerks _perks;
         private PlayerMovement _movement;
         private PlayerHealth _health;
+        private PlayerWeapon _weapon;
+        private Projectile _shot;
         private PerkPickupPool _pickups;
         private ActivePerksView _view;
 
@@ -33,6 +37,7 @@ namespace RushOps.Tests.PlayMode
             Assert.IsNotNull(_view, "Arena_Test has no ActivePerksView");
             _movement = _perks.GetComponent<PlayerMovement>();
             _health = _perks.GetComponent<PlayerHealth>();
+            _weapon = _perks.GetComponent<PlayerWeapon>();
             Object.FindFirstObjectByType<WaveDirector>().enabled = false;
             Object.FindFirstObjectByType<LevelRestarter>().enabled = false;
             _movement.GetComponent<PlayerMoveInput>().enabled = false;
@@ -145,6 +150,111 @@ namespace RushOps.Tests.PlayMode
 
             Assert.AreEqual(1, _view.ShownCount);
             Assert.Greater(_view.Timer(0).fillAmount, 0.99f);
+        }
+
+        [Test]
+        public void OffensivePerkDefinitions_HaveStartValuesOfBacklog()
+        {
+            PerkDefinition doubleDamage = Perk("double_damage");
+            Assert.AreEqual(PerkEffect.DoubleDamage, doubleDamage.Effect);
+            Assert.AreEqual(2f, doubleDamage.Magnitude, 1e-5f);
+            Assert.AreEqual(10f, doubleDamage.Duration, 1e-5f);
+
+            PerkDefinition rapidFire = Perk("rapid_fire");
+            Assert.AreEqual(PerkEffect.RapidFire, rapidFire.Effect);
+            Assert.AreEqual(2f, rapidFire.Magnitude, 1e-5f);
+            Assert.AreEqual(10f, rapidFire.Duration, 1e-5f);
+
+            PerkDefinition instaKill = Perk("insta_kill");
+            Assert.AreEqual(PerkEffect.InstaKill, instaKill.Effect);
+            Assert.AreEqual(10f, instaKill.Duration, 1e-5f);
+        }
+
+        [Test]
+        public void DoubleDamageAndRapidFire_Combine_UntilExpiry()
+        {
+            int damage = _weapon.Damage;
+            float rate = _weapon.FireRate;
+
+            _perks.Apply(Perk("double_damage"));
+            _perks.Apply(Perk("rapid_fire"));
+
+            Assert.AreEqual(damage * 2, _weapon.Damage);
+            Assert.AreEqual(rate * 2f, _weapon.FireRate, 1e-4f);
+
+            _perks.Active.Tick(10f);
+
+            Assert.AreEqual(damage, _weapon.Damage);
+            Assert.AreEqual(rate, _weapon.FireRate, 1e-4f);
+        }
+
+        [UnityTest]
+        public IEnumerator DoubleDamage_ShotsAreRedAndHitHarder()
+        {
+            yield return FireOneShot();
+            Sprite normal = _shot.Sprite;
+            Assert.AreEqual(_weapon.Config.Damage, _shot.Damage);
+
+            _perks.Apply(Perk("double_damage"));
+            yield return FireOneShot();
+
+            Assert.AreNotSame(normal, _shot.Sprite, "double damage must change the projectile look");
+            Assert.AreEqual(_weapon.Config.Damage * 2, _shot.Damage);
+            Assert.IsFalse(_shot.Lethal);
+        }
+
+        [UnityTest]
+        public IEnumerator InstaKill_ShotsAreLethal_UntilExpiry()
+        {
+            yield return FireOneShot();
+            Sprite normal = _shot.Sprite;
+            Assert.IsFalse(_shot.Lethal);
+
+            _perks.Apply(Perk("insta_kill"));
+            yield return FireOneShot();
+            Assert.IsTrue(_shot.Lethal);
+            Assert.AreNotSame(normal, _shot.Sprite, "insta-kill must change the projectile look");
+
+            _perks.Active.Tick(10f);
+            yield return FireOneShot();
+            Assert.IsFalse(_shot.Lethal);
+            Assert.AreSame(normal, _shot.Sprite);
+        }
+
+        [UnityTest]
+        public IEnumerator LethalHit_KillsBruteAtOnce()
+        {
+            Enemy brute = EnemyPools.Of(EnemyPools.Brute).Spawn(new Vector2(5.5f, 5.5f));
+            yield return null;
+            Assert.Greater(brute.CurrentHealth, 1);
+
+            Assert.IsTrue(brute.TakeHit(1, Vector2.right, true));
+
+            Assert.IsTrue(brute.IsDead);
+        }
+
+        // Lets the weapon fire for one frame (the first shot after a pause leaves at once) and stores the new
+        // projectile in _shot. Waits for the fire cooldown first, so the frame fires exactly one shot.
+        private IEnumerator FireOneShot()
+        {
+            yield return new WaitForSeconds(0.3f);
+            var before = new HashSet<Projectile>(Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None));
+
+            _weapon.GetComponent<PlayerAim>().AimInput = Vector2.up;
+            yield return null;
+            _weapon.GetComponent<PlayerAim>().AimInput = Vector2.zero;
+
+            _shot = null;
+            foreach (Projectile projectile in Object.FindObjectsByType<Projectile>(FindObjectsSortMode.None))
+            {
+                if (!before.Contains(projectile))
+                {
+                    Assert.IsNull(_shot, "aiming for one frame fired more than one shot");
+                    _shot = projectile;
+                }
+            }
+
+            Assert.IsNotNull(_shot, "aiming for one frame fired no shot");
         }
 
         private PerkDefinition Perk(string id)

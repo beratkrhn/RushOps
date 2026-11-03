@@ -97,9 +97,15 @@ namespace RushOps.Enemies
         }
 
         /// <inheritdoc />
-        public bool TakeHit(int damage, Vector2 direction)
+        public bool TakeHit(int damage, Vector2 direction, bool lethal = false)
         {
-            if (_health == null || !_health.TakeDamage(damage))
+            if (_health == null)
+            {
+                return false;
+            }
+
+            bool isBoss = _definition != null && _definition.IsBoss;
+            if (!_health.TakeDamage(WeaponMath.HitDamage(damage, lethal, isBoss, _health.Current)))
             {
                 return false;
             }

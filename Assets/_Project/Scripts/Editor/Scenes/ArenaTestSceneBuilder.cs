@@ -55,6 +55,8 @@ namespace RushOps.Editor.Scenes
         private const string DashActionPath = "Player/Dash";
         private const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
         private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
+        private const string BulletDoubleDamageSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet_DoubleDamage.png";
+        private const string BulletInstaKillSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet_InstaKill.png";
         private const string BulletPrefabPath = "Assets/_Project/Prefabs/Projectiles/Bullet.prefab";
         internal const string WalkerDefinitionPath = "Assets/_Project/Data/Enemies/Walker.asset";
         private const string WalkerPrefabPath = "Assets/_Project/Prefabs/Enemies/Walker.prefab";
@@ -745,18 +747,19 @@ namespace RushOps.Editor.Scenes
         // Rebuilt on every run, so the prefab stays reproducible from code.
         private static Projectile CreateOrUpdateBulletPrefab()
         {
-            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(BulletSpritePath);
-            if (sprite == null)
-            {
-                throw new System.InvalidOperationException($"Bullet sprite not found at {BulletSpritePath}");
-            }
-
+            Sprite sprite = RequireSprite(BulletSpritePath);
             var go = new GameObject("Bullet");
             go.layer = RequireLayer(ProjectilesLayer);
             var renderer = go.AddComponent<SpriteRenderer>();
             renderer.sprite = sprite;
             renderer.sortingOrder = ProjectileSortingOrder;
-            go.AddComponent<Projectile>();
+            var projectile = go.AddComponent<Projectile>();
+            var serializedProjectile = new SerializedObject(projectile);
+            serializedProjectile.FindProperty("_renderer").objectReferenceValue = renderer;
+            serializedProjectile.FindProperty("_doubleDamageSprite").objectReferenceValue =
+                RequireSprite(BulletDoubleDamageSpritePath);
+            serializedProjectile.FindProperty("_instaKillSprite").objectReferenceValue = RequireSprite(BulletInstaKillSpritePath);
+            serializedProjectile.ApplyModifiedPropertiesWithoutUndo();
 
             EnsureFolder(Path.GetDirectoryName(BulletPrefabPath).Replace('\\', '/'));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, BulletPrefabPath);
@@ -1323,6 +1326,17 @@ namespace RushOps.Editor.Scenes
             text.verticalOverflow = VerticalWrapMode.Overflow;
             text.raycastTarget = false;
             return text;
+        }
+
+        private static Sprite RequireSprite(string path)
+        {
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+            if (sprite == null)
+            {
+                throw new System.InvalidOperationException($"Sprite not found at {path}");
+            }
+
+            return sprite;
         }
 
         private static Sprite LoadUiSprite(string file)
