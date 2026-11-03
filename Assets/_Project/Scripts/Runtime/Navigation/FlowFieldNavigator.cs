@@ -61,6 +61,34 @@ namespace RushOps.Navigation
         }
 
         /// <summary>
+        /// A walkable spot for <paramref name="world"/>, e.g. for a perk drop: the position itself if its cell is
+        /// walkable, else the center of the nearest walkable cell within <paramref name="maxRadius"/> cells. Walls and
+        /// closed gates are not walkable. Without obstacle tilemap every position counts as walkable.
+        /// </summary>
+        /// <returns>False if no walkable cell is near enough.</returns>
+        public bool TryFindWalkablePosition(Vector2 world, int maxRadius, out Vector2 position)
+        {
+            position = world;
+            if (_field == null)
+            {
+                return true;
+            }
+
+            Vector2Int start = CellOf(world);
+            if (!_field.TryFindNearestWalkable(start, maxRadius, out Vector2Int cell))
+            {
+                return false;
+            }
+
+            if (cell != start)
+            {
+                position = _obstacles.GetCellCenterWorld(new Vector3Int(cell.x + _origin.x, cell.y + _origin.y, 0));
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Move direction (length 0..1) for <paramref name="agent"/> whose body center is at <paramref name="position"/>:
         /// along the field, straight at the target when close or off the field, plus separation from the other
         /// registered enemies, scaled by <paramref name="separationScale"/> (0 = ignore the others, e.g. a heavy brute).

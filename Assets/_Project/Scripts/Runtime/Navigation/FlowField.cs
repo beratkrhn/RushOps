@@ -75,6 +75,52 @@ namespace RushOps.Navigation
             return InBounds(cell) && _walkable[Index(cell)];
         }
 
+        /// <summary>
+        /// The walkable cell closest to <paramref name="start"/>, searched in growing square rings up to
+        /// <paramref name="maxRadius"/> cells; the start itself if walkable. Within a ring the cell closest to the
+        /// start wins, ties go to the first in scan order. False if none is found.
+        /// </summary>
+        public bool TryFindNearestWalkable(Vector2Int start, int maxRadius, out Vector2Int cell)
+        {
+            cell = start;
+            if (IsWalkable(start))
+            {
+                return true;
+            }
+
+            for (int radius = 1; radius <= maxRadius; radius++)
+            {
+                int best = int.MaxValue;
+                for (int dx = -radius; dx <= radius; dx++)
+                {
+                    for (int dy = -radius; dy <= radius; dy++)
+                    {
+                        // Only the ring; inner cells were checked before.
+                        if (Mathf.Abs(dx) != radius && Mathf.Abs(dy) != radius)
+                        {
+                            continue;
+                        }
+
+                        var candidate = new Vector2Int(start.x + dx, start.y + dy);
+                        int distance = dx * dx + dy * dy;
+                        if (distance < best && IsWalkable(candidate))
+                        {
+                            best = distance;
+                            cell = candidate;
+                        }
+                    }
+                }
+
+                if (best != int.MaxValue)
+                {
+                    return true;
+                }
+            }
+
+            cell = start;
+            return false;
+        }
+
         /// <summary>Marks a cell as walkable or blocked, e.g. a wall or a closed gate. Takes effect on the next <see cref="Compute"/>.</summary>
         public void SetWalkable(Vector2Int cell, bool walkable)
         {
