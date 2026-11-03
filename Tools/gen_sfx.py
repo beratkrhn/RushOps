@@ -12,6 +12,9 @@ Output (under Assets/_Project/Audio/SFX/):
   MissionDone.wav  bright rising three-note chime when a kill gate opens (issue #19)
   RunnerSpawn.wav     short raspy shriek rising in pitch when a runner appears (issue #20)
   RunnerApproach.wav  fast panting hiss that swells, when a runner closes in (issue #20)
+  BoomerSpawn.wav     low wet gurgle of bubbles when a boomer appears (issue #22)
+  BoomerApproach.wav  warning: two-tone alarm beeps that speed up over a fizzing fuse (issue #22, F-AUD-03)
+  Explosion.wav       deep boom with a noise blast and a rumbling tail (issue #22)
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -147,6 +150,64 @@ def runner_approach(rng: random.Random) -> list[float]:
     return out
 
 
+def boomer_spawn(rng: random.Random) -> list[float]:
+    # Bubbles: short low sine blips with a rising pitch each, over a slow wobbling drone.
+    length = 0.45
+    bubbles = [(0.0, 90), (0.08, 120), (0.15, 80), (0.24, 140), (0.31, 100)]
+    out = []
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        sample = 0.25 * math.sin(2 * math.pi * (55 + 8 * math.sin(2 * math.pi * 6 * t)) * t) * (1 - t / length)
+        for start, freq in bubbles:
+            tb = t - start
+            if 0 <= tb < 0.07:
+                sample += 0.6 * math.sin(sweep(freq, freq * 2.2, tb, 0.07)) * envelope(tb, 0.07, 0.003)
+        out.append(sample + 0.03 * rng.uniform(-1, 1))
+    return out
+
+
+def boomer_approach(rng: random.Random) -> list[float]:
+    # Alarm unlike any other enemy: square beeps alternating high and low, getting faster, over a fuse hiss.
+    length = 0.9
+    beeps = []
+    start, gap, high = 0.0, 0.2, True
+    while start < length - 0.05:
+        beeps.append((start, 1320.0 if high else 990.0))
+        start += gap
+        gap = max(0.07, gap * 0.78)
+        high = not high
+    out = []
+    smoothed = 0.0
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        smoothed += 0.6 * (rng.uniform(-1, 1) - smoothed)
+        sample = 0.18 * smoothed * (0.5 + 0.5 * t / length)
+        for b, freq in beeps:
+            tb = t - b
+            if 0 <= tb < 0.06:
+                square = 1.0 if math.sin(2 * math.pi * freq * tb) >= 0 else -1.0
+                sample += 0.45 * square * min(1.0, (0.06 - tb) / 0.01)
+        out.append(sample * min(1.0, (length - t) / 0.02))
+    return out
+
+
+def explosion(rng: random.Random) -> list[float]:
+    # Low sine drop for the punch, a loud noise burst that darkens, and a long rumble.
+    length = 1.1
+    out = []
+    bright = dark = 0.0
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        noise = rng.uniform(-1, 1)
+        bright += 0.5 * (noise - bright)
+        dark += 0.04 * (noise - dark)
+        cutoff_mix = max(0.0, 1 - t / 0.25)
+        boom = math.sin(sweep(120, 35, t, 0.5)) * envelope(t, 0.6, 0.002)
+        blast = (bright * cutoff_mix + 3.0 * dark * (1 - cutoff_mix)) * envelope(t, length, 0.002)
+        out.append(1.0 * boom + 0.7 * blast)
+    return out
+
+
 def write(path: Path, samples: list[float]) -> None:
     peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
@@ -161,7 +222,8 @@ def main() -> None:
     rng = random.Random(12)
     for name, make in (("Shot", shot), ("Hit", hit), ("Death", death), ("GateOpen", gate_open),
                        ("MissionDone", mission_done), ("RunnerSpawn", runner_spawn),
-                       ("RunnerApproach", runner_approach)):
+                       ("RunnerApproach", runner_approach), ("BoomerSpawn", boomer_spawn),
+                       ("BoomerApproach", boomer_approach), ("Explosion", explosion)):
         path = SFX_DIR / f"{name}.wav"
         write(path, make(rng))
         print(f"Wrote {path.relative_to(ROOT)}")
