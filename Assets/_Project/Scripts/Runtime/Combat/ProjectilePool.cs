@@ -24,7 +24,8 @@ namespace RushOps.Combat
         /// Takes a projectile from the pool and launches it; see <see cref="Projectile.Launch"/>.
         /// Returns null if no prefab is assigned.
         /// </summary>
-        public Projectile Launch(Vector2 origin, Vector2 direction, float speed, float range, LayerMask hitLayers, int damage = 0)
+        public Projectile Launch(Vector2 origin, Vector2 direction, float speed, float range, LayerMask hitLayers, int damage = 0,
+            bool lethal = false, ShotLook look = ShotLook.Normal)
         {
             if (_pool == null)
             {
@@ -32,7 +33,7 @@ namespace RushOps.Combat
             }
 
             Projectile projectile = _pool.Get();
-            projectile.Launch(origin, direction, speed, range, hitLayers, damage, _release);
+            projectile.Launch(origin, direction, speed, range, hitLayers, damage, lethal, look, _release);
             return projectile;
         }
 

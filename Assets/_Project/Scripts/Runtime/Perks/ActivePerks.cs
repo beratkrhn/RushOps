@@ -99,6 +99,20 @@ namespace RushOps.Perks
             return multiplier;
         }
 
+        /// <summary>True while at least one perk with <paramref name="effect"/> runs.</summary>
+        public bool HasEffect(PerkEffect effect)
+        {
+            for (int i = 0; i < _perks.Count; i++)
+            {
+                if (_perks[i].Effect == effect)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         /// <summary>Ends all perks at once without raising <see cref="Expired"/>.</summary>
         public void Clear()
         {

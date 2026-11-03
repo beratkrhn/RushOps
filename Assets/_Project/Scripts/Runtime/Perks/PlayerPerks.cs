@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RushOps.Combat;
 using RushOps.Player;
 using UnityEngine;
 
@@ -7,7 +8,8 @@ namespace RushOps.Perks
 {
     /// <summary>
     /// Applies the perks the player collects (F-PRK-04): instant perks act at once (medkit), timed perks run in
-    /// <see cref="ActivePerks"/> and modify the player while they last (speed boost). Thin adapter; the timer rules
+    /// <see cref="ActivePerks"/> and modify the player while they last (speed boost; double damage, rapid fire and
+    /// insta-kill on the <see cref="PlayerWeapon"/>, issue #25). Thin adapter; the timer rules
     /// live in <see cref="ActivePerks"/>, the values in the <see cref="PerkDefinition"/>s.
     /// </summary>
     [RequireComponent(typeof(PlayerMovement))]
@@ -20,6 +22,7 @@ namespace RushOps.Perks
         private readonly Dictionary<string, PerkDefinition> _definitions = new Dictionary<string, PerkDefinition>();
         private PlayerMovement _movement;
         private PlayerHealth _health;
+        private PlayerWeapon _weapon;
 
         /// <summary>Raised when a perk was applied, also when a running perk was refreshed.</summary>
         public event Action<PerkDefinition> Applied;
@@ -77,6 +80,7 @@ namespace RushOps.Perks
         {
             _movement = GetComponent<PlayerMovement>();
             _health = GetComponent<PlayerHealth>();
+            _weapon = GetComponent<PlayerWeapon>();
             _active.Expired += OnExpired;
         }
 
@@ -140,6 +144,13 @@ namespace RushOps.Perks
         private void ApplyModifiers()
         {
             _movement.SpeedMultiplier = _active.Multiplier(PerkEffect.SpeedBoost);
+            if (_weapon != null)
+            {
+                _weapon.Modifiers = new ShotModifiers(
+                    _active.Multiplier(PerkEffect.DoubleDamage),
+                    _active.Multiplier(PerkEffect.RapidFire),
+                    _active.HasEffect(PerkEffect.InstaKill));
+            }
         }
     }
 }
