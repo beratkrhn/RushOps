@@ -10,6 +10,7 @@ Output (under Assets/_Project/Art/):
   Palettes/RushOps_Palette.png             one pixel per palette color, in order
   Sprites/Enemies/Walker_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames
   Sprites/Enemies/Runner_Run_<DIR>_<F>.png  64x64, 8 directions x 4 frames (issue #20)
+  Sprites/Enemies/Brute_Walk_<DIR>_<F>.png  96x96, 8 directions x 4 frames (issue #21)
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
@@ -83,6 +84,8 @@ PALETTE = {
 
 TILE = 32
 CHARACTER = 64
+# The brute is drawn on a larger canvas (ADR 0006).
+BRUTE = 96
 # Character feet rest this many pixels above the bottom edge (ADR 0006).
 FOOT_MARGIN = 5
 
@@ -160,14 +163,19 @@ RAMP = {
     "pale": ("slate_4", "slate_5", "white"),
     "red": ("red_0", "red_1", "orange"),
     "shorts": ("slate_0", "slate_1", "slate_2"),
+    # Brute (issue #21): tan skin, a dark vest and brown trousers, so its bare arms stand out from the body.
+    "hide": ("skin_0", "skin_1", "peach"),
+    "vest": ("night", "slate_0", "slate_1"),
+    "trousers": ("brown_0", "brown_1", "brown_1"),
 }
 
 
 class Model:
     """Collects sphere samples and rasterises them for one facing angle."""
 
-    def __init__(self, angle_deg: float):
+    def __init__(self, angle_deg: float, size: int = CHARACTER):
         a = math.radians(angle_deg)
+        self.size = size
         self.forward = (math.cos(a), math.sin(a))
         self.right = (math.sin(a), -math.cos(a))
         self.samples = []
@@ -179,7 +187,7 @@ class Model:
     def project(self, f: float, s: float, z: float) -> tuple[float, float, float]:
         """Local point to canvas (x, y) plus its depth (north, larger = farther)."""
         east, north = self.ground(f, s)
-        return CHARACTER / 2 + east, CHARACTER - FOOT_MARGIN - 0.5 - z - north * 0.5, north
+        return self.size / 2 + east, self.size - FOOT_MARGIN - 0.5 - z - north * 0.5, north
 
     def sphere(self, f: float, s: float, z: float, r: float, material: str) -> None:
         self.samples.append((*self.project(f, s, z), z, r, material))
@@ -295,6 +303,57 @@ def runner_frame(direction: int, frame: int) -> Canvas:
         x, y, north = m.project(head[0] + 4.0, head[1] + s, head[2] + 0.5)
         if north <= head_north + 0.5:
             c.set(int(x), int(y), "yellow")
+    c.outline("outline")
+    return c
+
+
+def brute_frame(direction: int, frame: int) -> Canvas:
+    """Brute in one of 8 directions, frame 0..3 of a heavy stomp: broad and hunched, with a small head
+    between huge shoulders and long bare arms hanging almost to the ground."""
+    m = Model(direction * 45.0, BRUTE)
+    phase = frame / 4 * 2 * math.pi
+    stride = 4.5 * math.sin(phase)
+    # The whole body sinks onto each step and rolls from side to side.
+    bob = 1.5 * abs(math.sin(phase))
+    sway = 1.5 * math.sin(phase)
+    hip_z = 24 - bob
+
+    # Short, thick legs.
+    for side, step in ((-6.5, stride), (6.5, -stride)):
+        m.capsule((0, side, hip_z), (step, side * 1.1, 6), 6.0, "trousers")
+        m.sphere(step + 1.5, side * 1.1, 4.0, 5.0, "shoe")
+    # Barrel torso in a vest, leaning forward.
+    for side in (-5.0, 5.0):
+        m.capsule((0, side + sway * 0.5, hip_z + 2), (3.0, side + sway, 48 - bob), 10.5, "vest")
+    # Shoulders, upper and lower arms swinging slowly against the legs; fists near the knees.
+    for side, swing in ((-19.0, -stride), (19.0, stride)):
+        shoulder = (3.0, side + sway, 50 - bob)
+        elbow = (6.0 + swing * 0.5, side * 1.08 + sway, 37 - bob)
+        fist = (9.0 + swing, side * 1.05 + sway, 23 - bob)
+        m.sphere(*shoulder, 7.0, "hide")
+        m.capsule(shoulder, elbow, 5.0, "hide")
+        m.capsule(elbow, fist, 4.5, "hide")
+        m.sphere(*fist, 5.5, "hide")
+    # Small head thrust forward above the shoulders.
+    head = (8.0, sway, 62 - bob)
+    m.sphere(*head, 7.0, "hide")
+
+    c = Canvas(BRUTE, BRUTE)
+    m.paint(c)
+
+    # Deep-set red eyes under a dark brow, only where they face the viewer.
+    _, _, head_north = m.project(*head)
+    for s in (-2.6, 2.6):
+        x, y, north = m.project(head[0] + 5.0, head[1] + s, head[2] + 2.0)
+        if north <= head_north + 0.5:
+            c.set(int(x), int(y) - 1, "skin_0")
+            c.set(int(x) + 1, int(y) - 1, "skin_0")
+            c.set(int(x), int(y), "red_1")
+    # Torn vest: a bloody gash across the chest when the chest is visible.
+    for k in range(-2, 3):
+        x, y, north = m.project(13.0, sway + k * 2.5, 40 - bob - k)
+        if north <= 0.5:
+            c.set(int(x), int(y), "red_0")
     c.outline("outline")
     return c
 
@@ -574,14 +633,15 @@ def outputs() -> dict[str, Image.Image]:
         for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
+            files[f"Sprites/Enemies/Brute_Walk_{name}_{frame}.png"] = brute_frame(d, frame).to_image()
     for variant in range(3):
         files[f"Tiles/Floor_{variant}.png"] = floor(variant).to_image()
     return files
 
 
 def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
-    """Floor patch with a wall block, the player (if imported), walkers and runners in all directions."""
-    cols, rows = 10, 8
+    """Floor patch with a wall block, the player (if imported), walkers, runners and brutes in all directions."""
+    cols, rows = 13, 14
     sheet = Image.new("RGBA", (cols * TILE, rows * TILE), PALETTE["night"] + (255,))
     for ty in range(rows):
         for tx in range(cols):
@@ -602,6 +662,7 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
     for i, name in enumerate(DIRECTIONS):
         put(files[f"Sprites/Enemies/Walker_Walk_{name}_{i % 4}.png"], 1 + i, 5)
         put(files[f"Sprites/Enemies/Runner_Run_{name}_{i % 4}.png"], 1 + i, 7)
+        put(files[f"Sprites/Enemies/Brute_Walk_{name}_{i % 4}.png"], 1 + i % 4 * 3, 10 + i // 4 * 3)
     player_dir = ART_DIR / "Sprites/Player"
     if (player_dir / "Player_Idle_SE.png").exists():
         put(Image.open(player_dir / "Player_Idle_N.png").convert("RGBA"), 4, 0)
