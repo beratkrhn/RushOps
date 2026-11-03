@@ -4,7 +4,7 @@ namespace RushOps.Perks
 {
     /// <summary>
     /// One perk type (F-PRK-02, issue #23): id, display name, icon, whether it acts at once or for a while, its
-    /// duration and its weight in the drop pool. The effects themselves follow with issue #24.
+    /// duration, its weight in the drop pool and its effect with a strength (F-PRK-04).
     /// </summary>
     [CreateAssetMenu(fileName = "PerkDefinition", menuName = "RushOps/Perk Definition")]
     public class PerkDefinition : ScriptableObject
@@ -26,6 +26,12 @@ namespace RushOps.Perks
         [Tooltip("Relative chance in the drop pool; 0 never drops.")]
         [SerializeField, Min(0f)] private float _weight = 10f;
 
+        [Tooltip("What the perk does once collected.")]
+        [SerializeField] private PerkEffect _effect = PerkEffect.None;
+
+        [Tooltip("Strength of the effect: multiplier for speed, damage or fire rate; hearts for the medkit.")]
+        [SerializeField, Min(0f)] private float _magnitude = 1f;
+
         /// <summary>Stable id, e.g. <c>speed_boost</c>.</summary>
         public string Id => _id;
 
@@ -43,5 +49,11 @@ namespace RushOps.Perks
 
         /// <summary>Relative chance in the drop pool.</summary>
         public float Weight => _weight;
+
+        /// <summary>What the perk does once collected.</summary>
+        public PerkEffect Effect => _effect;
+
+        /// <summary>Strength of the effect: multiplier for speed, damage or fire rate; hearts for the medkit.</summary>
+        public float Magnitude => _magnitude;
     }
 }

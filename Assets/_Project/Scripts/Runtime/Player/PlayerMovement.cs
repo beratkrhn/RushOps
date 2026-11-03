@@ -17,6 +17,7 @@ namespace RushOps.Player
         private Vector2 _moveInput;
         private Vector2 _velocityOverride;
         private bool _hasVelocityOverride;
+        private float _speedMultiplier = 1f;
 
         /// <summary>Stick direction and deflection; length 1 is full speed, longer values are clamped.</summary>
         public Vector2 MoveInput
@@ -24,6 +25,16 @@ namespace RushOps.Player
             get => _moveInput;
             set => _moveInput = value;
         }
+
+        /// <summary>Factor on the walking speed, e.g. 1.5 during a speed boost (F-PRK-04); 1 by default, never negative.</summary>
+        public float SpeedMultiplier
+        {
+            get => _speedMultiplier;
+            set => _speedMultiplier = value > 0f ? value : 0f;
+        }
+
+        /// <summary>Current walking speed at full deflection, including <see cref="SpeedMultiplier"/>.</summary>
+        public float MoveSpeed => _config != null ? _config.MoveSpeed * _speedMultiplier : 0f;
 
         /// <summary>Current velocity of the player in units per second.</summary>
         public Vector2 Velocity => _body.linearVelocity;
@@ -56,7 +67,7 @@ namespace RushOps.Player
             _hasVelocityOverride = false;
             if (_body != null && _config != null)
             {
-                _body.linearVelocity = PlayerMovementMath.TargetVelocity(_moveInput, _config.MoveSpeed);
+                _body.linearVelocity = PlayerMovementMath.TargetVelocity(_moveInput, MoveSpeed);
             }
         }
 
@@ -78,7 +89,7 @@ namespace RushOps.Player
                 return;
             }
 
-            Vector2 target = PlayerMovementMath.TargetVelocity(_moveInput, _config.MoveSpeed);
+            Vector2 target = PlayerMovementMath.TargetVelocity(_moveInput, MoveSpeed);
             _body.linearVelocity = PlayerMovementMath.StepVelocity(
                 _body.linearVelocity, target, _config.Acceleration, _config.Deceleration, Time.fixedDeltaTime);
         }
