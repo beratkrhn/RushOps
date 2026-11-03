@@ -1,3 +1,4 @@
+using RushOps.Combat;
 using UnityEngine;
 
 namespace RushOps.Enemies
@@ -33,6 +34,10 @@ namespace RushOps.Enemies
 
         [Tooltip("How much this enemy steers away from nearby enemies: 1 = full separation, 0 = walks straight through the crowd.")]
         [SerializeField, Range(0f, 1f)] private float _separationScale = 1f;
+
+        [Header("Explosion")]
+        [Tooltip("Blows up when it dies or touches the player (boomer, issue #22); none if empty.")]
+        [SerializeField] private ExplosionDefinition _explosion;
 
         [Header("Sound")]
         [Tooltip("Placeholder sound when the enemy appears; none if empty.")]
@@ -70,6 +75,9 @@ namespace RushOps.Enemies
 
         /// <summary>Share of the separation from nearby enemies this enemy follows, 0..1.</summary>
         public float SeparationScale => _separationScale;
+
+        /// <summary>Explosion on death and on touching the player; null for enemies that do not explode.</summary>
+        public ExplosionDefinition Explosion => _explosion;
 
         /// <summary>Sound when the enemy appears; may be null.</summary>
         public AudioClip SpawnClip => _spawnClip;

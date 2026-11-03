@@ -1,5 +1,6 @@
 using RushOps.Audio;
 using RushOps.Cameras;
+using RushOps.Combat;
 using RushOps.Enemies;
 using RushOps.Player;
 using UnityEngine;
@@ -9,7 +10,8 @@ namespace RushOps.Feel
     /// <summary>
     /// Connects game events to the hit feedback (issue #12): camera shake when the player takes damage,
     /// hitstop when an enemy dies, and the placeholder sounds for shots, hits and deaths, plus the spawn and approach
-    /// sounds an enemy type brings in its <see cref="EnemyDefinition"/> (issue #20). Enemies flash and
+    /// sounds an enemy type brings in its <see cref="EnemyDefinition"/> (issue #20), and for every explosion a strong
+    /// shake, its sound and its blast effect (issue #22). Enemies flash and
     /// get knocked back by themselves (<see cref="Enemy"/>).
     /// </summary>
     public class GameFeel : MonoBehaviour
@@ -19,6 +21,8 @@ namespace RushOps.Feel
         [SerializeField] private PlayerWeapon _weapon;
         [Tooltip("Pools of all enemy types in the level.")]
         [SerializeField] private EnemyPool[] _pools = System.Array.Empty<EnemyPool>();
+        [SerializeField] private ExplosionSystem _explosions;
+        [SerializeField] private ExplosionEffectPool _explosionEffects;
         [SerializeField] private CameraFollow _camera;
         [SerializeField] private Hitstop _hitstop;
         [SerializeField] private SfxPlayer _sfx;
@@ -38,6 +42,11 @@ namespace RushOps.Feel
             if (_weapon != null)
             {
                 _weapon.Fired += OnFired;
+            }
+
+            if (_explosions != null)
+            {
+                _explosions.Exploded += OnExploded;
             }
 
             foreach (EnemyPool pool in _pools)
@@ -62,6 +71,11 @@ namespace RushOps.Feel
             if (_weapon != null)
             {
                 _weapon.Fired -= OnFired;
+            }
+
+            if (_explosions != null)
+            {
+                _explosions.Exploded -= OnExploded;
             }
 
             foreach (EnemyPool pool in _pools)
@@ -123,6 +137,21 @@ namespace RushOps.Feel
             {
                 _hitstop.Trigger(_config.HitstopDuration);
             }
+        }
+
+        private void OnExploded(Vector2 center, ExplosionDefinition explosion)
+        {
+            if (_camera != null)
+            {
+                _camera.Shake(explosion.ShakeStrength, explosion.ShakeDuration, explosion.ShakeFrequency);
+            }
+
+            if (_explosionEffects != null)
+            {
+                _explosionEffects.Play(center, explosion.EffectFrames, explosion.EffectFrameDuration);
+            }
+
+            Play(explosion.Clip, explosion.Volume);
         }
 
         private void Play(AudioClip clip, float volume)
