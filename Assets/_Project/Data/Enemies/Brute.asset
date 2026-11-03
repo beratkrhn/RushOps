@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: efeae419fe4b34a408d019f33584047a, type: 3}
+  m_Name: Brute
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Enemies.EnemyDefinition
+  _health: 20
+  _moveSpeed: 1.2
+  _contactDamage: 2
+  _deathDuration: 0.4
+  _points: 50
+  _isBoss: 0
+  _mass: 5
+  _knockbackScale: 0.15
+  _separationScale: 0.2
+  _spawnClip: {fileID: 0}
+  _approachClip: {fileID: 0}
+  _approachDistance: 4

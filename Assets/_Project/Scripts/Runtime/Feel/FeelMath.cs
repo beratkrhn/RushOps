@@ -22,6 +22,15 @@ namespace RushOps.Feel
             return 1f - elapsed / duration;
         }
 
+        /// <summary>
+        /// Start velocity of a knockback along <paramref name="direction"/>: <paramref name="speed"/> times
+        /// <paramref name="scale"/> (clamped to 0..1), e.g. heavy enemies take only a fraction of it.
+        /// </summary>
+        public static Vector2 KnockbackVelocity(Vector2 direction, float speed, float scale)
+        {
+            return direction.normalized * (speed * Mathf.Clamp01(scale));
+        }
+
         /// <summary>Pitch for a sound from <paramref name="random01"/> in [0, 1]: 1 plus or minus up to <paramref name="variation"/>.</summary>
         public static float Pitch(float random01, float variation)
         {

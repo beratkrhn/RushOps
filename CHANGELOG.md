@@ -70,6 +70,11 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Runner: schneller, schwacher Gegner mit eigener `EnemyDefinition` (`Data/Enemies/Runner.asset`: Gesundheit 1, Tempo 4,0, Schaden 1 Herz, 15 Punkte *(Startwerte)*), eigenem Prefab und eigenem Pool; folgt dem Flow-Field wie der Walker (Issue #20).
 - Runner-Grafik per `Tools/gen_pixelart.py`: 64×64, 8 Richtungen × 4 Sprint-Frames, kleiner und weit vorgebeugt, blasse Haut und rotes Hemd statt grüner Haut und braunem Hemd (Issue #20).
 - Spawn- und Annäherungs-Sound pro Gegnertyp: neue Felder `SpawnClip`, `ApproachClip` und `ApproachDistance` (4 Kacheln *(Startwert)*) in `EnemyDefinition`; der Annäherungs-Sound kommt einmal pro Leben (`ApproachTrigger`, mit EditMode-Tests); Lautstärken in `FeelConfig`. Platzhalter `RunnerSpawn.wav` und `RunnerApproach.wav` per `Tools/gen_sfx.py` (Issue #20).
+- Brute: langsamer, zäher Gegner mit eigener `EnemyDefinition` (`Data/Enemies/Brute.asset`: Gesundheit 20, Tempo 1,2, Schaden 2 Herzen, 50 Punkte *(Startwerte)*), eigenem Prefab und Pool; größerer Körper (Radius 0,45 statt 0,28), der als Hitbox dient und andere Gegner abschirmt (Issue #21).
+- Neue Felder in `EnemyDefinition`: `Mass` (Brute 5, Spieler 10, übrige Gegner 1), `KnockbackScale` (Brute 0,15) und `SeparationScale` (Brute 0,2) *(Startwerte)*. Der Brute schiebt kleinere Zombies beim Laufen zur Seite, statt ihnen auszuweichen oder an ihnen hängen zu bleiben, und wird von Treffern kaum zurückgestoßen (Issue #21).
+- Physik-Material `Data/Physics/EnemyBody.physicsMaterial2D` ohne Reibung für alle Gegner: Gegner gleiten aneinander und an Wänden ab, statt durch Haftreibung aneinander zu kleben (Issue #21).
+- Brute-Grafik per `Tools/gen_pixelart.py`: 96×96, 8 Richtungen × 4 Lauf-Frames, breit und gebeugt mit nackten Armen, dunkler Weste und kleinem Kopf (Issue #21).
+- Level-Design-Richtlinie `docs/level-design.md`: Gänge und Tore mindestens 2 Kacheln breit, Körpergrößen der Figuren, kein Gegnerradius ab 0,5 (Issue #21).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -96,6 +101,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Pro Gegnertyp ein `EnemyPool`; Zielhilfe (`AimAssist`) und Treffer-Feedback (`GameFeel`) nehmen jetzt mehrere Pools (Issue #20).
 - Gegner nutzen kontinuierliche Kollisionserkennung, damit auch schnelle Gegner nicht durch Wandecken rutschen (Issue #20).
 - Wellen *(Startwerte)* mit Runnern: `Arena_Test` 12 Walker / 12 Walker + 4 Runner / 14 Walker + 6 Runner; `Arena_Zonen` Zone 2 6 / 8 + 2 / 9 + 3, Zone 3 6 + 2 / 8 + 4 / 10 + 6; Zone 1 bleibt nur mit Walkern (Issue #20).
+- Wellen *(Startwerte)* mit Brutes: `Arena_Test` 1 Brute in Welle 3, `Arena_Zonen` Zone 3 je 1 bzw. 2 Brutes in Welle 2 und 3 (Issue #21).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).

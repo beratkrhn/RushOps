@@ -18,6 +18,7 @@ namespace RushOps.Enemies
         private Collider2D _collider;
         private FlowFieldNavigator _navigator;
         private float _speed;
+        private float _separationScale = 1f;
         private bool _moving;
         private Vector2 _knockback;
         private float _knockbackElapsed = -1f;
@@ -26,12 +27,16 @@ namespace RushOps.Enemies
         /// <summary>Velocity set in the last physics step.</summary>
         public Vector2 Velocity => _body != null ? _body.linearVelocity : Vector2.zero;
 
-        /// <summary>Starts chasing via <paramref name="navigator"/> at <paramref name="speed"/> units per second.</summary>
-        public void Begin(FlowFieldNavigator navigator, float speed)
+        /// <summary>
+        /// Starts chasing via <paramref name="navigator"/> at <paramref name="speed"/> units per second, following
+        /// <paramref name="separationScale"/> (0..1) of the separation from nearby enemies.
+        /// </summary>
+        public void Begin(FlowFieldNavigator navigator, float speed, float separationScale = 1f)
         {
             Stop();
             _navigator = navigator;
             _speed = speed;
+            _separationScale = separationScale;
             _moving = navigator != null;
             if (_moving)
             {
@@ -99,7 +104,7 @@ namespace RushOps.Enemies
 
             // Navigate with the body center; the transform sits at the feet below it.
             Vector2 center = (Vector2)transform.position + (_collider != null ? _collider.offset : Vector2.zero);
-            Vector2 direction = _navigator.Steer(transform, center);
+            Vector2 direction = _navigator.Steer(transform, center, _separationScale);
             _body.linearVelocity = direction * _speed;
             if (_view != null)
             {

@@ -31,7 +31,7 @@ namespace RushOps.Editor.Scenes
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
     /// a HUD with hearts and a pause menu, hit feedback (flash, knockback, shake, hitstop, sounds),
-    /// and walkers and runners that come in waves from the spawn points of one zone covering the arena and chase the
+    /// and walkers, runners and brutes that come in waves from the spawn points of one zone covering the arena and chase the
     /// player along a flow field.
     /// Re-running overwrites the scene, so the scene stays reproducible from code. Other test levels reuse
     /// <see cref="BuildScene"/> with their own <see cref="ArenaLayout"/>.
@@ -59,10 +59,15 @@ namespace RushOps.Editor.Scenes
         private const string WalkerPrefabPath = "Assets/_Project/Prefabs/Enemies/Walker.prefab";
         internal const string RunnerDefinitionPath = "Assets/_Project/Data/Enemies/Runner.asset";
         private const string RunnerPrefabPath = "Assets/_Project/Prefabs/Enemies/Runner.prefab";
+        internal const string BruteDefinitionPath = "Assets/_Project/Data/Enemies/Brute.asset";
+        private const string BrutePrefabPath = "Assets/_Project/Prefabs/Enemies/Brute.prefab";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
         private const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
         private const string FlashShaderName = "RushOps/Sprite Flash";
         private const string FlashMaterialPath = "Assets/_Project/Art/Shaders/SpriteFlash.mat";
+        // Enemies slide off each other and off walls instead of sticking by friction, so a brute shoves smaller
+        // enemies aside rather than pushing them ahead of it (issue #21).
+        private const string EnemyBodyMaterialPath = "Assets/_Project/Data/Physics/EnemyBody.physicsMaterial2D";
         private const string SfxDir = "Assets/_Project/Audio/SFX";
         private const string SpawnerConfigPath = "Assets/_Project/Data/Enemies/SpawnerConfig.asset";
         private const string SpawnMarkerSpritePath = "Assets/_Project/Art/Sprites/Effects/SpawnMarker.png";
@@ -72,9 +77,13 @@ namespace RushOps.Editor.Scenes
         private const float WalkerColliderRadius = 0.28f;
         // The runner is thinner than the walker; its body stays at the same height above the feet.
         private const float RunnerColliderRadius = 0.24f;
-        // The player is far heavier than walkers: walkers block it but barely push it around.
+        // The brute's broad body makes a bigger target and shields the enemies behind it. It stays below half a tile,
+        // so it passes the paths along walls and corners that the flow field leads it on (docs/level-design.md).
+        private const float BruteColliderRadius = 0.45f;
+        private static readonly Vector2 BruteColliderOffset = new Vector2(0f, 0.45f);
+        // The player is far heavier than walkers: walkers block it but barely push it around. Enemy masses come
+        // from their EnemyDefinition.
         private const float PlayerMass = 10f;
-        private const float WalkerMass = 1f;
         private const string TouchControlsConfigPath = "Assets/_Project/Data/UI/TouchControlsConfig.asset";
         private const string UiSpritesDir = "Assets/_Project/Art/Sprites/UI";
         // On-screen controls write to the virtual gamepad, which the Player actions already bind.
@@ -152,12 +161,13 @@ namespace RushOps.Editor.Scenes
         {
             var walker = LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath);
             EnemyDefinition runner = LoadOrCreateRunner();
+            EnemyDefinition brute = LoadOrCreateBrute();
             WaveDefinition waves = LoadOrCreateWaves(WavesPath, w => w.Configure(
                 new[]
                 {
                     new Wave(new WaveEntry(walker, 12)),
                     new Wave(new WaveEntry(walker, 12), new WaveEntry(runner, 4)),
-                    new Wave(new WaveEntry(walker, 14), new WaveEntry(runner, 6)),
+                    new Wave(new WaveEntry(walker, 14), new WaveEntry(runner, 6), new WaveEntry(brute, 1)),
                 },
                 0.6f, 3f, AfterLastWave.RepeatAll));
             var area = new RectInt(1, 1, Layout.Width - 2, Layout.Height - 2);
@@ -189,6 +199,34 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
             return runner;
+        }
+
+        /// <summary>
+        /// Loads the brute definition (issue #21), or creates it with the start values of the backlog: slow, tough,
+        /// 2 hearts of contact damage, heavy enough to shove smaller enemies aside and barely knocked back by hits.
+        /// An existing definition keeps its tuned values.
+        /// </summary>
+        internal static EnemyDefinition LoadOrCreateBrute()
+        {
+            var brute = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(BruteDefinitionPath);
+            if (brute != null)
+            {
+                return brute;
+            }
+
+            brute = LoadOrCreateConfig<EnemyDefinition>(BruteDefinitionPath);
+            var serialized = new SerializedObject(brute);
+            serialized.FindProperty("_health").intValue = 20;
+            serialized.FindProperty("_moveSpeed").floatValue = 1.2f;
+            serialized.FindProperty("_contactDamage").intValue = 2;
+            serialized.FindProperty("_deathDuration").floatValue = 0.4f;
+            serialized.FindProperty("_points").intValue = 50;
+            serialized.FindProperty("_mass").floatValue = 5f;
+            serialized.FindProperty("_knockbackScale").floatValue = 0.15f;
+            serialized.FindProperty("_separationScale").floatValue = 0.2f;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssets();
+            return brute;
         }
 
         /// <summary>
@@ -327,6 +365,7 @@ namespace RushOps.Editor.Scenes
             var playerIdle = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerIdlePath);
             var walkerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerWalkPath);
             var runnerRun = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.RunnerRunPath);
+            var bruteWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BruteWalkPath);
 
             CreateGlobalLight();
             Tilemap walls = CreateArena(layout, floorTiles, wallTop, wallFront);
@@ -339,16 +378,24 @@ namespace RushOps.Editor.Scenes
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
             Material flashMaterial = LoadOrCreateFlashMaterial();
+            PhysicsMaterial2D enemyBody = LoadOrCreateEnemyBodyMaterial();
             Enemy walkerPrefab = CreateOrUpdateEnemyPrefab(
                 "Walker", WalkerPrefabPath, walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig,
-                flashMaterial, WalkerColliderRadius);
+                flashMaterial, enemyBody, WalkerColliderRadius, PlayerColliderOffset);
             Enemy runnerPrefab = CreateOrUpdateEnemyPrefab(
-                "Runner", RunnerPrefabPath, runnerRun, LoadOrCreateRunner(), feelConfig, flashMaterial, RunnerColliderRadius);
+                "Runner", RunnerPrefabPath, runnerRun, LoadOrCreateRunner(), feelConfig, flashMaterial, enemyBody,
+                RunnerColliderRadius,
+                PlayerColliderOffset);
+            Enemy brutePrefab = CreateOrUpdateEnemyPrefab(
+                "Brute", BrutePrefabPath, bruteWalk, LoadOrCreateBrute(), feelConfig, flashMaterial, enemyBody,
+                BruteColliderRadius,
+                BruteColliderOffset);
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
             var enemyPools = new[]
             {
                 CreateEnemyPool("EnemyPool_Walker", walkerPrefab, navigator),
                 CreateEnemyPool("EnemyPool_Runner", runnerPrefab, navigator),
+                CreateEnemyPool("EnemyPool_Brute", brutePrefab, navigator),
             };
             WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPools, target);
             LevelKills kills = CreateLevelKills(enemyPools);
@@ -648,7 +695,7 @@ namespace RushOps.Editor.Scenes
         // Rebuilt on every run, so the prefab stays reproducible from code.
         private static Enemy CreateOrUpdateEnemyPrefab(
             string name, string prefabPath, DirectionalAnimation walk, EnemyDefinition definition, FeelConfig feel,
-            Material flashMaterial, float colliderRadius)
+            Material flashMaterial, PhysicsMaterial2D bodyMaterial, float colliderRadius, Vector2 colliderOffset)
         {
             DirectionalSpriteAnimator view = CreateCharacter(name, null, Vector2Int.zero, walk, Direction8.S);
             GameObject go = view.gameObject;
@@ -660,14 +707,15 @@ namespace RushOps.Editor.Scenes
             body.bodyType = RigidbodyType2D.Dynamic;
             body.gravityScale = 0f;
             body.freezeRotation = true;
-            body.mass = WalkerMass;
+            body.mass = definition.Mass;
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
             // Enemies must not slip through wall corners between physics steps, even fast ones such as the runner.
             body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
             var collider = go.AddComponent<CircleCollider2D>();
             collider.radius = colliderRadius;
-            collider.offset = PlayerColliderOffset;
+            collider.offset = colliderOffset;
+            collider.sharedMaterial = bodyMaterial;
 
             var movement = go.AddComponent<EnemyMovement>();
             var serializedMovement = new SerializedObject(movement);
@@ -830,6 +878,22 @@ namespace RushOps.Editor.Scenes
             }
 
             return clip;
+        }
+
+        // An existing material keeps its tuned values.
+        private static PhysicsMaterial2D LoadOrCreateEnemyBodyMaterial()
+        {
+            var material = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>(EnemyBodyMaterialPath);
+            if (material != null)
+            {
+                return material;
+            }
+
+            EnsureFolder(Path.GetDirectoryName(EnemyBodyMaterialPath).Replace('\\', '/'));
+            material = new PhysicsMaterial2D("EnemyBody") { friction = 0f, bounciness = 0f };
+            AssetDatabase.CreateAsset(material, EnemyBodyMaterialPath);
+            AssetDatabase.SaveAssets();
+            return material;
         }
 
         private static Material LoadOrCreateFlashMaterial()
