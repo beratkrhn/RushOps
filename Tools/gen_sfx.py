@@ -15,6 +15,7 @@ Output (under Assets/_Project/Audio/SFX/):
   BoomerSpawn.wav     low wet gurgle of bubbles when a boomer appears (issue #22)
   BoomerApproach.wav  warning: two-tone alarm beeps that speed up over a fizzing fuse (issue #22, F-AUD-03)
   Explosion.wav       deep boom with a noise blast and a rumbling tail (issue #22)
+  PerkPickup.wav      quick sparkly upward sweep with two bell tones when a perk is collected (issue #23)
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -208,6 +209,30 @@ def explosion(rng: random.Random) -> list[float]:
     return out
 
 
+def perk_pickup(rng: random.Random) -> list[float]:
+    # Fast rising triangle sweep, then two bright bell tones a fifth apart with a short sparkle: clearly a reward,
+    # unlike the square-wave chime of a finished mission.
+    length = 0.4
+    out = []
+    phase = 0.0
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        sample = 0.0
+        if t < 0.09:
+            freq = 600 + 1400 * t / 0.09
+            phase += 2 * math.pi * freq / RATE
+            tri = 2 / math.pi * math.asin(math.sin(phase))
+            sample += 0.4 * tri * min(1.0, (0.09 - t) / 0.02 + 0.3)
+        for start, freq in ((0.07, 1567.98), (0.13, 2349.32)):
+            tb = t - start
+            if tb >= 0:
+                bell = math.sin(2 * math.pi * freq * tb) + 0.3 * math.sin(2 * math.pi * freq * 2.76 * tb)
+                sample += 0.35 * bell * envelope(tb, length - start, 0.002)
+        sparkle = 0.05 * rng.uniform(-1, 1) * max(0.0, 1 - t / 0.15)
+        out.append(sample + sparkle)
+    return out
+
+
 def write(path: Path, samples: list[float]) -> None:
     peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
@@ -223,7 +248,8 @@ def main() -> None:
     for name, make in (("Shot", shot), ("Hit", hit), ("Death", death), ("GateOpen", gate_open),
                        ("MissionDone", mission_done), ("RunnerSpawn", runner_spawn),
                        ("RunnerApproach", runner_approach), ("BoomerSpawn", boomer_spawn),
-                       ("BoomerApproach", boomer_approach), ("Explosion", explosion)):
+                       ("BoomerApproach", boomer_approach), ("Explosion", explosion),
+                       ("PerkPickup", perk_pickup)):
         path = SFX_DIR / f"{name}.wav"
         write(path, make(rng))
         print(f"Wrote {path.relative_to(ROOT)}")
