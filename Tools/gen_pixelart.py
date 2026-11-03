@@ -9,6 +9,7 @@ character tool and is imported with Tools/import_character.py.
 Output (under Assets/_Project/Art/):
   Palettes/RushOps_Palette.png             one pixel per palette color, in order
   Sprites/Enemies/Walker_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames
+  Sprites/Enemies/Runner_Run_<DIR>_<F>.png  64x64, 8 directions x 4 frames (issue #20)
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
@@ -155,6 +156,10 @@ RAMP = {
     "shirt": ("brown_0", "brown_1", "mauve"),
     "pants": ("navy_0", "navy_1", "dusk"),
     "shoe": ("night", "night", "slate_0"),
+    # Runner (issue #20): pale grey skin and a red shirt, so it reads apart from the green walker at a glance.
+    "pale": ("slate_4", "slate_5", "white"),
+    "red": ("red_0", "red_1", "orange"),
+    "shorts": ("slate_0", "slate_1", "slate_2"),
 }
 
 
@@ -246,6 +251,51 @@ def walker_frame(direction: int, frame: int) -> Canvas:
         c.set(int(x), int(y), "red_0")
         c.set(int(x) + 1, int(y) + 1, "red_0")
     c.outline("navy_0")
+    return c
+
+
+def runner_frame(direction: int, frame: int) -> Canvas:
+    """Runner in one of 8 directions, frame 0..3 of a sprint: smaller and thinner than the walker,
+    leaning far forward with long strides and pumping arms."""
+    m = Model(direction * 45.0)
+    phase = frame / 4 * 2 * math.pi
+    stride = 7.0 * math.sin(phase)
+    # Highest in the passing frames, lowest when the legs are spread.
+    bob = 1.5 * abs(math.cos(phase))
+    hip_z = 15 - bob
+
+    # Legs: thigh and shin; the back foot lifts behind the body.
+    for side, step in ((-2.5, stride), (2.5, -stride)):
+        lift = max(0.0, -step) * 0.6
+        knee = (step * 0.6 + 2.0, side, 8.5 + lift * 0.5)
+        foot = (step, side, 2.0 + lift)
+        m.capsule((0, side, hip_z), knee, 2.8, "shorts")
+        m.capsule(knee, foot, 2.3, "pale")
+        m.sphere(foot[0] + 1.0, side, foot[2], 2.4, "shoe")
+    # Thin torso leaning far forward.
+    shoulder_f, shoulder_z = 6.0, 26 - bob
+    m.capsule((0.5, 0.0, hip_z + 1), (shoulder_f, 0.0, shoulder_z), 5.6, "red")
+    # Arms bent at the elbow, pumping against the legs.
+    for side, swing in ((-6.0, -stride), (6.0, stride)):
+        shoulder = (shoulder_f, side, shoulder_z)
+        elbow = (shoulder_f + swing * 0.7, side * 1.05, shoulder_z - 6)
+        hand = (shoulder_f + swing * 0.7 + 4.0, side * 0.95, shoulder_z - 3)
+        m.capsule(shoulder, elbow, 2.0, "pale")
+        m.capsule(elbow, hand, 1.8, "pale")
+    # Small head thrust forward, low between the shoulders.
+    head = (shoulder_f + 3.0, 0.0, shoulder_z + 5)
+    m.sphere(*head, 5.0, "pale")
+
+    c = Canvas(CHARACTER, CHARACTER)
+    m.paint(c)
+
+    # Yellow eyes, only where they face the viewer.
+    _, _, head_north = m.project(*head)
+    for s in (-1.8, 1.8):
+        x, y, north = m.project(head[0] + 4.0, head[1] + s, head[2] + 0.5)
+        if north <= head_north + 0.5:
+            c.set(int(x), int(y), "yellow")
+    c.outline("outline")
     return c
 
 
@@ -523,14 +573,15 @@ def outputs() -> dict[str, Image.Image]:
     for d, name in enumerate(DIRECTIONS):
         for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
+            files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
     for variant in range(3):
         files[f"Tiles/Floor_{variant}.png"] = floor(variant).to_image()
     return files
 
 
 def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
-    """Floor patch with a wall block, the player (if imported) and walkers in all directions."""
-    cols, rows = 10, 6
+    """Floor patch with a wall block, the player (if imported), walkers and runners in all directions."""
+    cols, rows = 10, 8
     sheet = Image.new("RGBA", (cols * TILE, rows * TILE), PALETTE["night"] + (255,))
     for ty in range(rows):
         for tx in range(cols):
@@ -550,6 +601,7 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
 
     for i, name in enumerate(DIRECTIONS):
         put(files[f"Sprites/Enemies/Walker_Walk_{name}_{i % 4}.png"], 1 + i, 5)
+        put(files[f"Sprites/Enemies/Runner_Run_{name}_{i % 4}.png"], 1 + i, 7)
     player_dir = ART_DIR / "Sprites/Player"
     if (player_dir / "Player_Idle_SE.png").exists():
         put(Image.open(player_dir / "Player_Idle_N.png").convert("RGBA"), 4, 0)
