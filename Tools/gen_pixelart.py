@@ -26,6 +26,8 @@ Output (under Assets/_Project/Art/):
   Sprites/UI/Stick_Knob.png                16x16 knob of the virtual stick
   Sprites/UI/Dash_Button.png               24x24 dash button with icon
   Sprites/UI/Dash_Cooldown.png             24x24 disc covering the button during the cooldown
+  Sprites/UI/Perk_Slot.png                 28x28 HUD slot of an active perk: dark disc with an empty ring (issue #24)
+  Sprites/UI/Perk_Timer.png                28x28 ring over the slot, filled radially with the remaining time (issue #24)
   Tiles/Floor_0..2.png                     32x32 floor variants
   Tiles/Wall_Top.png                       32x32 wall seen from above
   Tiles/Wall_Front.png                     32x32 wall top plus front face
@@ -773,6 +775,36 @@ def dash_cooldown() -> Canvas:
     return c
 
 
+PERK_SLOT = 28
+
+
+def ring_mask(size: int, inner: float, outer: float):
+    """Pixels whose center lies between the radii around the canvas center."""
+    center = size / 2.0
+    for y in range(size):
+        for x in range(size):
+            r = math.hypot(x + 0.5 - center, y + 0.5 - center)
+            if inner <= r <= outer:
+                yield x, y
+
+
+def perk_slot() -> Canvas:
+    """HUD slot behind a perk icon: a dark disc whose rim shows the empty timer track."""
+    c = Canvas(PERK_SLOT, PERK_SLOT)
+    c.ellipse(14.0, 14.0, 14.0, 14.0, "night")
+    for x, y in ring_mask(PERK_SLOT, 11.5, 13.5):
+        c.set(x, y, "slate_1")
+    return c
+
+
+def perk_timer() -> Canvas:
+    """Bright ring on the slot's track; the HUD fills it radially, so it empties as the perk runs out."""
+    c = Canvas(PERK_SLOT, PERK_SLOT)
+    for x, y in ring_mask(PERK_SLOT, 11.5, 13.5):
+        c.set(x, y, "yellow")
+    return c
+
+
 # --- Tiles ---------------------------------------------------------------------
 
 def floor(variant: int) -> Canvas:
@@ -900,6 +932,8 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/UI/Stick_Knob.png": stick_knob().to_image(),
         "Sprites/UI/Dash_Button.png": dash_button().to_image(),
         "Sprites/UI/Dash_Cooldown.png": dash_cooldown().to_image(),
+        "Sprites/UI/Perk_Slot.png": perk_slot().to_image(),
+        "Sprites/UI/Perk_Timer.png": perk_timer().to_image(),
         "Sprites/Pickups/Perk_Glow.png": perk_glow().to_image(),
     }
     for perk in PERK_IDS:

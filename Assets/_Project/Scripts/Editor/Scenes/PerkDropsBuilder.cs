@@ -8,7 +8,7 @@ using UnityEngine;
 namespace RushOps.Editor.Scenes
 {
     /// <summary>
-    /// Adds perk drops to an arena (issue #23): the seven perk definitions with the start values of the Lastenheft,
+    /// Adds perk drops to an arena (issue #23): the seven perk definitions with the start values of the Lastenheft (including their effects, issue #24),
     /// the loot config, the pickup prefab, its pool and the dropper fed by all enemy pools. Existing definitions and
     /// configs keep their tuned values; icons and the prefab are refreshed on every run.
     /// </summary>
@@ -26,17 +26,34 @@ namespace RushOps.Editor.Scenes
         // The glow is a light pool; the pulsing in game scales this alpha.
         private const float GlowAlpha = 0.75f;
 
-        // Start values of the Lastenheft (F-PRK-02): asset name, id, display name, kind, duration, weight.
-        private static readonly (string Asset, string Id, string Name, PerkKind Kind, float Duration, float Weight)[] StartValues =
+        // Start values of the Lastenheft (F-PRK-02, F-PRK-04): asset name, id, display name, kind, duration, weight,
+        // effect and its strength.
+        private static readonly (string Asset, string Id, string Name, PerkKind Kind, float Duration, float Weight,
+            PerkEffect Effect, float Magnitude)[] StartValues =
         {
-            ("SpeedBoost", "speed_boost", "Speed-Boost", PerkKind.Timed, 15f, 25f),
-            ("Medkit", "medkit", "Medkit", PerkKind.Instant, 0f, 20f),
-            ("DoubleDamage", "double_damage", "Doppelschaden", PerkKind.Timed, 10f, 20f),
-            ("RapidFire", "rapid_fire", "Schnellfeuer", PerkKind.Timed, 10f, 15f),
-            ("Shield", "shield", "Schutzschild", PerkKind.Timed, 8f, 10f),
-            ("InstaKill", "insta_kill", "Insta-Kill", PerkKind.Timed, 10f, 7f),
-            ("Nuke", "nuke", "Nuke", PerkKind.Instant, 0f, 3f),
+            ("SpeedBoost", "speed_boost", "Speed-Boost", PerkKind.Timed, 15f, 25f, PerkEffect.SpeedBoost, 1.5f),
+            ("Medkit", "medkit", "Medkit", PerkKind.Instant, 0f, 20f, PerkEffect.Medkit, 2f),
+            ("DoubleDamage", "double_damage", "Doppelschaden", PerkKind.Timed, 10f, 20f, PerkEffect.DoubleDamage, 2f),
+            ("RapidFire", "rapid_fire", "Schnellfeuer", PerkKind.Timed, 10f, 15f, PerkEffect.RapidFire, 2f),
+            ("Shield", "shield", "Schutzschild", PerkKind.Timed, 8f, 10f, PerkEffect.Shield, 1f),
+            ("InstaKill", "insta_kill", "Insta-Kill", PerkKind.Timed, 10f, 7f, PerkEffect.InstaKill, 1f),
+            ("Nuke", "nuke", "Nuke", PerkKind.Instant, 0f, 3f, PerkEffect.Nuke, 1f),
         };
+
+        /// <summary>Number of timed perks, i.e. the most perks that can run at once (one HUD slot each).</summary>
+        public static int TimedPerkCount
+        {
+            get
+            {
+                int count = 0;
+                foreach (var values in StartValues)
+                {
+                    count += values.Kind == PerkKind.Timed ? 1 : 0;
+                }
+
+                return count;
+            }
+        }
 
         /// <summary>Creates the pickup pool and the dropper in the open scene and returns the pool.</summary>
         public static PerkPickupPool Create(EnemyPool[] enemies, FlowFieldNavigator navigator)
@@ -83,6 +100,13 @@ namespace RushOps.Editor.Scenes
                     serialized.FindProperty("_kind").enumValueIndex = (int)values.Kind;
                     serialized.FindProperty("_duration").floatValue = values.Duration;
                     serialized.FindProperty("_weight").floatValue = values.Weight;
+                }
+
+                // The effect is identity, not tuning, so it is refreshed; the strength is tuning and set only once.
+                serialized.FindProperty("_effect").enumValueIndex = (int)values.Effect;
+                if (!exists)
+                {
+                    serialized.FindProperty("_magnitude").floatValue = values.Magnitude;
                 }
 
                 serialized.FindProperty("_icon").objectReferenceValue = LoadSprite($"{IconsDir}/Perk_{values.Asset}.png");

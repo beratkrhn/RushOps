@@ -18,3 +18,5 @@ MonoBehaviour:
   _kind: 1
   _duration: 15
   _weight: 25
+  _effect: 1
+  _magnitude: 1.5

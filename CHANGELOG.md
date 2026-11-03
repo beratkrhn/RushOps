@@ -86,6 +86,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `PerkPool` als reine C#-Klasse mit Drop-Chance und gewichteter Auswahl über eine injizierbare Zufallsquelle (`IRandomSource`), `PickupLifetime` für Despawn und Blinken; EditMode-Tests für Drop-Chance, Gewichtsverteilung und Timer (Issue #23).
 - Perk-Pickups aus einem Object Pool: erscheinen an der Todesposition, auf Wand- oder Torkacheln stattdessen auf der nächsten begehbaren Kachel (`FlowField.TryFindNearestWalkable`); das Icon schwebt über einem pulsierenden Lichtschein, wird bei Berührung durch den Spieler aufgesammelt (Sound über `GameFeel`), blinkt in den letzten 3 s und verschwindet nach 10 s (Issue #23, F-PRK-01, F-PRK-03).
 - Perk-Icons (7 Stück, 24×24) und Lichtschein per `Tools/gen_pixelart.py`, Sound `PerkPickup` per `Tools/gen_sfx.py` (Issue #23).
+- Perk-Effekte: Aufgesammelte Perks wirken jetzt. **Speed-Boost** erhöht das Lauftempo 15 s lang um ×1,5, **Medkit** gibt sofort +2 Herzen (nicht über das Maximum) *(Startwerte)*. Verschiedene Perks laufen parallel; wird derselbe Perk erneut aufgesammelt, beginnt seine Dauer von vorn (Issue #24, F-PRK-04).
+- `ActivePerks` als reine C#-Klasse für die laufenden Perk-Timer (Ablauf, Auffrischen, paralleles Wirken, Multiplikator je Effekt) mit EditMode-Tests; `PlayerPerks` am Spieler wendet die Perks an. `PerkDefinition` hat dafür zwei neue Felder: Effekt (`PerkEffect`) und Stärke (Issue #24).
+- HUD: Unter den Herzen zeigt je ein Slot einen laufenden Perk mit Icon und einem Ring, der mit der Restzeit kleiner wird (`ActivePerksView`). Die Slot-Sprites erzeugt `Tools/gen_pixelart.py` (Issue #24, F-HUD-02).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.

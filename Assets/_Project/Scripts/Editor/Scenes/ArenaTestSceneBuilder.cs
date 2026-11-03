@@ -109,6 +109,9 @@ namespace RushOps.Editor.Scenes
         private const int TitlePixelScale = 3;
         private const float HudMargin = 8f;
         private const float HeartSpacing = 2f;
+        private const float PerkRowGap = 4f;
+        private const float PerkSlotSpacing = 2f;
+        private const float PerkIconSize = 24f;
         // Touch target of the pause button, larger than its icon.
         private const float PauseButtonSize = 44f;
         private static readonly Vector2 MenuButtonSize = new Vector2(140f, 30f);
@@ -447,8 +450,8 @@ namespace RushOps.Editor.Scenes
             Transform target = CreatePlayer(layout.StartCell, playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
             PauseController pause = CreateHud(
-                LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), PixelFontBuilder.Build(),
-                out MissionTracker tracker);
+                LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), target.GetComponent<PlayerPerks>(),
+                PixelFontBuilder.Build(), out MissionTracker tracker);
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
             Material flashMaterial = LoadOrCreateFlashMaterial();
@@ -485,6 +488,9 @@ namespace RushOps.Editor.Scenes
             ExplosionSystem explosions = CreateExplosionSystem(enemyPools, target.GetComponent<PlayerHealth>());
             ExplosionEffectPool explosionEffects = CreateExplosionEffectPool(CreateOrUpdateExplosionEffectPrefab());
             PerkPickupPool perks = PerkDropsBuilder.Create(enemyPools, navigator);
+            var playerPerks = new SerializedObject(target.GetComponent<PlayerPerks>());
+            playerPerks.FindProperty("_pickups").objectReferenceValue = perks;
+            playerPerks.ApplyModifiedPropertiesWithoutUndo();
             SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx));
 
@@ -729,6 +735,9 @@ namespace RushOps.Editor.Scenes
             }
 
             serializedHealth.ApplyModifiedPropertiesWithoutUndo();
+
+            // The pickup pool is set once the perk drops exist (BuildScene).
+            go.AddComponent<PlayerPerks>();
 
             return go.transform;
         }
@@ -1076,7 +1085,8 @@ namespace RushOps.Editor.Scenes
             cache?.SetValue(null, null);
         }
 
-        private static PauseController CreateHud(HudConfig config, PlayerHealth player, Font font, out MissionTracker tracker)
+        private static PauseController CreateHud(
+            HudConfig config, PlayerHealth player, PlayerPerks perks, Font font, out MissionTracker tracker)
         {
             var root = new GameObject("HUD", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
@@ -1092,7 +1102,8 @@ namespace RushOps.Editor.Scenes
 
             RectTransform safeArea = CreateUiRect("SafeArea", root.transform, Vector2.zero, Vector2.one);
             safeArea.gameObject.AddComponent<SafeAreaFitter>();
-            CreateHearts(safeArea, config, player);
+            float heartsHeight = CreateHearts(safeArea, config, player);
+            CreateActivePerks(safeArea, perks, HudMargin + heartsHeight + PerkRowGap);
             CreatePauseButton(safeArea, pause);
             CreateFpsCounter(safeArea, font);
             tracker = CreateMissionTracker(safeArea, config, font);
@@ -1104,7 +1115,8 @@ namespace RushOps.Editor.Scenes
             return pause;
         }
 
-        private static void CreateHearts(RectTransform parent, HudConfig config, PlayerHealth player)
+        // Returns the height of the heart row in reference units.
+        private static float CreateHearts(RectTransform parent, HudConfig config, PlayerHealth player)
         {
             Sprite full = LoadUiSprite("Heart_Full.png");
             Sprite empty = LoadUiSprite("Heart_Empty.png");
@@ -1141,6 +1153,71 @@ namespace RushOps.Editor.Scenes
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            return size.y;
+        }
+
+        // One slot per timed perk below the hearts (F-HUD-02): a dark disc with an empty ring, the perk icon on it and
+        // the timer ring over it, filled radially with the remaining time. Slots show at the size of the world icons.
+        private static void CreateActivePerks(RectTransform parent, PlayerPerks perks, float top)
+        {
+            Sprite slotSprite = LoadUiSprite("Perk_Slot.png");
+            Sprite timerSprite = LoadUiSprite("Perk_Timer.png");
+            var topLeft = new Vector2(0f, 1f);
+            RectTransform row = CreateUiRect("ActivePerks", parent, topLeft, topLeft);
+            row.pivot = topLeft;
+            row.anchoredPosition = new Vector2(HudMargin, -top);
+
+            int count = PerkDropsBuilder.TimedPerkCount;
+            Vector2 size = slotSprite.rect.size;
+            var slots = new GameObject[count];
+            var icons = new Image[count];
+            var timers = new Image[count];
+            for (int i = 0; i < count; i++)
+            {
+                RectTransform slot = CreateUiRect($"Perk_{i}", row, topLeft, topLeft);
+                slot.pivot = topLeft;
+                slot.sizeDelta = size;
+                slot.anchoredPosition = new Vector2(i * (size.x + PerkSlotSpacing), 0f);
+                var background = slot.gameObject.AddComponent<Image>();
+                background.sprite = slotSprite;
+                background.raycastTarget = false;
+
+                // Perk icons are 24x24 and sit centered on the 28x28 slot.
+                RectTransform iconRect = CreateUiRect("Icon", slot, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+                iconRect.sizeDelta = new Vector2(PerkIconSize, PerkIconSize);
+                icons[i] = iconRect.gameObject.AddComponent<Image>();
+                icons[i].raycastTarget = false;
+
+                RectTransform timerRect = CreateUiRect("Timer", slot, Vector2.zero, Vector2.one);
+                timers[i] = timerRect.gameObject.AddComponent<Image>();
+                timers[i].sprite = timerSprite;
+                timers[i].raycastTarget = false;
+                timers[i].type = Image.Type.Filled;
+                timers[i].fillMethod = Image.FillMethod.Radial360;
+                timers[i].fillOrigin = (int)Image.Origin360.Top;
+                timers[i].fillClockwise = false;
+                timers[i].fillAmount = 1f;
+
+                slots[i] = slot.gameObject;
+                slot.gameObject.SetActive(false);
+            }
+
+            var view = row.gameObject.AddComponent<ActivePerksView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_perks").objectReferenceValue = perks;
+            SetArray(serialized.FindProperty("_slots"), slots);
+            SetArray(serialized.FindProperty("_icons"), icons);
+            SetArray(serialized.FindProperty("_timers"), timers);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetArray(SerializedProperty array, Object[] values)
+        {
+            array.arraySize = values.Length;
+            for (int i = 0; i < values.Length; i++)
+            {
+                array.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            }
         }
 
         // Top right below the pause button, growing to the left; zones, sound and clip are set by AssignZones.
