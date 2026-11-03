@@ -10,6 +10,8 @@ Output (under Assets/_Project/Audio/SFX/):
   Death.wav   lower, longer squelch with a falling saw tone
   GateOpen.wav  rattling chain with a heavy rising clunk at the end (issue #17)
   MissionDone.wav  bright rising three-note chime when a kill gate opens (issue #19)
+  RunnerSpawn.wav     short raspy shriek rising in pitch when a runner appears (issue #20)
+  RunnerApproach.wav  fast panting hiss that swells, when a runner closes in (issue #20)
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -113,6 +115,38 @@ def mission_done(rng: random.Random) -> list[float]:
     return out
 
 
+def runner_spawn(rng: random.Random) -> list[float]:
+    # Rough square shriek with vibrato and a breathy noise layer: higher and thinner than the walker's sounds.
+    length = 0.22
+    out = []
+    smoothed = 0.0
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        vibrato = 1 + 0.04 * math.sin(2 * math.pi * 30 * t)
+        square = 1.0 if math.sin(sweep(520, 1100, t, length) * vibrato) >= 0 else -1.0
+        smoothed += 0.5 * (rng.uniform(-1, 1) - smoothed)
+        out.append((0.45 * square + 0.5 * smoothed) * envelope(t, length, 0.01))
+    return out
+
+
+def runner_approach(rng: random.Random) -> list[float]:
+    # Three quick breaths of filtered noise, each louder and higher, under a rising growl.
+    length = 0.42
+    out = []
+    smoothed = 0.0
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        breath = (t * 7.5) % 1.0
+        gate = math.sin(math.pi * breath) ** 2
+        cutoff = 0.15 + 0.35 * t / length
+        smoothed += cutoff * (rng.uniform(-1, 1) - smoothed)
+        growl = math.sin(sweep(110, 190, t, length))
+        swell = 0.4 + 0.6 * t / length
+        fade = min(1.0, (length - t) / 0.03)
+        out.append((0.8 * smoothed * gate + 0.3 * growl) * swell * fade)
+    return out
+
+
 def write(path: Path, samples: list[float]) -> None:
     peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
@@ -126,7 +160,8 @@ def main() -> None:
     SFX_DIR.mkdir(parents=True, exist_ok=True)
     rng = random.Random(12)
     for name, make in (("Shot", shot), ("Hit", hit), ("Death", death), ("GateOpen", gate_open),
-                       ("MissionDone", mission_done)):
+                       ("MissionDone", mission_done), ("RunnerSpawn", runner_spawn),
+                       ("RunnerApproach", runner_approach)):
         path = SFX_DIR / f"{name}.wav"
         write(path, make(rng))
         print(f"Wrote {path.relative_to(ROOT)}")
