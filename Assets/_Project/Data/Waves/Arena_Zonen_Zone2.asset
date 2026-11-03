@@ -26,6 +26,8 @@ MonoBehaviour:
       _count: 9
     - _enemy: {fileID: 11400000, guid: 076e68c3f3a7e4f79b3a9d6d1ca3b821, type: 2}
       _count: 3
+    - _enemy: {fileID: 11400000, guid: f2575c09c119244b0817bdb9d76ef33e, type: 2}
+      _count: 1
   _spawnInterval: 0.8
   _pauseBetweenWaves: 3
   _afterLastWave: 1

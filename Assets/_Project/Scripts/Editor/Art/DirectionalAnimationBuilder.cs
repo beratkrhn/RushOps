@@ -25,6 +25,9 @@ namespace RushOps.Editor.Art
         /// <summary>Asset path of the brute's walk animation.</summary>
         public const string BruteWalkPath = AnimationsDir + "/Brute_Walk.asset";
 
+        /// <summary>Asset path of the boomer's walk animation.</summary>
+        public const string BoomerWalkPath = AnimationsDir + "/Boomer_Walk.asset";
+
         private const string AnimationsDir = "Assets/_Project/Data/Animations";
         private const string SpritesDir = "Assets/_Project/Art/Sprites";
 
@@ -35,6 +38,7 @@ namespace RushOps.Editor.Art
             CreateOrUpdate(WalkerWalkPath, SpritesDir + "/Enemies", "Walker_Walk");
             CreateOrUpdate(RunnerRunPath, SpritesDir + "/Enemies", "Runner_Run");
             CreateOrUpdate(BruteWalkPath, SpritesDir + "/Enemies", "Brute_Walk");
+            CreateOrUpdate(BoomerWalkPath, SpritesDir + "/Enemies", "Boomer_Walk");
             AssetDatabase.SaveAssets();
         }
 

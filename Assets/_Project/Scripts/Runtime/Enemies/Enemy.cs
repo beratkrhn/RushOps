@@ -10,13 +10,14 @@ namespace RushOps.Enemies
     /// A pooled enemy (F-GEG-01, F-GEG-04, NF-02): health and contact damage from its <see cref="EnemyDefinition"/>,
     /// takes projectile hits with a white flash and a knockback (issue #12), and on death plays a short
     /// shrink-and-fade effect before it hands itself back to its pool. Once per life it reports coming close to
-    /// the chased target (<see cref="Approached"/>, issue #20). Movement is done by
+    /// the chased target (<see cref="Approached"/>, issue #20). An enemy with an <see cref="EnemyDefinition.Explosion"/>
+    /// dies as soon as it touches its target, so it blows up there (boomer, issue #22). Movement is done by
     /// <see cref="EnemyMovement"/>; this component switches it on and off. The flash needs a material with
     /// the <c>RushOps/Sprite Flash</c> shader on the renderer.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(EnemyMovement))]
-    public class Enemy : MonoBehaviour, IDamageable, IContactDamage
+    public class Enemy : MonoBehaviour, IDamageable, IContactDamage, IExplosionTarget
     {
         [SerializeField] private EnemyDefinition _definition;
         [SerializeField] private FeelConfig _feel;
@@ -58,6 +59,12 @@ namespace RushOps.Enemies
 
         /// <summary>Center of the body, where shots should go; the transform sits at the feet.</summary>
         public Vector2 AimPoint => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
+
+        /// <inheritdoc />
+        public Vector2 ExplosionPoint => AimPoint;
+
+        /// <inheritdoc />
+        public bool CanBeHitByExplosion => _health != null && !_health.IsDead && isActiveAndEnabled;
 
         /// <inheritdoc />
         public int ContactDamage => _definition != null && !IsDead ? _definition.ContactDamage : 0;
@@ -116,6 +123,22 @@ namespace RushOps.Enemies
             return true;
         }
 
+        /// <summary>Kills the enemy at once, whatever its health, e.g. when a boomer touches the player.</summary>
+        /// <returns>True if the enemy was alive.</returns>
+        public bool Kill()
+        {
+            if (_health == null || _health.IsDead)
+            {
+                return false;
+            }
+
+            _health.TakeDamage(_health.Current);
+            SetFlash(0f);
+            Die();
+            Hit?.Invoke(this);
+            return true;
+        }
+
         private void Awake()
         {
             _movement = GetComponent<EnemyMovement>();
@@ -148,6 +171,26 @@ namespace RushOps.Enemies
             if (t >= 1f)
             {
                 Finish();
+            }
+        }
+
+        // Explosive enemies blow up on touching the player they chase.
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            TryDetonate(collision);
+        }
+
+        private void OnCollisionStay2D(Collision2D collision)
+        {
+            TryDetonate(collision);
+        }
+
+        private void TryDetonate(Collision2D collision)
+        {
+            if (_target != null && _definition != null && _definition.Explosion != null && !IsDead
+                && collision.rigidbody != null && collision.rigidbody.transform == _target)
+            {
+                Kill();
             }
         }
 

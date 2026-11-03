@@ -75,6 +75,12 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Physik-Material `Data/Physics/EnemyBody.physicsMaterial2D` ohne Reibung für alle Gegner: Gegner gleiten aneinander und an Wänden ab, statt durch Haftreibung aneinander zu kleben (Issue #21).
 - Brute-Grafik per `Tools/gen_pixelart.py`: 96×96, 8 Richtungen × 4 Lauf-Frames, breit und gebeugt mit nackten Armen, dunkler Weste und kleinem Kopf (Issue #21).
 - Level-Design-Richtlinie `docs/level-design.md`: Gänge und Tore mindestens 2 Kacheln breit, Körpergrößen der Figuren, kein Gegnerradius ab 0,5 (Issue #21).
+- Boomer: explodierender Zombie mit eigener `EnemyDefinition` (`Data/Enemies/Boomer.asset`: Gesundheit 4, Tempo 2, 20 Punkte, kein eigener Kontaktschaden *(Startwerte)*), eigenem Prefab und Pool. Explodiert bei Tod oder sobald er den Spieler berührt (Issue #22).
+- `ExplosionDefinition` (`Data/Enemies/BoomerExplosion.asset`): Radius 2,5 Kacheln, 2 Herzen Schaden am Spieler, 5 Schaden an Zombies, Kettenverzögerung 0,12 s, Screenshake 0,3 für 0,35 s *(Startwerte)*, Sound und Effekt-Frames; `EnemyDefinition.Explosion` verweist darauf (Issue #22).
+- `ExplosionSystem`: Flächenschaden trifft Spieler (über `PlayerHealth.TakeDamage`, also mit i-Frames und Treffer-Unverwundbarkeit) und alle anderen Zombies im Radius; davon getötete Zombies zählen für Kill-Gates; Boomer in Reichweite gehen nach kurzer Verzögerung als sichtbare Kettenreaktion hoch. Reine Logik in `ExplosionTargeting` (Zielauswahl) und `ExplosionQueue` mit EditMode-Tests (Issue #22).
+- Explosionseffekt (6 Frames, 160×160, zeigt den Schadensradius) aus einem Object Pool, mit Screenshake und Explosions-Sound über `GameFeel` (Issue #22).
+- Boomer-Grafik per `Tools/gen_pixelart.py`: 64×64, 8 Richtungen × 4 Frames, aufgeblähter Bauch, der pulsiert, mit leuchtenden Beulen (Issue #22).
+- Platzhalter-Sounds per `Tools/gen_sfx.py`: `BoomerSpawn` (Blubbern), `BoomerApproach` als eigenes Warnsignal (schneller werdende Zweiton-Piepser über Zündschnur-Zischen, Annäherung ab 5 Kacheln) und `Explosion` (Issue #22, F-AUD-03).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -102,6 +108,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Gegner nutzen kontinuierliche Kollisionserkennung, damit auch schnelle Gegner nicht durch Wandecken rutschen (Issue #20).
 - Wellen *(Startwerte)* mit Runnern: `Arena_Test` 12 Walker / 12 Walker + 4 Runner / 14 Walker + 6 Runner; `Arena_Zonen` Zone 2 6 / 8 + 2 / 9 + 3, Zone 3 6 + 2 / 8 + 4 / 10 + 6; Zone 1 bleibt nur mit Walkern (Issue #20).
 - Wellen *(Startwerte)* mit Brutes: `Arena_Test` 1 Brute in Welle 3, `Arena_Zonen` Zone 3 je 1 bzw. 2 Brutes in Welle 2 und 3 (Issue #21).
+- Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).

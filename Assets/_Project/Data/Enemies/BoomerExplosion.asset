@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6a8e1925e002445aa88bb0a4e6d4902f, type: 3}
+  m_Name: BoomerExplosion
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Combat.ExplosionDefinition
+  _radius: 2.5
+  _playerDamage: 2
+  _enemyDamage: 5
+  _chainDelay: 0.12
+  _shakeStrength: 0.3
+  _shakeDuration: 0.35
+  _shakeFrequency: 22
+  _clip: {fileID: 8300000, guid: 558fe22cf477b457eaf7babe39232e92, type: 3}
+  _volume: 0.9
+  _effectFrames:
+  - {fileID: 21300000, guid: cd272309fd72b461ca2557c170804166, type: 3}
+  - {fileID: 21300000, guid: 80f711421d73448679ca1a64ddfddc22, type: 3}
+  - {fileID: 21300000, guid: 30cdc9d0085e5414589e6a7ac00093dc, type: 3}
+  - {fileID: 21300000, guid: 7ad8ac5fa726e4d7da906ae028f43d19, type: 3}
+  - {fileID: 21300000, guid: 393e6b1dbc0ec42e3bb99c4ef8d338cb, type: 3}
+  - {fileID: 21300000, guid: 0334030147acd42b9b12f3da3ac4480a, type: 3}
+  _effectFrameDuration: 0.05

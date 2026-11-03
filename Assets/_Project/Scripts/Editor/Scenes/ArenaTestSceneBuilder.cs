@@ -31,7 +31,7 @@ namespace RushOps.Editor.Scenes
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
     /// a HUD with hearts and a pause menu, hit feedback (flash, knockback, shake, hitstop, sounds),
-    /// and walkers, runners and brutes that come in waves from the spawn points of one zone covering the arena and chase the
+    /// and walkers, runners, brutes and boomers (with their explosions) that come in waves from the spawn points of one zone covering the arena and chase the
     /// player along a flow field.
     /// Re-running overwrites the scene, so the scene stays reproducible from code. Other test levels reuse
     /// <see cref="BuildScene"/> with their own <see cref="ArenaLayout"/>.
@@ -61,6 +61,12 @@ namespace RushOps.Editor.Scenes
         private const string RunnerPrefabPath = "Assets/_Project/Prefabs/Enemies/Runner.prefab";
         internal const string BruteDefinitionPath = "Assets/_Project/Data/Enemies/Brute.asset";
         private const string BrutePrefabPath = "Assets/_Project/Prefabs/Enemies/Brute.prefab";
+        internal const string BoomerDefinitionPath = "Assets/_Project/Data/Enemies/Boomer.asset";
+        private const string BoomerPrefabPath = "Assets/_Project/Prefabs/Enemies/Boomer.prefab";
+        private const string BoomerExplosionPath = "Assets/_Project/Data/Enemies/BoomerExplosion.asset";
+        private const string ExplosionFramesPrefix = "Assets/_Project/Art/Sprites/Effects/Explosion_";
+        private const int ExplosionFrameCount = 6;
+        private const string ExplosionEffectPrefabPath = "Assets/_Project/Prefabs/Effects/Explosion.prefab";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
         private const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
         private const string FlashShaderName = "RushOps/Sprite Flash";
@@ -80,6 +86,9 @@ namespace RushOps.Editor.Scenes
         // The brute's broad body makes a bigger target and shields the enemies behind it. It stays below half a tile,
         // so it passes the paths along walls and corners that the flow field leads it on (docs/level-design.md).
         private const float BruteColliderRadius = 0.45f;
+        // The boomer's swollen belly makes it wider than the walker.
+        private const float BoomerColliderRadius = 0.32f;
+        private static readonly Vector2 BoomerColliderOffset = new Vector2(0f, 0.35f);
         private static readonly Vector2 BruteColliderOffset = new Vector2(0f, 0.45f);
         // The player is far heavier than walkers: walkers block it but barely push it around. Enemy masses come
         // from their EnemyDefinition.
@@ -126,6 +135,8 @@ namespace RushOps.Editor.Scenes
         internal const int ActorSortingOrder = 2;
         // Projectiles fly at gun height, so they draw above walls and characters instead of sorting by Y.
         private const int ProjectileSortingOrder = 3;
+        // Blasts cover the characters they hit.
+        private const int EffectSortingOrder = 4;
         // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
         private const int PlainFloorWeight = 7;
         // Spawn points along the arena edges and in the corners, inside the outer wall ring and clear of obstacles.
@@ -162,12 +173,13 @@ namespace RushOps.Editor.Scenes
             var walker = LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath);
             EnemyDefinition runner = LoadOrCreateRunner();
             EnemyDefinition brute = LoadOrCreateBrute();
+            EnemyDefinition boomer = LoadOrCreateBoomer();
             WaveDefinition waves = LoadOrCreateWaves(WavesPath, w => w.Configure(
                 new[]
                 {
                     new Wave(new WaveEntry(walker, 12)),
-                    new Wave(new WaveEntry(walker, 12), new WaveEntry(runner, 4)),
-                    new Wave(new WaveEntry(walker, 14), new WaveEntry(runner, 6), new WaveEntry(brute, 1)),
+                    new Wave(new WaveEntry(walker, 12), new WaveEntry(runner, 4), new WaveEntry(boomer, 2)),
+                    new Wave(new WaveEntry(walker, 14), new WaveEntry(runner, 6), new WaveEntry(brute, 1), new WaveEntry(boomer, 3)),
                 },
                 0.6f, 3f, AfterLastWave.RepeatAll));
             var area = new RectInt(1, 1, Layout.Width - 2, Layout.Height - 2);
@@ -227,6 +239,66 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
             AssetDatabase.SaveAssets();
             return brute;
+        }
+
+        /// <summary>
+        /// Loads the boomer definition (issue #22), or creates it with the start values of the backlog: no contact
+        /// damage of its own, it blows up instead (2 hearts in 2.5 tiles), with its own warning sound.
+        /// An existing definition keeps its tuned values.
+        /// </summary>
+        internal static EnemyDefinition LoadOrCreateBoomer()
+        {
+            var boomer = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(BoomerDefinitionPath);
+            if (boomer != null)
+            {
+                return boomer;
+            }
+
+            boomer = LoadOrCreateConfig<EnemyDefinition>(BoomerDefinitionPath);
+            var serialized = new SerializedObject(boomer);
+            serialized.FindProperty("_health").intValue = 4;
+            serialized.FindProperty("_moveSpeed").floatValue = 2f;
+            serialized.FindProperty("_contactDamage").intValue = 0;
+            serialized.FindProperty("_deathDuration").floatValue = 0.12f;
+            serialized.FindProperty("_points").intValue = 20;
+            serialized.FindProperty("_mass").floatValue = 1.5f;
+            serialized.FindProperty("_explosion").objectReferenceValue = LoadOrCreateBoomerExplosion();
+            serialized.FindProperty("_spawnClip").objectReferenceValue = LoadClip("BoomerSpawn.wav");
+            serialized.FindProperty("_approachClip").objectReferenceValue = LoadClip("BoomerApproach.wav");
+            serialized.FindProperty("_approachDistance").floatValue = 5f;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssets();
+            return boomer;
+        }
+
+        // Created with the defaults of ExplosionDefinition; the effect frames are always refreshed.
+        private static ExplosionDefinition LoadOrCreateBoomerExplosion()
+        {
+            ExplosionDefinition explosion = LoadOrCreateConfig<ExplosionDefinition>(BoomerExplosionPath);
+            var serialized = new SerializedObject(explosion);
+            if (serialized.FindProperty("_clip").objectReferenceValue == null)
+            {
+                serialized.FindProperty("_clip").objectReferenceValue = LoadClip("Explosion.wav");
+            }
+
+            SerializedProperty frames = serialized.FindProperty("_effectFrames");
+            frames.arraySize = ExplosionFrameCount;
+            for (int i = 0; i < ExplosionFrameCount; i++)
+            {
+                string path = $"{ExplosionFramesPrefix}{i}.png";
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                if (sprite == null)
+                {
+                    throw new System.InvalidOperationException($"Explosion frame not found at {path}; run Tools/gen_pixelart.py");
+                }
+
+                frames.GetArrayElementAtIndex(i).objectReferenceValue = sprite;
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(explosion);
+            AssetDatabase.SaveAssets();
+            return explosion;
         }
 
         /// <summary>
@@ -366,6 +438,7 @@ namespace RushOps.Editor.Scenes
             var walkerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerWalkPath);
             var runnerRun = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.RunnerRunPath);
             var bruteWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BruteWalkPath);
+            var boomerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BoomerWalkPath);
 
             CreateGlobalLight();
             Tilemap walls = CreateArena(layout, floorTiles, wallTop, wallFront);
@@ -390,12 +463,17 @@ namespace RushOps.Editor.Scenes
                 "Brute", BrutePrefabPath, bruteWalk, LoadOrCreateBrute(), feelConfig, flashMaterial, enemyBody,
                 BruteColliderRadius,
                 BruteColliderOffset);
+            Enemy boomerPrefab = CreateOrUpdateEnemyPrefab(
+                "Boomer", BoomerPrefabPath, boomerWalk, LoadOrCreateBoomer(), feelConfig, flashMaterial, enemyBody,
+                BoomerColliderRadius,
+                BoomerColliderOffset);
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
             var enemyPools = new[]
             {
                 CreateEnemyPool("EnemyPool_Walker", walkerPrefab, navigator),
                 CreateEnemyPool("EnemyPool_Runner", runnerPrefab, navigator),
                 CreateEnemyPool("EnemyPool_Brute", brutePrefab, navigator),
+                CreateEnemyPool("EnemyPool_Boomer", boomerPrefab, navigator),
             };
             WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPools, target);
             LevelKills kills = CreateLevelKills(enemyPools);
@@ -403,7 +481,9 @@ namespace RushOps.Editor.Scenes
             SetPools(aimAssist, enemyPools);
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
-            SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPools, cameraFollow, pause);
+            ExplosionSystem explosions = CreateExplosionSystem(enemyPools, target.GetComponent<PlayerHealth>());
+            ExplosionEffectPool explosionEffects = CreateExplosionEffectPool(CreateOrUpdateExplosionEffectPrefab());
+            SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx));
 
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -841,7 +921,41 @@ namespace RushOps.Editor.Scenes
             return follow;
         }
 
-        private static SfxPlayer CreateGameFeel(FeelConfig config, Transform player, EnemyPool[] enemies, CameraFollow camera, PauseController pause)
+        private static ExplosionSystem CreateExplosionSystem(EnemyPool[] pools, PlayerHealth player)
+        {
+            var explosions = new GameObject("ExplosionSystem").AddComponent<ExplosionSystem>();
+            var serialized = new SerializedObject(explosions);
+            SetPools(serialized, pools);
+            serialized.FindProperty("_player").objectReferenceValue = player;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return explosions;
+        }
+
+        // Rebuilt on every run, so the prefab stays reproducible from code.
+        private static ExplosionEffect CreateOrUpdateExplosionEffectPrefab()
+        {
+            var go = new GameObject("Explosion");
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sortingOrder = EffectSortingOrder;
+            go.AddComponent<ExplosionEffect>();
+            EnsureFolder(Path.GetDirectoryName(ExplosionEffectPrefabPath).Replace('\\', '/'));
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, ExplosionEffectPrefabPath);
+            Object.DestroyImmediate(go);
+            return prefab.GetComponent<ExplosionEffect>();
+        }
+
+        private static ExplosionEffectPool CreateExplosionEffectPool(ExplosionEffect prefab)
+        {
+            var pool = new GameObject("ExplosionEffectPool").AddComponent<ExplosionEffectPool>();
+            var serialized = new SerializedObject(pool);
+            serialized.FindProperty("_prefab").objectReferenceValue = prefab;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return pool;
+        }
+
+        private static SfxPlayer CreateGameFeel(
+            FeelConfig config, Transform player, EnemyPool[] enemies, CameraFollow camera, PauseController pause,
+            ExplosionSystem explosions, ExplosionEffectPool explosionEffects)
         {
             var go = new GameObject("GameFeel");
             var hitstop = go.AddComponent<Hitstop>();
@@ -859,6 +973,8 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_weapon").objectReferenceValue = player.GetComponent<PlayerWeapon>();
             SetPools(serialized, enemies);
             serialized.FindProperty("_camera").objectReferenceValue = camera;
+            serialized.FindProperty("_explosions").objectReferenceValue = explosions;
+            serialized.FindProperty("_explosionEffects").objectReferenceValue = explosionEffects;
             serialized.FindProperty("_hitstop").objectReferenceValue = hitstop;
             serialized.FindProperty("_sfx").objectReferenceValue = sfx;
             serialized.FindProperty("_shotClip").objectReferenceValue = LoadClip("Shot.wav");

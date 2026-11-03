@@ -11,6 +11,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Walker_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames
   Sprites/Enemies/Runner_Run_<DIR>_<F>.png  64x64, 8 directions x 4 frames (issue #20)
   Sprites/Enemies/Brute_Walk_<DIR>_<F>.png  96x96, 8 directions x 4 frames (issue #21)
+  Sprites/Enemies/Boomer_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames, pulsing belly (issue #22)
+  Sprites/Effects/Explosion_<F>.png         160x160, 6 frames of the boomer blast, radius 2.5 tiles (issue #22)
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
@@ -167,6 +169,9 @@ RAMP = {
     "hide": ("skin_0", "skin_1", "peach"),
     "vest": ("night", "slate_0", "slate_1"),
     "trousers": ("brown_0", "brown_1", "brown_1"),
+    # Boomer (issue #22): sickly mauve, swollen skin with glowing yellow boils, so it reads as "explosive".
+    "bloat": ("dusk", "mauve", "clay"),
+    "rags": ("green_0", "green_1", "green_1"),
 }
 
 
@@ -358,6 +363,58 @@ def brute_frame(direction: int, frame: int) -> Canvas:
     return c
 
 
+def boomer_frame(direction: int, frame: int) -> Canvas:
+    """Boomer in one of 8 directions, frame 0..3 of a waddle: short legs and arms on a huge swollen belly that
+    pulses (inflates and sags over the 4 frames) with glowing boils that flare at the fullest frame."""
+    m = Model(direction * 45.0)
+    phase = frame / 4 * 2 * math.pi
+    stride = 3.0 * math.sin(phase)
+    sway = 1.2 * math.sin(phase)
+    # Pulse: fullest in frame 1, slackest in frame 3.
+    pulse = math.sin(phase)
+    belly_r = 12.0 + 2.0 * pulse
+    hip_z = 12.0
+
+    # Stubby legs, spread wide under the weight.
+    for side, step in ((-5.0, stride), (5.0, -stride)):
+        m.capsule((0, side, hip_z), (step, side * 1.1, 4), 3.4, "rags")
+        m.sphere(step + 1.0, side * 1.1, 2.5, 3.0, "shoe")
+    # Swollen belly, bulging forward, and a smaller chest on top of it.
+    belly = (2.0 + 0.6 * pulse, sway * 0.5, 21.0 + 0.5 * pulse)
+    m.sphere(*belly, belly_r, "bloat")
+    m.sphere(0.0, sway, 32.0, 7.5, "bloat")
+    # Short arms dangling at the sides of the belly.
+    for side in (-1, 1):
+        shoulder = (0.5, side * 8.0 + sway, 33.0)
+        hand = (4.0 - side * stride * 0.4, side * (belly_r + 1.5) + sway, 22.0)
+        m.capsule(shoulder, hand, 2.5, "bloat")
+    # Small head sunk between the shoulders.
+    head = (2.0, sway, 40.0)
+    m.sphere(*head, 5.5, "bloat")
+
+    c = Canvas(CHARACTER, CHARACTER)
+    m.paint(c)
+
+    # Boils on the visible side of the belly; they glow brightest when the belly is fullest.
+    hot = "glow" if pulse > 0.5 else "yellow"
+    for f, s, z in ((belly_r * 0.8, -4.0, 24.0), (belly_r * 0.75, 4.5, 19.0), (belly_r * 0.6, 0.5, 14.5),
+                    (belly_r * 0.55, -7.0, 17.0), (belly_r * 0.5, 8.0, 25.0)):
+        x, y, north = m.project(belly[0] + f, belly[1] + s, z)
+        if north <= belly_r * 0.25:
+            for dx, dy in ((-1, 0), (2, 0), (0, -1), (1, -1), (0, 2), (1, 2)):
+                c.set(int(x) + dx, int(y) + dy, "orange")
+            for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
+                c.set(int(x) + dx, int(y) + dy, hot)
+    # Green eyes, only where they face the viewer.
+    _, _, head_north = m.project(*head)
+    for s in (-2.0, 2.0):
+        x, y, north = m.project(head[0] + 4.4, head[1] + s, head[2] + 0.5)
+        if north <= head_north + 0.5:
+            c.set(int(x), int(y), "green_2")
+    c.outline("outline")
+    return c
+
+
 # --- Projectile and effects --------------------------------------------------------
 
 def bullet() -> Canvas:
@@ -377,6 +434,75 @@ def muzzle_flash() -> Canvas:
         c.set(x, y, "orange")
     c.ellipse(7.5, 8.0, 4.0, 2.6, "yellow")
     c.ellipse(7.0, 8.0, 2.4, 1.5, "glow")
+    return c
+
+
+EXPLOSION = 160
+EXPLOSION_FRAMES = 6
+
+
+def explosion_frame(frame: int) -> Canvas:
+    """Frame 0..5 of the boomer blast on a 160x160 canvas (radius 2.5 tiles = 80 px): a white flash, a fireball
+    that swells and breaks up, a shock ring that runs out to the damage radius, then drifting smoke."""
+    rng = random.Random(220 + frame)
+    c = Canvas(EXPLOSION, EXPLOSION)
+    cx = cy = EXPLOSION / 2
+    edge = EXPLOSION / 2 - 1.0
+
+    def disc(r: float, color: str, rough: float = 0.0) -> None:
+        for y in range(EXPLOSION):
+            for x in range(EXPLOSION):
+                d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+                if d <= r - rough * rng.random():
+                    c.set(x, y, color)
+
+    def ring(r: float, width: float, color: str, gaps: float = 0.0) -> None:
+        for y in range(EXPLOSION):
+            for x in range(EXPLOSION):
+                d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+                if r - width <= d <= r and rng.random() >= gaps:
+                    c.set(x, y, color)
+
+    def puffs(count: int, dist: tuple, size: tuple, colors: tuple) -> None:
+        for _ in range(count):
+            a = rng.uniform(0, 2 * math.pi)
+            d = rng.uniform(*dist)
+            r = rng.uniform(*size)
+            px, py = cx + math.cos(a) * d, cy + math.sin(a) * d
+            c.ellipse(px, py, r, r, colors[0])
+            c.ellipse(px - r * 0.25, py - r * 0.25, r * 0.6, r * 0.6, colors[1])
+
+    if frame == 0:
+        disc(22, "orange", 3)
+        disc(17, "yellow", 2)
+        disc(12, "glow")
+        disc(6, "white")
+    elif frame == 1:
+        ring(48, 3, "glow")
+        disc(40, "red_1", 5)
+        disc(33, "orange", 4)
+        disc(24, "yellow", 3)
+        disc(13, "glow", 2)
+    elif frame == 2:
+        ring(66, 3, "yellow", 0.1)
+        ring(63, 2, "orange", 0.2)
+        puffs(10, (28, 44), (6, 10), ("red_0", "red_1"))
+        disc(42, "red_1", 6)
+        disc(34, "orange", 5)
+        disc(22, "yellow", 4)
+    elif frame == 3:
+        ring(edge, 3, "orange", 0.15)
+        puffs(12, (30, 56), (6, 11), ("slate_1", "slate_2"))
+        puffs(8, (14, 36), (6, 10), ("red_0", "red_1"))
+        disc(22, "orange", 6)
+        disc(12, "yellow", 4)
+    elif frame == 4:
+        ring(edge, 2, "red_0", 0.5)
+        puffs(14, (20, 60), (6, 12), ("slate_0", "slate_2"))
+        puffs(5, (4, 22), (5, 8), ("red_0", "orange"))
+    else:
+        puffs(10, (24, 66), (4, 9), ("night", "slate_1"))
+        puffs(4, (6, 26), (4, 7), ("slate_0", "slate_2"))
     return c
 
 
@@ -634,14 +760,17 @@ def outputs() -> dict[str, Image.Image]:
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Brute_Walk_{name}_{frame}.png"] = brute_frame(d, frame).to_image()
+            files[f"Sprites/Enemies/Boomer_Walk_{name}_{frame}.png"] = boomer_frame(d, frame).to_image()
+    for frame in range(EXPLOSION_FRAMES):
+        files[f"Sprites/Effects/Explosion_{frame}.png"] = explosion_frame(frame).to_image()
     for variant in range(3):
         files[f"Tiles/Floor_{variant}.png"] = floor(variant).to_image()
     return files
 
 
 def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
-    """Floor patch with a wall block, the player (if imported), walkers, runners and brutes in all directions."""
-    cols, rows = 13, 14
+    """Floor patch with a wall block, the player (if imported), walkers, runners, brutes and boomers in all directions."""
+    cols, rows = 13, 16
     sheet = Image.new("RGBA", (cols * TILE, rows * TILE), PALETTE["night"] + (255,))
     for ty in range(rows):
         for tx in range(cols):
@@ -663,6 +792,7 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
         put(files[f"Sprites/Enemies/Walker_Walk_{name}_{i % 4}.png"], 1 + i, 5)
         put(files[f"Sprites/Enemies/Runner_Run_{name}_{i % 4}.png"], 1 + i, 7)
         put(files[f"Sprites/Enemies/Brute_Walk_{name}_{i % 4}.png"], 1 + i % 4 * 3, 10 + i // 4 * 3)
+        put(files[f"Sprites/Enemies/Boomer_Walk_{name}_{i % 4}.png"], 1 + i, 15)
     player_dir = ART_DIR / "Sprites/Player"
     if (player_dir / "Player_Idle_SE.png").exists():
         put(Image.open(player_dir / "Player_Idle_N.png").convert("RGBA"), 4, 0)

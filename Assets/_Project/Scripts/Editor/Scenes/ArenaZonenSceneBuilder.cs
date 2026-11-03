@@ -116,6 +116,7 @@ namespace RushOps.Editor.Scenes
             var walker = ArenaTestSceneBuilder.LoadOrCreateConfig<EnemyDefinition>(ArenaTestSceneBuilder.WalkerDefinitionPath);
             EnemyDefinition runner = ArenaTestSceneBuilder.LoadOrCreateRunner();
             EnemyDefinition brute = ArenaTestSceneBuilder.LoadOrCreateBrute();
+            EnemyDefinition boomer = ArenaTestSceneBuilder.LoadOrCreateBoomer();
             return new[]
             {
                 ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone1.asset", w => w.Configure(
@@ -126,15 +127,15 @@ namespace RushOps.Editor.Scenes
                     {
                         new Wave(new WaveEntry(walker, 6)),
                         new Wave(new WaveEntry(walker, 8), new WaveEntry(runner, 2)),
-                        new Wave(new WaveEntry(walker, 9), new WaveEntry(runner, 3)),
+                        new Wave(new WaveEntry(walker, 9), new WaveEntry(runner, 3), new WaveEntry(boomer, 1)),
                     },
                     0.8f, 3f, AfterLastWave.RepeatLast)),
                 ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone3.asset", w => w.Configure(
                     new[]
                     {
                         new Wave(new WaveEntry(walker, 6), new WaveEntry(runner, 2)),
-                        new Wave(new WaveEntry(walker, 8), new WaveEntry(runner, 4), new WaveEntry(brute, 1)),
-                        new Wave(new WaveEntry(walker, 10), new WaveEntry(runner, 6), new WaveEntry(brute, 2)),
+                        new Wave(new WaveEntry(walker, 8), new WaveEntry(runner, 4), new WaveEntry(brute, 1), new WaveEntry(boomer, 2)),
+                        new Wave(new WaveEntry(walker, 10), new WaveEntry(runner, 6), new WaveEntry(brute, 2), new WaveEntry(boomer, 3)),
                     },
                     0.6f, 3f, AfterLastWave.End)),
             };
