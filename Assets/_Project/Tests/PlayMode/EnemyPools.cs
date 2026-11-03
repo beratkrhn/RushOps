@@ -9,6 +9,7 @@ namespace RushOps.Tests.PlayMode
     {
         public const string Walker = "Walker";
         public const string Runner = "Runner";
+        public const string Brute = "Brute";
 
         /// <summary>The pool whose prefab uses the enemy definition named <paramref name="definitionName"/>.</summary>
         public static EnemyPool Of(string definitionName)
