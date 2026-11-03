@@ -2,6 +2,7 @@ using RushOps.Audio;
 using RushOps.Cameras;
 using RushOps.Combat;
 using RushOps.Enemies;
+using RushOps.Perks;
 using RushOps.Player;
 using UnityEngine;
 
@@ -11,7 +12,7 @@ namespace RushOps.Feel
     /// Connects game events to the hit feedback (issue #12): camera shake when the player takes damage,
     /// hitstop when an enemy dies, and the placeholder sounds for shots, hits and deaths, plus the spawn and approach
     /// sounds an enemy type brings in its <see cref="EnemyDefinition"/> (issue #20), and for every explosion a strong
-    /// shake, its sound and its blast effect (issue #22). Enemies flash and
+    /// shake, its sound and its blast effect (issue #22), and a sound when the player collects a perk (issue #23). Enemies flash and
     /// get knocked back by themselves (<see cref="Enemy"/>).
     /// </summary>
     public class GameFeel : MonoBehaviour
@@ -23,12 +24,14 @@ namespace RushOps.Feel
         [SerializeField] private EnemyPool[] _pools = System.Array.Empty<EnemyPool>();
         [SerializeField] private ExplosionSystem _explosions;
         [SerializeField] private ExplosionEffectPool _explosionEffects;
+        [SerializeField] private PerkPickupPool _perks;
         [SerializeField] private CameraFollow _camera;
         [SerializeField] private Hitstop _hitstop;
         [SerializeField] private SfxPlayer _sfx;
         [SerializeField] private AudioClip _shotClip;
         [SerializeField] private AudioClip _hitClip;
         [SerializeField] private AudioClip _deathClip;
+        [SerializeField] private AudioClip _perkPickupClip;
 
         private int _hearts = -1;
 
@@ -47,6 +50,11 @@ namespace RushOps.Feel
             if (_explosions != null)
             {
                 _explosions.Exploded += OnExploded;
+            }
+
+            if (_perks != null)
+            {
+                _perks.Collected += OnPerkCollected;
             }
 
             foreach (EnemyPool pool in _pools)
@@ -76,6 +84,11 @@ namespace RushOps.Feel
             if (_explosions != null)
             {
                 _explosions.Exploded -= OnExploded;
+            }
+
+            if (_perks != null)
+            {
+                _perks.Collected -= OnPerkCollected;
             }
 
             foreach (EnemyPool pool in _pools)
@@ -152,6 +165,11 @@ namespace RushOps.Feel
             }
 
             Play(explosion.Clip, explosion.Volume);
+        }
+
+        private void OnPerkCollected(PerkPickup pickup)
+        {
+            Play(_perkPickupClip, _config != null ? _config.PerkPickupVolume : 0f);
         }
 
         private void Play(AudioClip clip, float volume)

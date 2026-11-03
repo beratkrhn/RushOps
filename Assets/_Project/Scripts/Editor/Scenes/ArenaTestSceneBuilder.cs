@@ -9,6 +9,7 @@ using RushOps.Enemies;
 using RushOps.Feel;
 using RushOps.Levels;
 using RushOps.Navigation;
+using RushOps.Perks;
 using RushOps.Player;
 using RushOps.UI;
 using UnityEditor;
@@ -31,8 +32,8 @@ namespace RushOps.Editor.Scenes
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
     /// a HUD with hearts and a pause menu, hit feedback (flash, knockback, shake, hitstop, sounds),
-    /// and walkers, runners, brutes and boomers (with their explosions) that come in waves from the spawn points of one zone covering the arena and chase the
-    /// player along a flow field.
+    /// walkers, runners, brutes and boomers (with their explosions) that come in waves from the spawn points of one zone covering the arena and chase the
+    /// player along a flow field, and perks that killed enemies drop (issue #23).
     /// Re-running overwrites the scene, so the scene stays reproducible from code. Other test levels reuse
     /// <see cref="BuildScene"/> with their own <see cref="ArenaLayout"/>.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
@@ -131,7 +132,7 @@ namespace RushOps.Editor.Scenes
         // Walls and characters share one sorting order, so the renderer sorts them by Y (ADR 0006).
         private const int FloorSortingOrder = 0;
         // Flat marks on the floor, e.g. spawn markers: above the floor, below everything standing on it.
-        private const int FloorMarkSortingOrder = 1;
+        internal const int FloorMarkSortingOrder = 1;
         internal const int ActorSortingOrder = 2;
         // Projectiles fly at gun height, so they draw above walls and characters instead of sorting by Y.
         private const int ProjectileSortingOrder = 3;
@@ -483,7 +484,8 @@ namespace RushOps.Editor.Scenes
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
             ExplosionSystem explosions = CreateExplosionSystem(enemyPools, target.GetComponent<PlayerHealth>());
             ExplosionEffectPool explosionEffects = CreateExplosionEffectPool(CreateOrUpdateExplosionEffectPrefab());
-            SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects);
+            PerkPickupPool perks = PerkDropsBuilder.Create(enemyPools, navigator);
+            SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx));
 
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -955,7 +957,7 @@ namespace RushOps.Editor.Scenes
 
         private static SfxPlayer CreateGameFeel(
             FeelConfig config, Transform player, EnemyPool[] enemies, CameraFollow camera, PauseController pause,
-            ExplosionSystem explosions, ExplosionEffectPool explosionEffects)
+            ExplosionSystem explosions, ExplosionEffectPool explosionEffects, PerkPickupPool perks)
         {
             var go = new GameObject("GameFeel");
             var hitstop = go.AddComponent<Hitstop>();
@@ -975,6 +977,8 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_camera").objectReferenceValue = camera;
             serialized.FindProperty("_explosions").objectReferenceValue = explosions;
             serialized.FindProperty("_explosionEffects").objectReferenceValue = explosionEffects;
+            serialized.FindProperty("_perks").objectReferenceValue = perks;
+            serialized.FindProperty("_perkPickupClip").objectReferenceValue = LoadClip("PerkPickup.wav");
             serialized.FindProperty("_hitstop").objectReferenceValue = hitstop;
             serialized.FindProperty("_sfx").objectReferenceValue = sfx;
             serialized.FindProperty("_shotClip").objectReferenceValue = LoadClip("Shot.wav");

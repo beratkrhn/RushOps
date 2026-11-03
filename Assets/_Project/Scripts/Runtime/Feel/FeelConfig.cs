@@ -41,6 +41,8 @@ namespace RushOps.Feel
         [SerializeField, Range(0f, 1f)] private float _enemySpawnVolume = 0.4f;
         [Tooltip("Volume of an enemy type's approach sound (EnemyDefinition).")]
         [SerializeField, Range(0f, 1f)] private float _enemyApproachVolume = 0.5f;
+        [Tooltip("Volume of the sound when the player collects a perk.")]
+        [SerializeField, Range(0f, 1f)] private float _perkPickupVolume = 0.7f;
 
         [Tooltip("Random pitch change per sound, e.g. 0.06 for up to 6 percent up or down.")]
         [SerializeField, Range(0f, 0.5f)] private float _pitchVariation = 0.06f;
@@ -83,6 +85,9 @@ namespace RushOps.Feel
 
         /// <summary>Volume of an enemy's approach sound.</summary>
         public float EnemyApproachVolume => _enemyApproachVolume;
+
+        /// <summary>Volume of the perk pickup sound.</summary>
+        public float PerkPickupVolume => _perkPickupVolume;
 
         /// <summary>Random pitch change per sound as a fraction.</summary>
         public float PitchVariation => _pitchVariation;
