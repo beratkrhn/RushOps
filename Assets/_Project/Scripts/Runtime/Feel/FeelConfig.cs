@@ -37,6 +37,10 @@ namespace RushOps.Feel
         [SerializeField, Range(0f, 1f)] private float _shotVolume = 0.35f;
         [SerializeField, Range(0f, 1f)] private float _hitVolume = 0.6f;
         [SerializeField, Range(0f, 1f)] private float _deathVolume = 0.8f;
+        [Tooltip("Volume of an enemy type's spawn sound (EnemyDefinition).")]
+        [SerializeField, Range(0f, 1f)] private float _enemySpawnVolume = 0.4f;
+        [Tooltip("Volume of an enemy type's approach sound (EnemyDefinition).")]
+        [SerializeField, Range(0f, 1f)] private float _enemyApproachVolume = 0.5f;
 
         [Tooltip("Random pitch change per sound, e.g. 0.06 for up to 6 percent up or down.")]
         [SerializeField, Range(0f, 0.5f)] private float _pitchVariation = 0.06f;
@@ -73,6 +77,12 @@ namespace RushOps.Feel
 
         /// <summary>Volume of an enemy death.</summary>
         public float DeathVolume => _deathVolume;
+
+        /// <summary>Volume of an enemy's spawn sound.</summary>
+        public float EnemySpawnVolume => _enemySpawnVolume;
+
+        /// <summary>Volume of an enemy's approach sound.</summary>
+        public float EnemyApproachVolume => _enemyApproachVolume;
 
         /// <summary>Random pitch change per sound as a fraction.</summary>
         public float PitchVariation => _pitchVariation;
