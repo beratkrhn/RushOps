@@ -11,7 +11,8 @@ namespace RushOps.Player
     /// </summary>
     public class AimAssist : MonoBehaviour
     {
-        [SerializeField] private EnemyPool _enemies;
+        [Tooltip("Pools of all enemy types in the level.")]
+        [SerializeField] private EnemyPool[] _pools = System.Array.Empty<EnemyPool>();
 
         private Vector2[] _targets = new Vector2[16];
         private PlayerWeapon _weapon;
@@ -32,17 +33,17 @@ namespace RushOps.Player
             set => _enabledOverride = value;
         }
 
-        /// <summary>Enemies the assist aims at.</summary>
-        public EnemyPool Enemies
+        /// <summary>Pools of the enemies the assist aims at.</summary>
+        public EnemyPool[] Pools
         {
-            get => _enemies;
-            set => _enemies = value;
+            get => _pools;
+            set => _pools = value ?? System.Array.Empty<EnemyPool>();
         }
 
         /// <summary>Shot direction for a shot from <paramref name="origin"/> along <paramref name="aim"/>.</summary>
         public Vector2 Adjust(Vector2 origin, Vector2 aim, WeaponConfig config)
         {
-            if (_enemies == null || config == null || !Enabled)
+            if (_pools.Length == 0 || config == null || !Enabled)
             {
                 return aim;
             }
@@ -58,18 +59,32 @@ namespace RushOps.Player
 
         private int CollectTargets()
         {
-            var enemies = _enemies.Active;
-            if (_targets.Length < enemies.Count)
+            int total = 0;
+            foreach (EnemyPool pool in _pools)
             {
-                _targets = new Vector2[enemies.Count * 2];
+                total += pool != null ? pool.Active.Count : 0;
+            }
+
+            if (_targets.Length < total)
+            {
+                _targets = new Vector2[total * 2];
             }
 
             int count = 0;
-            for (int i = 0; i < enemies.Count; i++)
+            foreach (EnemyPool pool in _pools)
             {
-                if (!enemies[i].IsDead)
+                if (pool == null)
                 {
-                    _targets[count++] = enemies[i].AimPoint;
+                    continue;
+                }
+
+                var enemies = pool.Active;
+                for (int i = 0; i < enemies.Count; i++)
+                {
+                    if (!enemies[i].IsDead)
+                    {
+                        _targets[count++] = enemies[i].AimPoint;
+                    }
                 }
             }
 

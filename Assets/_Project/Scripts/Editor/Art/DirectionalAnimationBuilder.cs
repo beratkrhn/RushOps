@@ -19,6 +19,9 @@ namespace RushOps.Editor.Art
         /// <summary>Asset path of the walker's walk animation.</summary>
         public const string WalkerWalkPath = AnimationsDir + "/Walker_Walk.asset";
 
+        /// <summary>Asset path of the runner's run animation.</summary>
+        public const string RunnerRunPath = AnimationsDir + "/Runner_Run.asset";
+
         private const string AnimationsDir = "Assets/_Project/Data/Animations";
         private const string SpritesDir = "Assets/_Project/Art/Sprites";
 
@@ -27,6 +30,7 @@ namespace RushOps.Editor.Art
         {
             CreateOrUpdate(PlayerIdlePath, SpritesDir + "/Player", "Player_Idle");
             CreateOrUpdate(WalkerWalkPath, SpritesDir + "/Enemies", "Walker_Walk");
+            CreateOrUpdate(RunnerRunPath, SpritesDir + "/Enemies", "Runner_Run");
             AssetDatabase.SaveAssets();
         }
 

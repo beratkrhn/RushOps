@@ -40,7 +40,7 @@ namespace RushOps.Tests.PlayMode
         public IEnumerator TouchingWalker_LosesOneHeartThenBlinksAndIsInvulnerable()
         {
             Object.FindFirstObjectByType<WaveDirector>().enabled = false;
-            Enemy walker = Object.FindFirstObjectByType<EnemyPool>().Spawn(new Vector2(5.5f, 5.5f));
+            Enemy walker = EnemyPools.Of(EnemyPools.Walker).Spawn(new Vector2(5.5f, 5.5f));
             Assert.IsNotNull(walker, "Arena_Test cannot spawn walkers");
             int reported = -1;
             _health.HealthChanged += (current, max) => reported = current;

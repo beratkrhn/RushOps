@@ -27,7 +27,7 @@ namespace RushOps.Tests.PlayMode
             yield return null;
 
             Object.FindFirstObjectByType<WaveDirector>().enabled = false;
-            _pool = Object.FindFirstObjectByType<EnemyPool>();
+            _pool = EnemyPools.Of(EnemyPools.Walker);
             _player = Object.FindFirstObjectByType<PlayerHealth>();
             _hitstop = Object.FindFirstObjectByType<Hitstop>();
             Assert.IsNotNull(_hitstop, "Arena_Test has no Hitstop");

@@ -24,6 +24,16 @@ namespace RushOps.Enemies
         [Tooltip("Bosses do not count towards the limit of enemies alive at once (F-GEG-03).")]
         [SerializeField] private bool _isBoss;
 
+        [Header("Sound")]
+        [Tooltip("Placeholder sound when the enemy appears; none if empty.")]
+        [SerializeField] private AudioClip _spawnClip;
+
+        [Tooltip("Placeholder sound when the enemy first comes within the approach distance; none if empty.")]
+        [SerializeField] private AudioClip _approachClip;
+
+        [Tooltip("Distance to the player in units (tiles) that triggers the approach sound, once per life.")]
+        [SerializeField, Min(0f)] private float _approachDistance = 4f;
+
         /// <summary>Hit points.</summary>
         public int Health => _health;
 
@@ -41,5 +51,14 @@ namespace RushOps.Enemies
 
         /// <summary>True for bosses, which do not count towards the enemy limit.</summary>
         public bool IsBoss => _isBoss;
+
+        /// <summary>Sound when the enemy appears; may be null.</summary>
+        public AudioClip SpawnClip => _spawnClip;
+
+        /// <summary>Sound when the enemy first comes within <see cref="ApproachDistance"/>; may be null.</summary>
+        public AudioClip ApproachClip => _approachClip;
+
+        /// <summary>Distance to the player in units that triggers <see cref="ApproachClip"/>.</summary>
+        public float ApproachDistance => _approachDistance;
     }
 }

@@ -170,7 +170,11 @@ namespace RushOps.Tests.PlayMode
             }
 
             Assert.GreaterOrEqual(points.Count, 3, "zone 2 did not spawn");
-            CollectionAssert.IsSubsetOf(points, second.SpawnPoints);
+            // Points repeat; IsSubsetOf would count each occurrence, so check them one by one.
+            foreach (SpawnPoint point in points)
+            {
+                CollectionAssert.Contains(second.SpawnPoints, point);
+            }
         }
 
         private static T Find<T>(string name) where T : Component

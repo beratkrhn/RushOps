@@ -9,7 +9,8 @@ namespace RushOps.Enemies
     /// <summary>
     /// A pooled enemy (F-GEG-01, F-GEG-04, NF-02): health and contact damage from its <see cref="EnemyDefinition"/>,
     /// takes projectile hits with a white flash and a knockback (issue #12), and on death plays a short
-    /// shrink-and-fade effect before it hands itself back to its pool. Movement is done by
+    /// shrink-and-fade effect before it hands itself back to its pool. Once per life it reports coming close to
+    /// the chased target (<see cref="Approached"/>, issue #20). Movement is done by
     /// <see cref="EnemyMovement"/>; this component switches it on and off. The flash needs a material with
     /// the <c>RushOps/Sprite Flash</c> shader on the renderer.
     /// </summary>
@@ -31,12 +32,17 @@ namespace RushOps.Enemies
         private float _dyingTime = -1f;
         private float _sinceHit = -1f;
         private MaterialPropertyBlock _block;
+        private readonly ApproachTrigger _approach = new ApproachTrigger();
+        private Transform _target;
 
         /// <summary>Raised on every hit that counted, including the killing one (then <see cref="IsDead"/> is true).</summary>
         public event Action<Enemy> Hit;
 
         /// <summary>Raised when the enemy dies, before the death effect.</summary>
         public event Action<Enemy> Died;
+
+        /// <summary>Raised once per life when the enemy first comes within <see cref="EnemyDefinition.ApproachDistance"/> of its target.</summary>
+        public event Action<Enemy> Approached;
 
         /// <summary>True while the enemy shows the white hit flash.</summary>
         public bool IsFlashing => _sinceHit >= 0f;
@@ -72,6 +78,8 @@ namespace RushOps.Enemies
             _body.linearVelocity = Vector2.zero;
             _body.simulated = true;
             SetAlpha(1f);
+            _target = navigator != null ? navigator.Target : null;
+            _approach.Reset(_definition != null ? _definition.ApproachDistance : 0f);
             _movement.Begin(navigator, _definition != null ? _definition.MoveSpeed : 0f);
         }
 
@@ -117,6 +125,7 @@ namespace RushOps.Enemies
 
             if (_dyingTime < 0f)
             {
+                CheckApproach();
                 return;
             }
 
@@ -128,6 +137,20 @@ namespace RushOps.Enemies
             if (t >= 1f)
             {
                 Finish();
+            }
+        }
+
+        private void CheckApproach()
+        {
+            if (_target == null || _approach.HasFired)
+            {
+                return;
+            }
+
+            float sqrDistance = ((Vector2)_target.position - (Vector2)transform.position).sqrMagnitude;
+            if (_approach.Check(sqrDistance))
+            {
+                Approached?.Invoke(this);
             }
         }
 

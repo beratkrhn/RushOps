@@ -23,4 +23,6 @@ MonoBehaviour:
   _shotVolume: 0.35
   _hitVolume: 0.6
   _deathVolume: 0.8
+  _enemySpawnVolume: 0.4
+  _enemyApproachVolume: 0.5
   _pitchVariation: 0.06

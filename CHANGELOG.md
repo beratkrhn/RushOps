@@ -67,6 +67,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Wellen *(Startwerte)* unter `Data/Waves/`: `Arena_Test` 12/16/20 Walker, Intervall 0,6 s, Pause 3 s, wiederholt; `Arena_Zonen` Zone 1 4/6/8 (1,0 s, 4 s), Zone 2 6/10/12 (0,8 s, 3 s), beide wiederholen die letzte Welle, Zone 3 8/12/16 (0,6 s, 3 s) endet (Issue #18).
 - Kill-Gates: `KillCounter` zählt jeden Gegnertod im Level ab Levelstart, egal wodurch (gespeist von `LevelKills` über `Enemy.Died`); `KillGateCondition` öffnet ein Tor nach einer einstellbaren Kill-Zahl (global, nicht pro Zone). Reine Logik in `KillCounter`/`KillGoal` mit EditMode-Tests (Issue #19).
 - Missions-Tracker oben rechts: „Tor gesperrt: 4/10 Kills“ für das Ausgangstor der aktuellen Zone, beim Öffnen „Tor offen!“ mit Platzhalter-Sound `MissionDone.wav` (zusätzlich zum Tor-Sound), danach ausgeblendet; Anzeigedauer 2,5 s und Lautstärke 1 in `HudConfig` *(Startwerte)* (Issue #19).
+- Runner: schneller, schwacher Gegner mit eigener `EnemyDefinition` (`Data/Enemies/Runner.asset`: Gesundheit 1, Tempo 4,0, Schaden 1 Herz, 15 Punkte *(Startwerte)*), eigenem Prefab und eigenem Pool; folgt dem Flow-Field wie der Walker (Issue #20).
+- Runner-Grafik per `Tools/gen_pixelart.py`: 64×64, 8 Richtungen × 4 Sprint-Frames, kleiner und weit vorgebeugt, blasse Haut und rotes Hemd statt grüner Haut und braunem Hemd (Issue #20).
+- Spawn- und Annäherungs-Sound pro Gegnertyp: neue Felder `SpawnClip`, `ApproachClip` und `ApproachDistance` (4 Kacheln *(Startwert)*) in `EnemyDefinition`; der Annäherungs-Sound kommt einmal pro Leben (`ApproachTrigger`, mit EditMode-Tests); Lautstärken in `FeelConfig`. Platzhalter `RunnerSpawn.wav` und `RunnerApproach.wav` per `Tools/gen_sfx.py` (Issue #20).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -90,6 +93,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Der Arena-Builder baut Szenen aus einem `ArenaLayout`, damit weitere Testlevel ihn mitnutzen; mehrere Szenen lassen sich nacheinander im selben Editor-Durchlauf bauen (Issue #17).
 - `Arena_Zonen`: Debug-Tore öffnen sich erst 20 s nach Aktivierung der Zone davor, damit Zeit für ein paar Wellen bleibt (Issue #18).
 - `Arena_Zonen`: Tor 1 ist ein Kill-Gate mit 10 Kills *(Startwert)*, Tor 2 bleibt ein Debug-Tor (Issue #19).
+- Pro Gegnertyp ein `EnemyPool`; Zielhilfe (`AimAssist`) und Treffer-Feedback (`GameFeel`) nehmen jetzt mehrere Pools (Issue #20).
+- Gegner nutzen kontinuierliche Kollisionserkennung, damit auch schnelle Gegner nicht durch Wandecken rutschen (Issue #20).
+- Wellen *(Startwerte)* mit Runnern: `Arena_Test` 12 Walker / 12 Walker + 4 Runner / 14 Walker + 6 Runner; `Arena_Zonen` Zone 2 6 / 8 + 2 / 9 + 3, Zone 3 6 + 2 / 8 + 4 / 10 + 6; Zone 1 bleibt nur mit Walkern (Issue #20).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
@@ -99,3 +105,6 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `CLAUDE.md`: Prüfen per `Tools/unity-check.sh` statt Batchmode; Unity darf dabei offen bleiben (Issue #62).
 - Walker-Vorschaureihe in `Arena_Test` und `EnemyContactDamage`; ersetzt durch echte Walker (Issue #9).
 - Temporärer `DebugEnemySpawner`; ersetzt durch Spawnpunkte (Issue #10).
+
+### Behoben
+- PlayMode-Test `SecondZone_AfterGateOpened_SpawnsOnlyFromItsOwnPoints` schlug zufällig fehl, wenn ein Spawnpunkt zweimal gewählt wurde (`IsSubsetOf` zählt Wiederholungen) (Issue #20).

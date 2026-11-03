@@ -114,16 +114,27 @@ namespace RushOps.Editor.Scenes
         private static WaveDefinition[] CreateWaves()
         {
             var walker = ArenaTestSceneBuilder.LoadOrCreateConfig<EnemyDefinition>(ArenaTestSceneBuilder.WalkerDefinitionPath);
+            EnemyDefinition runner = ArenaTestSceneBuilder.LoadOrCreateRunner();
             return new[]
             {
                 ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone1.asset", w => w.Configure(
                     new[] { new Wave(new WaveEntry(walker, 4)), new Wave(new WaveEntry(walker, 6)), new Wave(new WaveEntry(walker, 8)) },
                     1f, 4f, AfterLastWave.RepeatLast)),
                 ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone2.asset", w => w.Configure(
-                    new[] { new Wave(new WaveEntry(walker, 6)), new Wave(new WaveEntry(walker, 10)), new Wave(new WaveEntry(walker, 12)) },
+                    new[]
+                    {
+                        new Wave(new WaveEntry(walker, 6)),
+                        new Wave(new WaveEntry(walker, 8), new WaveEntry(runner, 2)),
+                        new Wave(new WaveEntry(walker, 9), new WaveEntry(runner, 3)),
+                    },
                     0.8f, 3f, AfterLastWave.RepeatLast)),
                 ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone3.asset", w => w.Configure(
-                    new[] { new Wave(new WaveEntry(walker, 8)), new Wave(new WaveEntry(walker, 12)), new Wave(new WaveEntry(walker, 16)) },
+                    new[]
+                    {
+                        new Wave(new WaveEntry(walker, 6), new WaveEntry(runner, 2)),
+                        new Wave(new WaveEntry(walker, 8), new WaveEntry(runner, 4)),
+                        new Wave(new WaveEntry(walker, 10), new WaveEntry(runner, 6)),
+                    },
                     0.6f, 3f, AfterLastWave.End)),
             };
         }

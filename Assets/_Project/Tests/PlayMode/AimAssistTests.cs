@@ -26,7 +26,7 @@ namespace RushOps.Tests.PlayMode
             yield return null;
 
             Object.FindFirstObjectByType<WaveDirector>().enabled = false;
-            _pool = Object.FindFirstObjectByType<EnemyPool>();
+            _pool = EnemyPools.Of(EnemyPools.Walker);
             _weapon = Object.FindFirstObjectByType<PlayerWeapon>();
             _aim = _weapon.GetComponent<PlayerAim>();
             _assist = _weapon.GetComponent<AimAssist>();

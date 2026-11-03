@@ -31,7 +31,7 @@ namespace RushOps.Tests.PlayMode
             yield return null;
 
             _director = Object.FindFirstObjectByType<WaveDirector>();
-            _pool = Object.FindFirstObjectByType<EnemyPool>();
+            _pool = EnemyPools.Of(EnemyPools.Walker);
             _zone = Object.FindFirstObjectByType<Zone>();
             Assert.IsNotNull(_director, "Arena_Test has no WaveDirector");
             Assert.IsNotNull(_zone, "Arena_Test has no Zone");
@@ -72,7 +72,7 @@ namespace RushOps.Tests.PlayMode
             while (Time.time < timeout && sequence.Phase == WavePhase.Spawning)
             {
                 yield return null;
-                Assert.LessOrEqual(_pool.CountActive + _director.AnnouncedCount, _config.MaxActive);
+                Assert.LessOrEqual(_director.AliveCount + _director.AnnouncedCount, _config.MaxActive);
             }
 
             Assert.AreEqual(WavePhase.Clearing, sequence.Phase);
@@ -92,7 +92,7 @@ namespace RushOps.Tests.PlayMode
 
             ((IDamageable)victim).TakeHit(1000, Vector2.zero);
             yield return new WaitForSeconds(victim.Definition.DeathDuration + 0.05f);
-            Assert.LessOrEqual(_pool.CountActive + _director.AnnouncedCount, _config.MaxActive);
+            Assert.LessOrEqual(_director.AliveCount + _director.AnnouncedCount, _config.MaxActive);
             yield return WaitForFull();
 
             Assert.AreEqual(queued - 1, _director.QueuedCount);
@@ -143,14 +143,17 @@ namespace RushOps.Tests.PlayMode
             CollectionAssert.Contains(started, 1, "second wave did not start after the first was cleared");
         }
 
-        private void KillAll()
+        private static void KillAll()
         {
-            for (int i = _pool.Active.Count - 1; i >= 0; i--)
+            foreach (EnemyPool pool in Object.FindObjectsByType<EnemyPool>(FindObjectsSortMode.None))
             {
-                Enemy enemy = _pool.Active[i];
-                if (!enemy.IsDead)
+                for (int i = pool.Active.Count - 1; i >= 0; i--)
                 {
-                    ((IDamageable)enemy).TakeHit(1000, Vector2.zero);
+                    Enemy enemy = pool.Active[i];
+                    if (!enemy.IsDead)
+                    {
+                        ((IDamageable)enemy).TakeHit(1000, Vector2.zero);
+                    }
                 }
             }
         }
@@ -158,13 +161,13 @@ namespace RushOps.Tests.PlayMode
         private IEnumerator WaitForFull()
         {
             float timeout = Time.time + _config.TelegraphDuration + _zone.Waves.SpawnInterval * (_config.MaxActive + 4);
-            while (Time.time < timeout && _pool.CountActive < _config.MaxActive)
+            while (Time.time < timeout && _director.AliveCount < _config.MaxActive)
             {
-                Assert.LessOrEqual(_pool.CountActive + _director.AnnouncedCount, _config.MaxActive);
+                Assert.LessOrEqual(_director.AliveCount + _director.AnnouncedCount, _config.MaxActive);
                 yield return null;
             }
 
-            Assert.AreEqual(_config.MaxActive, _pool.CountActive, "director did not fill up");
+            Assert.AreEqual(_config.MaxActive, _director.AliveCount, "director did not fill up");
         }
     }
 }

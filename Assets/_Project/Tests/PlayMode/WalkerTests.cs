@@ -24,7 +24,7 @@ namespace RushOps.Tests.PlayMode
             yield return SceneManager.LoadSceneAsync(SceneName, LoadSceneMode.Single);
             yield return null;
 
-            _pool = Object.FindFirstObjectByType<EnemyPool>();
+            _pool = EnemyPools.Of(EnemyPools.Walker);
             _navigator = Object.FindFirstObjectByType<FlowFieldNavigator>();
             _player = Object.FindFirstObjectByType<PlayerHealth>();
             Assert.IsNotNull(_pool, "Arena_Test has no EnemyPool");
