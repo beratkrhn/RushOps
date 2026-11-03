@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2a45bd50165a408da14418ea0f74ad4e, type: 3}
+  m_Name: LootConfig
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Perks.LootConfig
+  _dropChance: 0.08
+  _perks:
+  - {fileID: 11400000, guid: 2c20a359fe0ce47ecbd51f8046353567, type: 2}
+  - {fileID: 11400000, guid: edc23dc2c8a904904bd234b881ee2a8b, type: 2}
+  - {fileID: 11400000, guid: e3502df03ef43468a883fd240f7c8334, type: 2}
+  - {fileID: 11400000, guid: 208367599ad0440eab6818ae3e3252ef, type: 2}
+  - {fileID: 11400000, guid: 618d584c0c00c4e0b9602221388d2c7a, type: 2}
+  - {fileID: 11400000, guid: b57c78f2eeb014c94935cfeb35e684b4, type: 2}
+  - {fileID: 11400000, guid: 14d70d0047c54457f90c5f0793118228, type: 2}
+  _placementRadius: 3
+  _lifetime: 10
+  _blinkDuration: 3
+  _blinkInterval: 0.15
+  _bobHeight: 0.12
+  _bobPeriod: 1.2
+  _glowMin: 0.45
+  _glowMax: 1
+  _glowPeriod: 0.8
