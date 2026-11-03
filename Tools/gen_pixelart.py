@@ -16,6 +16,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
+  Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
+  Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
   Sprites/UI/Heart_Empty.png               12x11 HUD heart, lost
   Sprites/UI/Pause_Icon.png                12x12 pause symbol
@@ -520,6 +522,150 @@ def spawn_marker() -> Canvas:
     return c
 
 
+# --- Perk pickups (issue #23) --------------------------------------------------
+
+PERK_ICON = 24
+
+# Glyphs drawn on the round perk badge: '#' main color, '+' accent, 'o' dark detail; '.' shows the badge.
+PERK_GLYPHS = {
+    "SpeedBoost": [
+        "......####",
+        ".....####.",
+        "....####..",
+        "...####...",
+        "..#######.",
+        ".#######..",
+        "....###...",
+        "...###....",
+        "..###.....",
+        "..##......",
+        ".##.......",
+        ".#........",
+    ],
+    "Medkit": [
+        "....####....",
+        "....####....",
+        "....####....",
+        "....####....",
+        "############",
+        "############",
+        "############",
+        "############",
+        "....####....",
+        "....####....",
+        "....####....",
+        "....####....",
+    ],
+    "DoubleDamage": [
+        ".####.......",
+        "##..##......",
+        "....##.##..##",
+        "...##...####.",
+        "..##.....##..",
+        ".##.....####.",
+        "######.##..##",
+    ],
+    "RapidFire": [
+        ".######+.....",
+        "#######++....",
+        ".######+.....",
+        ".............",
+        "...######+...",
+        "..#######++..",
+        "...######+...",
+        ".............",
+        ".....######+.",
+        "....#######++",
+        ".....######+.",
+    ],
+    "Shield": [
+        ".+++++#####.",
+        "++++++######",
+        "++++++######",
+        "++++++######",
+        "++++++######",
+        ".+++++#####.",
+        ".+++++#####.",
+        "..++++####..",
+        "..++++####..",
+        "...+++###...",
+        "....++##....",
+        ".....+#.....",
+    ],
+    "InstaKill": [
+        "..########..",
+        ".##########.",
+        "############",
+        "##oo####oo##",
+        "##oo####oo##",
+        "############",
+        ".#####o#####",
+        "..#########.",
+        "..#o#o#o#o..",
+        "..########..",
+    ],
+}
+
+# Badge (shadow, base, light) and glyph (main, accent, detail) colors per perk.
+PERK_COLORS = {
+    "SpeedBoost": (("green_0", "green_1", "green_2"), ("yellow", "glow", "outline")),
+    "Medkit": (("slate_4", "white", "white"), ("red_1", "red_0", "outline")),
+    "DoubleDamage": (("red_0", "red_1", "orange"), ("white", "white", "outline")),
+    "RapidFire": (("brown_1", "orange", "yellow"), ("white", "glow", "outline")),
+    "Shield": (("blue_0", "blue_1", "blue_2"), ("slate_5", "white", "outline")),
+    "InstaKill": (("night", "slate_1", "slate_3"), ("white", "white", "outline")),
+    "Nuke": (("orange", "yellow", "glow"), ("outline", "outline", "outline")),
+}
+
+PERK_IDS = ["SpeedBoost", "Medkit", "DoubleDamage", "RapidFire", "Shield", "InstaKill", "Nuke"]
+
+
+def perk_badge(shadow: str, base: str, light: str) -> Canvas:
+    """Round coin: dark rim at the lower right, a light arc at the upper left."""
+    c = Canvas(PERK_ICON, PERK_ICON)
+    c.ellipse(12.0, 12.0, 10.5, 10.5, shadow)
+    c.ellipse(11.5, 11.5, 9.5, 9.5, base)
+    for x, y in [(6, 5), (5, 6), (7, 4), (4, 7), (8, 4), (4, 8)]:
+        c.set(x, y, light)
+    return c
+
+
+def perk_icon(perk: str) -> Canvas:
+    (shadow, base, light), (main, accent, detail) = PERK_COLORS[perk]
+    c = perk_badge(shadow, base, light)
+    if perk == "Nuke":
+        # Radiation trefoil: three 60 degree blades around a dot, one pointing up.
+        cx, cy = 11.5, 11.5
+        for y in range(PERK_ICON):
+            for x in range(PERK_ICON):
+                dx, dy = x + 0.5 - cx, y + 0.5 - cy
+                r = math.hypot(dx, dy)
+                angle = (math.degrees(math.atan2(-dy, dx)) - 60.0) % 120.0
+                if r <= 1.7 or (2.8 <= r <= 7.6 and angle < 60.0):
+                    c.set(x, y, main)
+    else:
+        rows = PERK_GLYPHS[perk]
+        width = max(len(row) for row in rows)
+        x0 = 12 - (width + 1) // 2
+        y0 = 12 - (len(rows) + 1) // 2
+        colors = {"#": main, "+": accent, "o": detail}
+        for y, row in enumerate(rows):
+            for x, ch in enumerate(row):
+                if ch in colors:
+                    c.set(x0 + x, y0 + y, colors[ch])
+    c.outline()
+    return c
+
+
+def perk_glow() -> Canvas:
+    """Light pool on the floor under a dropped perk, squashed for the oblique view; its alpha pulses in game."""
+    c = Canvas(32, 16)
+    c.ellipse(16.0, 8.0, 14.0, 6.5, "orange")
+    c.ellipse(16.0, 8.0, 11.5, 5.0, "yellow")
+    c.ellipse(16.0, 8.0, 7.0, 3.0, "glow")
+    return c
+
+
 # --- Touch controls ----------------------------------------------------------
 
 def stick_base() -> Canvas:
@@ -754,7 +900,10 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/UI/Stick_Knob.png": stick_knob().to_image(),
         "Sprites/UI/Dash_Button.png": dash_button().to_image(),
         "Sprites/UI/Dash_Cooldown.png": dash_cooldown().to_image(),
+        "Sprites/Pickups/Perk_Glow.png": perk_glow().to_image(),
     }
+    for perk in PERK_IDS:
+        files[f"Sprites/Pickups/Perk_{perk}.png"] = perk_icon(perk).to_image()
     for d, name in enumerate(DIRECTIONS):
         for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
@@ -800,6 +949,10 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
     put(files["Sprites/Enemies/Walker_Walk_SW_0.png"], 3, 3)
     sheet.alpha_composite(files["Sprites/Effects/MuzzleFlash.png"], (6 * TILE, 3 * TILE + 8))
     sheet.alpha_composite(files["Sprites/Projectiles/Bullet.png"], (6 * TILE + 20, 3 * TILE + 8))
+    for i, perk in enumerate(PERK_IDS):
+        x, y = (8 + i % 4) * TILE, (1 + i // 4 * 2) * TILE
+        sheet.alpha_composite(files["Sprites/Pickups/Perk_Glow.png"], (x, y + 24))
+        sheet.alpha_composite(files[f"Sprites/Pickups/Perk_{perk}.png"], (x + 4, y + 4))
     pal = files["Palettes/RushOps_Palette.png"].resize((len(PALETTE) * 6, 6), Image.NEAREST)
     sheet.paste(pal, (4, 4))
     sheet.resize((sheet.width * scale, sheet.height * scale), Image.NEAREST).save(path)
