@@ -31,8 +31,8 @@ namespace RushOps.Editor.Scenes
     /// moved by the <c>Player/Move</c> input action, aiming and firing pooled projectiles via <c>Player/Aim</c>,
     /// dashing via <c>Player/Dash</c>, on-screen sticks and dash button inside the safe area for touchscreens,
     /// a HUD with hearts and a pause menu, hit feedback (flash, knockback, shake, hitstop, sounds),
-    /// and walkers that come in waves from the spawn points of one zone covering the arena and chase the player
-    /// along a flow field.
+    /// and walkers and runners that come in waves from the spawn points of one zone covering the arena and chase the
+    /// player along a flow field.
     /// Re-running overwrites the scene, so the scene stays reproducible from code. Other test levels reuse
     /// <see cref="BuildScene"/> with their own <see cref="ArenaLayout"/>.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaTestSceneBuilder.Build</c>
@@ -57,6 +57,8 @@ namespace RushOps.Editor.Scenes
         private const string BulletPrefabPath = "Assets/_Project/Prefabs/Projectiles/Bullet.prefab";
         internal const string WalkerDefinitionPath = "Assets/_Project/Data/Enemies/Walker.asset";
         private const string WalkerPrefabPath = "Assets/_Project/Prefabs/Enemies/Walker.prefab";
+        internal const string RunnerDefinitionPath = "Assets/_Project/Data/Enemies/Runner.asset";
+        private const string RunnerPrefabPath = "Assets/_Project/Prefabs/Enemies/Runner.prefab";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
         private const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
         private const string FlashShaderName = "RushOps/Sprite Flash";
@@ -68,6 +70,8 @@ namespace RushOps.Editor.Scenes
         private const string EnemiesLayer = "Enemies";
         // Walker body at the feet like the player's, a little smaller so walkers squeeze through gaps the player fits through.
         private const float WalkerColliderRadius = 0.28f;
+        // The runner is thinner than the walker; its body stays at the same height above the feet.
+        private const float RunnerColliderRadius = 0.24f;
         // The player is far heavier than walkers: walkers block it but barely push it around.
         private const float PlayerMass = 10f;
         private const float WalkerMass = 1f;
@@ -147,17 +151,44 @@ namespace RushOps.Editor.Scenes
         private static void AddArenaZone(ArenaScene arena)
         {
             var walker = LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath);
+            EnemyDefinition runner = LoadOrCreateRunner();
             WaveDefinition waves = LoadOrCreateWaves(WavesPath, w => w.Configure(
                 new[]
                 {
                     new Wave(new WaveEntry(walker, 12)),
-                    new Wave(new WaveEntry(walker, 16)),
-                    new Wave(new WaveEntry(walker, 20)),
+                    new Wave(new WaveEntry(walker, 12), new WaveEntry(runner, 4)),
+                    new Wave(new WaveEntry(walker, 14), new WaveEntry(runner, 6)),
                 },
                 0.6f, 3f, AfterLastWave.RepeatAll));
             var area = new RectInt(1, 1, Layout.Width - 2, Layout.Height - 2);
             Zone zone = CreateZone(arena, "Zone", null, area, SpawnCells, waves, null);
             AssignZones(arena, new[] { zone });
+        }
+
+        /// <summary>
+        /// Loads the runner definition (issue #20), or creates it with the start values of the backlog and its
+        /// placeholder sounds. An existing definition keeps its tuned values.
+        /// </summary>
+        internal static EnemyDefinition LoadOrCreateRunner()
+        {
+            var runner = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(RunnerDefinitionPath);
+            if (runner != null)
+            {
+                return runner;
+            }
+
+            runner = LoadOrCreateConfig<EnemyDefinition>(RunnerDefinitionPath);
+            var serialized = new SerializedObject(runner);
+            serialized.FindProperty("_health").intValue = 1;
+            serialized.FindProperty("_moveSpeed").floatValue = 4f;
+            serialized.FindProperty("_contactDamage").intValue = 1;
+            serialized.FindProperty("_points").intValue = 15;
+            serialized.FindProperty("_spawnClip").objectReferenceValue = LoadClip("RunnerSpawn.wav");
+            serialized.FindProperty("_approachClip").objectReferenceValue = LoadClip("RunnerApproach.wav");
+            serialized.FindProperty("_approachDistance").floatValue = 4f;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssets();
+            return runner;
         }
 
         /// <summary>
@@ -241,15 +272,24 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static LevelKills CreateLevelKills(EnemyPool pool)
+        private static LevelKills CreateLevelKills(EnemyPool[] pools)
         {
             var kills = new GameObject("LevelKills").AddComponent<LevelKills>();
             var serialized = new SerializedObject(kills);
-            SerializedProperty pools = serialized.FindProperty("_pools");
-            pools.arraySize = 1;
-            pools.GetArrayElementAtIndex(0).objectReferenceValue = pool;
+            SetPools(serialized, pools);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return kills;
+        }
+
+        // Every component that needs all enemies names its array "_pools".
+        private static void SetPools(SerializedObject serialized, EnemyPool[] pools)
+        {
+            SerializedProperty property = serialized.FindProperty("_pools");
+            property.arraySize = pools.Length;
+            for (int i = 0; i < pools.Length; i++)
+            {
+                property.GetArrayElementAtIndex(i).objectReferenceValue = pools[i];
+            }
         }
 
         /// <summary>
@@ -286,6 +326,7 @@ namespace RushOps.Editor.Scenes
             DirectionalAnimationBuilder.BuildAll();
             var playerIdle = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerIdlePath);
             var walkerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerWalkPath);
+            var runnerRun = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.RunnerRunPath);
 
             CreateGlobalLight();
             Tilemap walls = CreateArena(layout, floorTiles, wallTop, wallFront);
@@ -297,18 +338,26 @@ namespace RushOps.Editor.Scenes
                 out MissionTracker tracker);
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
-            Enemy walkerPrefab = CreateOrUpdateWalkerPrefab(
-                walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig, LoadOrCreateFlashMaterial());
+            Material flashMaterial = LoadOrCreateFlashMaterial();
+            Enemy walkerPrefab = CreateOrUpdateEnemyPrefab(
+                "Walker", WalkerPrefabPath, walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig,
+                flashMaterial, WalkerColliderRadius);
+            Enemy runnerPrefab = CreateOrUpdateEnemyPrefab(
+                "Runner", RunnerPrefabPath, runnerRun, LoadOrCreateRunner(), feelConfig, flashMaterial, RunnerColliderRadius);
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
-            EnemyPool enemyPool = CreateEnemyPool(walkerPrefab, navigator);
-            WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPool, target);
-            LevelKills kills = CreateLevelKills(enemyPool);
+            var enemyPools = new[]
+            {
+                CreateEnemyPool("EnemyPool_Walker", walkerPrefab, navigator),
+                CreateEnemyPool("EnemyPool_Runner", runnerPrefab, navigator),
+            };
+            WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPools, target);
+            LevelKills kills = CreateLevelKills(enemyPools);
             var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
-            aimAssist.FindProperty("_enemies").objectReferenceValue = enemyPool;
+            SetPools(aimAssist, enemyPools);
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
-            SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPool, cameraFollow, pause);
-            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPool, director, kills, tracker, sfx));
+            SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPools, cameraFollow, pause);
+            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx));
 
             EditorSceneManager.SaveScene(scene, scenePath);
             AddToBuildSettings(scenePath, firstInBuild);
@@ -597,10 +646,11 @@ namespace RushOps.Editor.Scenes
         }
 
         // Rebuilt on every run, so the prefab stays reproducible from code.
-        private static Enemy CreateOrUpdateWalkerPrefab(
-            DirectionalAnimation walk, EnemyDefinition definition, FeelConfig feel, Material flashMaterial)
+        private static Enemy CreateOrUpdateEnemyPrefab(
+            string name, string prefabPath, DirectionalAnimation walk, EnemyDefinition definition, FeelConfig feel,
+            Material flashMaterial, float colliderRadius)
         {
-            DirectionalSpriteAnimator view = CreateCharacter("Walker", null, Vector2Int.zero, walk, Direction8.S);
+            DirectionalSpriteAnimator view = CreateCharacter(name, null, Vector2Int.zero, walk, Direction8.S);
             GameObject go = view.gameObject;
             go.GetComponent<SpriteRenderer>().sharedMaterial = flashMaterial;
             go.transform.position = Vector3.zero;
@@ -612,9 +662,11 @@ namespace RushOps.Editor.Scenes
             body.freezeRotation = true;
             body.mass = WalkerMass;
             body.interpolation = RigidbodyInterpolation2D.Interpolate;
+            // Enemies must not slip through wall corners between physics steps, even fast ones such as the runner.
+            body.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
             var collider = go.AddComponent<CircleCollider2D>();
-            collider.radius = WalkerColliderRadius;
+            collider.radius = colliderRadius;
             collider.offset = PlayerColliderOffset;
 
             var movement = go.AddComponent<EnemyMovement>();
@@ -629,8 +681,8 @@ namespace RushOps.Editor.Scenes
             serializedEnemy.FindProperty("_renderer").objectReferenceValue = go.GetComponent<SpriteRenderer>();
             serializedEnemy.ApplyModifiedPropertiesWithoutUndo();
 
-            EnsureFolder(Path.GetDirectoryName(WalkerPrefabPath).Replace('\\', '/'));
-            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, WalkerPrefabPath);
+            EnsureFolder(Path.GetDirectoryName(prefabPath).Replace('\\', '/'));
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
             Object.DestroyImmediate(go);
             return prefab.GetComponent<Enemy>();
         }
@@ -647,9 +699,9 @@ namespace RushOps.Editor.Scenes
             return navigator;
         }
 
-        private static EnemyPool CreateEnemyPool(Enemy prefab, FlowFieldNavigator navigator)
+        private static EnemyPool CreateEnemyPool(string name, Enemy prefab, FlowFieldNavigator navigator)
         {
-            var go = new GameObject("EnemyPool");
+            var go = new GameObject(name);
             var pool = go.AddComponent<EnemyPool>();
             var serializedPool = new SerializedObject(pool);
             serializedPool.FindProperty("_prefab").objectReferenceValue = prefab;
@@ -659,15 +711,13 @@ namespace RushOps.Editor.Scenes
         }
 
         // Zones are handed over by the level builders via AssignZones.
-        private static WaveDirector CreateWaveDirector(SpawnerConfig config, EnemyPool pool, Transform player)
+        private static WaveDirector CreateWaveDirector(SpawnerConfig config, EnemyPool[] pools, Transform player)
         {
             var director = new GameObject("WaveDirector").AddComponent<WaveDirector>();
             var serialized = new SerializedObject(director);
             serialized.FindProperty("_config").objectReferenceValue = config;
             serialized.FindProperty("_player").objectReferenceValue = player;
-            SerializedProperty pools = serialized.FindProperty("_pools");
-            pools.arraySize = 1;
-            pools.GetArrayElementAtIndex(0).objectReferenceValue = pool;
+            SetPools(serialized, pools);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return director;
         }
@@ -743,7 +793,7 @@ namespace RushOps.Editor.Scenes
             return follow;
         }
 
-        private static SfxPlayer CreateGameFeel(FeelConfig config, Transform player, EnemyPool enemies, CameraFollow camera, PauseController pause)
+        private static SfxPlayer CreateGameFeel(FeelConfig config, Transform player, EnemyPool[] enemies, CameraFollow camera, PauseController pause)
         {
             var go = new GameObject("GameFeel");
             var hitstop = go.AddComponent<Hitstop>();
@@ -759,7 +809,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_config").objectReferenceValue = config;
             serialized.FindProperty("_player").objectReferenceValue = player.GetComponent<PlayerHealth>();
             serialized.FindProperty("_weapon").objectReferenceValue = player.GetComponent<PlayerWeapon>();
-            serialized.FindProperty("_enemies").objectReferenceValue = enemies;
+            SetPools(serialized, enemies);
             serialized.FindProperty("_camera").objectReferenceValue = camera;
             serialized.FindProperty("_hitstop").objectReferenceValue = hitstop;
             serialized.FindProperty("_sfx").objectReferenceValue = sfx;

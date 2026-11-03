@@ -12,7 +12,7 @@ namespace RushOps.Editor.Scenes
     internal sealed class ArenaScene
     {
         public ArenaScene(
-            Tilemap walls, Transform player, FlowFieldNavigator navigator, EnemyPool enemies, WaveDirector director,
+            Tilemap walls, Transform player, FlowFieldNavigator navigator, EnemyPool[] enemies, WaveDirector director,
             LevelKills kills, MissionTracker tracker, SfxPlayer sfx)
         {
             Walls = walls;
@@ -34,8 +34,8 @@ namespace RushOps.Editor.Scenes
         /// <summary>Flow field towards the player.</summary>
         public FlowFieldNavigator Navigator { get; }
 
-        /// <summary>Pool of the spawned enemies.</summary>
-        public EnemyPool Enemies { get; }
+        /// <summary>One pool per enemy type.</summary>
+        public EnemyPool[] Enemies { get; }
 
         /// <summary>Runs the waves; the level builder hands it the zones.</summary>
         public WaveDirector Director { get; }

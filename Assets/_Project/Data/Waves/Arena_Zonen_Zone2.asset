@@ -18,10 +18,14 @@ MonoBehaviour:
       _count: 6
   - _entries:
     - _enemy: {fileID: 11400000, guid: c86b4029f7715467683ba46d025777d6, type: 2}
-      _count: 10
+      _count: 8
+    - _enemy: {fileID: 11400000, guid: 076e68c3f3a7e4f79b3a9d6d1ca3b821, type: 2}
+      _count: 2
   - _entries:
     - _enemy: {fileID: 11400000, guid: c86b4029f7715467683ba46d025777d6, type: 2}
-      _count: 12
+      _count: 9
+    - _enemy: {fileID: 11400000, guid: 076e68c3f3a7e4f79b3a9d6d1ca3b821, type: 2}
+      _count: 3
   _spawnInterval: 0.8
   _pauseBetweenWaves: 3
   _afterLastWave: 1
