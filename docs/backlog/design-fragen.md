@@ -6,25 +6,25 @@ Sammlung für Issue #37: Diese Fragen müssen beantwortet sein, bevor die Epics 
 
 | # | Epic | Frage | Vorschlag | Entscheidung |
 |---|---|---|---|---|
-| G1 | #38 | Stilrichtung und Stimmung: düster, bunt oder comichaft? | Bunte Figuren vor dunkler Umgebung, damit Gegner und Perks auf dem Handy gut lesbar sind | |
-| G2 | #38 | Referenzspiele für Look und Animationen? | | |
-| G3 | #38 | Bleibt die Palette bei höchstens 32 Farben, oder bekommt jede Insel eine eigene Teilpalette? | Eine gemeinsame Palette, je Insel 6 bis 8 Akzentfarben daraus | |
-| G4 | #38 | Welche Animationen braucht jede Figur in 1.0 (Laufen, Treffer, Tod, Angriff, Idle)? | Laufen, Treffer, Tod; Idle nur für den Spieler | |
-| G5 | #38 | Spielerfigur: weiter aus dem Character-Tool oder neu per Skript? | Character-Tool (wie bisher, `Tools/import_character.py`) | |
-| G6 | #39 | Themen der drei Inseln? | z. B. Hafen/Strand, Industrie/Labor, Vulkan/Ruinen | |
-| G7 | #39 | Sollen Tore, Schalter und Generator pro Insel anders aussehen oder überall gleich (Wiedererkennung)? | Form gleich, Farben und Material pro Insel | |
-| G8 | #40 | Wie stark wird 2D-Licht eingesetzt: nur Akzente (Rätsel, Perks) oder dunkle Level mit Lichtkegeln? | Nur Akzente; dunkle Level kosten Lesbarkeit und Leistung | |
-| G9 | #41 | Klangrichtung der Effekte: Chiptune/8-Bit oder „crunchy“ Retro mit Rauschen? | | |
-| G10 | #41 | Werden Sounds weiter per Skript erzeugt (`Tools/`) oder gekauft/aufgenommen? | | |
-| G11 | #42 | Musik selbst erzeugt oder lizenzfreie Packs (offener Punkt im Lastenheft)? | | |
-| G12 | #42 | Dynamische Musik (Intensität je nach Gegnerzahl) oder ein fester Loop pro Insel? | Fester Loop pro Insel für 1.0 | |
+| G1 | #38 | Stilrichtung und Stimmung: düster, bunt oder comichaft? | Bunte Figuren vor dunkler Umgebung, damit Gegner und Perks auf dem Handy gut lesbar sind |Dein Vorschlag|
+| G2 | #38 | Referenzspiele für Look und Animationen? | |Bau selber mal Animationen und ich gucke ob das passt|
+| G3 | #38 | Bleibt die Palette bei höchstens 32 Farben, oder bekommt jede Insel eine eigene Teilpalette? | Eine gemeinsame Palette, je Insel 6 bis 8 Akzentfarben daraus |Dein Vorschlag|
+| G4 | #38 | Welche Animationen braucht jede Figur in 1.0 (Laufen, Treffer, Tod, Angriff, Idle)? | Laufen, Treffer, Tod; Idle nur für den Spieler |Dein Vorschlag|
+| G5 | #38 | Spielerfigur: weiter aus dem Character-Tool oder neu per Skript? | Character-Tool (wie bisher, `Tools/import_character.py`) |Der erste Character aus dem Character-Tool, den Rest dann per Skript so, dass es passt|
+| G6 | #39 | Themen der drei Inseln? | z. B. Hafen/Strand, Industrie/Labor, Vulkan/Ruinen |Strand, düstere Stadt, Vulkan|
+| G7 | #39 | Sollen Tore, Schalter und Generator pro Insel anders aussehen oder überall gleich (Wiedererkennung)? | Form gleich, Farben und Material pro Insel |Schalter und generator gleich, Tore nicht|
+| G8 | #40 | Wie stark wird 2D-Licht eingesetzt: nur Akzente (Rätsel, Perks) oder dunkle Level mit Lichtkegeln? | Nur Akzente; dunkle Level kosten Lesbarkeit und Leistung |Dein Vorschlag|
+| G9 | #41 | Klangrichtung der Effekte: Chiptune/8-Bit oder „crunchy“ Retro mit Rauschen? | |8-Bit fürs erste|
+| G10 | #41 | Werden Sounds weiter per Skript erzeugt (`Tools/`) oder gekauft/aufgenommen? | |per Skript|
+| G11 | #42 | Musik selbst erzeugt oder lizenzfreie Packs (offener Punkt im Lastenheft)? | |erstmal per Skript wenn überhaupt, lass Musik erstmal raus|
+| G12 | #42 | Dynamische Musik (Intensität je nach Gegnerzahl) oder ein fester Loop pro Insel? | Fester Loop pro Insel für 1.0 |Dein Vorschlag|
 
 ## v0.5.0 – Menüs, Speichern, Meta-Progression
 
 | # | Epic | Frage | Vorschlag | Entscheidung |
 |---|---|---|---|---|
-| M1 | #43 | Wie lang darf die Logo-Animation sein, und ist sie überspringbar? | Höchstens 3 s, Tippen überspringt | |
-| M2 | #43 | Was zeigt „Spielerauswahl“ im Hauptmenü genau: Skins oder verschiedene Figuren mit Werten? | Nur Skins (Lastenheft: rein kosmetisch) | |
+| M1 | #43 | Wie lang darf die Logo-Animation sein, und ist sie überspringbar? | Höchstens 3 s, Tippen überspringt |Dein Vorschlag|
+| M2 | #43 | Was zeigt „Spielerauswahl“ im Hauptmenü genau: Skins oder verschiedene Figuren mit Werten? | Nur Skins (Lastenheft: rein kosmetisch) |Dein Vorschlag|
 | M3 | #44 | Welche Stick-Einstellungen gibt es (Modus fest/floating, Größe, Position, Deckkraft)? | | |
 | M4 | #44 | Zielhilfe in den Einstellungen nur an/aus oder in Stufen? | An/aus | |
 | M5 | #45 | Wann wird automatisch gespeichert: nach jedem Level, beim Pausieren, beim Wechsel in den Hintergrund? | Nach jedem Level und beim Wechsel in den Hintergrund | |
