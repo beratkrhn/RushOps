@@ -10,7 +10,7 @@ namespace RushOps.Puzzles
         [SerializeField, Min(0f)] private float _timeLimit = 12f;
 
         [Tooltip("Text in the mission tracker, followed by the pressed count, e.g. „Schalter 1/3“.")]
-        [SerializeField] private string _text = "Schalter";
+        [SerializeField] private string _text = "Alle Schalter betreten";
 
         [Header("Feedback")]
         [Tooltip("Seconds the switches blink red after the timer ran out.")]

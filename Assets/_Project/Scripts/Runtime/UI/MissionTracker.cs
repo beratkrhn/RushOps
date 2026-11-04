@@ -11,7 +11,8 @@ namespace RushOps.UI
     /// shows „Tor gesperrt: 4/10 Kills“; when the gate opens it switches to „Tor offen!“ with a chime and hides
     /// after a moment. For a puzzle gate it shows the current puzzle's text with a progress bar or a countdown (issue #30).
     /// A puzzle in a zone whose gate has no such condition, e.g. the last zone, is shown on its own and ends with
-    /// „Geschafft!“ (issue #32). Gates with other conditions are not shown.
+    /// „Geschafft!“ (issue #32). In the zone of the level exit it shows „Alle Gegner besiegen“ while the exit is locked
+    /// and „Zum Ausgang!“ once it is open. Gates with other conditions are not shown.
     /// </summary>
     public class MissionTracker : MonoBehaviour
     {
@@ -28,6 +29,8 @@ namespace RushOps.UI
         [SerializeField] private AudioClip _doneClip;
         [Tooltip("Puzzles of the level; one in a zone without a kill or puzzle gate is shown on its own.")]
         [SerializeField] private Puzzle[] _levelPuzzles = System.Array.Empty<Puzzle>();
+        [Tooltip("Level exit; in its zone the tracker leads the player to it.")]
+        [SerializeField] private LevelExit _exit;
 
         private Gate _gate;
         private KillGateCondition _kills;
@@ -40,6 +43,7 @@ namespace RushOps.UI
         private int _shownSeconds = -1;
         private int _shownKills = -1;
         private float _doneTime = -1f;
+        private bool _tracksExit;
 
         /// <summary>Text currently shown; empty while hidden.</summary>
         public string Text => _label != null && _label.enabled ? _label.text : string.Empty;
@@ -67,6 +71,22 @@ namespace RushOps.UI
             if (_gate == null)
             {
                 Hide();
+            }
+        }
+
+        private void Start()
+        {
+            if (_exit != null)
+            {
+                _exit.Opened += OnExitOpened;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_exit != null)
+            {
+                _exit.Opened -= OnExitOpened;
             }
         }
 
@@ -101,6 +121,12 @@ namespace RushOps.UI
                     }
                 }
 
+                return;
+            }
+
+            if (_tracksExit)
+            {
+                ShowExit();
                 return;
             }
 
@@ -177,8 +203,17 @@ namespace RushOps.UI
                     return;
                 }
 
-                // Keep a running „Tor offen!“ until it times out; otherwise nothing to show in this zone.
                 SetGate(null);
+                if (_exit != null && _exit.Zone == zone && !_exit.IsReached)
+                {
+                    _tracksExit = true;
+                    _doneTime = -1f;
+                    SetProgressVisible(false);
+                    ShowExit();
+                    return;
+                }
+
+                // Keep a running „Tor offen!“ until it times out; otherwise nothing to show in this zone.
                 if (_doneTime < 0f)
                 {
                     Hide();
@@ -205,6 +240,7 @@ namespace RushOps.UI
 
             SetLoose(null);
             _looseZone = null;
+            _tracksExit = false;
             _gate = gate;
             _kills = null;
             _puzzles = null;
@@ -257,6 +293,28 @@ namespace RushOps.UI
             Show(MissionText.GateOpen);
             _doneTime = 0f;
             if (_sfx != null && _config != null)
+            {
+                _sfx.Play(_doneClip, _config.MissionDoneVolume, 0f);
+            }
+        }
+
+        private void ShowExit()
+        {
+            if (_label == null)
+            {
+                return;
+            }
+
+            string text = _exit.IsOpen ? MissionText.ToExit : MissionText.ClearZone;
+            if (!_label.enabled || !string.Equals(_label.text, text, System.StringComparison.Ordinal))
+            {
+                Show(text);
+            }
+        }
+
+        private void OnExitOpened(LevelExit exit)
+        {
+            if (_tracksExit && _sfx != null && _config != null)
             {
                 _sfx.Play(_doneClip, _config.MissionDoneVolume, 0f);
             }

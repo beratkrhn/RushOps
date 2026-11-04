@@ -57,7 +57,7 @@ namespace RushOps.Tests.PlayMode
         {
             LootConfig config = _pickups.Config;
 
-            Assert.AreEqual(0.08f, config.DropChance, 1e-5f);
+            Assert.AreEqual(0.12f, config.DropChance, 1e-5f);
             Assert.AreEqual(10f, config.Lifetime, 1e-5f);
             Assert.AreEqual(3f, config.BlinkDuration, 1e-5f);
             Assert.AreEqual(Weights.Length, config.Perks.Length);

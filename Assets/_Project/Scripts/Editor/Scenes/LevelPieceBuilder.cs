@@ -87,8 +87,11 @@ namespace RushOps.Editor.Scenes
             return gate;
         }
 
-        /// <summary>The level exit centered at <paramref name="center"/>; reaching it finishes the level (issue #35).</summary>
-        public static LevelExit CreateExit(ArenaScene arena, Vector2 center)
+        /// <summary>
+        /// The level exit centered at <paramref name="center"/>; reaching it finishes the level (issue #35). With
+        /// <paramref name="lockZone"/> it opens only once that zone's waves are over and all enemies are dead.
+        /// </summary>
+        public static LevelExit CreateExit(ArenaScene arena, Vector2 center, Zone lockZone = null)
         {
             var go = new GameObject("LevelExit");
             go.transform.position = center;
@@ -104,6 +107,14 @@ namespace RushOps.Editor.Scenes
             trigger.isTrigger = true;
             trigger.size = ExitSize;
             LevelExit exit = go.AddComponent<LevelExit>();
+            var serializedExit = new SerializedObject(exit);
+            serializedExit.FindProperty("_zone").objectReferenceValue = lockZone;
+            serializedExit.FindProperty("_director").objectReferenceValue = arena.Director;
+            serializedExit.FindProperty("_renderer").objectReferenceValue = renderer;
+            serializedExit.ApplyModifiedPropertiesWithoutUndo();
+            var tracker = new SerializedObject(arena.Tracker);
+            tracker.FindProperty("_exit").objectReferenceValue = exit;
+            tracker.ApplyModifiedPropertiesWithoutUndo();
 
             var results = new SerializedObject(arena.Results);
             results.FindProperty("_exit").objectReferenceValue = exit;

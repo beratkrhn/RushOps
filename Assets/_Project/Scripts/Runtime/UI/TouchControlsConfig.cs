@@ -13,7 +13,7 @@ namespace RushOps.UI
         [SerializeField] private StickMode _mode = StickMode.Floating;
 
         [Tooltip("Diameter of a stick's base in reference units; the knob travels up to half of it.")]
-        [SerializeField, Min(16f)] private float _stickSize = 96f;
+        [SerializeField, Min(16f)] private float _stickSize = 67f;
 
         [Tooltip("Knob diameter relative to the stick size.")]
         [SerializeField, Range(0.1f, 1f)] private float _knobScale = 0.5f;

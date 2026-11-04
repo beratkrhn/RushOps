@@ -62,7 +62,7 @@ namespace RushOps.Tests.PlayMode
             Assert.IsTrue(_puzzle.Sequence.IsRunning);
             Assert.AreEqual(MissionText.Puzzle(_puzzle.Display), _tracker.Text);
             StringAssert.Contains(" s", _tracker.Text, "tracker shows no countdown");
-            StringAssert.StartsWith($"Schalter 1/{_puzzle.Switches.Length}", _tracker.Text);
+            StringAssert.StartsWith($"Alle Schalter betreten 1/{_puzzle.Switches.Length}", _tracker.Text);
         }
 
         [UnityTest]

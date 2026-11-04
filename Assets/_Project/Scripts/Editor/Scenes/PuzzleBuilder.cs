@@ -32,6 +32,8 @@ namespace RushOps.Editor.Scenes
 
         // The plate triggers once the player's body overlaps most of the tile.
         private static readonly Vector2 SwitchTriggerSize = new Vector2(0.8f, 0.8f);
+        private const float SwitchLightRadius = 1.5f;
+        private const float SwitchLightIntensity = 0.8f;
         private static readonly Color LightColor = new Color32(95, 176, 224, 255);
 
         /// <summary>A hold-the-line zone centered at <paramref name="center"/>, active with <paramref name="zone"/>.</summary>
@@ -79,6 +81,13 @@ namespace RushOps.Editor.Scenes
                 var trigger = renderer.gameObject.AddComponent<BoxCollider2D>();
                 trigger.isTrigger = true;
                 trigger.size = SwitchTriggerSize;
+                // A soft glow makes the plates easy to spot from afar (playtest v0.3.0).
+                var glow = renderer.gameObject.AddComponent<Light2D>();
+                glow.lightType = Light2D.LightType.Point;
+                glow.color = LightColor;
+                glow.pointLightInnerRadius = 0f;
+                glow.pointLightOuterRadius = SwitchLightRadius;
+                glow.intensity = SwitchLightIntensity;
                 switches[i] = renderer.gameObject.AddComponent<FloorSwitch>();
                 var serializedSwitch = new SerializedObject(switches[i]);
                 serializedSwitch.FindProperty("_renderer").objectReferenceValue = renderer;

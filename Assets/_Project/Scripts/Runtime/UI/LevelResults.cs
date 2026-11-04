@@ -28,6 +28,8 @@ namespace RushOps.UI
         [SerializeField] private Text _doneScore;
         [SerializeField] private Text _doneKills;
         [SerializeField] private Text _doneTime;
+        [Tooltip("Shows the score needed for the next star.")]
+        [SerializeField] private Text _doneNextStar;
         [SerializeField] private Image[] _stars = System.Array.Empty<Image>();
         [SerializeField] private Sprite _starFull;
         [SerializeField] private Sprite _starEmpty;
@@ -61,6 +63,9 @@ namespace RushOps.UI
             SetText(_doneScore, ResultText.Score(score));
             SetText(_doneKills, ResultText.Kills(_kills != null ? _kills.Counter.Count : 0));
             SetText(_doneTime, ResultText.Time(Time.timeSinceLevelLoad));
+            SetText(_doneNextStar, _level != null
+                ? ResultText.NextStar(StarsShown, _level.TwoStarScore, _level.ThreeStarScore)
+                : string.Empty);
             for (int i = 0; i < _stars.Length; i++)
             {
                 if (_stars[i] != null)

@@ -1,6 +1,9 @@
 using System.Collections;
 using NUnit.Framework;
+using RushOps.Combat;
+using RushOps.Enemies;
 using RushOps.Levels;
+using RushOps.Player;
 using RushOps.Puzzles;
 using RushOps.UI;
 using UnityEngine;
@@ -64,6 +67,77 @@ namespace RushOps.Tests.PlayMode
             LevelResults results = Object.FindFirstObjectByType<LevelResults>();
             Assert.IsNotNull(results);
             Assert.AreEqual(SceneName, results.Level.SceneName);
+        }
+
+        [UnityTest]
+        public IEnumerator Exit_LockedUntilLastWavesBeaten_TrackerLeadsToIt()
+        {
+            yield return null;
+            LevelExit exit = Object.FindFirstObjectByType<LevelExit>();
+            LevelResults results = Object.FindFirstObjectByType<LevelResults>();
+            MissionTracker tracker = Object.FindFirstObjectByType<MissionTracker>();
+            WaveDirector director = Object.FindFirstObjectByType<WaveDirector>();
+            Zone last = Find<Zone>("Zone_5");
+            Object.FindFirstObjectByType<LevelRestarter>().enabled = false;
+            Assert.AreSame(last, exit.Zone);
+            Assert.IsFalse(exit.IsOpen, "exit is open before the last zone was played");
+
+            Teleport(exit.transform.position);
+            yield return new WaitForFixedUpdate();
+            yield return null;
+            yield return null;
+
+            Assert.AreEqual(ZoneState.Active, last.State);
+            Assert.IsFalse(results.ShowsDone, "locked exit finished the level");
+            Assert.AreEqual(MissionText.ClearZone, tracker.Text);
+
+            director.StopWaves(last);
+            foreach (Enemy enemy in Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+            {
+                ((IDamageable)enemy).TakeHit(1000, Vector2.zero);
+            }
+
+            float timeout = Time.realtimeSinceStartup + 3f;
+            while (Time.realtimeSinceStartup < timeout && !results.ShowsDone)
+            {
+                yield return null;
+            }
+
+            Assert.IsTrue(exit.IsOpen, "exit did not open after the last waves");
+            Assert.IsTrue(results.ShowsDone, "player standing on the exit did not finish once it opened");
+        }
+
+        [UnityTest]
+        public IEnumerator Tracker_InLastZone_ShowsToExitOnceOpen()
+        {
+            yield return null;
+            LevelExit exit = Object.FindFirstObjectByType<LevelExit>();
+            MissionTracker tracker = Object.FindFirstObjectByType<MissionTracker>();
+            WaveDirector director = Object.FindFirstObjectByType<WaveDirector>();
+            Zone last = Find<Zone>("Zone_5");
+            Object.FindFirstObjectByType<LevelRestarter>().enabled = false;
+
+            Teleport(last.transform.position);
+            yield return new WaitForFixedUpdate();
+            yield return null;
+            director.StopWaves(last);
+            foreach (Enemy enemy in Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None))
+            {
+                ((IDamageable)enemy).TakeHit(1000, Vector2.zero);
+            }
+
+            yield return null;
+            yield return null;
+
+            Assert.IsTrue(exit.IsOpen);
+            Assert.AreEqual(MissionText.ToExit, tracker.Text);
+        }
+
+        private static void Teleport(Vector2 position)
+        {
+            var body = Object.FindFirstObjectByType<PlayerHealth>().GetComponent<Rigidbody2D>();
+            body.position = position;
+            body.transform.position = position;
         }
 
         private static void AssertPuzzleGate<T>(string gateName) where T : Puzzle

@@ -34,10 +34,13 @@ namespace RushOps.UI
             return mode == StickMode.Floating || (press - home).sqrMagnitude <= grabRadius * grabRadius;
         }
 
-        /// <summary>Center of the stick while a touch holds it: the home position when fixed, the clamped touch point when floating.</summary>
-        public static Vector2 Origin(StickMode mode, Vector2 home, Vector2 press, Vector2 zoneSize, float radius)
+        /// <summary>
+        /// Center of the stick while a touch holds it: the home position when fixed, the touch point when floating,
+        /// kept at least <paramref name="clearance"/> from the zone edges.
+        /// </summary>
+        public static Vector2 Origin(StickMode mode, Vector2 home, Vector2 press, Vector2 zoneSize, float clearance)
         {
-            return mode == StickMode.Fixed ? home : ClampToZone(press, zoneSize, radius);
+            return mode == StickMode.Fixed ? home : ClampToZone(press, zoneSize, clearance);
         }
 
         /// <summary>Stick value from the origin to the touch: length 1 at <paramref name="radius"/> and beyond, like a gamepad stick.</summary>

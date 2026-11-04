@@ -118,9 +118,18 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Prototyp Level 1-1** (Issue #36, F-LVL-06): Szene `Level_1-1` (24×118 Kacheln, `RushOps → Szenen → Level_1-1 erzeugen`) mit fünf Zonen von Süden nach Norden. Zone 1 „Ankunft“ (nur Walker, Kill-Gate nach 15 Kills), Zone 2 „Halten“ (Zonen-Kontrolle unter eigenen, schnelleren Wellen, danach Ruhe; Runner kommen dazu), Zone 3 „Schalter“ (drei zeitkritische Schalter in zwei Gassen; Boomer kommen dazu), Zone 4 „Generator“ (zwei Energiezellen zum Generator; Brutes kommen dazu), Zone 5 „Ausgang“ (letzter Ansturm aller Typen vor dem Ausgang). Wellen unter `Data/Waves/Level_1-1_*`, Sterne-Schwellen 2000/4000 *(Startwerte, Spieldauer und Balancing werden im Spieltest #37 abgenommen)*.
 - `LevelLayoutCheck`: Der Level-Builder prüft vor dem Speichern die Richtlinien aus `docs/level-design.md` (Durchlässe mindestens 2 Kacheln für alle Ziele, Spawnpunkte mit 1 Kachel Abstand zu Wänden und in ihrer Zone, mindestens ein Teil jedes Rätsels in Sichtlinie vom Zoneneingang); EditMode-Tests für die Prüfungen und für Level 1-1 (Issue #36).
 - iOS-Build (Issue #13): `RushOps → Build → iOS-Xcode-Projekt (Development/Release) bauen` exportiert ein Xcode-Projekt nach `Builds/iOS/`, automatische Signierung mit dem Entwickler-Team. `Tools/ios-install.sh` exportiert das Projekt mit der Unity-Installation, die das iOS-Modul hat, baut und signiert es per `xcodebuild` und installiert und startet es per `devicectl` auf dem angeschlossenen iPhone. Erster Gerätebuild auf einem iPhone 16 Pro installiert und gestartet. Builds starten mit dem `TestMenu`, damit auf dem Gerät jedes Level wählbar ist.
+- `FrameRateSetup` setzt die Zielbildrate vor der ersten Szene auf 60 FPS (NF-01). iOS lief vorher mit 30 FPS (Spieltest v0.3.0).
+- Gesperrter Ausgang: Ein `LevelExit` mit Zone öffnet erst, wenn deren Wellen vorbei und alle Gegner besiegt sind (`ExitLock`). Bis dahin ist er abgedunkelt. Der Missions-Tracker zeigt in dieser Zone „Alle Gegner besiegen“ und danach „Zum Ausgang!“ mit Signalton. In Level 1-1 aktiv (Spieltest v0.3.0, Design-Fragen P2/P3).
+- Ergebnisbildschirm zeigt die Punkte für den nächsten Stern, z. B. „2 Sterne ab 1500 Punkten“.
+- Spieltest v0.3.0 auf dem iPhone 16 Pro protokolliert (`docs/testprotokolle/`), Design-Fragen v0.4.0 bis v0.6.0 beantwortet (`docs/backlog/design-fragen.md`).
 - Testprotokoll-Vorlagen `docs/testprotokolle/v0.2.0.md` und `v0.3.0.md` für die Spieltests #29 und #37 sowie `docs/backlog/design-fragen.md` mit offenen Design-Fragen für v0.4.0 bis v0.6.0 (Entwurf für #37).
 
 ### Geändert
+- Nach dem Spieltest v0.3.0:
+  - Sticks 30 % kleiner (96 → 67). Ein schwebender Stick hält denselben Randabstand wie in Ruhe, damit die volle Auslenkung vor dem Bildschirmrand erreicht wird.
+  - Perk-Drop-Chance 8 % → 12 % (Lastenheft F-PRK-02).
+  - Schalter-Text „Alle Schalter betreten“, Schalter leuchten.
+  - Sterne-Schwellen von Level 1-1 auf 1500/3000.
 - Tore und Ausgang werden für alle Zonen-Level über `LevelPieceBuilder` erzeugt; `Arena_Zonen` nutzt ihn ebenfalls, die Szene bleibt unverändert (Issue #36).
 - Bildschirmausrichtung fest auf Hochformat.
 - `bundleVersion` auf 0.1.0, Firmenname gesetzt.
