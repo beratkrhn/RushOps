@@ -104,6 +104,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `DebugPuzzle` als Testrätsel: Es füllt seinen Balken in 20 s und ist dann gelöst, oder sofort über das Kontextmenü „Jetzt lösen“ (Issue #30).
 - **Zonen-Kontrolle (Hold the Line)** (Issue #31, F-RAE-01, F-RAE-02): Ein leuchtender Kreis am Boden (Ring und blaues 2D-Licht) muss 10 s *(Startwert)* besetzt werden. Der Fortschritt steigt nur, solange der Spieler im Kreis steht, und pausiert außerhalb, ohne zu sinken. Er ist am Kreis sichtbar (eine Scheibe wächst, das Licht wird heller) und als Balken im Missions-Tracker. Bei 100 % ist das Rätsel gelöst, und der Kreis färbt sich grün. Dauer, Radius, Text und Optik stehen in `Data/Puzzles/HoldZoneConfig`. Logik in `HoldProgress` mit EditMode-Tests.
 - `PuzzleBuilder` (Editor) setzt Rätsel in Level-Szenen; Ring- und Scheiben-Sprites aus `Tools/gen_pixelart.py` (Issue #31).
+- **Zeitkritische Schalter** (Issue #32, F-RAE-03 bis F-RAE-05): Bodenplatten, die nur der Spieler durch Darüberlaufen aktiviert. Gedrückte Platten leuchten grün. Die erste startet einen Countdown von 12 s *(Startwert)*, den der Missions-Tracker zeigt („Schalter 1/3: 9 s“). Läuft er ab, springen alle Platten zurück, blinken rot, und ein Summer ertönt. Alle rechtzeitig gedrückt: Rätsel gelöst. Werte in `Data/Puzzles/TimedSwitchConfig`, Logik in `SwitchSequence` mit EditMode-Tests, Sounds `SwitchOn.wav` und `SwitchReset.wav`.
+- Der Missions-Tracker zeigt auch Rätsel in Zonen ohne Rätsel- oder Kill-Tor (z. B. der letzten Zone) und bestätigt sie mit „Geschafft!“ (Issue #32).
+- `Arena_Zonen`: drei Schalter in Zone 3 (Issue #32).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
