@@ -158,6 +158,22 @@ namespace RushOps.Tests.EditMode
             Assert.IsNotNull(data.Progress);
             Assert.IsNotNull(data.Progress.Levels);
             Assert.IsNotNull(data.Stats);
+            Assert.IsNotNull(data.Skins);
+            Assert.IsNotNull(data.Skins.Unlocked);
+        }
+
+        [Test]
+        public void SaveThenLoad_KeepsTheSkins()
+        {
+            SaveData data = Sample(3);
+            data.Skins.Current = "Surfer";
+            data.Skins.Unlocked.Add("Surfer");
+            _store.Save(data);
+
+            SaveData loaded = new SaveGameStore(_files, Dir).Load();
+
+            Assert.AreEqual("Surfer", loaded.Skins.Current);
+            CollectionAssert.AreEqual(new[] { "Surfer" }, loaded.Skins.Unlocked);
         }
 
         [Test]

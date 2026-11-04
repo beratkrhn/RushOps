@@ -52,6 +52,19 @@ namespace RushOps.Characters
             _direction = Direction8Math.FromVector(facing, _direction);
         }
 
+        /// <summary>
+        /// Replaces the base loop, move loop, hit reaction and death, e.g. with the player's skin (issue #128); a null
+        /// argument keeps the current animation.
+        /// </summary>
+        public void SetAnimations(DirectionalAnimation loop, DirectionalAnimation move, DirectionalAnimation hit, DirectionalAnimation death)
+        {
+            _animation = loop != null ? loop : _animation;
+            _move = move != null ? move : _move;
+            _hit = hit != null ? hit : _hit;
+            _death = death != null ? death : _death;
+            ShowCurrentFrame();
+        }
+
         /// <summary>Restarts the looping base animation, e.g. when a pooled character is reused.</summary>
         public void PlayLoop()
         {

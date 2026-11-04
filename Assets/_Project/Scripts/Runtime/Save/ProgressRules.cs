@@ -41,6 +41,26 @@ namespace RushOps.Save
             return record != null && record.Completed ? record.Stars : 0;
         }
 
+        /// <summary>Best stars of all finished levels added up (milestone skins, issue #128).</summary>
+        public static int TotalStars(ProgressData progress)
+        {
+            if (progress?.Levels == null)
+            {
+                return 0;
+            }
+
+            int total = 0;
+            foreach (LevelRecord record in progress.Levels)
+            {
+                if (record != null && record.Completed)
+                {
+                    total += record.Stars;
+                }
+            }
+
+            return total;
+        }
+
         /// <summary>
         /// Marks <paramref name="levelId"/> as finished with <paramref name="stars"/> and <paramref name="score"/>,
         /// keeping better earlier results.

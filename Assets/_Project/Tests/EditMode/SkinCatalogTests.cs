@@ -1,0 +1,86 @@
+using System.Collections.Generic;
+using NUnit.Framework;
+using RushOps.Skins;
+using UnityEditor;
+
+namespace RushOps.Tests.EditMode
+{
+    public class SkinCatalogTests
+    {
+        private const string CatalogPath = "Assets/_Project/Data/Skins/SkinCatalog.asset";
+
+        private static SkinCatalog Load()
+        {
+            var catalog = AssetDatabase.LoadAssetAtPath<SkinCatalog>(CatalogPath);
+            Assert.IsNotNull(catalog, $"no skin catalog at {CatalogPath}");
+            return catalog;
+        }
+
+        [Test]
+        public void Catalog_HasStandardNineLevelAndThreeMilestoneSkins()
+        {
+            IReadOnlyList<SkinDefinition> skins = Load().Skins;
+
+            Assert.AreEqual(13, skins.Count);
+            Assert.AreEqual(SkinUnlockKind.Default, skins[0].UnlockKind, "the default skin comes first");
+            int levels = 0;
+            int milestones = 0;
+            var ids = new HashSet<string>();
+            foreach (SkinDefinition skin in skins)
+            {
+                Assert.IsNotNull(skin);
+                Assert.IsNotEmpty(skin.Id);
+                Assert.IsNotEmpty(skin.DisplayName);
+                Assert.IsTrue(ids.Add(skin.Id), $"id {skin.Id} twice");
+                Assert.IsNotNull(skin.Idle, skin.Id);
+                Assert.IsNotNull(skin.Walk, skin.Id);
+                Assert.IsNotNull(skin.Hit, skin.Id);
+                Assert.IsNotNull(skin.Death, skin.Id);
+                levels += skin.UnlockKind == SkinUnlockKind.LevelCompleted ? 1 : 0;
+                milestones += skin.UnlockKind == SkinUnlockKind.Milestone ? 1 : 0;
+            }
+
+            Assert.AreEqual(9, levels);
+            Assert.AreEqual(3, milestones);
+        }
+
+        [Test]
+        public void LevelSkins_CoverEveryLevelOfTheThreeIslands()
+        {
+            var levels = new HashSet<string>();
+            foreach (SkinDefinition skin in Load().Skins)
+            {
+                if (skin.UnlockKind == SkinUnlockKind.LevelCompleted)
+                {
+                    Assert.IsTrue(levels.Add(skin.Unlock.LevelId), $"level {skin.Unlock.LevelId} twice");
+                    Assert.IsNotEmpty(skin.LevelName);
+                }
+            }
+
+            for (int island = 1; island <= 3; island++)
+            {
+                for (int level = 1; level <= 3; level++)
+                {
+                    CollectionAssert.Contains(levels, $"Level_{island}-{level}");
+                }
+            }
+        }
+
+        [Test]
+        public void Milestones_Are100And1000KillsAndAllStars()
+        {
+            var milestones = new List<(SkinMilestone, int)>();
+            foreach (SkinDefinition skin in Load().Skins)
+            {
+                if (skin.UnlockKind == SkinUnlockKind.Milestone)
+                {
+                    milestones.Add((skin.Unlock.Milestone, skin.Unlock.Threshold));
+                }
+            }
+
+            CollectionAssert.AreEquivalent(
+                new[] { (SkinMilestone.TotalKills, 100), (SkinMilestone.TotalKills, 1000), (SkinMilestone.TotalStars, 27) },
+                milestones);
+        }
+    }
+}

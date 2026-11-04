@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7a15286db7164e0dafab95a03d6d92b, type: 3}
+  m_Name: SkinCatalog
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinCatalog
+  _skins:
+  - {fileID: 11400000, guid: 4ec683c3633ba45e3ac4d3549224f30a, type: 2}
+  - {fileID: 11400000, guid: be6e01c3d59f9414b8502bfbf26cd26f, type: 2}
+  - {fileID: 11400000, guid: e764f00347f2d4a34a5a07ce1e95a278, type: 2}
+  - {fileID: 11400000, guid: 5e4d570c2b25b419a8339582332a2df7, type: 2}
+  - {fileID: 11400000, guid: 4ea903ccf6d0e408f974f94fcfc554ce, type: 2}
+  - {fileID: 11400000, guid: ce1d6e4f9dd684404a81e0c4aef60fcd, type: 2}
+  - {fileID: 11400000, guid: 1bb1de26e021a4591afe4dc2e8fc46fc, type: 2}
+  - {fileID: 11400000, guid: 796827ca16dec44a1ab40fdd0aa5acf9, type: 2}
+  - {fileID: 11400000, guid: 795592f32b6f14a958cba5d4b7b717f5, type: 2}
+  - {fileID: 11400000, guid: 8031bed05ccd644429038384c7f3da82, type: 2}
+  - {fileID: 11400000, guid: e9247d5683cc240b2b8a74060a913a14, type: 2}
+  - {fileID: 11400000, guid: c843bed9843f74f64addca706eef557d, type: 2}
+  - {fileID: 11400000, guid: aef2ad7c16dd64e5bb3b4bdc3d8af9a2, type: 2}

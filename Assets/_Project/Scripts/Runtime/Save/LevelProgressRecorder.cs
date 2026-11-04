@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using RushOps.Levels;
 using RushOps.Scoring;
+using RushOps.Skins;
 using RushOps.UI;
 using UnityEngine;
 
@@ -9,7 +12,8 @@ namespace RushOps.Save
     /// Autosave of a level (issue #123, F-DAT-03, design question M5). Thin adapter: when „Level geschafft!“ appears it
     /// records the level with stars and score; on „Gescheitert“ it counts a death; both times, when the app goes to
     /// the background and when the level is left, it adds kills, play time and best combo to the statistics and saves.
-    /// No state inside the level is saved (F-DAT-02).
+    /// After the level and on death it also unlocks the skins now earned (issue #128). No state inside the level is
+    /// saved (F-DAT-02).
     /// </summary>
     public class LevelProgressRecorder : MonoBehaviour
     {
@@ -17,8 +21,14 @@ namespace RushOps.Save
         [SerializeField] private LevelResults _results;
         [SerializeField] private LevelScore _score;
         [SerializeField] private LevelKills _kills;
+        [Tooltip("Skins unlocked after the level and on death (issue #128).")]
+        [SerializeField] private SkinCatalog _skins;
 
         private readonly LevelStatsTracker _stats = new LevelStatsTracker();
+        private readonly List<SkinDefinition> _newSkins = new List<SkinDefinition>();
+
+        /// <summary>Raised before saving when skins were unlocked, with the new skins in catalog order.</summary>
+        public event Action<IReadOnlyList<SkinDefinition>> SkinsUnlocked;
 
         private void OnEnable()
         {
@@ -54,6 +64,7 @@ namespace RushOps.Save
 
             data.Stats.LevelsCompleted++;
             CommitStats(data);
+            UnlockSkins(data);
             _save.Save();
         }
 
@@ -67,6 +78,7 @@ namespace RushOps.Save
             SaveData data = _save.Data;
             data.Stats.Deaths++;
             CommitStats(data);
+            UnlockSkins(data);
             _save.Save();
         }
 
@@ -89,6 +101,15 @@ namespace RushOps.Save
             if (_save != null && CommitStats(_save.Data))
             {
                 _save.Save();
+            }
+        }
+
+        private void UnlockSkins(SaveData data)
+        {
+            _newSkins.Clear();
+            if (_skins != null && _skins.UnlockNew(data, _newSkins) > 0)
+            {
+                SkinsUnlocked?.Invoke(_newSkins);
             }
         }
 

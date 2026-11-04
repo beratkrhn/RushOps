@@ -148,6 +148,8 @@ namespace RushOps.Save
                 data.Progress.Levels ??= new List<LevelRecord>();
                 data.Stats ??= new StatsData();
                 data.Settings ??= new SettingsData();
+                data.Skins ??= new SkinsData();
+                data.Skins.Unlocked ??= new List<string>();
                 return true;
             }
             catch (Exception)
