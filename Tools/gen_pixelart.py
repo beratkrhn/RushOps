@@ -23,6 +23,10 @@ Output (under Assets/_Project/Art/):
   Sprites/Level/HoldZone_Fill.png          128x128 disc inside the ring; the game scales it with the progress (issue #31)
   Sprites/Level/Switch_Off.png             32x32 floor switch, not pressed: dark plate with a dim red lamp (issue #32)
   Sprites/Level/Switch_On.png              32x32 floor switch, pressed: plate sunk in, bright green lamp with glow (issue #32)
+  Sprites/Level/EnergyCell.png             16x16 glowing energy cell the player carries (issue #33)
+  Sprites/Level/Generator_Off.png          32x48 generator waiting for its cell, dark slot (issue #33)
+  Sprites/Level/Generator_On.png           32x48 generator running, slot and lights glowing (issue #33)
+  Sprites/UI/Dash_Locked.png               24x24 padlock over the dash button while it is locked (issue #33)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
@@ -742,6 +746,63 @@ def floor_switch(on: bool) -> Canvas:
     return c
 
 
+def energy_cell() -> Canvas:
+    """Upright energy cell: dark caps at both ends, a glowing green core with a bright stripe."""
+    c = Canvas(16, 16)
+    c.rect(5, 1, 10, 2, "slate_2")
+    c.rect(4, 3, 11, 13, "slate_1")
+    c.rect(5, 4, 10, 12, "green_1")
+    c.rect(6, 4, 9, 12, "green_2")
+    c.rect(7, 5, 7, 11, "glow")
+    c.rect(4, 14, 11, 14, "slate_2")
+    c.rect(5, 8, 10, 8, "slate_1")
+    c.outline()
+    return c
+
+
+def generator(on: bool) -> Canvas:
+    """Squat machine with a cell slot in front and two lamps on top; running, the slot and lamps glow green."""
+    c = Canvas(32, 48)
+    c.rect(4, 14, 27, 45, "slate_1")
+    c.rect(4, 14, 27, 17, "slate_3")
+    c.rect(6, 18, 25, 43, "slate_2")
+    c.rect(4, 44, 27, 45, "slate_0")
+    # Lamps on top.
+    for x in (9, 22):
+        c.rect(x - 2, 9, x + 2, 13, "slate_0")
+        c.rect(x - 1, 10, x + 1, 12, "green_2" if on else "red_0")
+        if on:
+            c.set(x, 11, "glow")
+    # Cell slot.
+    c.rect(11, 24, 20, 39, "night")
+    if on:
+        c.rect(12, 25, 19, 38, "green_1")
+        c.rect(14, 26, 17, 37, "green_2")
+        c.rect(15, 27, 16, 36, "glow")
+    else:
+        c.rect(12, 25, 19, 26, "slate_0")
+    # Vents.
+    for y in (20, 41):
+        c.rect(8, y, 23, y, "slate_1")
+    c.outline()
+    return c
+
+
+def dash_locked() -> Canvas:
+    """Padlock drawn over the dash button while carrying something; the button underneath is covered dark."""
+    c = Canvas(24, 24)
+    c.ellipse(12.0, 12.0, 11.0, 11.0, "night")
+    for y in range(4, 12):
+        for x in range(7, 17):
+            r = math.hypot(x + 0.5 - 12.0, y + 0.5 - 10.0)
+            if 3.0 <= r <= 4.6 and y < 11:
+                c.set(x, y, "slate_5")
+    c.rect(7, 11, 16, 18, "yellow")
+    c.rect(7, 11, 16, 11, "glow")
+    c.rect(11, 13, 12, 16, "brown_0")
+    return c
+
+
 SHIELD_BARRIER = 64
 
 
@@ -1040,6 +1101,10 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/HoldZone_Fill.png": hold_zone_fill().to_image(),
         "Sprites/Level/Switch_Off.png": floor_switch(False).to_image(),
         "Sprites/Level/Switch_On.png": floor_switch(True).to_image(),
+        "Sprites/Level/EnergyCell.png": energy_cell().to_image(),
+        "Sprites/Level/Generator_Off.png": generator(False).to_image(),
+        "Sprites/Level/Generator_On.png": generator(True).to_image(),
+        "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),
         "Sprites/Level/Gate_Bars.png": gate_bars().to_image(),
         "Sprites/UI/Heart_Full.png": heart(True).to_image(),
         "Sprites/UI/Heart_Empty.png": heart(False).to_image(),
