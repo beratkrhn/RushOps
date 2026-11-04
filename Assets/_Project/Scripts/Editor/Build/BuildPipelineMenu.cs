@@ -9,7 +9,8 @@ namespace RushOps.Editor.Build
     /// <summary>
     /// Player settings and device builds (issue #13). <see cref="ApplyPlayerSettings"/> keeps the settings
     /// decided in the Lastenheft in code, so they are reproducible; the build methods apply them first.
-    /// Batchmode: <c>-executeMethod RushOps.Editor.Build.BuildPipelineMenu.BuildAndroidDevelopment</c>
+    /// Batchmode: <c>-executeMethod RushOps.Editor.Build.BuildPipelineMenu.BuildAndroidDevelopment</c> or
+    /// <c>BuildIosDevelopment</c>; <c>Tools/ios-install.sh</c> signs the Xcode project and installs it on an iPhone.
     /// </summary>
     public static class BuildPipelineMenu
     {
@@ -19,6 +20,10 @@ namespace RushOps.Editor.Build
         private const AndroidSdkVersions AndroidMinSdk = AndroidSdkVersions.AndroidApiLevel26;
         private const string IosMinVersion = "15.0";
         private const string BuildsDir = "Builds/Android";
+        private const string IosBuildsDir = "Builds/iOS";
+
+        /// <summary>Apple team that signs development builds (personal team of the developer account).</summary>
+        public const string AppleTeamId = "WAM6U438Y8";
 
         [MenuItem("RushOps/Build/Player-Einstellungen anwenden")]
         public static void ApplyPlayerSettings()
@@ -27,6 +32,8 @@ namespace RushOps.Editor.Build
             PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.iOS, BundleId);
             PlayerSettings.Android.minSdkVersion = AndroidMinSdk;
             PlayerSettings.iOS.targetOSVersionString = IosMinVersion;
+            PlayerSettings.iOS.appleDeveloperTeamID = AppleTeamId;
+            PlayerSettings.iOS.appleEnableAutomaticSigning = true;
 
             // Portrait only, no rotation (F-PLT-02).
             PlayerSettings.defaultInterfaceOrientation = UIOrientation.Portrait;
@@ -54,6 +61,35 @@ namespace RushOps.Editor.Build
             BuildAndroid(false);
         }
 
+        [MenuItem("RushOps/Build/iOS-Xcode-Projekt (Development) bauen")]
+        public static void BuildIosDevelopment()
+        {
+            BuildIos(true);
+        }
+
+        [MenuItem("RushOps/Build/iOS-Xcode-Projekt (Release) bauen")]
+        public static void BuildIosRelease()
+        {
+            BuildIos(false);
+        }
+
+        // Unity exports an Xcode project; Xcode or Tools/ios-install.sh compiles, signs and installs it.
+        private static void BuildIos(bool development)
+        {
+            ApplyPlayerSettings();
+            string suffix = development ? "-dev" : string.Empty;
+            string path = $"{IosBuildsDir}/RushOps-{PlayerSettings.bundleVersion}{suffix}";
+            Directory.CreateDirectory(IosBuildsDir);
+            Run(new BuildPlayerOptions
+            {
+                scenes = EnabledScenes(),
+                locationPathName = path,
+                target = BuildTarget.iOS,
+                targetGroup = BuildTargetGroup.iOS,
+                options = development ? BuildOptions.Development : BuildOptions.None,
+            }, "iOS", path);
+        }
+
         private static void BuildAndroid(bool development)
         {
             ApplyPlayerSettings();
@@ -71,22 +107,37 @@ namespace RushOps.Editor.Build
                 options = development ? BuildOptions.Development : BuildOptions.None,
             };
 
+            Run(options, "Android", path);
+        }
+
+        private static void Run(BuildPlayerOptions options, string platform, string path)
+        {
             BuildReport report = BuildPipeline.BuildPlayer(options);
             BuildSummary summary = report.summary;
             if (summary.result != BuildResult.Succeeded)
             {
-                throw new BuildFailedException($"Android build {summary.result}: {summary.totalErrors} errors");
+                throw new BuildFailedException($"{platform} build {summary.result}: {summary.totalErrors} errors");
             }
 
             Debug.Log($"[BuildPipelineMenu] Built {path} ({summary.totalSize / (1024 * 1024)} MB in {summary.totalTime:mm\\:ss})");
         }
 
+        // The test menu starts the build, so every level can be picked on the device until the main menu exists.
         private static string[] EnabledScenes()
         {
             var scenes = new System.Collections.Generic.List<string>();
             foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
             {
-                if (scene.enabled)
+                if (!scene.enabled)
+                {
+                    continue;
+                }
+
+                if (Path.GetFileNameWithoutExtension(scene.path) == Scenes.TestMenuSceneBuilder.SceneName)
+                {
+                    scenes.Insert(0, scene.path);
+                }
+                else
                 {
                     scenes.Add(scene.path);
                 }
