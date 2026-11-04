@@ -31,6 +31,9 @@ namespace RushOps.Enemies
             _handedOut = new int[maxEntries];
         }
 
+        /// <summary>The waves this sequence runs, or null.</summary>
+        public WaveDefinition Definition => _definition;
+
         /// <summary>Current phase.</summary>
         public WavePhase Phase { get; private set; } = WavePhase.Idle;
 

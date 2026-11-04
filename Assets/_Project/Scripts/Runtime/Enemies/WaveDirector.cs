@@ -11,7 +11,9 @@ namespace RushOps.Enemies
     /// becomes active and stops when it is completed. Requested enemies wait in a <see cref="SpawnQueue"/> until
     /// fewer than <see cref="SpawnerConfig.MaxActive"/> non-boss enemies are alive or announced and one of the
     /// zone's spawn points is allowed (<see cref="SpawnRules"/>). A spawn is announced by a blinking marker; if the
-    /// point became unusable meanwhile, the enemy goes back to the front of the queue.
+    /// point became unusable meanwhile, the enemy goes back to the front of the queue. A zone's waves can be swapped
+    /// while it runs, e.g. for the duration of a puzzle (<see cref="UseWaves"/>, issue #34); enemies always report
+    /// their death to the sequence that asked for them.
     /// </summary>
     public class WaveDirector : MonoBehaviour
     {
@@ -24,13 +26,14 @@ namespace RushOps.Enemies
         [SerializeField] private Camera _camera;
 
         private readonly SpawnQueue _queue = new SpawnQueue();
-        private readonly Dictionary<Enemy, int> _owners = new Dictionary<Enemy, int>();
+        private readonly Dictionary<Enemy, WaveSequence> _owners = new Dictionary<Enemy, WaveSequence>();
         private WaveSequence[] _sequences;
         // Spawn points of all zones in one list, with the zone each belongs to.
         private SpawnPoint[] _points;
         private int[] _pointZone;
         private float[] _announced;
         private SpawnRequest[] _announcedRequest;
+        private WaveSequence[] _announcedSequence;
         private int[] _candidates;
         private int _announcedCount;
         private int _announcedBosses;
@@ -71,6 +74,39 @@ namespace RushOps.Enemies
             }
         }
 
+        /// <summary>
+        /// Runs <paramref name="waves"/> in <paramref name="zone"/> from now on instead of its current waves, e.g. faster
+        /// spawns while a puzzle is worked on (issue #34). Enemies still waiting in the queue for the old waves are
+        /// dropped; living ones stay. The new waves start at once if the zone is active, otherwise with the zone.
+        /// </summary>
+        public void UseWaves(Zone zone, WaveDefinition waves)
+        {
+            int index = Array.IndexOf(_zones, zone);
+            if (index < 0 || _sequences == null || zone.State == ZoneState.Completed)
+            {
+                return;
+            }
+
+            _sequences[index].Stop();
+            _queue.RemoveOwner(index);
+            _sequences[index] = CreateSequence(index, waves);
+            if (zone.State == ZoneState.Active)
+            {
+                _sequences[index].Start();
+            }
+        }
+
+        /// <summary>Ends the waves of <paramref name="zone"/> for good; living enemies stay.</summary>
+        public void StopWaves(Zone zone)
+        {
+            int index = Array.IndexOf(_zones, zone);
+            if (index >= 0 && _sequences != null)
+            {
+                _sequences[index].Stop();
+                _queue.RemoveOwner(index);
+            }
+        }
+
         /// <summary>The wave sequence of <paramref name="zone"/>, or null if it is not one of the director's zones.</summary>
         public WaveSequence SequenceOf(Zone zone)
         {
@@ -86,10 +122,7 @@ namespace RushOps.Enemies
             var pointZone = new List<int>();
             for (int z = 0; z < _zones.Length; z++)
             {
-                int owner = z;
-                _sequences[z] = new WaveSequence(_zones[z] != null ? _zones[z].Waves : null);
-                _sequences[z].SpawnRequested += enemy => OnSpawnRequested(owner, enemy);
-                _sequences[z].WaveStarted += wave => WaveStarted?.Invoke(_zones[owner], wave);
+                _sequences[z] = CreateSequence(z, _zones[z] != null ? _zones[z].Waves : null);
                 if (_zones[z] == null)
                 {
                     continue;
@@ -109,11 +142,20 @@ namespace RushOps.Enemies
             _pointZone = pointZone.ToArray();
             _announced = new float[_points.Length];
             _announcedRequest = new SpawnRequest[_points.Length];
+            _announcedSequence = new WaveSequence[_points.Length];
             _candidates = new int[_points.Length];
             for (int i = 0; i < _announced.Length; i++)
             {
                 _announced[i] = -1f;
             }
+        }
+
+        private WaveSequence CreateSequence(int owner, WaveDefinition waves)
+        {
+            var sequence = new WaveSequence(waves);
+            sequence.SpawnRequested += enemy => OnSpawnRequested(owner, sequence, enemy);
+            sequence.WaveStarted += wave => WaveStarted?.Invoke(_zones[owner], wave);
+            return sequence;
         }
 
         private void OnEnable()
@@ -211,12 +253,12 @@ namespace RushOps.Enemies
             }
         }
 
-        private void OnSpawnRequested(int owner, EnemyDefinition enemy)
+        private void OnSpawnRequested(int owner, WaveSequence sequence, EnemyDefinition enemy)
         {
             if (PoolFor(enemy) == null)
             {
                 Debug.LogWarning($"{name}: no EnemyPool for {enemy.name}; the wave skips it", this);
-                _sequences[owner].NotifyKilled();
+                sequence.NotifyKilled();
                 return;
             }
 
@@ -225,10 +267,10 @@ namespace RushOps.Enemies
 
         private void OnEnemyDied(Enemy enemy)
         {
-            if (_owners.TryGetValue(enemy, out int owner))
+            if (_owners.TryGetValue(enemy, out WaveSequence owner))
             {
                 _owners.Remove(enemy);
-                _sequences[owner].NotifyKilled();
+                owner.NotifyKilled();
             }
         }
 
@@ -256,8 +298,10 @@ namespace RushOps.Enemies
                 }
 
                 SpawnRequest request = _announcedRequest[i];
+                WaveSequence sequence = _announcedSequence[i];
                 _announced[i] = -1f;
                 _announcedRequest[i] = default;
+                _announcedSequence[i] = null;
                 _announcedCount--;
                 if (request.IsBoss)
                 {
@@ -267,6 +311,12 @@ namespace RushOps.Enemies
                 point.SetMarkerVisible(false);
                 // The zone was completed while the marker blinked: its enemies are no longer wanted.
                 if (_zones[request.Owner].State == ZoneState.Completed)
+                {
+                    continue;
+                }
+
+                // The zone's waves were swapped while the marker blinked: the old sequence no longer wants it.
+                if (sequence != _sequences[request.Owner])
                 {
                     continue;
                 }
@@ -284,7 +334,7 @@ namespace RushOps.Enemies
                     continue;
                 }
 
-                _owners[enemy] = request.Owner;
+                _owners[enemy] = sequence;
                 Spawned?.Invoke(enemy, point);
             }
         }
@@ -310,6 +360,7 @@ namespace RushOps.Enemies
 
                 _announced[point] = 0f;
                 _announcedRequest[point] = request;
+                _announcedSequence[point] = _sequences[request.Owner];
                 _announcedCount++;
                 if (request.IsBoss)
                 {
