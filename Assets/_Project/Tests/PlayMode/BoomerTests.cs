@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using RushOps.Cameras;
+using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Enemies;
 using RushOps.Feel;
@@ -122,6 +123,38 @@ namespace RushOps.Tests.PlayMode
             Assert.IsTrue(alsoNear.IsDead, "runner next to the boomer survived");
             Assert.IsFalse(far.IsDead, "walker outside the radius was hit");
             Assert.AreEqual(killsBefore + 3, _kills.Counter.Count, "boomer and both blast victims must count as kills");
+        }
+
+        [UnityTest]
+        public IEnumerator NearPlayer_Swells()
+        {
+            Teleport(BlastSpot + new Vector2(0f, 10f));
+            yield return new WaitForFixedUpdate();
+            Enemy boomer = Place(_boomers, BlastSpot);
+            var view = boomer.GetComponent<DirectionalSpriteAnimator>();
+            yield return null;
+            Assert.IsFalse(view.IsAlert, "boomer swells far from the player");
+
+            Teleport(BlastSpot + new Vector2(0f, _boomers.Definition.ApproachDistance * 0.5f));
+            yield return new WaitForFixedUpdate();
+            yield return null;
+
+            Assert.IsTrue(view.IsAlert, "boomer does not swell next to the player");
+        }
+
+        [UnityTest]
+        public IEnumerator ShotDead_PlaysBurstBeforeReturningToPool()
+        {
+            Enemy boomer = Place(_boomers, BlastSpot);
+            var view = boomer.GetComponent<DirectionalSpriteAnimator>();
+            yield return null;
+
+            boomer.TakeHit(boomer.CurrentHealth, Vector2.right);
+
+            Assert.AreEqual(SpriteAnimationMode.Death, view.Mode);
+            Assert.Greater(view.DeathDuration, 0f);
+            yield return new WaitForSeconds(boomer.DeathTime + 0.1f);
+            Assert.IsFalse(boomer.gameObject.activeSelf);
         }
 
         [UnityTest]

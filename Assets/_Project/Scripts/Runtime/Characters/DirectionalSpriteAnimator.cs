@@ -13,6 +13,9 @@ namespace RushOps.Characters
         [Tooltip("Looping base animation, e.g. walking.")]
         [SerializeField] private DirectionalAnimation _animation;
 
+        [Tooltip("Loop that replaces the base loop while alerted, e.g. the boomer swelling near the player; none if empty.")]
+        [SerializeField] private DirectionalAnimation _alert;
+
         [Tooltip("Short hit reaction, played once; none if empty.")]
         [SerializeField] private DirectionalAnimation _hit;
 
@@ -30,6 +33,9 @@ namespace RushOps.Characters
         /// <summary>The animation currently playing.</summary>
         public SpriteAnimationMode Mode => _state.Mode;
 
+        /// <summary>True while the alert loop is requested.</summary>
+        public bool IsAlert => _state.IsAlert;
+
         /// <summary>True if a death animation is assigned.</summary>
         public bool HasDeath => _death != null && _death.FrameCount(_direction) > 0;
 
@@ -46,6 +52,16 @@ namespace RushOps.Characters
         public void PlayLoop()
         {
             _state.PlayLoop();
+            ShowCurrentFrame();
+        }
+
+        /// <summary>
+        /// Plays the alert loop instead of the base loop while <paramref name="alert"/> is true; without an alert
+        /// animation the base loop keeps playing.
+        /// </summary>
+        public void SetAlert(bool alert)
+        {
+            _state.SetAlert(alert);
             ShowCurrentFrame();
         }
 
@@ -85,7 +101,7 @@ namespace RushOps.Characters
             {
                 SpriteAnimationMode.Hit => _hit,
                 SpriteAnimationMode.Death => _death,
-                _ => _animation,
+                _ => _state.IsAlert && _alert != null ? _alert : _animation,
             };
             if (animation == null || _renderer == null)
             {

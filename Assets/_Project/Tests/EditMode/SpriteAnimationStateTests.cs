@@ -66,5 +66,42 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(SpriteAnimationMode.Loop, state.Mode);
             Assert.AreEqual(0f, state.Time);
         }
+    
+        [Test]
+        public void Alert_SwitchesLoopAndRestartsIt()
+        {
+            var state = new SpriteAnimationState();
+            state.Tick(0.3f, 0.2f);
+
+            state.SetAlert(true);
+
+            Assert.IsTrue(state.IsAlert);
+            Assert.AreEqual(SpriteAnimationMode.Loop, state.Mode);
+            Assert.AreEqual(0f, state.Time);
+        }
+
+        [Test]
+        public void Alert_DuringDeath_KeepsDeathRunning()
+        {
+            var state = new SpriteAnimationState();
+            state.PlayDeath();
+            state.Tick(0.3f, 0.2f);
+
+            state.SetAlert(true);
+
+            Assert.AreEqual(SpriteAnimationMode.Death, state.Mode);
+            Assert.AreEqual(0.3f, state.Time, 1e-5f);
+        }
+
+        [Test]
+        public void PlayLoop_ClearsAlert()
+        {
+            var state = new SpriteAnimationState();
+            state.SetAlert(true);
+
+            state.PlayLoop();
+
+            Assert.IsFalse(state.IsAlert);
+        }
     }
 }

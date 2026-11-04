@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Boomer_Hit
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 0
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: bc18597f3fa864bb3b1263d1b849cb6d, type: 3}
+    - {fileID: 21300000, guid: 4bcdc273ded584cc39c01efe5498266e, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: f29efd3d2d340430998b4f442a326c8d, type: 3}
+    - {fileID: 21300000, guid: c40afe835567e4914916c1894e85651a, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: a0f698323128e4ccab4822da32202fe1, type: 3}
+    - {fileID: 21300000, guid: cf58ae33145ba4ac8a8c2a0eb006f6fa, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 07de6c932363b4388a708752138934a8, type: 3}
+    - {fileID: 21300000, guid: dd92aa0f1be2a4d9eb40d73270464738, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: ccdfde880ef93498bb342e185f91e65d, type: 3}
+    - {fileID: 21300000, guid: d1ff631b31d904dc98f4f84cfe79ec47, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: bc22191a0eb324543932ed1dc2ae3dcf, type: 3}
+    - {fileID: 21300000, guid: 7f038f9dfa13b4c318f8eb11f97a8f6f, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: aba4dc452bcf447f9a99671b271bf24b, type: 3}
+    - {fileID: 21300000, guid: 3db8b813fca8e40b0ad5209cb67fa8c4, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: e04314e949bb5498db0fb49412655393, type: 3}
+    - {fileID: 21300000, guid: 1775e6d6a2e1049e4a6fbc5af2fb8d53, type: 3}
