@@ -143,6 +143,11 @@ namespace RushOps.Editor.Scenes
         private const int ProjectileSortingOrder = 3;
         // Blasts cover the characters they hit.
         private const int EffectSortingOrder = 4;
+        private const string ShieldConfigPath = "Assets/_Project/Data/Perks/ShieldConfig.asset";
+        private const string ShieldBarrierSpritePath = "Assets/_Project/Art/Sprites/Effects/Shield_Barrier.png";
+        // Figures are pivoted at their feet on a 64x64 canvas, so its center lies one unit up.
+        private static readonly Vector3 ShieldBarrierOffset = new Vector3(0f, 1f, 0f);
+        private const float ShieldBarrierAlpha = 0.85f;
         // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
         private const int PlainFloorWeight = 7;
         // Spawn points along the arena edges and in the corners, inside the outer wall ring and clear of obstacles.
@@ -740,8 +745,28 @@ namespace RushOps.Editor.Scenes
 
             // The pickup pool is set once the perk drops exist (BuildScene).
             go.AddComponent<PlayerPerks>();
+            CreateShield(go);
 
             return go.transform;
+        }
+
+        // Shield perk (issue #26): a bubble centered on the figure's 64x64 canvas, hidden until the shield runs.
+        private static void CreateShield(GameObject player)
+        {
+            var barrierGo = new GameObject("ShieldBarrier");
+            barrierGo.transform.SetParent(player.transform, false);
+            barrierGo.transform.localPosition = ShieldBarrierOffset;
+            var barrier = barrierGo.AddComponent<SpriteRenderer>();
+            barrier.sprite = RequireSprite(ShieldBarrierSpritePath);
+            barrier.color = new Color(1f, 1f, 1f, ShieldBarrierAlpha);
+            barrier.sortingOrder = EffectSortingOrder;
+            barrier.enabled = false;
+
+            var shield = player.AddComponent<PlayerShield>();
+            var serialized = new SerializedObject(shield);
+            serialized.FindProperty("_config").objectReferenceValue = LoadOrCreateConfig<ShieldConfig>(ShieldConfigPath);
+            serialized.FindProperty("_barrier").objectReferenceValue = barrier;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // Rebuilt on every run, so the prefab stays reproducible from code.

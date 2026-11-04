@@ -7,7 +7,7 @@ namespace RushOps.Player
     /// <summary>
     /// The player's hearts (F-SPF-01 to F-SPF-03): takes contact damage from colliders with an
     /// <see cref="IContactDamage"/>, blinks during the invulnerability after a hit and stops the player on death.
-    /// Dash i-frames also protect. Values come from <see cref="PlayerConfig"/>; the rules live in <see cref="Health"/>.
+    /// Dash i-frames and an <see cref="IDamageBlocker"/> on the player (shield perk, issue #26) also protect. Values come from <see cref="PlayerConfig"/>; the rules live in <see cref="Health"/>.
     /// </summary>
     [RequireComponent(typeof(PlayerMovement))]
     public class PlayerHealth : MonoBehaviour
@@ -22,6 +22,7 @@ namespace RushOps.Player
         private Health _health;
         private PlayerConfig _config;
         private PlayerDash _dash;
+        private IDamageBlocker _blocker;
 
         /// <summary>Raised when the hearts change, with current and maximum hearts. Also raised once on start for the HUD.</summary>
         public event Action<int, int> HealthChanged;
@@ -38,14 +39,17 @@ namespace RushOps.Player
         /// <summary>True once the hearts reached 0.</summary>
         public bool IsDead => _health != null && _health.IsDead;
 
-        /// <summary>True while no damage can hurt the player: after a hit or during the dash i-frames.</summary>
-        public bool IsInvulnerable => _health == null || _health.IsInvulnerable || (_dash != null && _dash.IsInvulnerable);
+        /// <summary>True while no damage can hurt the player: after a hit, during the dash i-frames or behind a shield.</summary>
+        public bool IsInvulnerable => _health == null || _health.IsInvulnerable || (_dash != null && _dash.IsInvulnerable)
+            || IsBlocked;
+
+        private bool IsBlocked => _blocker != null && _blocker.BlocksDamage;
 
         /// <summary>Removes <paramref name="hearts"/> unless the player is invulnerable or dead.</summary>
         /// <returns>True if the hit counted.</returns>
         public bool TakeDamage(int hearts)
         {
-            if (_health == null || (_dash != null && _dash.IsInvulnerable))
+            if (_health == null || (_dash != null && _dash.IsInvulnerable) || IsBlocked)
             {
                 return false;
             }
@@ -64,6 +68,7 @@ namespace RushOps.Player
         {
             _config = GetComponent<PlayerMovement>().Config;
             _dash = GetComponent<PlayerDash>();
+            _blocker = GetComponent<IDamageBlocker>();
             if (_config == null)
             {
                 return;

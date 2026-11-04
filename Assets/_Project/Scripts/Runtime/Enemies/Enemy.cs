@@ -17,7 +17,7 @@ namespace RushOps.Enemies
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(EnemyMovement))]
-    public class Enemy : MonoBehaviour, IDamageable, IContactDamage, IExplosionTarget
+    public class Enemy : MonoBehaviour, IDamageable, IContactDamage, IExplosionTarget, IKnockbackable
     {
         [SerializeField] private EnemyDefinition _definition;
         [SerializeField] private FeelConfig _feel;
@@ -126,6 +126,25 @@ namespace RushOps.Enemies
             }
 
             Hit?.Invoke(this);
+            return true;
+        }
+
+        /// <inheritdoc />
+        public bool Push(Vector2 direction, float speed, float duration)
+        {
+            if (_health == null || _health.IsDead)
+            {
+                return false;
+            }
+
+            float scale = _definition != null ? _definition.KnockbackScale : 1f;
+            Vector2 velocity = FeelMath.KnockbackVelocity(direction, speed, scale);
+            if (velocity == Vector2.zero || duration <= 0f)
+            {
+                return false;
+            }
+
+            _movement.Knockback(velocity, duration);
             return true;
         }
 

@@ -209,5 +209,28 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(2f, _perks.Multiplier(PerkEffect.DoubleDamage), 1e-5f);
             Assert.AreEqual(2f, _perks.Multiplier(PerkEffect.RapidFire), 1e-5f);
         }
+    
+        [Test]
+        public void RemainingOf_ReportsTimeLeftOfTheEffect()
+        {
+            Assert.AreEqual(0f, _perks.RemainingOf(PerkEffect.Shield), 1e-5f);
+
+            _perks.Activate("shield", PerkEffect.Shield, 1f, 8f);
+            _perks.Tick(3f);
+
+            Assert.AreEqual(5f, _perks.RemainingOf(PerkEffect.Shield), 1e-4f);
+            Assert.AreEqual(0f, _perks.RemainingOf(PerkEffect.SpeedBoost), 1e-5f);
+        }
+
+        [Test]
+        public void RemainingOf_Refresh_StartsTheFullDurationAgain()
+        {
+            _perks.Activate("shield", PerkEffect.Shield, 1f, 8f);
+            _perks.Tick(7f);
+
+            _perks.Activate("shield", PerkEffect.Shield, 1f, 8f);
+
+            Assert.AreEqual(8f, _perks.RemainingOf(PerkEffect.Shield), 1e-4f);
+        }
     }
 }
