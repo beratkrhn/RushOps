@@ -63,6 +63,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Zone whose waves must be beaten before the exit opens; -1 for an exit that is always open.</summary>
         public int ExitLockZone { get; set; } = -1;
 
+        /// <summary>Boss of a boss level, or null. A boss level has no exit; beating the boss finishes it.</summary>
+        public LevelBoss Boss { get; set; }
+
         /// <summary>Path of the scene asset.</summary>
         public string ScenePath => $"Assets/_Project/Scenes/{SceneName}.unity";
 
