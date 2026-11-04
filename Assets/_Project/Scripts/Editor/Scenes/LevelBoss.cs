@@ -35,6 +35,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Fills a newly created definition; an existing one keeps its tuned values.</summary>
         public System.Action<BossDefinition> Configure { get; }
 
+        /// <summary>Type of a newly created definition, a <see cref="BossDefinition"/> or a subclass.</summary>
+        public System.Type DefinitionType { get; set; } = typeof(BossDefinition);
+
         /// <summary>
         /// Creates the boss object in the scene; null builds the placeholder boss (a big brute). Bosses with own moves
         /// set their own builder.

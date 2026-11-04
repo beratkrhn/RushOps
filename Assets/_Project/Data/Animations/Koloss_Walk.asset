@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Koloss_Walk
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 8
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 5153661127aa149edba876df10e7e42a, type: 3}
+    - {fileID: 21300000, guid: c6535b6304ac941a5886683c3bb95677, type: 3}
+    - {fileID: 21300000, guid: 99aa2197768c84ae9afa029a496a6bf6, type: 3}
+    - {fileID: 21300000, guid: 1acfb361850074b4ead7a1e4c58ee1cb, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: f31b9c8467da2442883b4d3754656d16, type: 3}
+    - {fileID: 21300000, guid: 156251312bdd14ca3b907756ab26cf5c, type: 3}
+    - {fileID: 21300000, guid: e34f2f13a85644a409f6812c50eb3819, type: 3}
+    - {fileID: 21300000, guid: e167d59cbf139406b955cc98303fb274, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 26bc50651d7a2448bb9ace5190c5af09, type: 3}
+    - {fileID: 21300000, guid: 042582dc3f853424cb6b9f9f0ae74999, type: 3}
+    - {fileID: 21300000, guid: e218ae95d4a9b42cbb7b26df0ff82052, type: 3}
+    - {fileID: 21300000, guid: a2c6e46557205455da1d07d2d6aaadae, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: fe5bea2530dbf455db95d1522384ae9f, type: 3}
+    - {fileID: 21300000, guid: cf7d6137bc90d44b49a1c449f2c09fa0, type: 3}
+    - {fileID: 21300000, guid: 8e700e234fcab484c85fb1fda06005b6, type: 3}
+    - {fileID: 21300000, guid: 20c8a3a86085d41c0b5a5c616d9ec050, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 53a5132c425df47c3b84476c3dc8d159, type: 3}
+    - {fileID: 21300000, guid: 46ebf44cbf63747a4b9a4b59c60cd6c1, type: 3}
+    - {fileID: 21300000, guid: 43150e9e1fe814365a379c59a4bcf5a7, type: 3}
+    - {fileID: 21300000, guid: 292725a8cdd98414fb279cedad1d6150, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 60cc9f3221c9847cc9613dabeb0700db, type: 3}
+    - {fileID: 21300000, guid: 1303ed0bf73504a478e13beb9dc1a8da, type: 3}
+    - {fileID: 21300000, guid: 38197b24aceac4796a73d0f919c6ffb7, type: 3}
+    - {fileID: 21300000, guid: 0a8c3cbd2358542f3aadaf7d14edae87, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 43d8054ad60cd4cb7be1775a1d7a4a75, type: 3}
+    - {fileID: 21300000, guid: ed5fbe3471f2f4622b6abdb9fc912496, type: 3}
+    - {fileID: 21300000, guid: 40caeda00d0844b54b628711ea98a101, type: 3}
+    - {fileID: 21300000, guid: ba688bbcb34604fca905a1b4a0b7ad3f, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: b7691ad236be34e9f8b3137fb2db4d8f, type: 3}
+    - {fileID: 21300000, guid: 8effc96c8dc154902b7504307cb85307, type: 3}
+    - {fileID: 21300000, guid: f4ec682d22ba24f3e8a58e6e7ccfabea, type: 3}
+    - {fileID: 21300000, guid: e54796e1e8a464273bf1f28bf54ad144, type: 3}

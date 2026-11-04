@@ -113,16 +113,18 @@ namespace RushOps.Editor.Scenes
 
         private static BossDefinition LoadOrCreateDefinition(LevelBoss spec)
         {
-            bool exists = AssetDatabase.LoadAssetAtPath<BossDefinition>(spec.DefinitionPath) != null;
-            var definition = ArenaTestSceneBuilder.LoadOrCreateConfig<BossDefinition>(spec.DefinitionPath);
-            if (!exists && spec.Configure != null)
+            var definition = AssetDatabase.LoadAssetAtPath<BossDefinition>(spec.DefinitionPath);
+            if (definition != null)
             {
-                spec.Configure(definition);
-                EditorUtility.SetDirty(definition);
-                AssetDatabase.SaveAssets();
+                return definition;
             }
 
-            return definition;
+            ArenaTestSceneBuilder.EnsureFolder(System.IO.Path.GetDirectoryName(spec.DefinitionPath).Replace('\\', '/'));
+            definition = (BossDefinition)ScriptableObject.CreateInstance(spec.DefinitionType);
+            spec.Configure?.Invoke(definition);
+            AssetDatabase.CreateAsset(definition, spec.DefinitionPath);
+            AssetDatabase.SaveAssets();
+            return AssetDatabase.LoadAssetAtPath<BossDefinition>(spec.DefinitionPath);
         }
 
         // The door uses the gate's bars, so it reads as the same gate closing again.
