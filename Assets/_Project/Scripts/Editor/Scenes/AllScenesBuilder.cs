@@ -14,6 +14,7 @@ namespace RushOps.Editor.Scenes
             ArenaTestSceneBuilder.Build();
             ArenaZonenSceneBuilder.Build();
             Level1_1SceneBuilder.Build();
+            IslandTestScenesBuilder.BuildStadt();
             TestMenuSceneBuilder.Build();
         }
     }

@@ -80,6 +80,14 @@ namespace RushOps.Editor.Scenes
             ArenaTestSceneBuilder.BuildScene(ScenePath, Layout, false, AddZones, "Zonen-Test");
         }
 
+        /// <summary>
+        /// Builds the same arena with zones, gates and puzzles as a test scene for an island tileset (issues #105, #106).
+        /// </summary>
+        internal static void BuildWithTheme(string scenePath, string displayName, string themePath)
+        {
+            ArenaTestSceneBuilder.BuildScene(scenePath, Layout, false, AddZones, displayName, null, themePath);
+        }
+
         private static void AddZones(ArenaScene arena)
         {
             var gatesRoot = new GameObject("Gates").transform;
