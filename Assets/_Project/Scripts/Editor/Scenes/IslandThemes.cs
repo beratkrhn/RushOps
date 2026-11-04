@@ -21,6 +21,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Island 2: dark city (issue #105).</summary>
         public const string StadtPath = ThemesDir + "/Stadt.asset";
 
+        /// <summary>Island 3: volcano (issue #106).</summary>
+        public const string VulkanPath = ThemesDir + "/Vulkan.asset";
+
         private const string ThemesDir = "Assets/_Project/Data/Islands";
         private const string TilesDir = "Assets/_Project/Art/Tiles";
         private const string DefaultGatePath = "Assets/_Project/Art/Sprites/Level/Gate_Bars.png";
@@ -38,6 +41,8 @@ namespace RushOps.Editor.Scenes
                     return Island(StrandPath, "Strand", "Strand");
                 case StadtPath:
                     return Island(StadtPath, "Düstere Stadt", "Stadt");
+                case VulkanPath:
+                    return Island(VulkanPath, "Vulkan", "Vulkan");
                 default:
                     return Default();
             }
