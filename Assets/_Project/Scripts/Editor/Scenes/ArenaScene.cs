@@ -13,8 +13,9 @@ namespace RushOps.Editor.Scenes
     {
         public ArenaScene(
             Tilemap walls, Transform player, FlowFieldNavigator navigator, EnemyPool[] enemies, WaveDirector director,
-            LevelKills kills, MissionTracker tracker, SfxPlayer sfx)
+            LevelKills kills, MissionTracker tracker, SfxPlayer sfx, LevelResults results)
         {
+            Results = results;
             Walls = walls;
             Player = player;
             Navigator = navigator;
@@ -24,6 +25,9 @@ namespace RushOps.Editor.Scenes
             Tracker = tracker;
             Sfx = sfx;
         }
+
+        /// <summary>Result screens of the level; level builders set its exit (issue #35).</summary>
+        public LevelResults Results { get; }
 
         /// <summary>Wall tilemap with its colliders.</summary>
         public Tilemap Walls { get; }

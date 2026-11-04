@@ -109,8 +109,8 @@ namespace RushOps.Editor.Scenes
         private const int HudSortingOrder = 20;
         private const string HudConfigPath = "Assets/_Project/Data/UI/HudConfig.asset";
         // HUD art is drawn at whole multiples of its pixel size (reference units at 360x640).
-        private const int HudPixelScale = 2;
-        private const int TitlePixelScale = 3;
+        internal const int HudPixelScale = 2;
+        internal const int TitlePixelScale = 3;
         private const float HudMargin = 8f;
         private const float HeartSpacing = 2f;
         private const float PerkRowGap = 4f;
@@ -118,11 +118,11 @@ namespace RushOps.Editor.Scenes
         private const float PerkIconSize = 24f;
         // Touch target of the pause button, larger than its icon.
         private const float PauseButtonSize = 44f;
-        private static readonly Vector2 MenuButtonSize = new Vector2(140f, 30f);
+        internal static readonly Vector2 MenuButtonSize = new Vector2(140f, 30f);
         // Palette colors (Art/Palettes/RushOps_Palette.png).
-        private static readonly Color PaletteNight = new Color32(31, 29, 43, 255);
-        private static readonly Color PaletteSlate2 = new Color32(77, 76, 99, 255);
-        private static readonly Color PaletteWhite = new Color32(244, 241, 232, 255);
+        internal static readonly Color PaletteNight = new Color32(31, 29, 43, 255);
+        internal static readonly Color PaletteSlate2 = new Color32(77, 76, 99, 255);
+        internal static readonly Color PaletteWhite = new Color32(244, 241, 232, 255);
         private static readonly Color PaletteYellow = new Color32(246, 208, 77, 255);
         // Puzzle progress bar under the mission tracker: one text line (20 units) plus a small gap below its top.
         // Width of the mission tracker text in reference units; „Tor gesperrt: 10/10 Kills“ needs 150.
@@ -131,6 +131,10 @@ namespace RushOps.Editor.Scenes
         private const float PuzzleBarGap = 24f;
         // The overlay darkens the frozen game behind the menu.
         private const float OverlayAlpha = 0.8f;
+        // Result screens hide the level a bit more than the pause overlay.
+        private const float ResultOverlayAlpha = 0.9f;
+        private const float ResultStarSpacing = 44f;
+        private const string LevelsDataDir = "Assets/_Project/Data/Levels";
         internal const string WallsLayer = "Walls";
         private const string PlayerLayer = "Player";
         private const string ProjectilesLayer = "Projectiles";
@@ -140,8 +144,8 @@ namespace RushOps.Editor.Scenes
 
         // Layout and render setup follow ADR 0006 (32 PPU, 360x640 reference resolution).
         private const int PixelsPerUnit = PixelArtImportRules.PixelsPerUnit;
-        private const int ReferenceWidth = 360;
-        private const int ReferenceHeight = 640;
+        internal const int ReferenceWidth = 360;
+        internal const int ReferenceHeight = 640;
         // Walls and characters share one sorting order, so the renderer sorts them by Y (ADR 0006).
         private const int FloorSortingOrder = 0;
         // Flat marks on the floor, e.g. spawn markers: above the floor, below everything standing on it.
@@ -192,7 +196,7 @@ namespace RushOps.Editor.Scenes
         [MenuItem("RushOps/Szenen/Arena_Test erzeugen")]
         public static void Build()
         {
-            BuildScene(ScenePath, Layout, true, AddArenaZone);
+            BuildScene(ScenePath, Layout, true, AddArenaZone, "Testarena");
         }
 
         // One zone over the whole arena whose waves never end, so there is always something to shoot at.
@@ -435,7 +439,8 @@ namespace RushOps.Editor.Scenes
         /// saves it at <paramref name="scenePath"/>. The scene is added to the build settings, as the first scene if
         /// <paramref name="firstInBuild"/>.
         /// </summary>
-        internal static void BuildScene(string scenePath, ArenaLayout layout, bool firstInBuild, System.Action<ArenaScene> extend)
+        internal static void BuildScene(
+            string scenePath, ArenaLayout layout, bool firstInBuild, System.Action<ArenaScene> extend, string displayName)
         {
             // Create the scene first: NewScene unloads assets loaded before it, which would drop the references below.
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -475,8 +480,9 @@ namespace RushOps.Editor.Scenes
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
             PauseController pause = CreateHud(
                 LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), target.GetComponent<PlayerPerks>(),
-                PixelFontBuilder.Build(), out MissionTracker tracker, out ScreenFlash flash, out ScoreView scoreView);
-            CreateLevelRestarter(target.GetComponent<PlayerHealth>());
+                PixelFontBuilder.Build(), out MissionTracker tracker, out ScreenFlash flash, out ScoreView scoreView,
+                out LevelResults results);
+            LevelRestarter restarter = CreateLevelRestarter(target.GetComponent<PlayerHealth>(), results);
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
             Material flashMaterial = LoadOrCreateFlashMaterial();
             PhysicsMaterial2D enemyBody = LoadOrCreateEnemyBodyMaterial();
@@ -505,7 +511,13 @@ namespace RushOps.Editor.Scenes
             };
             WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPools, target);
             LevelKills kills = CreateLevelKills(enemyPools);
-            CreateLevelScore(enemyPools, target.GetComponent<PlayerHealth>(), scoreView);
+            LevelScore score = CreateLevelScore(enemyPools, target.GetComponent<PlayerHealth>(), scoreView);
+            var serializedResults = new SerializedObject(results);
+            serializedResults.FindProperty("_level").objectReferenceValue = LoadOrCreateLevel(scenePath, displayName);
+            serializedResults.FindProperty("_score").objectReferenceValue = score;
+            serializedResults.FindProperty("_kills").objectReferenceValue = kills;
+            serializedResults.FindProperty("_pause").objectReferenceValue = pause;
+            serializedResults.ApplyModifiedPropertiesWithoutUndo();
             var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
             SetPools(aimAssist, enemyPools);
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
@@ -519,7 +531,7 @@ namespace RushOps.Editor.Scenes
             NukeSystem nuke = CreateNukeSystem(target.GetComponent<PlayerPerks>(), cameraFollow, enemyPools);
             SfxPlayer sfx = CreateGameFeel(
                 feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, nuke, flash);
-            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx));
+            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results));
 
             EditorSceneManager.SaveScene(scene, scenePath);
             AddToBuildSettings(scenePath, firstInBuild);
@@ -836,13 +848,35 @@ namespace RushOps.Editor.Scenes
             return pool;
         }
 
-        private static void CreateLevelRestarter(PlayerHealth player)
+        private static LevelRestarter CreateLevelRestarter(PlayerHealth player, LevelResults results)
         {
             var go = new GameObject("LevelRestarter");
             var restarter = go.AddComponent<LevelRestarter>();
             var serialized = new SerializedObject(restarter);
             serialized.FindProperty("_player").objectReferenceValue = player;
+            serialized.FindProperty("_deathHandler").objectReferenceValue = results;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            return restarter;
+        }
+
+        // One definition per level scene under Data/Levels; existing ones keep their tuned star thresholds.
+        private static LevelDefinition LoadOrCreateLevel(string scenePath, string displayName)
+        {
+            string sceneName = Path.GetFileNameWithoutExtension(scenePath);
+            string path = $"{LevelsDataDir}/{sceneName}.asset";
+            bool exists = AssetDatabase.LoadAssetAtPath<LevelDefinition>(path) != null;
+            LevelDefinition level = LoadOrCreateConfig<LevelDefinition>(path);
+            var serialized = new SerializedObject(level);
+            serialized.FindProperty("_sceneName").stringValue = sceneName;
+            if (!exists)
+            {
+                serialized.FindProperty("_displayName").stringValue = displayName ?? sceneName;
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(level);
+            AssetDatabase.SaveAssets();
+            return level;
         }
 
         // Rebuilt on every run, so the prefab stays reproducible from code.
@@ -1144,7 +1178,7 @@ namespace RushOps.Editor.Scenes
 
         // The UI module caches its default actions in a static field. NewScene unloads that asset, so a second scene
         // built in the same domain would get references to a destroyed asset. Dropping the cache makes it create new ones.
-        private static void ForgetCachedDefaultUiActions()
+        internal static void ForgetCachedDefaultUiActions()
         {
             System.Reflection.FieldInfo cache = typeof(InputSystemUIInputModule).GetField(
                 "defaultActions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
@@ -1153,7 +1187,7 @@ namespace RushOps.Editor.Scenes
 
         private static PauseController CreateHud(
             HudConfig config, PlayerHealth player, PlayerPerks perks, Font font, out MissionTracker tracker, out ScreenFlash flash,
-            out ScoreView scoreView)
+            out ScoreView scoreView, out LevelResults results)
         {
             var root = new GameObject("HUD", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
@@ -1178,6 +1212,7 @@ namespace RushOps.Editor.Scenes
             CreateFpsCounter(safeArea, font);
             tracker = CreateMissionTracker(safeArea, config, font);
             GameObject overlay = CreatePauseOverlay((RectTransform)root.transform, pause, font);
+            results = CreateResults((RectTransform)root.transform, font);
 
             var serialized = new SerializedObject(pause);
             serialized.FindProperty("_overlay").objectReferenceValue = overlay;
@@ -1448,7 +1483,66 @@ namespace RushOps.Editor.Scenes
             return overlay.gameObject;
         }
 
-        private static void CreateMenuButton(
+        // Result screens (issue #35) on top of everything else in the HUD; the level, score and kills are set in BuildScene.
+        private static LevelResults CreateResults(RectTransform parent, Font font)
+        {
+            var results = parent.gameObject.AddComponent<LevelResults>();
+
+            RectTransform done = CreateDimPanel("DonePanel", parent);
+            CreateText("Title", done, font, ResultText.Done, TitlePixelScale, new Vector2(0f, 130f));
+            var stars = new Image[StarRating.MaxStars];
+            Sprite empty = LoadUiSprite("Star_Empty.png");
+            for (int i = 0; i < stars.Length; i++)
+            {
+                var center = new Vector2(0.5f, 0.5f);
+                RectTransform star = CreateUiRect($"Star_{i + 1}", done, center, center);
+                star.sizeDelta = empty.rect.size * HudPixelScale;
+                star.anchoredPosition = new Vector2((i - 1) * ResultStarSpacing, 75f);
+                stars[i] = star.gameObject.AddComponent<Image>();
+                stars[i].sprite = empty;
+                stars[i].raycastTarget = false;
+            }
+
+            Text score = CreateText("Score", done, font, ResultText.Score(0), HudPixelScale, new Vector2(0f, 25f));
+            Text kills = CreateText("Kills", done, font, ResultText.Kills(0), HudPixelScale, new Vector2(0f, 0f));
+            Text time = CreateText("Time", done, font, ResultText.Time(0f), HudPixelScale, new Vector2(0f, -25f));
+            CreateMenuButton("RetryButton", done, font, "Nochmal", new Vector2(0f, -85f), results.Retry);
+            CreateMenuButton("ContinueButton", done, font, "Weiter", new Vector2(0f, -85f - MenuButtonSize.y - 12f), results.Continue);
+
+            RectTransform failed = CreateDimPanel("FailedPanel", parent);
+            CreateText("Title", failed, font, ResultText.Failed, TitlePixelScale, new Vector2(0f, 60f));
+            Text failedScore = CreateText("Score", failed, font, ResultText.Score(0), HudPixelScale, new Vector2(0f, 10f));
+            CreateMenuButton("RestartButton", failed, font, "Neustart", new Vector2(0f, -50f), results.Retry);
+
+            var serialized = new SerializedObject(results);
+            serialized.FindProperty("_donePanel").objectReferenceValue = done.gameObject;
+            serialized.FindProperty("_doneScore").objectReferenceValue = score;
+            serialized.FindProperty("_doneKills").objectReferenceValue = kills;
+            serialized.FindProperty("_doneTime").objectReferenceValue = time;
+            SetArray(serialized.FindProperty("_stars"), stars);
+            serialized.FindProperty("_starFull").objectReferenceValue = LoadUiSprite("Star_Full.png");
+            serialized.FindProperty("_starEmpty").objectReferenceValue = empty;
+            serialized.FindProperty("_failedPanel").objectReferenceValue = failed.gameObject;
+            serialized.FindProperty("_failedScore").objectReferenceValue = failedScore;
+            serialized.FindProperty("_continueScene").stringValue = TestMenuSceneBuilder.SceneName;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            done.gameObject.SetActive(false);
+            failed.gameObject.SetActive(false);
+            return results;
+        }
+
+        // Full screen and blocking touches, so nothing behind a result screen can be pressed.
+        private static RectTransform CreateDimPanel(string name, RectTransform parent)
+        {
+            RectTransform panel = CreateUiRect(name, parent, Vector2.zero, Vector2.one);
+            var background = panel.gameObject.AddComponent<Image>();
+            Color dim = PaletteNight;
+            dim.a = ResultOverlayAlpha;
+            background.color = dim;
+            return panel;
+        }
+
+        internal static void CreateMenuButton(
             string name, RectTransform parent, Font font, string label, Vector2 position, UnityEngine.Events.UnityAction action)
         {
             var center = new Vector2(0.5f, 0.5f);
@@ -1464,7 +1558,7 @@ namespace RushOps.Editor.Scenes
         }
 
         // The bitmap font renders at its pixel size; the scale enlarges it by whole pixels.
-        private static Text CreateText(string name, RectTransform parent, Font font, string content, int scale, Vector2 position)
+        internal static Text CreateText(string name, RectTransform parent, Font font, string content, int scale, Vector2 position)
         {
             var center = new Vector2(0.5f, 0.5f);
             RectTransform rect = CreateUiRect(name, parent, center, center);
@@ -1606,7 +1700,7 @@ namespace RushOps.Editor.Scenes
             public InputActionReference Dash;
         }
 
-        private static void AddToBuildSettings(string path, bool first)
+        internal static void AddToBuildSettings(string path, bool first)
         {
             var scenes = new List<EditorBuildSettingsScene>(EditorBuildSettings.scenes);
             if (scenes.Exists(s => s.path == path))

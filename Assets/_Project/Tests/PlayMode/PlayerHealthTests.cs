@@ -87,10 +87,12 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Death_StopsPlayerThenRestartsLevel()
+        public IEnumerator Death_StopsPlayer_ShowsFailedScreen_RestartReloadsLevel()
         {
             bool died = false;
             _health.Died += () => died = true;
+            var results = Object.FindFirstObjectByType<RushOps.UI.LevelResults>();
+            Assert.IsNotNull(results, "level has no result screens");
 
             _health.TakeDamage(_health.Max);
             yield return null;
@@ -102,10 +104,19 @@ namespace RushOps.Tests.PlayMode
 
             yield return new WaitForSecondsRealtime(_movement.Config.DeathRestartDelay + 0.5f);
 
+            Assert.IsTrue(results.ShowsFailed, "no „Gescheitert“ screen after the death moment");
+            Assert.AreEqual(0f, Time.timeScale, "game runs on behind the screen");
+            Assert.AreSame(_health, Object.FindFirstObjectByType<PlayerHealth>(), "level reloaded without asking");
+
+            results.Retry();
+            yield return null;
+            yield return null;
+
             PlayerHealth restarted = Object.FindFirstObjectByType<PlayerHealth>();
             Assert.IsNotNull(restarted);
             Assert.AreNotSame(_health, restarted, "level restarted");
             Assert.AreEqual(restarted.Max, restarted.Current);
+            Assert.AreEqual(1f, Time.timeScale);
         }
     }
 }

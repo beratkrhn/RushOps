@@ -5,12 +5,15 @@ using UnityEngine.SceneManagement;
 namespace RushOps.Player
 {
     /// <summary>
-    /// Restarts the level when the player dies (F-SPF-03), after the short death moment from <see cref="PlayerConfig"/>.
-    /// The delay runs in unscaled time, so a hitstop or pause does not stretch it.
+    /// Ends the level when the player dies (F-SPF-03), after the short death moment from <see cref="PlayerConfig"/>:
+    /// hands over to an <see cref="IDeathHandler"/> such as the „Gescheitert“ screen (issue #35), or reloads the level
+    /// without one. The delay runs in unscaled time, so a hitstop or pause does not stretch it.
     /// </summary>
     public class LevelRestarter : MonoBehaviour
     {
         [SerializeField] private PlayerHealth _player;
+        [Tooltip("Shown after the death moment, e.g. the result screens; empty reloads the level.")]
+        [SerializeField] private MonoBehaviour _deathHandler;
 
         private bool _restarting;
 
@@ -41,10 +44,17 @@ namespace RushOps.Player
             }
         }
 
-        private static IEnumerator Restart(float delay)
+        private IEnumerator Restart(float delay)
         {
             yield return new WaitForSecondsRealtime(delay);
-            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            if (_deathHandler is IDeathHandler handler)
+            {
+                handler.HandleDeath();
+            }
+            else
+            {
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+            }
         }
     }
 }

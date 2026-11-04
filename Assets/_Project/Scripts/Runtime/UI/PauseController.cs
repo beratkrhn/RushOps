@@ -20,13 +20,39 @@ namespace RushOps.UI
         /// <summary>Raised when the game continues.</summary>
         public event Action Resumed;
 
-        /// <summary>True while the game is paused.</summary>
-        public bool IsPaused { get; private set; }
+        private bool _paused;
+        private bool _frozen;
+
+        /// <summary>True while the game is paused or frozen by a result screen.</summary>
+        public bool IsPaused
+        {
+            get => _paused || _frozen;
+            private set => _paused = value;
+        }
+
+        /// <summary>True while a result screen freezes the game (issue #35); pausing and resuming do nothing then.</summary>
+        public bool IsFrozen => _frozen;
+
+        /// <summary>Stops the game time for a result screen, without the pause overlay. Resume cannot undo it.</summary>
+        public void Freeze()
+        {
+            _frozen = true;
+            _paused = false;
+            SetOverlay(false);
+            Time.timeScale = 0f;
+        }
+
+        /// <summary>Ends a freeze, e.g. before loading another scene.</summary>
+        public void Unfreeze()
+        {
+            _frozen = false;
+            Time.timeScale = 1f;
+        }
 
         /// <summary>Stops the game time and shows the overlay.</summary>
         public void Pause()
         {
-            if (IsPaused)
+            if (IsPaused || _frozen)
             {
                 return;
             }
@@ -40,7 +66,7 @@ namespace RushOps.UI
         /// <summary>Hides the overlay and lets the game time run again.</summary>
         public void Resume()
         {
-            if (!IsPaused)
+            if (!_paused || _frozen)
             {
                 return;
             }
@@ -55,6 +81,7 @@ namespace RushOps.UI
         public void Restart()
         {
             IsPaused = false;
+            _frozen = false;
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
