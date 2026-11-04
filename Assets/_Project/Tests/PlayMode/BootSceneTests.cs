@@ -43,7 +43,7 @@ namespace RushOps.Tests.PlayMode
                 yield return null;
             }
 
-            Assert.AreEqual("TestMenu", SceneManager.GetActiveScene().name);
+            Assert.AreEqual("MainMenu", SceneManager.GetActiveScene().name);
             Assert.LessOrEqual(Time.realtimeSinceStartup - start, 3.5f, "logo took longer than 3 s");
         }
 
@@ -58,7 +58,7 @@ namespace RushOps.Tests.PlayMode
                 yield return null;
             }
 
-            Assert.AreEqual("TestMenu", SceneManager.GetActiveScene().name);
+            Assert.AreEqual("MainMenu", SceneManager.GetActiveScene().name);
             Assert.Less(Time.realtimeSinceStartup - start, 1f, "skipping did not shorten the logo");
         }
     }

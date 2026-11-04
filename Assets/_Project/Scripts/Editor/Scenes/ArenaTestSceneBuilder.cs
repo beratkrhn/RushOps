@@ -1777,6 +1777,10 @@ namespace RushOps.Editor.Scenes
             CreateText("Title", overlay, font, "PAUSE", TitlePixelScale, new Vector2(0f, 60f));
             CreateMenuButton("ResumeButton", overlay, font, "Fortsetzen", new Vector2(0f, 0f), pause.Resume);
             CreateMenuButton("RestartButton", overlay, font, "Neustart", new Vector2(0f, -MenuButtonSize.y - 12f), pause.Restart);
+            CreateMenuButton("MenuButton", overlay, font, "Hauptmenü", new Vector2(0f, -2f * (MenuButtonSize.y + 12f)), pause.QuitToMenu);
+            var serializedPause = new SerializedObject(pause);
+            serializedPause.FindProperty("_menuScene").stringValue = MainMenu.SceneName;
+            serializedPause.ApplyModifiedPropertiesWithoutUndo();
             overlay.gameObject.SetActive(false);
             return overlay.gameObject;
         }
@@ -1824,7 +1828,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_starEmpty").objectReferenceValue = empty;
             serialized.FindProperty("_failedPanel").objectReferenceValue = failed.gameObject;
             serialized.FindProperty("_failedScore").objectReferenceValue = failedScore;
-            serialized.FindProperty("_continueScene").stringValue = TestMenuSceneBuilder.SceneName;
+            serialized.FindProperty("_continueScene").stringValue = MainMenu.SceneName;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             done.gameObject.SetActive(false);
             failed.gameObject.SetActive(false);
@@ -1888,7 +1892,7 @@ namespace RushOps.Editor.Scenes
             return sprite;
         }
 
-        private static Sprite LoadUiSprite(string file)
+        internal static Sprite LoadUiSprite(string file)
         {
             string path = $"{UiSpritesDir}/{file}";
             var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
@@ -1961,7 +1965,7 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static RectTransform CreateUiRect(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax)
+        internal static RectTransform CreateUiRect(string name, Transform parent, Vector2 anchorMin, Vector2 anchorMax)
         {
             var go = new GameObject(name, typeof(RectTransform));
             var rect = (RectTransform)go.transform;

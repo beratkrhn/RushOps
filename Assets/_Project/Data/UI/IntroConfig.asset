@@ -30,4 +30,4 @@ MonoBehaviour:
   _hold: 1.2
   _fade: 0.4
   _maxDuration: 3
-  _nextScene: TestMenu
+  _nextScene: MainMenu

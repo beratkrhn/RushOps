@@ -11,6 +11,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `ScoreKeeper.BestMultiplier`: höchster Multiplikator im Level.
 - PlayMode-Tests speichern nur im Speicher (`SaveGameIsolation`) und verändern den eigenen Spielstand im Editor nicht.
 - **App-Start und Logo-Animation** (Issue #124, F-UI-01, NF-05): Neue Startszene `Boot`, die erste im Build. Das RUSHOPS-Logo (13 Frames aus `Tools/gen_pixelart.py`, Vorschau `docs/art/animations/Logo.gif`): Die Buchstaben von „RUSH“ schlagen einzeln weiß auf, dann „OPS“ mit Leuchtspur-Balken, danach läuft ein Lichtstreifen darüber. Das Logo hält kurz und blendet nach Schwarz ab, insgesamt höchstens 3 s; Tippen springt zum Abblenden. Werte in `Data/UI/IntroConfig.asset`. Während des Logos wird der Spielstand geladen. Danach geht es vorerst ins Testmenü, ab #125 ins Hauptmenü.
+- **Hauptmenü** (Issue #125, F-UI-02, F-HUD-06): Neue Szene `MainMenu` nach dem Logo, mit Logo, Spielerfigur und den Buttons „Story Mode“, „Spielerauswahl“ und „Einstellungen“ in Pixelart (`Button*.png` aus `Tools/gen_pixelart.py`), innerhalb der Safe Area. „Story Mode“ startet vorerst direkt das nächste offene Level; die Inselkarte folgt mit #127. „Spielerauswahl“ (#130) und „Einstellungen“ (#126) sind bis dahin ausgegraut. Unten stehen die Versionsnummer und, nur in Development-Builds, ein Button zum Testmenü.
+- Das Pause-Menü hat den Button „Hauptmenü“; „Weiter“ nach „Level geschafft“ führt ins Hauptmenü statt ins Testmenü.
 - `docs/backlog/v0.5.0.md`: Stories für v0.5.0 (#122 bis #131).
 
 ## [0.4.0] – 2026-11-04
