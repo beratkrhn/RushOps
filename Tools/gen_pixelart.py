@@ -19,6 +19,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
   Sprites/Effects/Shield_Barrier.png       64x64 bubble around the player while the shield runs (issue #26)
+  Sprites/Level/HoldZone_Ring.png          128x128 ring on the floor of a hold-the-line zone, radius 2 tiles (issue #31)
+  Sprites/Level/HoldZone_Fill.png          128x128 disc inside the ring; the game scales it with the progress (issue #31)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
@@ -686,6 +688,37 @@ def perk_icon(perk: str) -> Canvas:
     return c
 
 
+HOLD_ZONE = 128
+
+
+def hold_zone_ring() -> Canvas:
+    """Rim of a hold-the-line zone, a true circle on the floor grid (radius 2 tiles = 64 px) so it matches the area
+    the game checks: a bright blue rim with a dark inner edge and short ticks pointing inward every 45 degrees."""
+    c = Canvas(HOLD_ZONE, HOLD_ZONE)
+    cx = cy = HOLD_ZONE / 2
+    for y in range(HOLD_ZONE):
+        for x in range(HOLD_ZONE):
+            r = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+            if 61.0 <= r <= 63.5:
+                c.set(x, y, "blue_2")
+            elif 59.5 <= r < 61.0:
+                c.set(x, y, "blue_0")
+    for k in range(8):
+        a = math.radians(k * 45.0)
+        for step in range(5):
+            r = 58.5 - step
+            c.set(int(cx + math.cos(a) * r), int(cy - math.sin(a) * r), "blue_1" if step else "glow")
+    return c
+
+
+def hold_zone_fill() -> Canvas:
+    """Disc that grows inside the ring with the hold progress; drawn solid, the game makes it see-through."""
+    c = Canvas(HOLD_ZONE, HOLD_ZONE)
+    c.ellipse(HOLD_ZONE / 2, HOLD_ZONE / 2, 59.0, 59.0, "blue_1")
+    c.ellipse(HOLD_ZONE / 2, HOLD_ZONE / 2, 55.0, 55.0, "blue_2")
+    return c
+
+
 SHIELD_BARRIER = 64
 
 
@@ -980,6 +1013,8 @@ def outputs() -> dict[str, Image.Image]:
         "Tiles/Wall_Front.png": wall_front().to_image(),
         "Sprites/Effects/SpawnMarker.png": spawn_marker().to_image(),
         "Sprites/Effects/Shield_Barrier.png": shield_barrier().to_image(),
+        "Sprites/Level/HoldZone_Ring.png": hold_zone_ring().to_image(),
+        "Sprites/Level/HoldZone_Fill.png": hold_zone_fill().to_image(),
         "Sprites/Level/Gate_Bars.png": gate_bars().to_image(),
         "Sprites/UI/Heart_Full.png": heart(True).to_image(),
         "Sprites/UI/Heart_Empty.png": heart(False).to_image(),

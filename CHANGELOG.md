@@ -102,6 +102,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Rätsel-Grundsystem** (Issue #30, F-LVL-04, F-HUD-03): Basis `Puzzle` mit den Zuständen inaktiv, aktiv, gelöst (`PuzzleLogic`, EditMode-getestet). Ein Rätsel wird aktiv, sobald seine Zone aktiv wird. `PuzzleSolvedCondition` öffnet ein Tor, wenn alle seine Rätsel gelöst sind. Beim Lösen spielt ein Platzhalter-Sound (`PuzzleSolved.wav` aus `Tools/gen_sfx.py`, Lautstärke in `Data/Puzzles/PuzzleConfig`).
 - Der Missions-Tracker zeigt Rätsel an: Text, wahlweise mit Fortschrittsbalken darunter oder mit Countdown („Schalter: 7 s“). Ein Rätsel gibt das über `PuzzleDisplay` vor (Issue #30).
 - `DebugPuzzle` als Testrätsel: Es füllt seinen Balken in 20 s und ist dann gelöst, oder sofort über das Kontextmenü „Jetzt lösen“ (Issue #30).
+- **Zonen-Kontrolle (Hold the Line)** (Issue #31, F-RAE-01, F-RAE-02): Ein leuchtender Kreis am Boden (Ring und blaues 2D-Licht) muss 10 s *(Startwert)* besetzt werden. Der Fortschritt steigt nur, solange der Spieler im Kreis steht, und pausiert außerhalb, ohne zu sinken. Er ist am Kreis sichtbar (eine Scheibe wächst, das Licht wird heller) und als Balken im Missions-Tracker. Bei 100 % ist das Rätsel gelöst, und der Kreis färbt sich grün. Dauer, Radius, Text und Optik stehen in `Data/Puzzles/HoldZoneConfig`. Logik in `HoldProgress` mit EditMode-Tests.
+- `PuzzleBuilder` (Editor) setzt Rätsel in Level-Szenen; Ring- und Scheiben-Sprites aus `Tools/gen_pixelart.py` (Issue #31).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -132,7 +134,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
 - Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
 - Der FPS-Zähler sitzt jetzt unten mittig, weil Score und Multiplikator oben mittig stehen (Issue #28).
-- `Arena_Zonen`: Das zweite Tor ist jetzt ein Rätsel-Tor mit `DebugPuzzle` in Zone 2 statt der `DebugGateCondition` (Issue #30).
+- `Arena_Zonen`: Das zweite Tor ist jetzt ein Rätsel-Tor; es öffnet sich, wenn die Haltezone in Zone 2 gehalten wurde (vorher `DebugGateCondition`, Issues #30, #31).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
