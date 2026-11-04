@@ -11,7 +11,8 @@ namespace RushOps.Editor.Scenes
     /// in a tall layout with three zones stacked from south to north, separated by two gates. Each zone has its own
     /// spawn points and waves. The first gate is a kill gate; the second is a puzzle gate that opens once the player
     /// held the <see cref="HoldZonePuzzle"/> in zone 2 (issues #30, #31). Zone 3 has timed switches without a gate
-    /// (issue #32) and an energy cell to bring to a generator (issue #33).
+    /// (issue #32) and an energy cell to bring to a generator (issue #33); the level exit at its north end finishes the
+    /// level (issue #35).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaZonenSceneBuilder.Build</c>
     /// </summary>
     public static class ArenaZonenSceneBuilder
@@ -36,6 +37,11 @@ namespace RushOps.Editor.Scenes
         // Object transport in zone 3: the cell on the left, the generator on the right, the pillars in between.
         private static readonly Vector2 GeneratorPosition = new Vector2(18.5f, 76.5f);
         private static readonly Vector2[] CellPositions = { new Vector2(4.5f, 67.5f) };
+
+        // Level exit: the last floor rows at the north end of zone 3, 4 x 1.5 units like its sprite.
+        private static readonly Vector2 ExitCenter = new Vector2(12f, 81.75f);
+        private static readonly Vector2 ExitSize = new Vector2(4f, 1.5f);
+        private const string ExitSpritePath = "Assets/_Project/Art/Sprites/Level/Exit_Pad.png";
         private const string WavesDir = "Assets/_Project/Data/Waves";
         // Kills since level start that open the first gate.
         private const int KillGateKills = 10;
@@ -75,7 +81,7 @@ namespace RushOps.Editor.Scenes
         [MenuItem("RushOps/Szenen/Arena_Zonen erzeugen")]
         public static void Build()
         {
-            ArenaTestSceneBuilder.BuildScene(ScenePath, Layout, false, AddZones);
+            ArenaTestSceneBuilder.BuildScene(ScenePath, Layout, false, AddZones, "Zonen-Test");
         }
 
         private static void AddZones(ArenaScene arena)
@@ -123,6 +129,29 @@ namespace RushOps.Editor.Scenes
             TransportPuzzle transport = PuzzleBuilder.CreateTransport(
                 "Transport_Zone_3", GeneratorPosition, CellPositions, 1, zones[2], arena);
             PuzzleBuilder.SetLevelPuzzles(arena, hold, switches, transport);
+            CreateExit(arena);
+        }
+
+        private static void CreateExit(ArenaScene arena)
+        {
+            var go = new GameObject("LevelExit");
+            go.transform.position = ExitCenter;
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(ExitSpritePath);
+            if (renderer.sprite == null)
+            {
+                throw new System.InvalidOperationException($"Sprite not found at {ExitSpritePath}; run Tools/gen_pixelart.py");
+            }
+
+            renderer.sortingOrder = ArenaTestSceneBuilder.FloorMarkSortingOrder;
+            var trigger = go.AddComponent<BoxCollider2D>();
+            trigger.isTrigger = true;
+            trigger.size = ExitSize;
+            LevelExit exit = go.AddComponent<LevelExit>();
+
+            var results = new SerializedObject(arena.Results);
+            results.FindProperty("_exit").objectReferenceValue = exit;
+            results.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // While the hold zone runs, zone 2 sends smaller waves at a much faster pace, so standing still is never safe.

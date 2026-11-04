@@ -27,6 +27,9 @@ Output (under Assets/_Project/Art/):
   Sprites/Level/Generator_Off.png          32x48 generator waiting for its cell, dark slot (issue #33)
   Sprites/Level/Generator_On.png           32x48 generator running, slot and lights glowing (issue #33)
   Sprites/UI/Dash_Locked.png               24x24 padlock over the dash button while it is locked (issue #33)
+  Sprites/UI/Star_Full.png                 16x16 earned star on the result screen (issue #35)
+  Sprites/Level/Exit_Pad.png               128x48 glowing exit field on the floor with arrows pointing on (issue #35)
+  Sprites/UI/Star_Empty.png                16x16 missing star on the result screen (issue #35)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
@@ -803,6 +806,59 @@ def dash_locked() -> Canvas:
     return c
 
 
+def star(full: bool) -> Canvas:
+    """Five-pointed star for the result screen: gold with a light upper half when earned, a dark hollow when not."""
+    c = Canvas(16, 16)
+    cx, cy = 8.0, 8.5
+    outer, inner = 7.5, 3.2
+    points = []
+    for k in range(10):
+        r = outer if k % 2 == 0 else inner
+        a = math.radians(90 + k * 36)
+        points.append((cx + r * math.cos(a), cy - r * math.sin(a)))
+
+    def inside(px: float, py: float) -> bool:
+        hit = False
+        j = len(points) - 1
+        for i in range(len(points)):
+            xi, yi = points[i]
+            xj, yj = points[j]
+            if (yi > py) != (yj > py) and px < (xj - xi) * (py - yi) / (yj - yi) + xi:
+                hit = not hit
+            j = i
+        return hit
+
+    for y in range(16):
+        for x in range(16):
+            if inside(x + 0.5, y + 0.5):
+                if full:
+                    c.set(x, y, "yellow" if y < 8 else "orange")
+                else:
+                    c.set(x, y, "slate_1")
+    if full:
+        c.set(7, 4, "glow")
+        c.set(6, 6, "glow")
+    c.outline()
+    return c
+
+
+def exit_pad() -> Canvas:
+    """Level exit on the floor: a dark green field with a bright rim and three chevrons pointing up (north)."""
+    c = Canvas(128, 48)
+    c.rect(2, 2, 125, 45, "green_2")
+    c.rect(4, 4, 123, 43, "green_0")
+    c.rect(6, 6, 121, 41, "green_1")
+    for cx in (32, 64, 96):
+        # Chevron: two diagonal strokes meeting at the top.
+        for i in range(10):
+            for t in range(3):
+                c.set(cx - 10 + i, 32 - i + t, "glow")
+                c.set(cx + 10 - i, 32 - i + t, "glow")
+        c.rect(cx - 1, 22, cx + 1, 24, "glow")
+    c.outline()
+    return c
+
+
 SHIELD_BARRIER = 64
 
 
@@ -1105,6 +1161,9 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/Generator_Off.png": generator(False).to_image(),
         "Sprites/Level/Generator_On.png": generator(True).to_image(),
         "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),
+        "Sprites/UI/Star_Full.png": star(True).to_image(),
+        "Sprites/Level/Exit_Pad.png": exit_pad().to_image(),
+        "Sprites/UI/Star_Empty.png": star(False).to_image(),
         "Sprites/Level/Gate_Bars.png": gate_bars().to_image(),
         "Sprites/UI/Heart_Full.png": heart(True).to_image(),
         "Sprites/UI/Heart_Empty.png": heart(False).to_image(),
