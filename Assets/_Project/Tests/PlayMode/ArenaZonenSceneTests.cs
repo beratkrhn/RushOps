@@ -4,6 +4,7 @@ using NUnit.Framework;
 using RushOps.Enemies;
 using RushOps.Levels;
 using RushOps.Navigation;
+using RushOps.Puzzles;
 using RushOps.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -58,15 +59,16 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator DebugGate_Forced_OpensFreesPassageAndCompletesZone()
+        public IEnumerator PuzzleGate_Solved_OpensFreesPassageAndCompletesZone()
         {
             yield return null;
             Gate gate = Find<Gate>("Gate_2");
+            Assert.IsInstanceOf<PuzzleSolvedCondition>(gate.Condition, "Gate_2 should be a puzzle gate");
             FlowFieldNavigator navigator = Object.FindFirstObjectByType<FlowFieldNavigator>();
             bool opened = false;
             gate.Opened += _ => opened = true;
 
-            gate.GetComponent<DebugGateCondition>().Force();
+            Find<DebugPuzzle>("Puzzle_Zone_2").Force();
             yield return null;
             Assert.AreEqual(GateState.Opening, gate.State);
             yield return new WaitForSeconds(1.5f);
@@ -76,6 +78,48 @@ namespace RushOps.Tests.PlayMode
             Assert.IsNull(Physics2D.OverlapPoint(gate.transform.position, LayerMask.GetMask("Walls")), "Open gate still blocks");
             Assert.IsTrue(navigator.Field.IsWalkable(navigator.CellOf(gate.transform.position)));
             Assert.AreEqual(ZoneState.Completed, Find<Zone>("Zone_2").State);
+        }
+
+        [UnityTest]
+        public IEnumerator Puzzle_InactiveUntilItsZoneIsActive_ThenTrackerShowsProgress()
+        {
+            yield return null;
+            var puzzle = Find<DebugPuzzle>("Puzzle_Zone_2");
+            Zone zone = Find<Zone>("Zone_2");
+            MissionTracker tracker = Object.FindFirstObjectByType<MissionTracker>();
+            Assert.AreEqual(PuzzleState.Inactive, puzzle.State);
+            Assert.IsFalse(tracker.ShowsProgress);
+
+            var body = zone.Player.GetComponent<Rigidbody2D>();
+            body.position = zone.transform.position;
+            zone.Player.position = zone.transform.position;
+            yield return new WaitForFixedUpdate();
+            yield return null;
+            yield return new WaitForSeconds(0.5f);
+
+            Assert.AreEqual(PuzzleState.Active, puzzle.State);
+            Assert.AreEqual(MissionText.Puzzle(puzzle.Display), tracker.Text);
+            Assert.IsTrue(tracker.ShowsProgress, "no progress bar for the puzzle");
+            Assert.Greater(tracker.Progress, 0f, "progress bar does not fill");
+        }
+
+        [UnityTest]
+        public IEnumerator PuzzleSolved_TrackerShowsGateOpen_AndHidesBar()
+        {
+            Zone zone = Find<Zone>("Zone_2");
+            var body = zone.Player.GetComponent<Rigidbody2D>();
+            body.position = zone.transform.position;
+            zone.Player.position = zone.transform.position;
+            yield return new WaitForFixedUpdate();
+            yield return new WaitForSeconds(0.2f);
+            MissionTracker tracker = Object.FindFirstObjectByType<MissionTracker>();
+
+            Find<DebugPuzzle>("Puzzle_Zone_2").Force();
+            yield return null;
+            yield return null;
+
+            Assert.AreEqual(MissionText.GateOpen, tracker.Text);
+            Assert.IsFalse(tracker.ShowsProgress);
         }
 
         [UnityTest]

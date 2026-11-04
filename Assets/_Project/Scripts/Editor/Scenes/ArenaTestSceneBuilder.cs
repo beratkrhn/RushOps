@@ -122,6 +122,10 @@ namespace RushOps.Editor.Scenes
         private static readonly Color PaletteNight = new Color32(31, 29, 43, 255);
         private static readonly Color PaletteSlate2 = new Color32(77, 76, 99, 255);
         private static readonly Color PaletteWhite = new Color32(244, 241, 232, 255);
+        private static readonly Color PaletteYellow = new Color32(246, 208, 77, 255);
+        // Puzzle progress bar under the mission tracker: one text line (20 units) plus a small gap below its top.
+        private static readonly Vector2 PuzzleBarSize = new Vector2(80f, 6f);
+        private const float PuzzleBarGap = 24f;
         // The overlay darkens the frozen game behind the menu.
         private const float OverlayAlpha = 0.8f;
         internal const string WallsLayer = "Walls";
@@ -1305,10 +1309,26 @@ namespace RushOps.Editor.Scenes
             label.alignment = TextAnchor.UpperRight;
             label.enabled = false;
 
+            // Progress bar for puzzles (issue #30), right-aligned one text line below the label.
+            RectTransform bar = CreateUiRect("PuzzleProgress", parent, topRight, topRight);
+            bar.pivot = topRight;
+            bar.sizeDelta = PuzzleBarSize;
+            bar.anchoredPosition = new Vector2(-HudMargin, -PauseButtonSize - PuzzleBarGap);
+            var background = bar.gameObject.AddComponent<Image>();
+            background.color = PaletteNight;
+            background.raycastTarget = false;
+            RectTransform fill = CreateUiRect("Fill", bar, Vector2.zero, new Vector2(0f, 1f));
+            var fillImage = fill.gameObject.AddComponent<Image>();
+            fillImage.color = PaletteYellow;
+            fillImage.raycastTarget = false;
+            bar.gameObject.SetActive(false);
+
             var tracker = label.gameObject.AddComponent<MissionTracker>();
             var serialized = new SerializedObject(tracker);
             serialized.FindProperty("_config").objectReferenceValue = config;
             serialized.FindProperty("_label").objectReferenceValue = label;
+            serialized.FindProperty("_progressBar").objectReferenceValue = bar.gameObject;
+            serialized.FindProperty("_progressFill").objectReferenceValue = fill;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return tracker;
         }
