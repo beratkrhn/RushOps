@@ -28,6 +28,8 @@ Ein Menütrack und je ein loopbarer Action-Track pro Insel.
 
 ## v0.5.0 – Menüs, Speichern, Meta-Progression
 
+In Stories zerlegt: [`v0.5.0.md`](v0.5.0.md). Die Epics #43 bis #47 sind damit erledigt.
+
 ### Logo-Animation und Hauptmenü (#43)
 Startsequenz, Hauptmenü mit Story Mode, Spielerauswahl und Einstellungen.
 

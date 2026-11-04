@@ -192,7 +192,7 @@ Alle Werte sind *Startwerte*.
 | F-UI-01 | Beim Start läuft eine kurze **Logo-Animation**, die in das Hauptmenü übergeht. | Muss |
 | F-UI-02 | Das Hauptmenü hat drei Bereiche: **Story Mode**, **Spielerauswahl**, **Einstellungen**. | Muss |
 | F-UI-03 | **Spielerauswahl**: horizontal scrollbares Karussell mit allen Skins. Gesperrte Skins zeigen ihre Freischaltbedingung. | Muss |
-| F-UI-04 | **Einstellungen**: Lautstärke (Gesamt, Musik, Effekte), Stick-Modus (fest/floating), Größe und Position der Sticks, Zielhilfe an/aus, Credits. | Muss |
+| F-UI-04 | **Einstellungen**: Lautstärke (Gesamt, Musik, Effekte), Zielhilfe an/aus, Credits. Die Sticks werden nicht eingestellt; Modus, Größe und Position sind fest (Design-Frage M3). | Muss |
 
 ### 3.2 Story Mode (Levelauswahl)
 
@@ -296,3 +296,4 @@ Alle Werte sind *Startwerte*.
 | 0.3 | 29.10.2026 | F-GFX-02: Schrägansicht mit 8 Richtungs-Sprites statt reiner Top-down-Ansicht mit rotierten Sprites (ADR 0006, Issue #58). |
 | 0.4 | 30.10.2026 | Offene Punkte entschieden: Bundle-ID `com.beratkrhn.rushops`, Mindestversionen Android 8.0 und iOS 15 (Issue #13). |
 | 0.5 | 04.11.2026 | F-PRK-02: Drop-Chance 12 % statt 8 % (Spieltest v0.3.0). Offene Punkte entschieden: Musik vorerst nicht, Inselthemen festgelegt. |
+| 0.6 | 04.11.2026 | F-UI-04: keine Stick-Einstellungen im Menü (Design-Frage M3). |
