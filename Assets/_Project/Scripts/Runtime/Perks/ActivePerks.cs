@@ -84,6 +84,21 @@ namespace RushOps.Perks
             return index >= 0 ? _perks[index].Remaining : 0f;
         }
 
+        /// <summary>Seconds left of the longest running perk with <paramref name="effect"/>; 0 if none runs.</summary>
+        public float RemainingOf(PerkEffect effect)
+        {
+            float remaining = 0f;
+            for (int i = 0; i < _perks.Count; i++)
+            {
+                if (_perks[i].Effect == effect && _perks[i].Remaining > remaining)
+                {
+                    remaining = _perks[i].Remaining;
+                }
+            }
+
+            return remaining;
+        }
+
         /// <summary>Product of the magnitudes of all running perks with <paramref name="effect"/>; 1 if none runs.</summary>
         public float Multiplier(PerkEffect effect)
         {

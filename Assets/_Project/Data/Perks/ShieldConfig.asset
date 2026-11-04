@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 60fbf666e0c6485f91885518ea7a36cf, type: 3}
+  m_Name: ShieldConfig
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Perks.ShieldConfig
+  _warningTime: 2
+  _blinkInterval: 0.1
+  _pushSpeed: 5
+  _pushDuration: 0.15
