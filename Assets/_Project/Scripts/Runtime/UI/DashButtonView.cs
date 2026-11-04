@@ -6,7 +6,8 @@ namespace RushOps.UI
 {
     /// <summary>
     /// Places the on-screen dash button above the right stick (F-STE-03) and shows the remaining cooldown
-    /// (F-STE-04) as a radial overlay that shrinks until the dash is ready again.
+    /// (F-STE-04) as a radial overlay that shrinks until the dash is ready again. While the dash is locked, e.g. when
+    /// carrying an energy cell (issue #33), a padlock covers the button instead.
     /// The button press itself goes through an <see cref="UnityEngine.InputSystem.OnScreen.OnScreenButton"/>.
     /// </summary>
     [RequireComponent(typeof(RectTransform))]
@@ -17,9 +18,15 @@ namespace RushOps.UI
         [SerializeField] private VirtualStick _stick;
         [Tooltip("Radially filled image covering the button during the cooldown.")]
         [SerializeField] private Image _cooldownOverlay;
+        [Tooltip("Padlock shown over the button while the dash is locked.")]
+        [SerializeField] private Image _lockedIcon;
 
         private RectTransform _rect;
         private float _shownFill = -1f;
+        private bool _shownLocked;
+
+        /// <summary>True while the button shows the padlock.</summary>
+        public bool ShowsLocked => _lockedIcon != null && _lockedIcon.enabled;
 
         /// <summary>Dash whose cooldown the button shows.</summary>
         public PlayerDash Dash
@@ -53,7 +60,20 @@ namespace RushOps.UI
 
         private void Update()
         {
-            float fill = _dash != null ? 1f - _dash.CooldownProgress : 0f;
+            bool locked = _dash != null && _dash.IsLocked;
+            if (locked != _shownLocked || (_lockedIcon != null && _lockedIcon.enabled != locked))
+            {
+                _shownLocked = locked;
+                if (_lockedIcon != null)
+                {
+                    _lockedIcon.enabled = locked;
+                }
+
+                _shownFill = -1f;
+            }
+
+            // The padlock replaces the cooldown ring while locked.
+            float fill = _dash != null && !locked ? 1f - _dash.CooldownProgress : 0f;
             if (fill == _shownFill || _cooldownOverlay == null)
             {
                 return;

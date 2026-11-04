@@ -11,7 +11,7 @@ namespace RushOps.Editor.Scenes
     /// in a tall layout with three zones stacked from south to north, separated by two gates. Each zone has its own
     /// spawn points and waves. The first gate is a kill gate; the second is a puzzle gate that opens once the player
     /// held the <see cref="HoldZonePuzzle"/> in zone 2 (issues #30, #31). Zone 3 has timed switches without a gate
-    /// (issue #32).
+    /// (issue #32) and an energy cell to bring to a generator (issue #33).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaZonenSceneBuilder.Build</c>
     /// </summary>
     public static class ArenaZonenSceneBuilder
@@ -32,6 +32,10 @@ namespace RushOps.Editor.Scenes
         {
             new Vector2(3.5f, 60.5f), new Vector2(20.5f, 66.5f), new Vector2(12.5f, 78.5f),
         };
+
+        // Object transport in zone 3: the cell on the left, the generator on the right, the pillars in between.
+        private static readonly Vector2 GeneratorPosition = new Vector2(18.5f, 76.5f);
+        private static readonly Vector2[] CellPositions = { new Vector2(4.5f, 67.5f) };
         private const string WavesDir = "Assets/_Project/Data/Waves";
         // Kills since level start that open the first gate.
         private const int KillGateKills = 10;
@@ -115,7 +119,9 @@ namespace RushOps.Editor.Scenes
 
             ArenaTestSceneBuilder.AssignZones(arena, zones);
             TimedSwitchPuzzle switches = PuzzleBuilder.CreateTimedSwitches("Switches_Zone_3", SwitchPlates, zones[2], arena);
-            PuzzleBuilder.SetLevelPuzzles(arena, hold, switches);
+            TransportPuzzle transport = PuzzleBuilder.CreateTransport(
+                "Transport_Zone_3", GeneratorPosition, CellPositions, 1, zones[2], arena);
+            PuzzleBuilder.SetLevelPuzzles(arena, hold, switches, transport);
         }
 
         // Waves grow from zone to zone; the first two repeat their last wave until the gate opens, the last one ends.

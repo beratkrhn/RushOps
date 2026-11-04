@@ -107,6 +107,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Zeitkritische Schalter** (Issue #32, F-RAE-03 bis F-RAE-05): Bodenplatten, die nur der Spieler durch Darüberlaufen aktiviert. Gedrückte Platten leuchten grün. Die erste startet einen Countdown von 12 s *(Startwert)*, den der Missions-Tracker zeigt („Schalter 1/3: 9 s“). Läuft er ab, springen alle Platten zurück, blinken rot, und ein Summer ertönt. Alle rechtzeitig gedrückt: Rätsel gelöst. Werte in `Data/Puzzles/TimedSwitchConfig`, Logik in `SwitchSequence` mit EditMode-Tests, Sounds `SwitchOn.wav` und `SwitchReset.wav`.
 - Der Missions-Tracker zeigt auch Rätsel in Zonen ohne Rätsel- oder Kill-Tor (z. B. der letzten Zone) und bestätigt sie mit „Geschafft!“ (Issue #32).
 - `Arena_Zonen`: drei Schalter in Zone 3 (Issue #32).
+- **Objekt-Transport** (Issue #33, F-RAE-06 bis F-RAE-08): Eine Energiezelle wird durch Berührung aufgenommen und ist dann an der Figur zu sehen. Beim Tragen ist der Dash gesperrt, und der Dash-Button zeigt ein Schloss. Das Lauftempo sinkt um 20 % *(Startwert)*, Schießen bleibt möglich, und Schaden lässt die Zelle nicht fallen. Die Abgabe am Generator geschieht durch Berührung; danach läuft er sichtbar. Die Anzahl benötigter Zellen ist pro Rätsel einstellbar (Standard 1). Der Tracker zeigt „Energiezelle zum Generator bringen“, bei mehreren Zellen „Energiezellen 1/3“ mit Balken. Werte in `Data/Puzzles/CarryConfig`, Logik in `CarrySlot` und `TransportGoal` mit EditMode-Tests.
+- `PlayerMovement.LoadMultiplier`: Tempo-Faktor durch Tragen, unabhängig vom Perk-Multiplikator, damit Speed-Boost und Tragen sich verrechnen (Issue #33).
+- `Arena_Zonen`: Energiezelle und Generator in Zone 3; der Tracker zeigt nach „Geschafft!“ das nächste Rätsel derselben Zone (Issue #33).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -138,6 +141,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
 - Der FPS-Zähler sitzt jetzt unten mittig, weil Score und Multiplikator oben mittig stehen (Issue #28).
 - `Arena_Zonen`: Das zweite Tor ist jetzt ein Rätsel-Tor; es öffnet sich, wenn die Haltezone in Zone 2 gehalten wurde (vorher `DebugGateCondition`, Issues #30, #31).
+- Der Text des Missions-Trackers bricht nach 160 Einheiten um, damit lange Aufgaben nicht in Score und Multiplikator ragen (Issue #33).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).

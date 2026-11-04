@@ -18,6 +18,7 @@ namespace RushOps.Player
         private Vector2 _velocityOverride;
         private bool _hasVelocityOverride;
         private float _speedMultiplier = 1f;
+        private float _loadMultiplier = 1f;
 
         /// <summary>Stick direction and deflection; length 1 is full speed, longer values are clamped.</summary>
         public Vector2 MoveInput
@@ -33,8 +34,18 @@ namespace RushOps.Player
             set => _speedMultiplier = value > 0f ? value : 0f;
         }
 
-        /// <summary>Current walking speed at full deflection, including <see cref="SpeedMultiplier"/>.</summary>
-        public float MoveSpeed => _config != null ? _config.MoveSpeed * _speedMultiplier : 0f;
+        /// <summary>
+        /// Factor on the walking speed from what the player carries, e.g. 0.8 with an energy cell (F-RAE-07, issue #33);
+        /// 1 by default, never negative. Independent of <see cref="SpeedMultiplier"/>, so perks and carrying combine.
+        /// </summary>
+        public float LoadMultiplier
+        {
+            get => _loadMultiplier;
+            set => _loadMultiplier = value > 0f ? value : 0f;
+        }
+
+        /// <summary>Current walking speed at full deflection, including <see cref="SpeedMultiplier"/> and <see cref="LoadMultiplier"/>.</summary>
+        public float MoveSpeed => _config != null ? _config.MoveSpeed * _speedMultiplier * _loadMultiplier : 0f;
 
         /// <summary>Current velocity of the player in units per second.</summary>
         public Vector2 Velocity => _body.linearVelocity;

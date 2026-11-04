@@ -19,6 +19,16 @@ namespace RushOps.Editor.Scenes
         private const string TimedSwitchConfigPath = "Assets/_Project/Data/Puzzles/TimedSwitchConfig.asset";
         private const string SwitchOffSpritePath = "Assets/_Project/Art/Sprites/Level/Switch_Off.png";
         private const string SwitchOnSpritePath = "Assets/_Project/Art/Sprites/Level/Switch_On.png";
+        private const string EnergyCellSpritePath = "Assets/_Project/Art/Sprites/Level/EnergyCell.png";
+        private const string GeneratorOffSpritePath = "Assets/_Project/Art/Sprites/Level/Generator_Off.png";
+        private const string GeneratorOnSpritePath = "Assets/_Project/Art/Sprites/Level/Generator_On.png";
+        private static readonly Color CellLightColor = new Color32(141, 178, 84, 255);
+        // The generator sprite (32x48) is centered; its base sits 0.75 units below the center.
+        private static readonly Vector2 GeneratorTriggerSize = new Vector2(1.4f, 1.4f);
+        private static readonly Vector2 GeneratorTriggerOffset = new Vector2(0f, -0.4f);
+        private const float CellTriggerRadius = 0.45f;
+        private const float CellLightRadius = 1.2f;
+
         // The plate triggers once the player's body overlaps most of the tile.
         private static readonly Vector2 SwitchTriggerSize = new Vector2(0.8f, 0.8f);
         private static readonly Color LightColor = new Color32(95, 176, 224, 255);
@@ -88,6 +98,78 @@ namespace RushOps.Editor.Scenes
             for (int i = 0; i < switches.Length; i++)
             {
                 list.GetArrayElementAtIndex(i).objectReferenceValue = switches[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return puzzle;
+        }
+
+        /// <summary>
+        /// Object transport: a generator at <paramref name="generator"/> needing <paramref name="required"/> cells and one
+        /// cell lying at each of <paramref name="cells"/>, active with <paramref name="zone"/>.
+        /// </summary>
+        public static TransportPuzzle CreateTransport(
+            string name, Vector2 generator, Vector2[] cells, int required, Zone zone, ArenaScene arena)
+        {
+            var go = new GameObject(name);
+            go.transform.position = generator;
+
+            var generatorGo = new GameObject("Generator");
+            generatorGo.transform.SetParent(go.transform, false);
+            var generatorRenderer = generatorGo.AddComponent<SpriteRenderer>();
+            generatorRenderer.sprite = LoadSprite(GeneratorOffSpritePath);
+            generatorRenderer.sortingOrder = ArenaTestSceneBuilder.ActorSortingOrder;
+            generatorRenderer.spriteSortPoint = SpriteSortPoint.Pivot;
+            var generatorTrigger = generatorGo.AddComponent<BoxCollider2D>();
+            generatorTrigger.isTrigger = true;
+            generatorTrigger.size = GeneratorTriggerSize;
+            generatorTrigger.offset = GeneratorTriggerOffset;
+            var station = generatorGo.AddComponent<Generator>();
+            var serializedStation = new SerializedObject(station);
+            serializedStation.FindProperty("_renderer").objectReferenceValue = generatorRenderer;
+            serializedStation.FindProperty("_offSprite").objectReferenceValue = generatorRenderer.sprite;
+            serializedStation.FindProperty("_onSprite").objectReferenceValue = LoadSprite(GeneratorOnSpritePath);
+            serializedStation.ApplyModifiedPropertiesWithoutUndo();
+
+            var energyCells = new EnergyCell[cells.Length];
+            for (int i = 0; i < cells.Length; i++)
+            {
+                var cellGo = new GameObject($"EnergyCell_{i + 1}");
+                cellGo.transform.SetParent(go.transform, false);
+                cellGo.transform.position = cells[i];
+                var renderer = cellGo.AddComponent<SpriteRenderer>();
+                renderer.sprite = LoadSprite(EnergyCellSpritePath);
+                renderer.sortingOrder = ArenaTestSceneBuilder.ActorSortingOrder;
+                var trigger = cellGo.AddComponent<CircleCollider2D>();
+                trigger.isTrigger = true;
+                trigger.radius = CellTriggerRadius;
+                var light = cellGo.AddComponent<Light2D>();
+                light.lightType = Light2D.LightType.Point;
+                light.color = CellLightColor;
+                light.pointLightInnerRadius = 0f;
+                light.pointLightOuterRadius = CellLightRadius;
+                energyCells[i] = cellGo.AddComponent<EnergyCell>();
+                var serializedCell = new SerializedObject(energyCells[i]);
+                serializedCell.FindProperty("_renderer").objectReferenceValue = renderer;
+                serializedCell.FindProperty("_carriedSortingOrder").intValue = ArenaTestSceneBuilder.ActorSortingOrder + 1;
+                serializedCell.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            var puzzle = go.AddComponent<TransportPuzzle>();
+            var serialized = new SerializedObject(puzzle);
+            SetBase(serialized, zone, arena);
+            serialized.FindProperty("_carryConfig").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<CarryConfig>(ArenaTestSceneBuilder.CarryConfigPath);
+            serialized.FindProperty("_generator").objectReferenceValue = station;
+            serialized.FindProperty("_carrier").objectReferenceValue = arena.Player.GetComponent<PlayerCarrier>();
+            serialized.FindProperty("_requiredCells").intValue = required;
+            serialized.FindProperty("_pickUpClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("PerkPickup.wav");
+            serialized.FindProperty("_handInClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("SwitchOn.wav");
+            SerializedProperty list = serialized.FindProperty("_cells");
+            list.arraySize = energyCells.Length;
+            for (int i = 0; i < energyCells.Length; i++)
+            {
+                list.GetArrayElementAtIndex(i).objectReferenceValue = energyCells[i];
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
