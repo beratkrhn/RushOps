@@ -112,6 +112,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `Arena_Zonen`: Energiezelle und Generator in Zone 3; der Tracker zeigt nach „Geschafft!“ das nächste Rätsel derselben Zone (Issue #33).
 - **Gegnerdruck während Rätseln** (Issue #34, Lastenheft 2.6): Mit `PuzzlePressure` lässt sich pro Rätsel eine eigene `WaveDefinition` festlegen, die die Zone verwendet, solange das Rätsel aktiv ist. Nach dem Lösen kehrt die Zone zu ihren normalen Wellen zurück oder beendet sie (`AfterPuzzle`). `WaveDirector.UseWaves`/`StopWaves` tauschen die Wellen einer laufenden Zone; Gegner melden ihren Tod immer der Sequenz, die sie angefordert hat.
 - `Arena_Zonen`: Während der Haltezone schickt Zone 2 kleinere Wellen in schnellerem Takt (`Data/Waves/Arena_Zonen_Zone2_Hold`), danach wieder die normalen (Issue #34).
+- **Levelziel und Ergebnisbildschirme** (Issue #35, F-LVL-05, F-SCO-03, F-SPF-03): `LevelDefinition` (Name, Szene, Score-Schwellen für 2 und 3 Sterne; das Erreichen des Ziels gibt immer 1 Stern) unter `Data/Levels/`. Ein `LevelExit` hinter dem letzten Tor beendet das Level. „Level geschafft!“ zeigt Score, Kills, Zeit, 1–3 Sterne sowie „Nochmal“ und „Weiter“. „Gescheitert“ erscheint bei 0 Herzen nach dem Todesmoment mit Score und „Neustart“. Während der Bildschirme ist das Spiel eingefroren (`PauseController.Freeze`), auch das Zurückkehren aus dem Hintergrund setzt es nicht fort. Sterne-Berechnung in `StarRating` mit EditMode-Tests.
+- Szene `TestMenu` (`RushOps → Szenen → TestMenu erzeugen`): listet alle Level aus `Data/Levels/`; „Weiter“ führt bis v0.5.0 hierher (Issue #35).
+- `Arena_Zonen`: Ausgang am Nordende von Zone 3 (Issue #35).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -144,6 +147,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Der FPS-Zähler sitzt jetzt unten mittig, weil Score und Multiplikator oben mittig stehen (Issue #28).
 - `Arena_Zonen`: Das zweite Tor ist jetzt ein Rätsel-Tor; es öffnet sich, wenn die Haltezone in Zone 2 gehalten wurde (vorher `DebugGateCondition`, Issues #30, #31).
 - Der Text des Missions-Trackers bricht nach 160 Einheiten um, damit lange Aufgaben nicht in Score und Multiplikator ragen (Issue #33).
+- Nach dem Tod lädt das Level nicht mehr automatisch neu; stattdessen erscheint „Gescheitert“ mit „Neustart“. `LevelRestarter` übergibt dafür an ein `IDeathHandler` (Issue #35).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
