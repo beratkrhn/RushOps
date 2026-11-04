@@ -134,6 +134,7 @@ namespace RushOps.Editor.Skins
                 BuildAnimation(spec.Id, "Walk", DirectionalAnimationBuilder.PlayerWalkPath);
                 BuildAnimation(spec.Id, "Hit", DirectionalAnimationBuilder.PlayerHitPath);
                 BuildAnimation(spec.Id, "Death", DirectionalAnimationBuilder.PlayerDeathPath);
+                BuildAnimation(spec.Id, "Dash", DirectionalAnimationBuilder.PlayerDashPath);
             }
         }
 
@@ -179,6 +180,7 @@ namespace RushOps.Editor.Skins
             SetAnimation(serialized, "_walk", spec.Id, "Walk", DirectionalAnimationBuilder.PlayerWalkPath);
             SetAnimation(serialized, "_hit", spec.Id, "Hit", DirectionalAnimationBuilder.PlayerHitPath);
             SetAnimation(serialized, "_death", spec.Id, "Death", DirectionalAnimationBuilder.PlayerDeathPath);
+            SetAnimation(serialized, "_dash", spec.Id, "Dash", DirectionalAnimationBuilder.PlayerDashPath);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(skin);
             return skin;

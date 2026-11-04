@@ -25,11 +25,15 @@ namespace RushOps.Characters
         [Tooltip("Death, played once and held on its last frame; none if empty.")]
         [SerializeField] private DirectionalAnimation _death;
 
+        [Tooltip("Dash somersault, played once over the dash time (issue #142); none if empty.")]
+        [SerializeField] private DirectionalAnimation _dash;
+
         [SerializeField] private Direction8 _direction = Direction8.S;
 
         private SpriteRenderer _renderer;
         private readonly SpriteAnimationState _state = new SpriteAnimationState();
         private float _moveRate = 1f;
+        private float _dashRate = 1f;
 
         /// <summary>The direction the sprite currently faces.</summary>
         public Direction8 Direction => _direction;
@@ -49,6 +53,12 @@ namespace RushOps.Characters
         /// <summary>Faces the sprite towards <paramref name="facing"/>; a zero vector keeps the current direction.</summary>
         public void SetFacing(Vector2 facing)
         {
+            // The somersault keeps the direction of the dash, even if the player aims elsewhere meanwhile.
+            if (_state.Mode == SpriteAnimationMode.Dash)
+            {
+                return;
+            }
+
             _direction = Direction8Math.FromVector(facing, _direction);
         }
 
@@ -56,12 +66,14 @@ namespace RushOps.Characters
         /// Replaces the base loop, move loop, hit reaction and death, e.g. with the player's skin (issue #128); a null
         /// argument keeps the current animation.
         /// </summary>
-        public void SetAnimations(DirectionalAnimation loop, DirectionalAnimation move, DirectionalAnimation hit, DirectionalAnimation death)
+        public void SetAnimations(DirectionalAnimation loop, DirectionalAnimation move, DirectionalAnimation hit,
+            DirectionalAnimation death, DirectionalAnimation dash = null)
         {
             _animation = loop != null ? loop : _animation;
             _move = move != null ? move : _move;
             _hit = hit != null ? hit : _hit;
             _death = death != null ? death : _death;
+            _dash = dash != null ? dash : _dash;
             ShowCurrentFrame();
         }
 
@@ -92,6 +104,28 @@ namespace RushOps.Characters
             ShowCurrentFrame();
         }
 
+        /// <summary>
+        /// Plays the dash somersault once towards <paramref name="direction"/>, stretched to <paramref name="seconds"/>
+        /// so it ends with the dash (issue #142); without a dash animation nothing changes.
+        /// </summary>
+        public void PlayDash(Vector2 direction, float seconds)
+        {
+            if (_dash == null || _state.Mode == SpriteAnimationMode.Death)
+            {
+                return;
+            }
+
+            _direction = Direction8Math.FromVector(direction, _direction);
+            float length = _dash.Duration(_direction);
+            if (length <= 0f || !_state.PlayDash(length))
+            {
+                return;
+            }
+
+            _dashRate = seconds > 0f ? length / seconds : 1f;
+            ShowCurrentFrame();
+        }
+
         /// <summary>Plays the hit reaction once, unless there is none or the character is dying.</summary>
         public void PlayHit()
         {
@@ -119,7 +153,8 @@ namespace RushOps.Characters
         private void Update()
         {
             bool walking = _state.Mode == SpriteAnimationMode.Loop && _state.IsMoving && !_state.IsAlert && _move != null;
-            _state.Tick(Time.deltaTime * (walking ? _moveRate : 1f), _hit != null ? _hit.Duration(_direction) : 0f);
+            float rate = walking ? _moveRate : _state.Mode == SpriteAnimationMode.Dash ? _dashRate : 1f;
+            _state.Tick(Time.deltaTime * rate, _hit != null ? _hit.Duration(_direction) : 0f);
             ShowCurrentFrame();
         }
 
@@ -129,6 +164,7 @@ namespace RushOps.Characters
             {
                 SpriteAnimationMode.Hit => _hit,
                 SpriteAnimationMode.Death => _death,
+                SpriteAnimationMode.Dash => _dash,
                 _ => _state.IsAlert && _alert != null ? _alert : _state.IsMoving && _move != null ? _move : _animation,
             };
             if (animation == null || _renderer == null)

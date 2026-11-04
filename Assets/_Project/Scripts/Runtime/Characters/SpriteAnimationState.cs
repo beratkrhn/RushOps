@@ -4,9 +4,12 @@ namespace RushOps.Characters
     /// Playback state of a character's animations (issue #100): loop, a one-shot hit reaction that falls back to the
     /// loop, and a one-shot death that holds its last frame. Death cannot be interrupted by a hit. While
     /// <see cref="IsAlert"/> is set, the loop is the alert loop instead of the base loop (boomer swelling, issue #101).
+    /// A one-shot dash (issue #142) also falls back to the loop; a hit does not interrupt it, death does.
     /// </summary>
     public sealed class SpriteAnimationState
     {
+        private float _dashDuration;
+
         /// <summary>The animation currently playing.</summary>
         public SpriteAnimationMode Mode { get; private set; } = SpriteAnimationMode.Loop;
 
@@ -57,11 +60,29 @@ namespace RushOps.Characters
             }
         }
 
-        /// <summary>Starts the hit reaction from its first frame; ignored while dying.</summary>
+        /// <summary>
+        /// Starts the dash somersault from its first frame; it hands back to the loop after
+        /// <paramref name="duration"/> seconds of animation time. Ignored while dying.
+        /// </summary>
+        /// <returns>True if the dash started.</returns>
+        public bool PlayDash(float duration)
+        {
+            if (Mode == SpriteAnimationMode.Death)
+            {
+                return false;
+            }
+
+            Mode = SpriteAnimationMode.Dash;
+            Time = 0f;
+            _dashDuration = duration > 0f ? duration : 0f;
+            return true;
+        }
+
+        /// <summary>Starts the hit reaction from its first frame; ignored while dying or dashing.</summary>
         /// <returns>True if the hit reaction started.</returns>
         public bool PlayHit()
         {
-            if (Mode == SpriteAnimationMode.Death)
+            if (Mode == SpriteAnimationMode.Death || Mode == SpriteAnimationMode.Dash)
             {
                 return false;
             }
@@ -89,6 +110,11 @@ namespace RushOps.Characters
             {
                 Mode = SpriteAnimationMode.Loop;
                 Time -= hitDuration;
+            }
+            else if (Mode == SpriteAnimationMode.Dash && Time >= _dashDuration)
+            {
+                Mode = SpriteAnimationMode.Loop;
+                Time -= _dashDuration;
             }
         }
     }

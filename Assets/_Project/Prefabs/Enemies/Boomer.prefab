@@ -113,6 +113,7 @@ MonoBehaviour:
   _alert: {fileID: 11400000, guid: 3f946713e96654347968ebf3c099c201, type: 2}
   _hit: {fileID: 11400000, guid: bae3561b68e2b48ec8289daeb92d8504, type: 2}
   _death: {fileID: 11400000, guid: 82cf736705a03459a88ab1a3cca9ded5, type: 2}
+  _dash: {fileID: 0}
   _direction: 6
 --- !u!50 &7266896740053951933
 Rigidbody2D:

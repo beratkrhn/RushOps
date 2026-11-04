@@ -703,6 +703,13 @@ PLAYER_WALK_FRAMES = 4
 PLAYER_HIT_FRAMES = 2
 PLAYER_DEATH_ANGLES = [18.0, 42.0, 68.0, 90.0, 90.0]
 PLAYER_LEG_ROWS = 11
+# Somersault during the dash (issue #142): a crouch, then the tucked body turns once head over heels. Sideways and
+# diagonal rolls turn in the picture plane; rolls towards or away from the viewer flip the body over vertically.
+PLAYER_ROLL_ANGLES = [0.0, 60.0, 120.0, 180.0, 240.0, 300.0]
+# Tucked into a ball: the body keeps most of its width and loses half its height.
+PLAYER_ROLL_TUCK = (0.85, 0.5)
+PLAYER_ROLL_CROUCH = (1.08, 0.72)
+PLAYER_ROLL_MIN_FLIP = 0.6
 
 
 def canvas_from_image(img: Image.Image) -> Canvas:
@@ -823,6 +830,55 @@ def player_death_frames(idle: Canvas, direction: int) -> list[Canvas]:
     return frames
 
 
+def transformed(c: Canvas, cx: float, cy: float, sx: float, sy: float, degrees: float, out_cx: float,
+                out_cy: float) -> Canvas:
+    """Scales the canvas around (cx, cy) by (sx, sy), a negative factor mirrors, then turns it by degrees (positive
+    turns the top to the right) and places that point at (out_cx, out_cy). Nearest neighbour, inverse mapped."""
+    a = math.radians(degrees)
+    cos, sin = math.cos(a), math.sin(a)
+    out = Canvas(c.width, c.height)
+    for y in range(c.height):
+        for x in range(c.width):
+            dx, dy = x + 0.5 - out_cx, y + 0.5 - out_cy
+            rx = dx * cos + dy * sin
+            ry = -dx * sin + dy * cos
+            out.set(x, y, c.get(math.floor(cx + rx / sx), math.floor(cy + ry / sy)))
+    return out
+
+
+def outlined(c: Canvas, key: str) -> Canvas:
+    """Adds a one-pixel outline of key around the shape, so a shrunken or turned body keeps a clean edge."""
+    out = Canvas(c.width, c.height)
+    for y in range(c.height):
+        for x in range(c.width):
+            if c.px[y][x] is not None:
+                out.px[y][x] = c.px[y][x]
+            elif any(c.get(x + dx, y + dy) is not None for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                out.px[y][x] = key
+    return out
+
+
+def player_roll_frames(idle: Canvas, direction: int) -> list[Canvas]:
+    """Somersault in the facing direction (issue #142), feet always on the floor line of the idle pose."""
+    left, top, right, bottom = filled_bounds(idle)
+    cx, cy = (left + right + 1) / 2, (top + bottom + 1) / 2
+    side = facing_sign(direction)
+    frames = []
+    for i, angle in enumerate(PLAYER_ROLL_ANGLES):
+        if i == 0:
+            sx, sy, turn = PLAYER_ROLL_CROUCH[0], PLAYER_ROLL_CROUCH[1], 0.0
+        elif side:
+            sx, sy, turn = PLAYER_ROLL_TUCK[0], PLAYER_ROLL_TUCK[1], side * angle
+        else:
+            flip = math.cos(math.radians(angle))
+            sx = PLAYER_ROLL_TUCK[0]
+            sy = PLAYER_ROLL_TUCK[1] * math.copysign(max(PLAYER_ROLL_MIN_FLIP, abs(flip)), flip)
+            turn = 0.0
+        body = outlined(transformed(idle, cx, cy, sx, sy, turn, cx, cy), "navy_0")
+        frames.append(shifted(body, 0, bottom - filled_bounds(body)[3]))
+    return frames
+
+
 def player_files(files: dict[str, Image.Image]) -> None:
     """Walk, hit and death frames for all 8 directions, if the idle poses are imported."""
     for d, name in enumerate(DIRECTIONS):
@@ -836,6 +892,8 @@ def player_files(files: dict[str, Image.Image]) -> None:
             files[f"Sprites/Player/Player_Hit_{name}_{frame}.png"] = player_hit(idle, frame, d).to_image()
         for frame, c in enumerate(player_death_frames(idle, d)):
             files[f"Sprites/Player/Player_Death_{name}_{frame}.png"] = c.to_image()
+        for frame, c in enumerate(player_roll_frames(idle, d)):
+            files[f"Sprites/Player/Player_Dash_{name}_{frame}.png"] = c.to_image()
 
 
 # --- Projectile and effects --------------------------------------------------------
@@ -2708,7 +2766,7 @@ ANIMATION_PREVIEWS = {
     "Runner": [("Run", 8, 3), ("Hit", 12, 1), ("Death", 10, 1)],
     "Brute": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Boomer": [("Walk", 8, 2), ("Hit", 12, 1), ("Swell", 12, 4), ("Death", 10, 1)],
-    "Player": [("Walk", 10, 3), ("Hit", 12, 1), ("Death", 10, 1)],
+    "Player": [("Walk", 10, 3), ("Dash", 10, 2), ("Hit", 12, 1), ("Death", 10, 1)],
 }
 # Pause on the last death frame before the preview loops, in milliseconds.
 PREVIEW_HOLD_MS = 800

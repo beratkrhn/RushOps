@@ -3,7 +3,7 @@
 
 Each skin maps the colours of the standard figure to other palette colours. The outer outline turns to the
 palette's outline colour so every skin reads the same against the floor. The idle poses are recoloured and the
-walk, hit and death frames are derived from them exactly like the standard figure's (gen_pixelart.player_*), so
+walk, dash (somersault), hit and death frames are derived from them exactly like the standard figure's (gen_pixelart.player_*), so
 all skins share the same animations.
 
 Writes Assets/_Project/Art/Sprites/Player/Skins/<Id>_<State>_<DIR>[_<Frame>].png. With --preview DIR it also
@@ -21,7 +21,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gen_pixelart import (  # noqa: E402
     ART_DIR, DIRECTIONS, PALETTE, PLAYER_HIT_FRAMES, PLAYER_WALK_FRAMES, ROOT, Canvas, assert_in_palette,
-    canvas_from_image, player_death_frames, player_hit, player_walk,
+    canvas_from_image, player_death_frames, player_hit, player_roll_frames, player_walk,
 )
 
 SKINS_DIR = ART_DIR / "Sprites/Player/Skins"
@@ -110,6 +110,8 @@ def skin_frames(skin: str) -> dict[str, Image.Image]:
             files[f"{skin}_Hit_{name}_{frame}.png"] = player_hit(idle, frame, d).to_image()
         for frame, c in enumerate(player_death_frames(idle, d)):
             files[f"{skin}_Death_{name}_{frame}.png"] = c.to_image()
+        for frame, c in enumerate(player_roll_frames(idle, d)):
+            files[f"{skin}_Dash_{name}_{frame}.png"] = c.to_image()
     return files
 
 

@@ -26,7 +26,7 @@ namespace RushOps.Skins
             }
 
             Skin = skin;
-            _view.SetAnimations(skin.Idle, skin.Walk, skin.Hit, skin.Death);
+            _view.SetAnimations(skin.Idle, skin.Walk, skin.Hit, skin.Death, skin.Dash);
         }
 
         private void Awake()
