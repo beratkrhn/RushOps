@@ -49,5 +49,29 @@ namespace RushOps.Tests.EditMode
 
             Assert.AreEqual(a, b, 1f);
         }
+
+        [Test]
+        public void Horizontal_RightAndLeft()
+        {
+            Assert.AreEqual(1, SwipeMath.Horizontal(new Vector2(100, 100), new Vector2(200, 110), 50f));
+            Assert.AreEqual(-1, SwipeMath.Horizontal(new Vector2(300, 100), new Vector2(150, 90), 50f));
+        }
+
+        [Test]
+        public void Horizontal_IgnoresTapsShortMovesAndVerticalSwipes()
+        {
+            Assert.AreEqual(0, SwipeMath.Horizontal(new Vector2(100, 100), new Vector2(100, 100), 50f));
+            Assert.AreEqual(0, SwipeMath.Horizontal(new Vector2(100, 100), new Vector2(140, 100), 50f));
+            Assert.AreEqual(0, SwipeMath.Horizontal(new Vector2(100, 100), new Vector2(170, 200), 50f));
+        }
+
+        [Test]
+        public void SideBlend_IsZeroInTheMiddleAndOneAtTheNeighbour()
+        {
+            Assert.AreEqual(0f, SwipeMath.SideBlend(300f, 300f, 150f));
+            Assert.AreEqual(0.5f, SwipeMath.SideBlend(375f, 300f, 150f), 1e-5f);
+            Assert.AreEqual(1f, SwipeMath.SideBlend(0f, 300f, 150f));
+            Assert.AreEqual(1f, SwipeMath.SideBlend(0f, 0f, 0f));
+        }
     }
 }
