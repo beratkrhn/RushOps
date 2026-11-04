@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace RushOps.UI
 {
-    /// <summary>Values of the HUD (F-HUD-01, F-HUD-03).</summary>
+    /// <summary>Values of the HUD (F-HUD-01, F-HUD-03, F-HUD-04).</summary>
     [CreateAssetMenu(fileName = "HudConfig", menuName = "RushOps/HUD Config")]
     public class HudConfig : ScriptableObject
     {
@@ -21,6 +21,15 @@ namespace RushOps.UI
         [Tooltip("Volume of the chime when a tracked gate opens.")]
         [SerializeField, Range(0f, 1f)] private float _missionDoneVolume = 1f;
 
+        [Tooltip("Seconds the multiplier lights up after it rose.")]
+        [SerializeField, Min(0f)] private float _multiplierFlashDuration = 0.4f;
+
+        [Tooltip("Tint of the multiplier while it lights up.")]
+        [SerializeField] private Color _multiplierFlashColor = new Color32(246, 208, 77, 255);
+
+        [Tooltip("Scale of the multiplier at the start of the light-up; it eases back to 1.")]
+        [SerializeField, Min(1f)] private float _multiplierFlashScale = 1.5f;
+
         /// <summary>Seconds the hearts blink red after a lost heart.</summary>
         public float HeartFlashDuration => _heartFlashDuration;
 
@@ -35,5 +44,14 @@ namespace RushOps.UI
 
         /// <summary>Volume of the chime when a tracked gate opens.</summary>
         public float MissionDoneVolume => _missionDoneVolume;
+
+        /// <summary>Seconds the multiplier lights up after it rose.</summary>
+        public float MultiplierFlashDuration => _multiplierFlashDuration;
+
+        /// <summary>Tint of the multiplier while it lights up.</summary>
+        public Color MultiplierFlashColor => _multiplierFlashColor;
+
+        /// <summary>Scale of the multiplier at the start of the light-up.</summary>
+        public float MultiplierFlashScale => _multiplierFlashScale;
     }
 }

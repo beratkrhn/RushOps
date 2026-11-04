@@ -11,6 +11,7 @@ using RushOps.Levels;
 using RushOps.Navigation;
 using RushOps.Perks;
 using RushOps.Player;
+using RushOps.Scoring;
 using RushOps.UI;
 using UnityEditor;
 using UnityEditor.Events;
@@ -143,6 +144,11 @@ namespace RushOps.Editor.Scenes
         private const int ProjectileSortingOrder = 3;
         // Blasts cover the characters they hit.
         private const int EffectSortingOrder = 4;
+        private const string ScoreConfigPath = "Assets/_Project/Data/Score/ScoreConfig.asset";
+        // Distance from the top of the score label to the center of the multiplier below it, in reference units. The
+        // score is centered in its 30 units high label (center at 15) and font lines are 20 units high at the HUD scale,
+        // so the multiplier sits one line under the score.
+        private const float ScoreRowOffset = 35f;
         private const string NukeConfigPath = "Assets/_Project/Data/Perks/NukeConfig.asset";
         private const string ShieldConfigPath = "Assets/_Project/Data/Perks/ShieldConfig.asset";
         private const string ShieldBarrierSpritePath = "Assets/_Project/Art/Sprites/Effects/Shield_Barrier.png";
@@ -459,7 +465,7 @@ namespace RushOps.Editor.Scenes
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
             PauseController pause = CreateHud(
                 LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), target.GetComponent<PlayerPerks>(),
-                PixelFontBuilder.Build(), out MissionTracker tracker, out ScreenFlash flash);
+                PixelFontBuilder.Build(), out MissionTracker tracker, out ScreenFlash flash, out ScoreView scoreView);
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
             Material flashMaterial = LoadOrCreateFlashMaterial();
@@ -489,6 +495,7 @@ namespace RushOps.Editor.Scenes
             };
             WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPools, target);
             LevelKills kills = CreateLevelKills(enemyPools);
+            CreateLevelScore(enemyPools, target.GetComponent<PlayerHealth>(), scoreView);
             var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
             SetPools(aimAssist, enemyPools);
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
@@ -1121,7 +1128,8 @@ namespace RushOps.Editor.Scenes
         }
 
         private static PauseController CreateHud(
-            HudConfig config, PlayerHealth player, PlayerPerks perks, Font font, out MissionTracker tracker, out ScreenFlash flash)
+            HudConfig config, PlayerHealth player, PlayerPerks perks, Font font, out MissionTracker tracker, out ScreenFlash flash,
+            out ScoreView scoreView)
         {
             var root = new GameObject("HUD", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
@@ -1142,6 +1150,7 @@ namespace RushOps.Editor.Scenes
             float heartsHeight = CreateHearts(safeArea, config, player);
             CreateActivePerks(safeArea, perks, HudMargin + heartsHeight + PerkRowGap);
             CreatePauseButton(safeArea, pause);
+            scoreView = CreateScoreView(safeArea, config, font);
             CreateFpsCounter(safeArea, font);
             tracker = CreateMissionTracker(safeArea, config, font);
             GameObject overlay = CreatePauseOverlay((RectTransform)root.transform, pause, font);
@@ -1305,14 +1314,56 @@ namespace RushOps.Editor.Scenes
         }
 
         // Top center, between hearts and pause button; hides itself in release builds.
+        // Score at the top center with the multiplier below it (F-HUD-04, issue #28); LevelScore is set in BuildScene.
+        private static ScoreView CreateScoreView(RectTransform parent, HudConfig config, Font font)
+        {
+            var top = new Vector2(0.5f, 1f);
+            Text score = CreateText("Score", parent, font, ScoreText.Score(0), HudPixelScale, Vector2.zero);
+            score.rectTransform.anchorMin = top;
+            score.rectTransform.anchorMax = top;
+            score.rectTransform.pivot = top;
+            score.rectTransform.anchoredPosition = new Vector2(0f, -HudMargin);
+
+            Text multiplier = CreateText("Multiplier", parent, font, ScoreText.Multiplier(1), HudPixelScale, Vector2.zero);
+            multiplier.rectTransform.anchorMin = top;
+            multiplier.rectTransform.anchorMax = top;
+            multiplier.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            // Centered pivot, so the pop on a rise grows evenly around the text.
+            multiplier.rectTransform.anchoredPosition = new Vector2(0f, -HudMargin - ScoreRowOffset);
+
+            var view = score.gameObject.AddComponent<ScoreView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_scoreLabel").objectReferenceValue = score;
+            serialized.FindProperty("_multiplierLabel").objectReferenceValue = multiplier;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return view;
+        }
+
+        private static LevelScore CreateLevelScore(EnemyPool[] pools, PlayerHealth player, ScoreView view)
+        {
+            var score = new GameObject("LevelScore").AddComponent<LevelScore>();
+            var serialized = new SerializedObject(score);
+            serialized.FindProperty("_config").objectReferenceValue = LoadOrCreateConfig<ScoreConfig>(ScoreConfigPath);
+            serialized.FindProperty("_player").objectReferenceValue = player;
+            SetPools(serialized, pools);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            var serializedView = new SerializedObject(view);
+            serializedView.FindProperty("_score").objectReferenceValue = score;
+            serializedView.ApplyModifiedPropertiesWithoutUndo();
+            return score;
+        }
+
         private static void CreateFpsCounter(RectTransform parent, Font font)
         {
             Text text = CreateText("FpsCounter", parent, font, "FPS", HudPixelScale, Vector2.zero);
-            var top = new Vector2(0.5f, 1f);
-            text.rectTransform.anchorMin = top;
-            text.rectTransform.anchorMax = top;
-            text.rectTransform.pivot = top;
-            text.rectTransform.anchoredPosition = new Vector2(0f, -HudMargin);
+            // Bottom center: score and multiplier own the top center (F-HUD-04), the mission tracker reaches far left.
+            var bottom = new Vector2(0.5f, 0f);
+            text.rectTransform.anchorMin = bottom;
+            text.rectTransform.anchorMax = bottom;
+            text.rectTransform.pivot = bottom;
+            text.rectTransform.anchoredPosition = new Vector2(0f, HudMargin);
             text.gameObject.AddComponent<FpsCounter>();
         }
 
