@@ -437,10 +437,12 @@ namespace RushOps.Editor.Scenes
         /// <summary>
         /// Builds a playable arena from <paramref name="layout"/>, lets <paramref name="extend"/> add level objects and
         /// saves it at <paramref name="scenePath"/>. The scene is added to the build settings, as the first scene if
-        /// <paramref name="firstInBuild"/>.
+        /// <paramref name="firstInBuild"/>. A new level definition starts with <paramref name="starScores"/> (two and
+        /// three stars) if given; an existing one keeps its tuned values.
         /// </summary>
         internal static void BuildScene(
-            string scenePath, ArenaLayout layout, bool firstInBuild, System.Action<ArenaScene> extend, string displayName)
+            string scenePath, ArenaLayout layout, bool firstInBuild, System.Action<ArenaScene> extend, string displayName,
+            Vector2Int? starScores = null)
         {
             // Create the scene first: NewScene unloads assets loaded before it, which would drop the references below.
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -513,7 +515,7 @@ namespace RushOps.Editor.Scenes
             LevelKills kills = CreateLevelKills(enemyPools);
             LevelScore score = CreateLevelScore(enemyPools, target.GetComponent<PlayerHealth>(), scoreView);
             var serializedResults = new SerializedObject(results);
-            serializedResults.FindProperty("_level").objectReferenceValue = LoadOrCreateLevel(scenePath, displayName);
+            serializedResults.FindProperty("_level").objectReferenceValue = LoadOrCreateLevel(scenePath, displayName, starScores);
             serializedResults.FindProperty("_score").objectReferenceValue = score;
             serializedResults.FindProperty("_kills").objectReferenceValue = kills;
             serializedResults.FindProperty("_pause").objectReferenceValue = pause;
@@ -860,7 +862,7 @@ namespace RushOps.Editor.Scenes
         }
 
         // One definition per level scene under Data/Levels; existing ones keep their tuned star thresholds.
-        private static LevelDefinition LoadOrCreateLevel(string scenePath, string displayName)
+        private static LevelDefinition LoadOrCreateLevel(string scenePath, string displayName, Vector2Int? starScores)
         {
             string sceneName = Path.GetFileNameWithoutExtension(scenePath);
             string path = $"{LevelsDataDir}/{sceneName}.asset";
@@ -871,6 +873,11 @@ namespace RushOps.Editor.Scenes
             if (!exists)
             {
                 serialized.FindProperty("_displayName").stringValue = displayName ?? sceneName;
+                if (starScores.HasValue)
+                {
+                    serialized.FindProperty("_twoStarScore").intValue = starScores.Value.x;
+                    serialized.FindProperty("_threeStarScore").intValue = starScores.Value.y;
+                }
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();

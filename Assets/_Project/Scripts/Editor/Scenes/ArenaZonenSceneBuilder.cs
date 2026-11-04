@@ -18,8 +18,6 @@ namespace RushOps.Editor.Scenes
     public static class ArenaZonenSceneBuilder
     {
         private const string ScenePath = "Assets/_Project/Scenes/Arena_Zonen.unity";
-        private const string GateConfigPath = "Assets/_Project/Data/Levels/GateConfig.asset";
-        private const string GateSpritePath = "Assets/_Project/Art/Sprites/Level/Gate_Bars.png";
         private const int Width = 24;
         private const int Height = 84;
         // Rows of the walls between the zones; each has a gate in the middle.
@@ -38,10 +36,8 @@ namespace RushOps.Editor.Scenes
         private static readonly Vector2 GeneratorPosition = new Vector2(18.5f, 76.5f);
         private static readonly Vector2[] CellPositions = { new Vector2(4.5f, 67.5f) };
 
-        // Level exit: the last floor rows at the north end of zone 3, 4 x 1.5 units like its sprite.
+        // Level exit: the last floor rows at the north end of zone 3.
         private static readonly Vector2 ExitCenter = new Vector2(12f, 81.75f);
-        private static readonly Vector2 ExitSize = new Vector2(4f, 1.5f);
-        private const string ExitSpritePath = "Assets/_Project/Art/Sprites/Level/Exit_Pad.png";
         private const string WavesDir = "Assets/_Project/Data/Waves";
         // Kills since level start that open the first gate.
         private const int KillGateKills = 10;
@@ -86,19 +82,13 @@ namespace RushOps.Editor.Scenes
 
         private static void AddZones(ArenaScene arena)
         {
-            var config = ArenaTestSceneBuilder.LoadOrCreateConfig<GateConfig>(GateConfigPath);
-            var bars = AssetDatabase.LoadAssetAtPath<Sprite>(GateSpritePath);
-            if (bars == null)
-            {
-                throw new System.InvalidOperationException($"Gate sprite not found at {GateSpritePath}; run Tools/gen_pixelart.py");
-            }
-
-            AudioClip openClip = ArenaTestSceneBuilder.LoadClip("GateOpen.wav");
             var gatesRoot = new GameObject("Gates").transform;
             var gates = new Gate[DividerRows.Length];
             for (int i = 0; i < gates.Length; i++)
             {
-                gates[i] = CreateGate($"Gate_{i + 1}", gatesRoot, DividerRows[i], config, bars, openClip, arena, i == 0);
+                var center = new Vector2(GateX + GateWidth * 0.5f, DividerRows[i] + 0.5f);
+                gates[i] = LevelPieceBuilder.CreateGate(
+                    $"Gate_{i + 1}", gatesRoot, center, GateWidth, arena, i == 0 ? KillGateKills : 0);
             }
 
             // Zones span the inner columns, from the row above the previous divider up to their own divider.
@@ -129,29 +119,7 @@ namespace RushOps.Editor.Scenes
             TransportPuzzle transport = PuzzleBuilder.CreateTransport(
                 "Transport_Zone_3", GeneratorPosition, CellPositions, 1, zones[2], arena);
             PuzzleBuilder.SetLevelPuzzles(arena, hold, switches, transport);
-            CreateExit(arena);
-        }
-
-        private static void CreateExit(ArenaScene arena)
-        {
-            var go = new GameObject("LevelExit");
-            go.transform.position = ExitCenter;
-            var renderer = go.AddComponent<SpriteRenderer>();
-            renderer.sprite = AssetDatabase.LoadAssetAtPath<Sprite>(ExitSpritePath);
-            if (renderer.sprite == null)
-            {
-                throw new System.InvalidOperationException($"Sprite not found at {ExitSpritePath}; run Tools/gen_pixelart.py");
-            }
-
-            renderer.sortingOrder = ArenaTestSceneBuilder.FloorMarkSortingOrder;
-            var trigger = go.AddComponent<BoxCollider2D>();
-            trigger.isTrigger = true;
-            trigger.size = ExitSize;
-            LevelExit exit = go.AddComponent<LevelExit>();
-
-            var results = new SerializedObject(arena.Results);
-            results.FindProperty("_exit").objectReferenceValue = exit;
-            results.ApplyModifiedPropertiesWithoutUndo();
+            LevelPieceBuilder.CreateExit(arena, ExitCenter);
         }
 
         // While the hold zone runs, zone 2 sends smaller waves at a much faster pace, so standing still is never safe.
@@ -197,65 +165,6 @@ namespace RushOps.Editor.Scenes
                     },
                     0.6f, 3f, AfterLastWave.End)),
             };
-        }
-
-        private static Gate CreateGate(
-            string name, Transform parent, int row, GateConfig config, Sprite barSprite, AudioClip openClip, ArenaScene arena,
-            bool killGate)
-        {
-            var go = new GameObject(name);
-            go.transform.SetParent(parent, false);
-            go.transform.position = new Vector3(GateX + GateWidth * 0.5f, row + 0.5f, 0f);
-            // On the walls layer, so the player, enemies and shots treat a closed gate like a wall.
-            go.layer = ArenaTestSceneBuilder.RequireLayer(ArenaTestSceneBuilder.WallsLayer);
-            var blocker = go.AddComponent<BoxCollider2D>();
-            blocker.size = new Vector2(GateWidth, 1f);
-
-            var bars = new SpriteRenderer[GateWidth];
-            for (int i = 0; i < GateWidth; i++)
-            {
-                var bar = new GameObject($"Bars_{i}");
-                bar.transform.SetParent(go.transform, false);
-                bar.transform.localPosition = new Vector3(i - (GateWidth - 1) * 0.5f, 0f, 0f);
-                bars[i] = bar.AddComponent<SpriteRenderer>();
-                bars[i].sprite = barSprite;
-                bars[i].sortingOrder = ArenaTestSceneBuilder.ActorSortingOrder;
-            }
-
-            MonoBehaviour condition;
-            if (killGate)
-            {
-                var kills = go.AddComponent<KillGateCondition>();
-                var serializedKills = new SerializedObject(kills);
-                serializedKills.FindProperty("_kills").objectReferenceValue = arena.Kills;
-                serializedKills.FindProperty("_requiredKills").intValue = KillGateKills;
-                serializedKills.ApplyModifiedPropertiesWithoutUndo();
-                condition = kills;
-            }
-            else
-            {
-                // Its puzzle is set once the zones exist (AddZones).
-                condition = go.AddComponent<PuzzleSolvedCondition>();
-            }
-
-            var gate = go.AddComponent<Gate>();
-            var serialized = new SerializedObject(gate);
-            serialized.FindProperty("_config").objectReferenceValue = config;
-            serialized.FindProperty("_condition").objectReferenceValue = condition;
-            serialized.FindProperty("_size").vector2IntValue = new Vector2Int(GateWidth, 1);
-            serialized.FindProperty("_blocker").objectReferenceValue = blocker;
-            serialized.FindProperty("_navigator").objectReferenceValue = arena.Navigator;
-            serialized.FindProperty("_sfx").objectReferenceValue = arena.Sfx;
-            serialized.FindProperty("_openClip").objectReferenceValue = openClip;
-            SerializedProperty barsProperty = serialized.FindProperty("_bars");
-            barsProperty.arraySize = bars.Length;
-            for (int i = 0; i < bars.Length; i++)
-            {
-                barsProperty.GetArrayElementAtIndex(i).objectReferenceValue = bars[i];
-            }
-
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            return gate;
         }
     }
 }
