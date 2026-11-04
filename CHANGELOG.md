@@ -124,8 +124,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Wellen *(Startwerte)* mit Runnern: `Arena_Test` 12 Walker / 12 Walker + 4 Runner / 14 Walker + 6 Runner; `Arena_Zonen` Zone 2 6 / 8 + 2 / 9 + 3, Zone 3 6 + 2 / 8 + 4 / 10 + 6; Zone 1 bleibt nur mit Walkern (Issue #20).
 - Wellen *(Startwerte)* mit Brutes: `Arena_Test` 1 Brute in Welle 3, `Arena_Zonen` Zone 3 je 1 bzw. 2 Brutes in Welle 2 und 3 (Issue #21).
 - Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
-
 - Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
+
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
