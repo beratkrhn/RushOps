@@ -806,6 +806,14 @@ namespace RushOps.Editor.Scenes
             Vector2Int startCell, DirectionalAnimation idle, PlayerConfig config, WeaponConfig weaponConfig, ProjectilePool pool, PlayerActions actions)
         {
             DirectionalSpriteAnimator view = CreateCharacter("Player", null, startCell, idle, Direction8.S);
+            var serializedView = new SerializedObject(view);
+            serializedView.FindProperty("_move").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerWalkPath);
+            serializedView.FindProperty("_hit").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerHitPath);
+            serializedView.FindProperty("_death").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerDeathPath);
+            serializedView.ApplyModifiedPropertiesWithoutUndo();
             GameObject go = view.gameObject;
             go.tag = "Player";
             go.layer = RequireLayer(PlayerLayer);
@@ -872,6 +880,12 @@ namespace RushOps.Editor.Scenes
             }
 
             serializedHealth.ApplyModifiedPropertiesWithoutUndo();
+
+            // Walking, hit and death animations (issue #102).
+            var playerView = go.AddComponent<PlayerView>();
+            var serializedPlayerView = new SerializedObject(playerView);
+            serializedPlayerView.FindProperty("_view").objectReferenceValue = view;
+            serializedPlayerView.ApplyModifiedPropertiesWithoutUndo();
 
             // The pickup pool is set once the perk drops exist (BuildScene).
             go.AddComponent<PlayerPerks>();
@@ -953,6 +967,7 @@ namespace RushOps.Editor.Scenes
             var serialized = new SerializedObject(restarter);
             serialized.FindProperty("_player").objectReferenceValue = player;
             serialized.FindProperty("_deathHandler").objectReferenceValue = results;
+            serialized.FindProperty("_view").objectReferenceValue = player.GetComponent<DirectionalSpriteAnimator>();
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return restarter;
         }

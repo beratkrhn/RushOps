@@ -13,6 +13,9 @@ namespace RushOps.Characters
         [Tooltip("Looping base animation, e.g. walking.")]
         [SerializeField] private DirectionalAnimation _animation;
 
+        [Tooltip("Loop that replaces the base loop while moving, e.g. the player walking instead of standing; none if empty.")]
+        [SerializeField] private DirectionalAnimation _move;
+
         [Tooltip("Loop that replaces the base loop while alerted, e.g. the boomer swelling near the player; none if empty.")]
         [SerializeField] private DirectionalAnimation _alert;
 
@@ -26,6 +29,7 @@ namespace RushOps.Characters
 
         private SpriteRenderer _renderer;
         private readonly SpriteAnimationState _state = new SpriteAnimationState();
+        private float _moveRate = 1f;
 
         /// <summary>The direction the sprite currently faces.</summary>
         public Direction8 Direction => _direction;
@@ -53,6 +57,16 @@ namespace RushOps.Characters
         {
             _state.PlayLoop();
             ShowCurrentFrame();
+        }
+
+        /// <summary>
+        /// Plays the move loop instead of the base loop while <paramref name="moving"/>, at <paramref name="rate"/> times
+        /// its frame rate, so the steps match the walking speed (issue #102).
+        /// </summary>
+        public void SetMoving(bool moving, float rate = 1f)
+        {
+            _moveRate = rate > 0f ? rate : 1f;
+            _state.SetMoving(moving);
         }
 
         /// <summary>
@@ -91,7 +105,8 @@ namespace RushOps.Characters
 
         private void Update()
         {
-            _state.Tick(Time.deltaTime, _hit != null ? _hit.Duration(_direction) : 0f);
+            bool walking = _state.Mode == SpriteAnimationMode.Loop && _state.IsMoving && !_state.IsAlert && _move != null;
+            _state.Tick(Time.deltaTime * (walking ? _moveRate : 1f), _hit != null ? _hit.Duration(_direction) : 0f);
             ShowCurrentFrame();
         }
 
@@ -101,7 +116,7 @@ namespace RushOps.Characters
             {
                 SpriteAnimationMode.Hit => _hit,
                 SpriteAnimationMode.Death => _death,
-                _ => _state.IsAlert && _alert != null ? _alert : _animation,
+                _ => _state.IsAlert && _alert != null ? _alert : _state.IsMoving && _move != null ? _move : _animation,
             };
             if (animation == null || _renderer == null)
             {

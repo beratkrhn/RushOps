@@ -38,6 +38,11 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
   - Mixer `Audio/RushOps.mixer` mit Master, Musik und Effekte; die Lautstärken `MasterVolume`, `MusicVolume` und `EffectsVolume` sind freigegeben. `AudioVolumes` setzt sie getrennt (Startwerte in `Data/Audio/AudioConfig`, Umrechnung in `AudioVolumeMath`), als Vorbereitung für die Einstellungen.
   - `SfxPlayer` spielt über 8 Stimmen in den Effekte-Kanal. Die Tonhöhen-Variation verbiegt damit keine laufenden Sounds mehr.
   - Alle Buttons klicken (`UiClickSound`).
+- **Spieler-Animationen Laufen, Treffer, Tod** (Issue #102, F-GFX-02): Für alle 8 Richtungen leitet `Tools/gen_pixelart.py` die Frames aus den Idle-Posen des Character-Tools ab, auf deinen Wunsch per Skript. Die Idle-Posen bleiben unverändert.
+  - Laufen: 4 Frames, Beine heben sich abwechselnd, der Körper wippt. Das Tempo des Zyklus folgt der tatsächlichen Geschwindigkeit, also Stick-Auslenkung, Perks und Tragen (`PlayerAnimationMath`, Schwelle und Obergrenze in `PlayerConfig`).
+  - Treffer: 2 Frames, der Oberkörper zuckt zurück.
+  - Tod: 5 Frames, die Figur kippt um und liegt in einer Blutlache.
+  - „Gescheitert“ erscheint erst, wenn die Todesanimation abgelaufen ist (`LevelRestarter`). `PlayerView` steuert die Animationen, `DirectionalSpriteAnimator` hat dafür eine Lauf-Schleife (`SetMoving`). Vorschau `docs/art/animations/Player.gif`.
 - Menü „RushOps → Szenen → Alle erzeugen“ (`AllScenesBuilder.BuildAll`, auch für den Batchmode).
 
 ### Geändert
