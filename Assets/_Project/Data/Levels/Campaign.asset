@@ -16,7 +16,7 @@ MonoBehaviour:
   - _displayName: Strand
     _levels:
     - {fileID: 11400000, guid: 1834ab3def4cd40e9be61f4044eb87e7, type: 2}
-    - {fileID: 0}
+    - {fileID: 11400000, guid: 1d674805df52a4df0914a70fbdb835e1, type: 2}
     - {fileID: 0}
   - _displayName: "D\xFCstere Stadt"
     _levels:

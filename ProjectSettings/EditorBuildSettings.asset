@@ -35,6 +35,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/IslandMap.unity
     guid: 903039037525742348bc414b6d423444
+  - enabled: 1
+    path: Assets/_Project/Scenes/Level_1-2.unity
+    guid: 24a38c27c809f4abfa15f9e2b41aa6af
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -50,9 +50,11 @@ namespace RushOps.Tests.PlayMode
             Assert.AreEqual(0, _map.Current);
             Assert.AreEqual("Insel 1: Strand", GameObject.Find("Title").GetComponent<Text>().text);
             Assert.AreEqual(LevelNodeState.Open, Node(0, 0).State);
-            Assert.AreEqual(LevelNodeState.Soon, Node(0, 1).State, "level 1-2 is not built yet");
+            Assert.AreEqual(LevelNodeState.Locked, Node(0, 1).State, "level 1-2 opens after 1-1");
+            Assert.AreEqual(LevelNodeState.Soon, Node(0, 2).State, "level 1-3 is not built yet");
             Assert.AreEqual("Strandbad", Node(0, 0).NameShown, "decision C11: number and short name");
-            Assert.AreEqual(string.Empty, Node(0, 1).NameShown);
+            Assert.AreEqual("Strandpromenade", Node(0, 1).NameShown);
+            Assert.AreEqual(string.Empty, Node(0, 2).NameShown);
             Assert.IsFalse(Cover(0).activeSelf);
             Assert.IsTrue(Cover(1).activeSelf, "island 2 not locked");
             Assert.IsTrue(Cover(2).activeSelf, "island 3 not locked");
@@ -70,6 +72,7 @@ namespace RushOps.Tests.PlayMode
 
             Assert.AreEqual(LevelNodeState.Done, Node(0, 0).State);
             Assert.AreEqual(2, Node(0, 0).StarsShown);
+            Assert.AreEqual(LevelNodeState.Open, Node(0, 1).State, "finishing 1-1 opens 1-2");
         }
 
         [UnityTest]
