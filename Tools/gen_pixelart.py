@@ -9,6 +9,9 @@ character tool and is imported with Tools/import_character.py.
 Output (under Assets/_Project/Art/):
   Palettes/RushOps_Palette.png             one pixel per palette color, in order
   Sprites/Enemies/Walker_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames
+  Sprites/Player/Player_Walk_<DIR>_<F>.png  64x64, 4 frames derived from the imported idle pose (issue #102)
+  Sprites/Player/Player_Hit_<DIR>_<F>.png   64x64, 2 frames, upper body jerks back (issue #102)
+  Sprites/Player/Player_Death_<DIR>_<F>.png 64x64, 5 frames, tips over into a pool of blood (issue #102)
   Sprites/Enemies/Walker_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames, recoil (issue #100)
   Sprites/Enemies/Walker_Death_<DIR>_<F>.png 64x64, 8 directions x 5 frames, topples backward (issue #100)
   Sprites/Enemies/Runner_Run_<DIR>_<F>.png  64x64, 8 directions x 4 frames (issue #20)
@@ -682,6 +685,149 @@ def runner_hit(direction: int, frame: int) -> Canvas:
 
 def runner_death(direction: int, frame: int) -> Canvas:
     return runner_frame(direction, 1, RUNNER_DEATH_POSES[frame], eyes=frame == 0, stain=DEATH_STAIN[frame])
+
+
+# --- Player animations (issue #102) ----------------------------------------------------
+# Derived from the idle poses of the character tool (Sprites/Player/Player_Idle_<DIR>.png), which stay as they are:
+# walking lifts the legs in turn while the body bobs, a hit jerks the upper body back, and death tips the figure
+# over around its feet until it lies in a pool of blood.
+PLAYER_WALK_FRAMES = 4
+PLAYER_HIT_FRAMES = 2
+PLAYER_DEATH_ANGLES = [18.0, 42.0, 68.0, 90.0, 90.0]
+PLAYER_LEG_ROWS = 11
+
+
+def canvas_from_image(img: Image.Image) -> Canvas:
+    """Palette canvas of an imported sprite; fails on colours outside the palette."""
+    lookup = {rgb: key for key, rgb in PALETTE.items()}
+    c = Canvas(img.width, img.height)
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = img.getpixel((x, y))
+            if a:
+                c.px[y][x] = lookup[(r, g, b)]
+    return c
+
+
+def filled_bounds(c: Canvas) -> tuple[int, int, int, int]:
+    xs = [x for y in range(c.height) for x in range(c.width) if c.px[y][x] is not None]
+    ys = [y for y in range(c.height) for x in range(c.width) if c.px[y][x] is not None]
+    return min(xs), min(ys), max(xs), max(ys)
+
+
+def shifted(c: Canvas, dx: int, dy: int) -> Canvas:
+    out = Canvas(c.width, c.height)
+    for y in range(c.height):
+        for x in range(c.width):
+            if c.px[y][x] is not None:
+                out.set(x + dx, y + dy, c.px[y][x])
+    return out
+
+
+def facing_sign(direction: int) -> int:
+    """+1 if the direction faces right on screen, -1 if left, 0 for straight up or down."""
+    cos = math.cos(math.radians(direction * 45.0))
+    return 0 if abs(cos) < 0.1 else (1 if cos > 0 else -1)
+
+
+def player_walk(idle: Canvas, frame: int) -> Canvas:
+    """Frames 0 and 2 stand on both feet; in 1 and 3 the body bobs up a pixel and one leg lifts."""
+    if frame % 2 == 0:
+        return shifted(idle, 0, 0)
+    left, _, right, bottom = filled_bounds(idle)
+    top_leg = bottom - PLAYER_LEG_ROWS + 1
+    legs = [(x, y) for y in range(top_leg, bottom + 1) for x in range(idle.width) if idle.px[y][x] is not None]
+    cx = sum(x for x, _ in legs) / len(legs)
+    lift_left = frame == 1
+    body = shifted(idle, 0, -1)
+    out = Canvas(idle.width, idle.height)
+    for y in range(idle.height):
+        for x in range(idle.width):
+            key = body.px[y][x]
+            if key is None:
+                continue
+            in_legs = y >= top_leg - 1
+            lifted = in_legs and ((x < cx) == lift_left)
+            out.set(x, y - (2 if lifted else 0), key)
+    return out
+
+
+def player_hit(idle: Canvas, frame: int, direction: int) -> Canvas:
+    """The upper body jerks back from the hit, strongest in frame 0; facing up or down it ducks instead."""
+    amount = (3, 1)[frame]
+    _, top, _, bottom = filled_bounds(idle)
+    back = -facing_sign(direction)
+    out = Canvas(idle.width, idle.height)
+    for y in range(idle.height):
+        for x in range(idle.width):
+            key = idle.px[y][x]
+            if key is None:
+                continue
+            share = (bottom - y) / max(1, bottom - top)
+            if back:
+                out.set(x + round(back * amount * share), y, key)
+            else:
+                out.set(x, y + round(amount * 0.5 * share), key)
+    return out
+
+
+def rotated_about(c: Canvas, cx: float, cy: float, degrees: float) -> Canvas:
+    """Turns the canvas by degrees around (cx, cy), nearest neighbour; positive turns the top to the right."""
+    a = math.radians(degrees)
+    cos, sin = math.cos(a), math.sin(a)
+    out = Canvas(c.width, c.height)
+    for y in range(c.height):
+        for x in range(c.width):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            sx = cx + dx * cos + dy * sin
+            sy = cy - dx * sin + dy * cos
+            out.set(x, y, c.get(math.floor(sx), math.floor(sy)))
+    return out
+
+
+def player_death_frames(idle: Canvas, direction: int) -> list[Canvas]:
+    """The figure tips over backwards around its feet (sideways when it faces up or down) and ends lying in a pool
+    of blood. Each frame slides just enough, never less than the one before, to stay on the canvas."""
+    left, _, right, bottom = filled_bounds(idle)
+    pivot_x, pivot_y = (left + right + 1) / 2, bottom + 1
+    fall = facing_sign(direction) or 1
+    frames, shift = [], 0
+    for i, angle in enumerate(PLAYER_DEATH_ANGLES):
+        body = rotated_about(idle, pivot_x, pivot_y, -fall * angle)
+        x0, _, x1, y1 = filled_bounds(body)
+        need = 2 - x0 if x0 < 2 else (idle.width - 3 - x1 if x1 > idle.width - 3 else 0)
+        shift = need if abs(need) > abs(shift) else shift
+        # Whatever turned below the feet line is lifted back onto the floor.
+        body = shifted(body, shift, min(0, bottom - y1))
+        if i >= len(PLAYER_DEATH_ANGLES) - 2:
+            x0, y0, x1, y1 = filled_bounds(body)
+            pool = Canvas(idle.width, idle.height)
+            radius = 9.0 if i == len(PLAYER_DEATH_ANGLES) - 1 else 6.0
+            cx = min(max((x0 + x1) / 2 - fall * 3, 11), idle.width - 12)
+            pool.ellipse(cx, y1 + 0.5, radius + 1, radius * 0.35 + 1, "outline")
+            pool.ellipse(cx, y1 + 0.5, radius, radius * 0.35, "red_0")
+            for y in range(idle.height):
+                for x in range(idle.width):
+                    if body.px[y][x] is not None:
+                        pool.px[y][x] = body.px[y][x]
+            body = pool
+        frames.append(body)
+    return frames
+
+
+def player_files(files: dict[str, Image.Image]) -> None:
+    """Walk, hit and death frames for all 8 directions, if the idle poses are imported."""
+    for d, name in enumerate(DIRECTIONS):
+        path = ART_DIR / f"Sprites/Player/Player_Idle_{name}.png"
+        if not path.exists():
+            return
+        idle = canvas_from_image(Image.open(path).convert("RGBA"))
+        for frame in range(PLAYER_WALK_FRAMES):
+            files[f"Sprites/Player/Player_Walk_{name}_{frame}.png"] = player_walk(idle, frame).to_image()
+        for frame in range(PLAYER_HIT_FRAMES):
+            files[f"Sprites/Player/Player_Hit_{name}_{frame}.png"] = player_hit(idle, frame, d).to_image()
+        for frame, c in enumerate(player_death_frames(idle, d)):
+            files[f"Sprites/Player/Player_Death_{name}_{frame}.png"] = c.to_image()
 
 
 # --- Projectile and effects --------------------------------------------------------
@@ -2188,6 +2334,7 @@ def outputs() -> dict[str, Image.Image]:
     for variant in range(3):
         files[f"Tiles/Floor_{variant}.png"] = floor(variant).to_image()
     island_files(files)
+    player_files(files)
     return files
 
 
@@ -2241,6 +2388,7 @@ ANIMATION_PREVIEWS = {
     "Runner": [("Run", 8, 3), ("Hit", 12, 1), ("Death", 10, 1)],
     "Brute": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Boomer": [("Walk", 8, 2), ("Hit", 12, 1), ("Swell", 12, 4), ("Death", 10, 1)],
+    "Player": [("Walk", 10, 3), ("Hit", 12, 1), ("Death", 10, 1)],
 }
 # Pause on the last death frame before the preview loops, in milliseconds.
 PREVIEW_HOLD_MS = 800
@@ -2256,12 +2404,12 @@ def animation_preview(files: dict[str, Image.Image], name: str, out_dir: Path, s
         for direction in DIRECTIONS:
             row = []
             for i in range(99):
-                key = f"Sprites/Enemies/{name}_{state}_{direction}_{i}.png"
+                key = f"Sprites/{'Player' if name == 'Player' else 'Enemies'}/{name}_{state}_{direction}_{i}.png"
                 if key not in files:
                     break
                 row.append(files[key])
             frames_of[state].append(row)
-    size = files[f"Sprites/Enemies/{name}_{states[0][0]}_E_0.png"].width
+    size = files[f"Sprites/{'Player' if name == 'Player' else 'Enemies'}/{name}_{states[0][0]}_E_0.png"].width
     background = PALETTE["slate_0"] + (255,)
 
     gif_frames, durations = [], []

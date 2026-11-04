@@ -16,6 +16,15 @@ namespace RushOps.Editor.Art
         /// <summary>Asset path of the player's idle animation.</summary>
         public const string PlayerIdlePath = AnimationsDir + "/Player_Idle.asset";
 
+        /// <summary>Asset path of the player's walk animation (issue #102).</summary>
+        public const string PlayerWalkPath = AnimationsDir + "/Player_Walk.asset";
+
+        /// <summary>Asset path of the player's hit reaction (issue #102).</summary>
+        public const string PlayerHitPath = AnimationsDir + "/Player_Hit.asset";
+
+        /// <summary>Asset path of the player's death (issue #102).</summary>
+        public const string PlayerDeathPath = AnimationsDir + "/Player_Death.asset";
+
         /// <summary>Asset path of the walker's walk animation.</summary>
         public const string WalkerWalkPath = AnimationsDir + "/Walker_Walk.asset";
 
@@ -61,12 +70,16 @@ namespace RushOps.Editor.Art
         private const float HitFramesPerSecond = 12f;
         private const float DeathFramesPerSecond = 10f;
         private const float SwellFramesPerSecond = 12f;
+        private const float PlayerWalkFramesPerSecond = 10f;
         private const string SpritesDir = "Assets/_Project/Art/Sprites";
 
         [MenuItem("RushOps/Art/Richtungs-Animationen aktualisieren")]
         public static void BuildAll()
         {
             CreateOrUpdate(PlayerIdlePath, SpritesDir + "/Player", "Player_Idle");
+            CreateOrUpdate(PlayerWalkPath, SpritesDir + "/Player", "Player_Walk", true, PlayerWalkFramesPerSecond);
+            CreateOrUpdate(PlayerHitPath, SpritesDir + "/Player", "Player_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(PlayerDeathPath, SpritesDir + "/Player", "Player_Death", false, DeathFramesPerSecond);
             CreateOrUpdate(WalkerWalkPath, SpritesDir + "/Enemies", "Walker_Walk");
             CreateOrUpdate(WalkerHitPath, SpritesDir + "/Enemies", "Walker_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(WalkerDeathPath, SpritesDir + "/Enemies", "Walker_Death", false, DeathFramesPerSecond);

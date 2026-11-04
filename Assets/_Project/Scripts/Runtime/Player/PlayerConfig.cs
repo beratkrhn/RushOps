@@ -44,6 +44,13 @@ namespace RushOps.Player
         [Tooltip("Seconds of the death moment before the level restarts (F-SPF-03).")]
         [SerializeField, Min(0f)] private float _deathRestartDelay = 1f;
 
+        [Header("Animation")]
+        [Tooltip("Share of the walking speed below which the figure stands instead of walking (issue #102).")]
+        [SerializeField, Range(0f, 1f)] private float _walkAnimationThreshold = 0.15f;
+
+        [Tooltip("Fastest playback of the walk cycle relative to its frame rate, e.g. while dashing or with the speed perk.")]
+        [SerializeField, Min(1f)] private float _maxWalkAnimationRate = 1.6f;
+
         /// <summary>Top speed in units per second at full stick deflection.</summary>
         public float MoveSpeed => _moveSpeed;
 
@@ -79,5 +86,11 @@ namespace RushOps.Player
 
         /// <summary>Seconds of the death moment before the level restarts.</summary>
         public float DeathRestartDelay => _deathRestartDelay;
+
+        /// <summary>Share of the walking speed below which the figure stands.</summary>
+        public float WalkAnimationThreshold => _walkAnimationThreshold;
+
+        /// <summary>Fastest playback of the walk cycle relative to its frame rate.</summary>
+        public float MaxWalkAnimationRate => _maxWalkAnimationRate;
     }
 }

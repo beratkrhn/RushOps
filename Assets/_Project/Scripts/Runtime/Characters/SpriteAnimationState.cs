@@ -13,6 +13,9 @@ namespace RushOps.Characters
         /// <summary>Seconds since the current animation started.</summary>
         public float Time { get; private set; }
 
+        /// <summary>True while the move loop (walking) replaces the base loop (idle), issue #102.</summary>
+        public bool IsMoving { get; private set; }
+
         /// <summary>True while the alert loop replaces the base loop.</summary>
         public bool IsAlert { get; private set; }
 
@@ -22,6 +25,21 @@ namespace RushOps.Characters
             Mode = SpriteAnimationMode.Loop;
             Time = 0f;
             IsAlert = false;
+        }
+
+        /// <summary>Switches between the base loop and the move loop; the loop restarts on a change.</summary>
+        public void SetMoving(bool moving)
+        {
+            if (IsMoving == moving)
+            {
+                return;
+            }
+
+            IsMoving = moving;
+            if (Mode == SpriteAnimationMode.Loop)
+            {
+                Time = 0f;
+            }
         }
 
         /// <summary>Switches between the base loop and the alert loop; the death keeps playing.</summary>
