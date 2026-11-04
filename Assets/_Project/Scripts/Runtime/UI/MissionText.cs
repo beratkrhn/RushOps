@@ -6,6 +6,9 @@ namespace RushOps.UI
         /// <summary>Shown for a moment once the tracked gate opens.</summary>
         public const string GateOpen = "Tor offen!";
 
+        /// <summary>Shown for a moment once a puzzle without a gate is solved.</summary>
+        public const string PuzzleSolved = "Geschafft!";
+
         /// <summary>Progress of a closed kill gate, e.g. „Tor gesperrt: 4/10 Kills“.</summary>
         public static string KillGate(int kills, int required)
         {

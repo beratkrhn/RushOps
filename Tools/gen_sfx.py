@@ -18,6 +18,8 @@ Output (under Assets/_Project/Audio/SFX/):
   PerkPickup.wav      quick sparkly upward sweep with two bell tones when a perk is collected (issue #23)
   Nuke.wav            rising charge whine, a sharp crack and a huge sub-bass boom with a long rumble (issue #27)
   PuzzleSolved.wav    placeholder: a mechanical unlock click and a warm rising two-note sine chord (issue #30)
+  SwitchOn.wav        heavy plate click with a short bright confirm blip when a floor switch is pressed (issue #32)
+  SwitchReset.wav     falling square-wave buzzer, three pulses, when the switch timer runs out (issue #32)
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -279,6 +281,38 @@ def puzzle_solved(rng: random.Random) -> list[float]:
     return out
 
 
+def switch_on(rng: random.Random) -> list[float]:
+    # A low thud of the plate going down, then a short square blip an octave up: "got it".
+    length = 0.25
+    out = []
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        thud = math.sin(sweep(160, 70, t, 0.08)) * envelope(t, 0.08, 0.002) + 0.3 * rng.uniform(-1, 1) * max(0.0, 1 - t / 0.01)
+        tb = t - 0.05
+        blip = 0.0
+        if tb >= 0:
+            blip = (1.0 if math.sin(2 * math.pi * 1320 * tb) >= 0 else -1.0) * envelope(tb, 0.12, 0.002)
+        out.append(0.8 * thud + 0.35 * blip)
+    return out
+
+
+def switch_reset(rng: random.Random) -> list[float]:
+    # Three falling square pulses with a little grit: a clear "failed, start over" over the battle noise.
+    length = 0.75
+    out = []
+    phase = 0.0
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        pulse = int(t / 0.25)
+        tp = t - pulse * 0.25
+        freq = (440, 370, 294)[min(pulse, 2)] * (1 - 0.15 * tp / 0.25)
+        phase += 2 * math.pi * freq / RATE
+        square = 1.0 if math.sin(phase) >= 0 else -1.0
+        gate = 1.0 if tp < 0.19 else 0.0
+        out.append((0.5 * square + 0.05 * rng.uniform(-1, 1)) * gate * envelope(tp, 0.3, 0.004))
+    return out
+
+
 def write(path: Path, samples: list[float]) -> None:
     peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
@@ -296,7 +330,7 @@ def main() -> None:
                        ("RunnerApproach", runner_approach), ("BoomerSpawn", boomer_spawn),
                        ("BoomerApproach", boomer_approach), ("Explosion", explosion),
                        ("PerkPickup", perk_pickup), ("Nuke", nuke),
-                       ("PuzzleSolved", puzzle_solved)):
+                       ("PuzzleSolved", puzzle_solved), ("SwitchOn", switch_on), ("SwitchReset", switch_reset)):
         path = SFX_DIR / f"{name}.wav"
         write(path, make(rng))
         print(f"Wrote {path.relative_to(ROOT)}")

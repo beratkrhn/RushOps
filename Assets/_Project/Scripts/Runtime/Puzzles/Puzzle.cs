@@ -11,7 +11,7 @@ namespace RushOps.Puzzles
     /// <see cref="PuzzleSolvedCondition"/> lets a gate open on it, and the mission tracker shows
     /// <see cref="Display"/>. The state rules live in <see cref="PuzzleLogic"/>. Puzzle types react in
     /// <see cref="OnActivated"/> and <see cref="OnSolved"/> and must not declare their own Awake, OnEnable, Start or
-    /// OnDisable, which would hide the base ones.
+    /// OnDisable, which would hide the base ones (Update and OnDestroy are free).
     /// </summary>
     public abstract class Puzzle : MonoBehaviour
     {
@@ -51,6 +51,15 @@ namespace RushOps.Puzzles
         protected bool Solve()
         {
             return _logic.Solve();
+        }
+
+        /// <summary>Plays <paramref name="clip"/> through the level's sound player, e.g. a switch click.</summary>
+        protected void PlaySound(AudioClip clip, float volume)
+        {
+            if (_sfx != null)
+            {
+                _sfx.Play(clip, volume, 0f);
+            }
         }
 
         /// <summary>Called once when the puzzle became active.</summary>
@@ -107,9 +116,9 @@ namespace RushOps.Puzzles
 
         private void HandleSolved()
         {
-            if (_sfx != null && _config != null)
+            if (_config != null)
             {
-                _sfx.Play(_solvedClip, _config.SolvedVolume, 0f);
+                PlaySound(_solvedClip, _config.SolvedVolume);
             }
 
             OnSolved();

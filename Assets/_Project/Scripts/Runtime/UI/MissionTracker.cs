@@ -10,7 +10,8 @@ namespace RushOps.UI
     /// Mission tracker top right (F-HUD-03): follows the exit gate of the zone the player is in. For a kill gate it
     /// shows „Tor gesperrt: 4/10 Kills“; when the gate opens it switches to „Tor offen!“ with a chime and hides
     /// after a moment. For a puzzle gate it shows the current puzzle's text with a progress bar or a countdown (issue #30).
-    /// Gates with other conditions are not shown.
+    /// A puzzle in a zone whose gate has no such condition, e.g. the last zone, is shown on its own and ends with
+    /// „Geschafft!“ (issue #32). Gates with other conditions are not shown.
     /// </summary>
     public class MissionTracker : MonoBehaviour
     {
@@ -25,11 +26,15 @@ namespace RushOps.UI
         [SerializeField] private SfxPlayer _sfx;
         [Tooltip("Played when the tracked gate opens.")]
         [SerializeField] private AudioClip _doneClip;
+        [Tooltip("Puzzles of the level; one in a zone without a kill or puzzle gate is shown on its own.")]
+        [SerializeField] private Puzzle[] _levelPuzzles = System.Array.Empty<Puzzle>();
 
         private Gate _gate;
         private KillGateCondition _kills;
         private PuzzleSolvedCondition _puzzles;
         private Puzzle _shownPuzzle;
+        private Puzzle _loose;
+        private string _shownText;
         private PuzzleDisplayKind _shownKind;
         private int _shownSeconds = -1;
         private int _shownKills = -1;
@@ -101,9 +106,15 @@ namespace RushOps.UI
             {
                 ShowPuzzle(_puzzles.Current);
             }
+
+            if (_loose != null)
+            {
+                ShowPuzzle(_loose);
+            }
         }
 
-        // Rebuilds the text only when puzzle, kind or shown seconds change; the bar follows every frame.
+        // Rebuilds the text only when puzzle, kind, text or shown seconds change; the bar follows every frame.
+        // Puzzles cache their texts, so comparing them costs no allocation.
         private void ShowPuzzle(Puzzle puzzle)
         {
             if (puzzle == null)
@@ -113,9 +124,11 @@ namespace RushOps.UI
 
             PuzzleDisplay display = puzzle.Display;
             int seconds = display.Kind == PuzzleDisplayKind.Countdown ? MissionText.CountdownSeconds(display.Value) : -1;
-            if (puzzle != _shownPuzzle || display.Kind != _shownKind || seconds != _shownSeconds || !_label.enabled)
+            if (puzzle != _shownPuzzle || display.Kind != _shownKind || seconds != _shownSeconds || !_label.enabled
+                || !string.Equals(display.Text, _shownText, System.StringComparison.Ordinal))
             {
                 _shownPuzzle = puzzle;
+                _shownText = display.Text;
                 _shownKind = display.Kind;
                 _shownSeconds = seconds;
                 Show(MissionText.Puzzle(display));
@@ -144,6 +157,17 @@ namespace RushOps.UI
             var puzzles = gate != null ? gate.Condition as PuzzleSolvedCondition : null;
             if ((kills == null && puzzles == null) || gate.State != GateState.Closed)
             {
+                Puzzle loose = LoosePuzzleIn(zone);
+                if (loose != null)
+                {
+                    SetGate(null);
+                    SetLoose(loose);
+                    _shownPuzzle = null;
+                    SetProgressVisible(false);
+                    _doneTime = -1f;
+                    return;
+                }
+
                 // Keep a running „Tor offen!“ until it times out; otherwise nothing to show in this zone.
                 SetGate(null);
                 if (_doneTime < 0f)
@@ -170,6 +194,7 @@ namespace RushOps.UI
                 _gate.Opening -= OnGateOpening;
             }
 
+            SetLoose(null);
             _gate = gate;
             _kills = null;
             _puzzles = null;
@@ -177,6 +202,42 @@ namespace RushOps.UI
             {
                 _gate.Opening += OnGateOpening;
             }
+        }
+
+        private Puzzle LoosePuzzleIn(Zone zone)
+        {
+            foreach (Puzzle puzzle in _levelPuzzles)
+            {
+                if (puzzle != null && puzzle.Zone == zone && puzzle.State != PuzzleState.Solved)
+                {
+                    return puzzle;
+                }
+            }
+
+            return null;
+        }
+
+        private void SetLoose(Puzzle puzzle)
+        {
+            if (_loose != null)
+            {
+                _loose.Solved -= OnLooseSolved;
+            }
+
+            _loose = puzzle;
+            if (_loose != null)
+            {
+                _loose.Solved += OnLooseSolved;
+            }
+        }
+
+        // The puzzle plays its own sound; the tracker only confirms in text.
+        private void OnLooseSolved(Puzzle puzzle)
+        {
+            SetLoose(null);
+            SetProgressVisible(false);
+            Show(MissionText.PuzzleSolved);
+            _doneTime = 0f;
         }
 
         private void OnGateOpening(Gate gate)
