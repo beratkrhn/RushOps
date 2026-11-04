@@ -13,6 +13,9 @@ namespace RushOps.Puzzles
         [Tooltip("Puzzles that must all be solved to open the gate.")]
         [SerializeField] private Puzzle[] _puzzles = Array.Empty<Puzzle>();
 
+        /// <summary>Puzzles that must all be solved, in their order.</summary>
+        public System.Collections.Generic.IReadOnlyList<Puzzle> Puzzles => _puzzles ?? Array.Empty<Puzzle>();
+
         /// <inheritdoc />
         public bool IsMet
         {

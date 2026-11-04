@@ -115,8 +115,11 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Levelziel und Ergebnisbildschirme** (Issue #35, F-LVL-05, F-SCO-03, F-SPF-03): `LevelDefinition` (Name, Szene, Score-Schwellen für 2 und 3 Sterne; das Erreichen des Ziels gibt immer 1 Stern) unter `Data/Levels/`. Ein `LevelExit` hinter dem letzten Tor beendet das Level. „Level geschafft!“ zeigt Score, Kills, Zeit, 1–3 Sterne sowie „Nochmal“ und „Weiter“. „Gescheitert“ erscheint bei 0 Herzen nach dem Todesmoment mit Score und „Neustart“. Während der Bildschirme ist das Spiel eingefroren (`PauseController.Freeze`), auch das Zurückkehren aus dem Hintergrund setzt es nicht fort. Sterne-Berechnung in `StarRating` mit EditMode-Tests.
 - Szene `TestMenu` (`RushOps → Szenen → TestMenu erzeugen`): listet alle Level aus `Data/Levels/`; „Weiter“ führt bis v0.5.0 hierher (Issue #35).
 - `Arena_Zonen`: Ausgang am Nordende von Zone 3 (Issue #35).
+- **Prototyp Level 1-1** (Issue #36, F-LVL-06): Szene `Level_1-1` (24×118 Kacheln, `RushOps → Szenen → Level_1-1 erzeugen`) mit fünf Zonen von Süden nach Norden. Zone 1 „Ankunft“ (nur Walker, Kill-Gate nach 15 Kills), Zone 2 „Halten“ (Zonen-Kontrolle unter eigenen, schnelleren Wellen, danach Ruhe; Runner kommen dazu), Zone 3 „Schalter“ (drei zeitkritische Schalter in zwei Gassen; Boomer kommen dazu), Zone 4 „Generator“ (zwei Energiezellen zum Generator; Brutes kommen dazu), Zone 5 „Ausgang“ (letzter Ansturm aller Typen vor dem Ausgang). Wellen unter `Data/Waves/Level_1-1_*`, Sterne-Schwellen 2000/4000 *(Startwerte, Spieldauer und Balancing werden im Spieltest #37 abgenommen)*.
+- `LevelLayoutCheck`: Der Level-Builder prüft vor dem Speichern die Richtlinien aus `docs/level-design.md` (Durchlässe mindestens 2 Kacheln für alle Ziele, Spawnpunkte mit 1 Kachel Abstand zu Wänden und in ihrer Zone, mindestens ein Teil jedes Rätsels in Sichtlinie vom Zoneneingang); EditMode-Tests für die Prüfungen und für Level 1-1 (Issue #36).
 
 ### Geändert
+- Tore und Ausgang werden für alle Zonen-Level über `LevelPieceBuilder` erzeugt; `Arena_Zonen` nutzt ihn ebenfalls, die Szene bleibt unverändert (Issue #36).
 - Bildschirmausrichtung fest auf Hochformat.
 - `bundleVersion` auf 0.1.0, Firmenname gesetzt.
 - `SampleScene` von `Assets/Scenes/` nach `Assets/_Project/Scenes/` verschoben (Issue #1).
