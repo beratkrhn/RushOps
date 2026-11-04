@@ -111,6 +111,7 @@ namespace RushOps.Editor.Scenes
                 if (exit != null && exit.GetComponent<PuzzleSolvedCondition>() != null)
                 {
                     hold = PuzzleBuilder.CreateHoldZone($"HoldZone_{zone.name}", HoldZoneCenter, zone, arena);
+                    PuzzleBuilder.AddPressure(hold, arena, CreateHoldPressureWaves(), AfterPuzzle.ResumeZoneWaves);
                     PuzzleBuilder.SetPuzzles(exit.GetComponent<PuzzleSolvedCondition>(), hold);
                 }
 
@@ -122,6 +123,20 @@ namespace RushOps.Editor.Scenes
             TransportPuzzle transport = PuzzleBuilder.CreateTransport(
                 "Transport_Zone_3", GeneratorPosition, CellPositions, 1, zones[2], arena);
             PuzzleBuilder.SetLevelPuzzles(arena, hold, switches, transport);
+        }
+
+        // While the hold zone runs, zone 2 sends smaller waves at a much faster pace, so standing still is never safe.
+        private static WaveDefinition CreateHoldPressureWaves()
+        {
+            var walker = ArenaTestSceneBuilder.LoadOrCreateConfig<EnemyDefinition>(ArenaTestSceneBuilder.WalkerDefinitionPath);
+            EnemyDefinition runner = ArenaTestSceneBuilder.LoadOrCreateRunner();
+            return ArenaTestSceneBuilder.LoadOrCreateWaves($"{WavesDir}/Arena_Zonen_Zone2_Hold.asset", w => w.Configure(
+                new[]
+                {
+                    new Wave(new WaveEntry(walker, 4), new WaveEntry(runner, 2)),
+                    new Wave(new WaveEntry(walker, 5), new WaveEntry(runner, 3)),
+                },
+                0.4f, 1.5f, AfterLastWave.RepeatLast));
         }
 
         // Waves grow from zone to zone; the first two repeat their last wave until the gate opens, the last one ends.

@@ -1,3 +1,4 @@
+using RushOps.Enemies;
 using RushOps.Levels;
 using RushOps.Puzzles;
 using UnityEditor;
@@ -174,6 +175,21 @@ namespace RushOps.Editor.Scenes
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return puzzle;
+        }
+
+        /// <summary>
+        /// Lets <paramref name="puzzle"/>'s zone run <paramref name="waves"/> while the puzzle is active, then do
+        /// <paramref name="after"/> (issue #34).
+        /// </summary>
+        public static PuzzlePressure AddPressure(Puzzle puzzle, ArenaScene arena, WaveDefinition waves, AfterPuzzle after)
+        {
+            var pressure = puzzle.gameObject.AddComponent<PuzzlePressure>();
+            var serialized = new SerializedObject(pressure);
+            serialized.FindProperty("_director").objectReferenceValue = arena.Director;
+            serialized.FindProperty("_waves").objectReferenceValue = waves;
+            serialized.FindProperty("_afterSolved").enumValueIndex = (int)after;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return pressure;
         }
 
         /// <summary>Tells the mission tracker about all puzzles of the level, so it can show those without a gate.</summary>
