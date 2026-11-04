@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Sandsturm_Walk
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 10
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: ff64c4cf6868b45a081ec93f57884288, type: 3}
+    - {fileID: 21300000, guid: 4ea1b0b4a40584ec5ac67ad2fc482473, type: 3}
+    - {fileID: 21300000, guid: e4b864af276484932ad357aa459724de, type: 3}
+    - {fileID: 21300000, guid: 87cda583e9a5b449e871517254acf971, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 24ab0d694918241e9afa67ea904f8b8e, type: 3}
+    - {fileID: 21300000, guid: 69c6d8e4ab313400982dd8ca83d3872d, type: 3}
+    - {fileID: 21300000, guid: 41aa9ae3f01c3474694cbda0c7b9af87, type: 3}
+    - {fileID: 21300000, guid: 87f7ce5fae3e24024b6189b395ee13d2, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: d7472b89fda934fbbb36b8eb5250291a, type: 3}
+    - {fileID: 21300000, guid: 33b4c7ff946824dd8a8e3f8b11bce37b, type: 3}
+    - {fileID: 21300000, guid: b45f6ea0e8b7744e0b1ab7cf906061e0, type: 3}
+    - {fileID: 21300000, guid: a2f3596fc9ef54b3183de0f1181c684c, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 1619ff641fd2d48fd861c1e16ed1e9fc, type: 3}
+    - {fileID: 21300000, guid: b7d25614440e8471a8a599724a4093b4, type: 3}
+    - {fileID: 21300000, guid: 8828be587c135433a8f422a0ee24d7ad, type: 3}
+    - {fileID: 21300000, guid: 912748ba6f807443bab91fd3678a5b8b, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 444527e9ab8d94412bcd973247de656d, type: 3}
+    - {fileID: 21300000, guid: 920bc3815139242b5b0db9aaa1de8d75, type: 3}
+    - {fileID: 21300000, guid: c89649918f6e048b48d908a1b07bf4f0, type: 3}
+    - {fileID: 21300000, guid: 02492e9c591fc4fb495e2ea49d5b08c7, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 21275004aaf8c44d8b9936f02e019d8b, type: 3}
+    - {fileID: 21300000, guid: 642feb4430dc542b387423588df16c22, type: 3}
+    - {fileID: 21300000, guid: 3da83472da6fd4b4eb7cf3822e252212, type: 3}
+    - {fileID: 21300000, guid: 01951dbc7e63f49c09ba5f53ba1ef4b2, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 67f7e24747fce4e66b2c4244aebda550, type: 3}
+    - {fileID: 21300000, guid: be648295e407c4464823f4ee356e5c53, type: 3}
+    - {fileID: 21300000, guid: 2ed4d83a1f6884a25a3be8757d6b701e, type: 3}
+    - {fileID: 21300000, guid: 407828b37f6cf4779be7c45ea3293128, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: a781ef870799247a2a64152c363dde18, type: 3}
+    - {fileID: 21300000, guid: 3de05398c5d2a42d79f9dcc622b6a55f, type: 3}
+    - {fileID: 21300000, guid: aae695b3d03644633ad605c40d1d272c, type: 3}
+    - {fileID: 21300000, guid: 50cad74f4255a4b2a8d1e7c1babdda40, type: 3}

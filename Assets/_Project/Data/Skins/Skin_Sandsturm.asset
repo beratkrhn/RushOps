@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
   _id: Sandsturm
   _displayName: Sandsturm
-  _idle: {fileID: 11400000, guid: b52b33a51b25a46f383eab6303ef49e9, type: 2}
-  _walk: {fileID: 11400000, guid: a1f374bfb509f4bdc9eeae95b3b09b8a, type: 2}
-  _hit: {fileID: 11400000, guid: 8496bf2b646834ef2b083df4ac81577f, type: 2}
-  _death: {fileID: 11400000, guid: 1454a472fcb304687a91190f2f86ee2f, type: 2}
+  _idle: {fileID: 11400000, guid: 58feffa6304f04a4fa46d28b7c9b8ef8, type: 2}
+  _walk: {fileID: 11400000, guid: ca2c289b3fc254e45a18bb0e802826e8, type: 2}
+  _hit: {fileID: 11400000, guid: 64b7574b9d74440efa9c538ca13f94fa, type: 2}
+  _death: {fileID: 11400000, guid: 5a8bd2b5ee96f4172b38af444c782c26, type: 2}
   _unlockKind: 1
   _levelId: Level_1-3
   _levelName: Level 1-3

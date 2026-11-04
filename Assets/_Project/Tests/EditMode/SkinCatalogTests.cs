@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using NUnit.Framework;
+using RushOps.Characters;
 using RushOps.Skins;
 using UnityEditor;
 
@@ -81,6 +82,37 @@ namespace RushOps.Tests.EditMode
             CollectionAssert.AreEquivalent(
                 new[] { (SkinMilestone.TotalKills, 100), (SkinMilestone.TotalKills, 1000), (SkinMilestone.TotalStars, 27) },
                 milestones);
+        }
+
+        [Test]
+        public void EverySkinButTheStandard_HasOwnAnimationsWithTheStandardFrames()
+        {
+            IReadOnlyList<SkinDefinition> skins = Load().Skins;
+            SkinDefinition standard = skins[0];
+            for (int i = 1; i < skins.Count; i++)
+            {
+                SkinDefinition skin = skins[i];
+                AssertSameShape(standard.Idle, skin.Idle, skin.Id);
+                AssertSameShape(standard.Walk, skin.Walk, skin.Id);
+                AssertSameShape(standard.Hit, skin.Hit, skin.Id);
+                AssertSameShape(standard.Death, skin.Death, skin.Id);
+            }
+        }
+
+        private static void AssertSameShape(DirectionalAnimation standard, DirectionalAnimation skin, string id)
+        {
+            Assert.AreNotSame(standard, skin, $"{id} still uses the standard {standard.name}");
+            Assert.AreEqual(standard.Loops, skin.Loops, $"{id} {skin.name}");
+            Assert.AreEqual(standard.FramesPerSecond, skin.FramesPerSecond, $"{id} {skin.name}");
+            for (int d = 0; d < Direction8Math.Count; d++)
+            {
+                var direction = (Direction8)d;
+                Assert.AreEqual(standard.FrameCount(direction), skin.FrameCount(direction), $"{id} {skin.name} {direction}");
+                for (int f = 0; f < skin.FrameCount(direction); f++)
+                {
+                    Assert.IsNotNull(skin.GetFrame(direction, f), $"{id} {skin.name} {direction} frame {f}");
+                }
+            }
         }
     }
 }

@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
   _id: Rettungsschwimmer
   _displayName: Rettungsschwimmer
-  _idle: {fileID: 11400000, guid: b52b33a51b25a46f383eab6303ef49e9, type: 2}
-  _walk: {fileID: 11400000, guid: a1f374bfb509f4bdc9eeae95b3b09b8a, type: 2}
-  _hit: {fileID: 11400000, guid: 8496bf2b646834ef2b083df4ac81577f, type: 2}
-  _death: {fileID: 11400000, guid: 1454a472fcb304687a91190f2f86ee2f, type: 2}
+  _idle: {fileID: 11400000, guid: 733d4f1173a4b420db28206c4e973a31, type: 2}
+  _walk: {fileID: 11400000, guid: 5b1de91310c6a410d8593cf83c5f0a07, type: 2}
+  _hit: {fileID: 11400000, guid: d1be740be287449f7b9f96ac92f1ae44, type: 2}
+  _death: {fileID: 11400000, guid: 6503fe42c04384c8eb98503c16a244ff, type: 2}
   _unlockKind: 1
   _levelId: Level_1-1
   _levelName: Level 1-1

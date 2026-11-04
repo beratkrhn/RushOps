@@ -12,7 +12,8 @@ namespace RushOps.Editor.Skins
     /// Creates or updates the skin assets and the <see cref="SkinCatalog"/> (issue #128): the standard skin, one skin
     /// per level (F-SKN-02) and three milestone skins (F-SKN-03). Names and thresholds of existing assets are kept, so
     /// tuned values survive; the animations are taken from <c>Data/Animations/Skins/&lt;Id&gt;_&lt;Anim&gt;.asset</c>
-    /// (issue #129) and fall back to the standard player animations.
+    /// (issue #129, built from the sprites of <c>Tools/gen_skins.py</c>) and fall back to the standard player
+    /// animations.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Skins.SkinCatalogBuilder.Build</c>
     /// </summary>
     public static class SkinCatalogBuilder
@@ -25,6 +26,7 @@ namespace RushOps.Editor.Skins
 
         private const string SkinsDir = "Assets/_Project/Data/Skins";
         private const string SkinAnimationsDir = "Assets/_Project/Data/Animations/Skins";
+        private const string SkinSpritesDir = "Assets/_Project/Art/Sprites/Player/Skins";
 
         private readonly struct Spec
         {
@@ -89,6 +91,7 @@ namespace RushOps.Editor.Skins
         public static SkinCatalog Build()
         {
             ArenaTestSceneBuilder.EnsureFolder(SkinsDir);
+            BuildAnimations();
             var skins = new SkinDefinition[Specs.Length];
             for (int i = 0; i < Specs.Length; i++)
             {
@@ -108,6 +111,45 @@ namespace RushOps.Editor.Skins
             EditorUtility.SetDirty(catalog);
             AssetDatabase.SaveAssets();
             return catalog;
+        }
+
+        // Animations of the recoloured sprites from Tools/gen_skins.py (issue #129), with the standard player's frame
+        // rates and looping, so every skin moves the same.
+        private static void BuildAnimations()
+        {
+            if (!AssetDatabase.IsValidFolder(SkinSpritesDir))
+            {
+                return;
+            }
+
+            ArenaTestSceneBuilder.EnsureFolder(SkinAnimationsDir);
+            foreach (Spec spec in Specs)
+            {
+                if (spec.Kind == SkinUnlockKind.Default || !File.Exists($"{SkinSpritesDir}/{spec.Id}_Idle_S.png"))
+                {
+                    continue;
+                }
+
+                BuildAnimation(spec.Id, "Idle", DirectionalAnimationBuilder.PlayerIdlePath);
+                BuildAnimation(spec.Id, "Walk", DirectionalAnimationBuilder.PlayerWalkPath);
+                BuildAnimation(spec.Id, "Hit", DirectionalAnimationBuilder.PlayerHitPath);
+                BuildAnimation(spec.Id, "Death", DirectionalAnimationBuilder.PlayerDeathPath);
+            }
+        }
+
+        private static void BuildAnimation(string skinId, string animation, string standardPath)
+        {
+            var standard = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(standardPath);
+            DirectionalAnimation built = DirectionalAnimationBuilder.CreateOrUpdate(
+                SkinAnimationPath(skinId, animation), SkinSpritesDir, $"{skinId}_{animation}",
+                standard == null || standard.Loops, standard != null ? standard.FramesPerSecond : -1f);
+            if (standard != null && !Mathf.Approximately(built.FramesPerSecond, standard.FramesPerSecond))
+            {
+                // Tempo changes of the standard player carry over to every skin.
+                var serialized = new SerializedObject(built);
+                serialized.FindProperty("_framesPerSecond").floatValue = standard.FramesPerSecond;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
         }
 
         private static SkinDefinition CreateOrUpdate(Spec spec)

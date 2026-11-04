@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Neon_Idle
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 8
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: eb79944c7a9944879b0299e0f75bd4ae, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 46c10ff25aa5945a2bfbfabd0dd9488a, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: fc39e0acfd20c4eabb165fb1a79bca63, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 1fe0b4883e22c42eba4953b3fa54f4f3, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 0eb7b826b48f7425193a9f109cbfb78b, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 06c0238f292e94ddc840e8a0ba802ecf, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 1b495dfebf76d4de0afa241a1a31a4b0, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 85a3342219f414ac1bc0b600d4e8015e, type: 3}
