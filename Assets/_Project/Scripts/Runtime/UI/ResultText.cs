@@ -38,6 +38,16 @@ namespace RushOps.UI
                 : $"3 Sterne ab {ScoreText.Score(threeStarScore)} Punkten";
         }
 
+        /// <summary>
+        /// Line for skins unlocked by the level (issue #128), e.g. „Neuer Skin: Surfer“ or „Neue Skins: Surfer +1“.
+        /// </summary>
+        public static string NewSkin(string name, int more)
+        {
+            return more > 0
+                ? $"Neue Skins: {name} +{more.ToString(CultureInfo.InvariantCulture)}"
+                : $"Neuer Skin: {name}";
+        }
+
         /// <summary>Time line in minutes and seconds, e.g. „Zeit: 3:07“; seconds are rounded down.</summary>
         public static string Time(float seconds)
         {

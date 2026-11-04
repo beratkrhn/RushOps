@@ -26,5 +26,8 @@ namespace RushOps.Save
 
         /// <summary>The player's settings (issue #126).</summary>
         public SettingsData Settings = new SettingsData();
+
+        /// <summary>The chosen and the unlocked skins (issue #128).</summary>
+        public SkinsData Skins = new SkinsData();
     }
 }

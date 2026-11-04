@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888eeded5bb69477890c2c429787ba4d, type: 3}
+  m_Name: Skin_Veteran
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
+  _id: Veteran
+  _displayName: Veteran
+  _idle: {fileID: 11400000, guid: b52b33a51b25a46f383eab6303ef49e9, type: 2}
+  _walk: {fileID: 11400000, guid: a1f374bfb509f4bdc9eeae95b3b09b8a, type: 2}
+  _hit: {fileID: 11400000, guid: 8496bf2b646834ef2b083df4ac81577f, type: 2}
+  _death: {fileID: 11400000, guid: 1454a472fcb304687a91190f2f86ee2f, type: 2}
+  _unlockKind: 2
+  _levelId: 
+  _levelName: 
+  _milestone: 0
+  _threshold: 100

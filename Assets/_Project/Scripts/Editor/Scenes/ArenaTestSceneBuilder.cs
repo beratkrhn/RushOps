@@ -5,6 +5,7 @@ using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Editor.Art;
 using RushOps.Editor.Audio;
+using RushOps.Editor.Skins;
 using RushOps.Audio;
 using RushOps.Enemies;
 using RushOps.Feel;
@@ -15,6 +16,7 @@ using RushOps.Player;
 using RushOps.Puzzles;
 using RushOps.Save;
 using RushOps.Scoring;
+using RushOps.Skins;
 using RushOps.UI;
 using UnityEditor;
 using UnityEditor.Events;
@@ -147,6 +149,9 @@ namespace RushOps.Editor.Scenes
         // Result screens hide the level a bit more than the pause overlay.
         private const float ResultOverlayAlpha = 0.9f;
         private const float ResultStarSpacing = 44f;
+        // „Neuer Skin“ line below the buttons and the figure in the new skin below it (issue #128).
+        private const float NewSkinY = -165f;
+        private const float NewSkinFigureOffset = -62f;
         private const string LevelsDataDir = "Assets/_Project/Data/Levels";
         internal const string WallsLayer = "Walls";
         private const string PlayerLayer = "Player";
@@ -449,7 +454,7 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        // Autosave at the end of the level (issue #123).
+        // Autosave at the end of the level (issue #123) and skins unlocked by it (issue #128).
         private static void CreateProgressRecorder(LevelResults results, LevelScore score, LevelKills kills)
         {
             var recorder = new GameObject("LevelProgressRecorder").AddComponent<LevelProgressRecorder>();
@@ -458,7 +463,12 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_results").objectReferenceValue = results;
             serialized.FindProperty("_score").objectReferenceValue = score;
             serialized.FindProperty("_kills").objectReferenceValue = kills;
+            serialized.FindProperty("_skins").objectReferenceValue = SkinCatalogBuilder.Build();
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            var view = new SerializedObject(results.GetComponent<UnlockedSkinView>());
+            view.FindProperty("_recorder").objectReferenceValue = recorder;
+            view.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static LevelKills CreateLevelKills(EnemyPool[] pools)
@@ -832,6 +842,13 @@ namespace RushOps.Editor.Scenes
             serializedView.ApplyModifiedPropertiesWithoutUndo();
             GameObject go = view.gameObject;
             go.tag = "Player";
+
+            // The current skin replaces these animations when the level starts (issue #128).
+            var skin = new SerializedObject(go.AddComponent<PlayerSkin>());
+            skin.FindProperty("_save").objectReferenceValue = LoadOrCreateConfig<SaveGameService>(SaveGameServicePath);
+            skin.FindProperty("_catalog").objectReferenceValue = SkinCatalogBuilder.Build();
+            skin.FindProperty("_view").objectReferenceValue = view;
+            skin.ApplyModifiedPropertiesWithoutUndo();
             go.layer = RequireLayer(PlayerLayer);
 
             var body = go.AddComponent<Rigidbody2D>();
@@ -1813,6 +1830,7 @@ namespace RushOps.Editor.Scenes
             Text nextStar = CreateText("NextStar", done, font, string.Empty, HudPixelScale, new Vector2(0f, -50f));
             CreateMenuButton("RetryButton", done, font, "Nochmal", new Vector2(0f, -85f), results.Retry);
             CreateMenuButton("ContinueButton", done, font, "Weiter", new Vector2(0f, -85f - MenuButtonSize.y - 12f), results.Continue);
+            CreateUnlockedSkin(parent, done, font);
 
             RectTransform failed = CreateDimPanel("FailedPanel", parent);
             CreateText("Title", failed, font, ResultText.Failed, TitlePixelScale, new Vector2(0f, 60f));
@@ -1835,6 +1853,38 @@ namespace RushOps.Editor.Scenes
             done.gameObject.SetActive(false);
             failed.gameObject.SetActive(false);
             return results;
+        }
+
+        // „Neuer Skin“ below the buttons of „Level geschafft!“ (issue #128); the recorder is set in CreateProgressRecorder.
+        private static void CreateUnlockedSkin(RectTransform parent, RectTransform done, Font font)
+        {
+            var center = new Vector2(0.5f, 0.5f);
+            RectTransform root = CreateUiRect("NewSkin", done, center, center);
+            root.sizeDelta = Vector2.zero;
+            root.anchoredPosition = new Vector2(0f, NewSkinY);
+            Text label = CreateText("Label", root, font, ResultText.NewSkin("Standard", 0), HudPixelScale, Vector2.zero);
+            label.color = PaletteYellow;
+
+            var idle = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerIdlePath);
+            Sprite first = idle.GetFrame(Direction8.S, 0);
+            RectTransform figureRect = CreateUiRect("Figure", root, center, center);
+            figureRect.sizeDelta = first.rect.size * HudPixelScale;
+            figureRect.anchoredPosition = new Vector2(0f, NewSkinFigureOffset);
+            var image = figureRect.gameObject.AddComponent<Image>();
+            image.sprite = first;
+            image.raycastTarget = false;
+            var figure = figureRect.gameObject.AddComponent<MenuFigure>();
+            var serializedFigure = new SerializedObject(figure);
+            serializedFigure.FindProperty("_animation").objectReferenceValue = idle;
+            serializedFigure.FindProperty("_direction").enumValueIndex = (int)Direction8.S;
+            serializedFigure.ApplyModifiedPropertiesWithoutUndo();
+
+            var view = new SerializedObject(parent.gameObject.AddComponent<UnlockedSkinView>());
+            view.FindProperty("_root").objectReferenceValue = root.gameObject;
+            view.FindProperty("_label").objectReferenceValue = label;
+            view.FindProperty("_figure").objectReferenceValue = figure;
+            view.ApplyModifiedPropertiesWithoutUndo();
+            root.gameObject.SetActive(false);
         }
 
         // Full screen and blocking touches, so nothing behind a result screen can be pressed.

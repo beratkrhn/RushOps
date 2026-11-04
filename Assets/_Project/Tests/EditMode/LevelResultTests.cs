@@ -53,5 +53,12 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual("Score: 1250", ResultText.Score(1250));
             Assert.AreEqual("Kills: 42", ResultText.Kills(42));
         }
+
+        [Test]
+        public void NewSkin_NamesTheFirstAndCountsTheRest()
+        {
+            Assert.AreEqual("Neuer Skin: Surfer", ResultText.NewSkin("Surfer", 0));
+            Assert.AreEqual("Neue Skins: Surfer +2", ResultText.NewSkin("Surfer", 2));
+        }
     }
 }
