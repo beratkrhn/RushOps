@@ -34,6 +34,7 @@ namespace RushOps.UI
         private PuzzleSolvedCondition _puzzles;
         private Puzzle _shownPuzzle;
         private Puzzle _loose;
+        private Zone _looseZone;
         private string _shownText;
         private PuzzleDisplayKind _shownKind;
         private int _shownSeconds = -1;
@@ -91,6 +92,13 @@ namespace RushOps.UI
                 {
                     _doneTime = -1f;
                     Hide();
+                    // The next puzzle of the same zone, if any, follows the confirmation.
+                    Puzzle next = _looseZone != null ? LoosePuzzleIn(_looseZone) : null;
+                    if (next != null)
+                    {
+                        SetLoose(next);
+                        _shownPuzzle = null;
+                    }
                 }
 
                 return;
@@ -162,6 +170,7 @@ namespace RushOps.UI
                 {
                     SetGate(null);
                     SetLoose(loose);
+                    _looseZone = zone;
                     _shownPuzzle = null;
                     SetProgressVisible(false);
                     _doneTime = -1f;
@@ -195,6 +204,7 @@ namespace RushOps.UI
             }
 
             SetLoose(null);
+            _looseZone = null;
             _gate = gate;
             _kills = null;
             _puzzles = null;

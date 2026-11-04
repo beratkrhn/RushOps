@@ -11,6 +11,7 @@ using RushOps.Levels;
 using RushOps.Navigation;
 using RushOps.Perks;
 using RushOps.Player;
+using RushOps.Puzzles;
 using RushOps.Scoring;
 using RushOps.UI;
 using UnityEditor;
@@ -124,6 +125,8 @@ namespace RushOps.Editor.Scenes
         private static readonly Color PaletteWhite = new Color32(244, 241, 232, 255);
         private static readonly Color PaletteYellow = new Color32(246, 208, 77, 255);
         // Puzzle progress bar under the mission tracker: one text line (20 units) plus a small gap below its top.
+        // Width of the mission tracker text in reference units; „Tor gesperrt: 10/10 Kills“ needs 150.
+        private const float TrackerWidth = 160f;
         private static readonly Vector2 PuzzleBarSize = new Vector2(80f, 6f);
         private const float PuzzleBarGap = 24f;
         // The overlay darkens the frozen game behind the menu.
@@ -154,6 +157,9 @@ namespace RushOps.Editor.Scenes
         // so the multiplier sits one line under the score.
         private const float ScoreRowOffset = 35f;
         private const string NukeConfigPath = "Assets/_Project/Data/Perks/NukeConfig.asset";
+        internal const string CarryConfigPath = "Assets/_Project/Data/Puzzles/CarryConfig.asset";
+        // In front of the right hand of the 64x64 figure, pivoted at its feet.
+        private static readonly Vector3 CarryHoldOffset = new Vector3(0.375f, 0.94f, 0f);
         private const string ShieldConfigPath = "Assets/_Project/Data/Perks/ShieldConfig.asset";
         private const string ShieldBarrierSpritePath = "Assets/_Project/Art/Sprites/Effects/Shield_Barrier.png";
         // Figures are pivoted at their feet on a 64x64 canvas, so its center lies one unit up.
@@ -760,8 +766,22 @@ namespace RushOps.Editor.Scenes
             // The pickup pool is set once the perk drops exist (BuildScene).
             go.AddComponent<PlayerPerks>();
             CreateShield(go);
+            CreateCarrier(go);
 
             return go.transform;
+        }
+
+        // Object transport (issue #33): a hold point in front of the figure's right hand.
+        private static void CreateCarrier(GameObject player)
+        {
+            var hold = new GameObject("HoldPoint");
+            hold.transform.SetParent(player.transform, false);
+            hold.transform.localPosition = CarryHoldOffset;
+            var carrier = player.AddComponent<PlayerCarrier>();
+            var serialized = new SerializedObject(carrier);
+            serialized.FindProperty("_config").objectReferenceValue = LoadOrCreateConfig<CarryConfig>(CarryConfigPath);
+            serialized.FindProperty("_holdPoint").objectReferenceValue = hold.transform;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // Shield perk (issue #26): a bubble centered on the figure's 64x64 canvas, hidden until the shield runs.
@@ -1308,6 +1328,9 @@ namespace RushOps.Editor.Scenes
             label.rectTransform.anchoredPosition = new Vector2(-HudMargin, -PauseButtonSize);
             label.alignment = TextAnchor.UpperRight;
             label.enabled = false;
+            // Long texts wrap instead of reaching into score and multiplier at the top center (issue #33).
+            label.rectTransform.sizeDelta = new Vector2(TrackerWidth / HudPixelScale, label.rectTransform.sizeDelta.y);
+            label.horizontalOverflow = HorizontalWrapMode.Wrap;
 
             // Progress bar for puzzles (issue #30), right-aligned one text line below the label.
             RectTransform bar = CreateUiRect("PuzzleProgress", parent, topRight, topRight);
@@ -1530,11 +1553,17 @@ namespace RushOps.Editor.Scenes
             overlay.fillAmount = 0f;
             overlay.enabled = false;
 
+            Image locked = CreateUiImage("Locked", button.rectTransform, "Dash_Locked.png", Vector2.zero);
+            locked.rectTransform.anchorMax = Vector2.one;
+            locked.rectTransform.sizeDelta = Vector2.zero;
+            locked.enabled = false;
+
             var view = button.gameObject.AddComponent<DashButtonView>();
             var serialized = new SerializedObject(view);
             serialized.FindProperty("_dash").objectReferenceValue = dash;
             serialized.FindProperty("_stick").objectReferenceValue = stick;
             serialized.FindProperty("_cooldownOverlay").objectReferenceValue = overlay;
+            serialized.FindProperty("_lockedIcon").objectReferenceValue = locked;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
