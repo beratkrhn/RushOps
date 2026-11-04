@@ -6,6 +6,8 @@ Ein Epic wird zerlegt, indem eine Backlog-Datei `docs/backlog/vX.Y.Z.md` im Form
 
 ## v0.4.0 – Grafik und Sound
 
+In Stories zerlegt: [`v0.4.0.md`](v0.4.0.md) (#99 bis #109). Die Epics #38 bis #41 sind damit erledigt. Musik (#42) ist zurückgestellt (Entscheidung G11).
+
 ### Finale Palette und Figuren (#38)
 Endgültige Palette, Spieler und alle vier Gegnertypen mit Animationen (Laufen, Treffer, Tod), Standard-Skin.
 *Offen:* Stilrichtung und Stimmung (düster, bunt, comichaft), Referenzspiele.
