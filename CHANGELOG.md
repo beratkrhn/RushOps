@@ -96,6 +96,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `PlayerShield` am Spieler, `ShieldMath` als reine Logik mit EditMode-Tests, `ActivePerks.RemainingOf`. `PlayerHealth` beachtet ein `IDamageBlocker`, Gegner lassen sich über `IKnockbackable` wegstoßen (Issue #26).
 - **Nuke** wirkt jetzt: Beim Aufsammeln sterben alle Gegner im Kamerabereich, außer Bosse. Gegner außerhalb des Bildschirms und die Spawn-Warteschlange bleiben unberührt. Nuke-Kills zählen für Kill-Gates (Issue #27, F-PRK-04, F-LVL-03, F-BOS-02). Dazu kommen ein weißer Bildschirmblitz, ein starker Screenshake und ein eigener Sound (`Nuke.wav` aus `Tools/gen_sfx.py`); die Stärken stehen in `Data/Perks/NukeConfig`.
 - `NukeSystem`, `NukeTargeting` (reine Logik mit EditMode-Tests), `ScreenFlash` im HUD und `FeelMath.FlashFade` (Issue #27).
+- **Score und Kombo**: Jeder Kill gibt die Punkte seines Gegnertyps (`EnemyDefinition.Points`), auch Explosions- und Nuke-Kills. Kills innerhalb von 2 s nach dem letzten halten die Kombo; alle 5 Kombo-Kills steigt der Multiplikator um 1, höchstens auf ×5. Ein erlittener Treffer oder das Ablaufen des Fensters setzt ihn auf ×1 zurück (Issue #28, F-SCO-01, F-SCO-02). Die Werte stehen in `Data/Score/ScoreConfig`.
+- HUD oben mittig: Score mit dem Multiplikator darunter; steigt der Multiplikator, leuchtet er kurz gelb auf und springt größer (F-HUD-04). Dauer, Farbe und Größe in `HudConfig`.
+- `ScoreKeeper` als reine Logik mit EditMode-Tests, `LevelScore` als Adapter, `ScoreView` und `ScoreText` (Issue #28).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -125,6 +128,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Wellen *(Startwerte)* mit Brutes: `Arena_Test` 1 Brute in Welle 3, `Arena_Zonen` Zone 3 je 1 bzw. 2 Brutes in Welle 2 und 3 (Issue #21).
 - Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
 - Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
+- Der FPS-Zähler sitzt jetzt unten mittig, weil Score und Multiplikator oben mittig stehen (Issue #28).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
