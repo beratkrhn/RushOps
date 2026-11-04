@@ -15,8 +15,8 @@ namespace RushOps.Editor.Scenes
     /// <summary>
     /// Builds the <c>MainMenu</c> scene (issue #125, F-UI-02): logo, the player in the standard skin and the buttons
     /// „Story Mode“, „Spielerauswahl“ and „Einstellungen“ inside the safe area; the version and, in development
-    /// builds, a button to the test menu at the bottom. Spielerauswahl (#130) is greyed
-    /// out until its screen exists; „Einstellungen“ opens the settings screen (#126, <see cref="SettingsScreenBuilder"/>).
+    /// builds, a button to the test menu at the bottom. „Spielerauswahl“ opens the skin carousel (#130,
+    /// <see cref="SkinSelectionBuilder"/>), „Einstellungen“ the settings screen (#126, <see cref="SettingsScreenBuilder"/>).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.MainMenuSceneBuilder.Build</c>
     /// </summary>
     public static class MainMenuSceneBuilder
@@ -63,11 +63,12 @@ namespace RushOps.Editor.Scenes
 
             var menu = root.AddComponent<MainMenu>();
             var settings = root.AddComponent<SettingsMenu>();
+            var skins = root.AddComponent<SkinCarousel>();
             CreateSprite("Logo", safeArea, ArenaTestSceneBuilder.LoadUiSprite(LogoFile), new Vector2(0f, LogoY));
-            CreateFigure(safeArea);
+            MenuFigure figure = CreateFigure(safeArea);
 
             CreateButton("StoryButton", safeArea, font, "Story Mode", 0, true, true, menu.StartStory);
-            CreateButton("SkinsButton", safeArea, font, "Spielerauswahl", 1, false, false, null);
+            CreateButton("SkinsButton", safeArea, font, "Spielerauswahl", 1, false, true, skins.Open);
             CreateButton("SettingsButton", safeArea, font, "Einstellungen", 2, false, true, settings.Open);
 
             Text version = ArenaTestSceneBuilder.CreateText(
@@ -84,6 +85,7 @@ namespace RushOps.Editor.Scenes
 
             var audio = new GameObject("Audio");
             ArenaTestSceneBuilder.CreateAudio(audio);
+            SkinSelectionBuilder.Create(safeArea, font, skins, figure);
             SettingsScreenBuilder.Create(safeArea, font, settings, audio.GetComponent<RushOps.Audio.AudioVolumes>());
             ArenaTestSceneBuilder.AddClickSounds(audio.GetComponent<RushOps.Audio.UiClickSound>());
 
@@ -105,8 +107,8 @@ namespace RushOps.Editor.Scenes
             return image;
         }
 
-        // The player in the standard skin, facing the viewer; the skin selection (#130) swaps the animation.
-        private static void CreateFigure(RectTransform parent)
+        // The player facing the viewer; the skin carousel (#130) dresses it in the current skin.
+        private static MenuFigure CreateFigure(RectTransform parent)
         {
             var idle = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerIdlePath);
             Sprite first = idle.GetFrame(Direction8.S, 0);
@@ -116,6 +118,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_animation").objectReferenceValue = idle;
             serialized.FindProperty("_direction").enumValueIndex = (int)Direction8.S;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            return figure;
         }
 
         internal static Button CreateButton(string name, RectTransform parent, Font font, string label, int row, bool primary,
