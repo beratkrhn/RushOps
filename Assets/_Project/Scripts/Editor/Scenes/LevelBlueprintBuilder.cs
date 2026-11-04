@@ -72,7 +72,17 @@ namespace RushOps.Editor.Scenes
                 }
             }
 
-            var targets = new List<(string name, Vector2 point)> { ("exit", blueprint.ExitCenter) };
+            var targets = new List<(string name, Vector2 point)>();
+            if (blueprint.Boss == null)
+            {
+                targets.Add(("exit", blueprint.ExitCenter));
+            }
+            else
+            {
+                ValidateBoss(problems, blueprint, blueprint.Boss);
+                targets.Add(("boss", blueprint.Boss.Position));
+            }
+
             for (int g = 0; g < blueprint.Gates.Count; g++)
             {
                 LevelGate gate = blueprint.Gates[g];
@@ -127,17 +137,72 @@ namespace RushOps.Editor.Scenes
                 }
             }
 
-            int exitZone = ZoneContaining(blueprint, blueprint.ExitCenter);
-            if (exitZone < 0)
+            // Boss levels end with the boss, not at an exit.
+            if (blueprint.Boss == null)
             {
-                problems.Add($"exit at {blueprint.ExitCenter} lies in no zone");
-            }
-            else
-            {
-                CheckInSight(problems, blueprint, "exit", exitZone, sight, blueprint.ExitCenter);
+                int exitZone = ZoneContaining(blueprint, blueprint.ExitCenter);
+                if (exitZone < 0)
+                {
+                    problems.Add($"exit at {blueprint.ExitCenter} lies in no zone");
+                }
+                else
+                {
+                    CheckInSight(problems, blueprint, "exit", exitZone, sight, blueprint.ExitCenter);
+                }
             }
 
             return problems;
+        }
+
+        // Arena without obstacles (decision L5), a gate leading in and room behind it for the door to close (C6).
+        private static void ValidateBoss(List<string> problems, LevelBlueprint blueprint, LevelBoss boss)
+        {
+            if (boss.ArenaZone < 0 || boss.ArenaZone >= blueprint.Zones.Count)
+            {
+                problems.Add($"Boss: arena zone {boss.ArenaZone} does not exist");
+                return;
+            }
+
+            if (boss.EntryGate < 0 || boss.EntryGate >= blueprint.Gates.Count)
+            {
+                problems.Add($"Boss: entry gate {boss.EntryGate} does not exist");
+                return;
+            }
+
+            RectInt arena = blueprint.Zones[boss.ArenaZone].Area;
+            for (int y = arena.yMin + 1; y < arena.yMax - 1; y++)
+            {
+                for (int x = arena.xMin + 1; x < arena.xMax - 1; x++)
+                {
+                    if (blueprint.Layout.IsWall(x, y) && !blueprint.Layout.IsOuterWall(x, y))
+                    {
+                        problems.Add($"Boss: arena has an obstacle at ({x}, {y}); arenas must be open (L5)");
+                        return;
+                    }
+                }
+            }
+
+            if (!arena.Contains(LevelLayoutCheck.CellOf(boss.Position)))
+            {
+                problems.Add($"Boss: start {boss.Position} lies outside the arena");
+            }
+
+            if (blueprint.Zones[boss.ArenaZone].ExitGate >= 0)
+            {
+                problems.Add("Boss: the arena must not have an exit gate");
+            }
+
+            if (ZoneLeavingBy(blueprint, boss.EntryGate) < 0)
+            {
+                problems.Add($"Boss: gate {blueprint.Gates[boss.EntryGate].Name} leads out of no zone");
+            }
+
+            LevelGate gate = blueprint.Gates[boss.EntryGate];
+            var grown = new RectInt(arena.xMin - 1, arena.yMin - 1, arena.width + 2, arena.height + 2);
+            if (grown.Overlaps(gate.Area))
+            {
+                problems.Add($"Boss: the arena starts right at gate {gate.Name}; leave a free row so the door closes behind the player");
+            }
         }
 
         /// <summary>
@@ -288,7 +353,15 @@ namespace RushOps.Editor.Scenes
             }
 
             PuzzleBuilder.SetLevelPuzzles(arena, puzzles);
-            LevelPieceBuilder.CreateExit(arena, blueprint.ExitCenter, blueprint.ExitLockZone >= 0 ? zones[blueprint.ExitLockZone] : null);
+            if (blueprint.Boss != null)
+            {
+                BossBuilder.Create(blueprint, blueprint.Boss, arena, zones);
+            }
+            else
+            {
+                LevelPieceBuilder.CreateExit(
+                    arena, blueprint.ExitCenter, blueprint.ExitLockZone >= 0 ? zones[blueprint.ExitLockZone] : null);
+            }
         }
 
         private static Puzzle CreatePuzzle(

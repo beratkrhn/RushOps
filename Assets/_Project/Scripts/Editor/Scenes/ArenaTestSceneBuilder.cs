@@ -87,7 +87,7 @@ namespace RushOps.Editor.Scenes
         private const float MuzzleLightRadius = 1.8f;
         internal const string SaveGameServicePath = "Assets/_Project/Data/Save/SaveGameService.asset";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
-        private const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
+        internal const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
         private const string FlashShaderName = "RushOps/Sprite Flash";
         private const string FlashMaterialPath = "Assets/_Project/Art/Shaders/SpriteFlash.mat";
         // Enemies slide off each other and off walls instead of sticking by friction, so a brute shoves smaller
@@ -98,7 +98,7 @@ namespace RushOps.Editor.Scenes
         private const string SpawnerConfigPath = "Assets/_Project/Data/Enemies/SpawnerConfig.asset";
         private const string SpawnMarkerSpritePath = "Assets/_Project/Art/Sprites/Effects/SpawnMarker.png";
         private const string WavesPath = "Assets/_Project/Data/Waves/Arena_Test.asset";
-        private const string EnemiesLayer = "Enemies";
+        internal const string EnemiesLayer = "Enemies";
         // Walker body at the feet like the player's, a little smaller so walkers squeeze through gaps the player fits through.
         private const float WalkerColliderRadius = 0.28f;
         // The runner is thinner than the walker; its body stays at the same height above the feet.
@@ -138,7 +138,7 @@ namespace RushOps.Editor.Scenes
         internal static readonly Color PaletteNight = new Color32(31, 29, 43, 255);
         internal static readonly Color PaletteSlate2 = new Color32(77, 76, 99, 255);
         internal static readonly Color PaletteWhite = new Color32(244, 241, 232, 255);
-        private static readonly Color PaletteYellow = new Color32(246, 208, 77, 255);
+        internal static readonly Color PaletteYellow = new Color32(246, 208, 77, 255);
         // Puzzle progress bar under the mission tracker: one text line (20 units) plus a small gap below its top.
         // Width of the mission tracker text in reference units; „Tor gesperrt: 10/10 Kills“ needs 150.
         private const float TrackerWidth = 160f;
@@ -1156,7 +1156,7 @@ namespace RushOps.Editor.Scenes
         }
 
         // Characters stand with their feet (sprite pivot) in the middle of the cell and sort by it.
-        private static DirectionalSpriteAnimator CreateCharacter(
+        internal static DirectionalSpriteAnimator CreateCharacter(
             string name, Transform parent, Vector2Int cell, DirectionalAnimation animation, Direction8 direction)
         {
             var go = new GameObject(name);
@@ -1444,7 +1444,7 @@ namespace RushOps.Editor.Scenes
             return material;
         }
 
-        private static Material LoadOrCreateFlashMaterial()
+        internal static Material LoadOrCreateFlashMaterial()
         {
             var material = AssetDatabase.LoadAssetAtPath<Material>(FlashMaterialPath);
             if (material != null)

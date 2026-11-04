@@ -62,6 +62,21 @@ namespace RushOps.Scoring
             return awarded;
         }
 
+        /// <summary>
+        /// Adds <paramref name="points"/> as they are, without multiplier and without touching the combo, e.g. for
+        /// beating a boss (decision C10).
+        /// </summary>
+        public void AddPoints(int points)
+        {
+            if (points <= 0)
+            {
+                return;
+            }
+
+            Score += points;
+            ScoreChanged?.Invoke(Score);
+        }
+
         /// <summary>Ends the combo, e.g. when the player takes a hit.</summary>
         public void BreakCombo()
         {

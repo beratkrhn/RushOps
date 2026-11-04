@@ -45,6 +45,48 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void BossTest_FollowsLevelDesignRules()
+        {
+            CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(BossTestSceneBuilder.Blueprint));
+        }
+
+        // A start zone, a gate and an open arena two rows behind it.
+        private static LevelBlueprint BossLevel(bool obstacle, int arenaBottom = 15)
+        {
+            var level = new LevelBlueprint("Test", "Test", 24, 40, new Vector2Int(12, 3));
+            if (obstacle)
+            {
+                level.Walls.Add(new RectInt(10, 25, 2, 2));
+            }
+
+            int gate = level.AddHorizontalDivider("Gate_1", 12, 1, 22, 10, 4);
+            level.Gates[gate].Kills = 3;
+            level.AddZone(new LevelZone("Zone_1", new RectInt(1, 1, 22, arenaBottom - 1), null, null, gate));
+            int arena = level.AddZone(new LevelZone("Arena", new RectInt(1, arenaBottom, 22, 39 - arenaBottom), null, null, -1));
+            level.Boss = new LevelBoss("Assets/Test.asset", new Vector2(12f, 30f), arena, gate, null);
+            return level;
+        }
+
+        [Test]
+        public void BossLevel_NeedsNoExit()
+        {
+            CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(BossLevel(false)));
+        }
+
+        [Test]
+        public void BossArenaWithObstacle_IsReported()
+        {
+            // Decision L5: bosses fight in open arenas.
+            Assert.That(LevelBlueprintBuilder.Validate(BossLevel(true)), Has.Some.Contains("obstacle"));
+        }
+
+        [Test]
+        public void ArenaRightAtTheGate_IsReported()
+        {
+            Assert.That(LevelBlueprintBuilder.Validate(BossLevel(false, 13)), Has.Some.Contains("door closes behind"));
+        }
+
+        [Test]
         public void HorizontalDivider_LeavesTheGateOpen()
         {
             var level = new LevelBlueprint("Test", "Test", 24, 30, new Vector2Int(12, 3));
