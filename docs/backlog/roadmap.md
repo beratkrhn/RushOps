@@ -46,13 +46,12 @@ Skin-Karussell, Freischaltung pro Level und über Meilensteine, Anzeige der Bedi
 ### Inselkarte und Levelauswahl (#47)
 Drei Inseln mit Brücken, sequenzielle Freischaltung, Sterne pro Level.
 
-## v0.6.0 – Inhalte und Bosse
+## v0.6.0 bis v0.8.0 – Inhalte und Bosse
 
-Entwurf der Stories: [`v0.6.0.md`](v0.6.0.md). Er wartet auf die Fragen C1 bis C12 in [`design-fragen.md`](design-fragen.md); danach werden die Story-Issues angelegt.
+In Stories zerlegt, je Insel ein Milestone (Entscheidung C1): [`v0.6.0.md`](v0.6.0.md) Insel 1 und Boss-Grundlage (#147 bis #152), [`v0.7.0.md`](v0.7.0.md) Insel 2 (#153 bis #156), [`v0.8.0.md`](v0.8.0.md) Insel 3 (#157 bis #160). Die Epics #48 bis #51 sind damit erledigt.
 
 ### Level 1-2, 2-1, 2-2, 3-1, 3-2 (#48)
 Die übrigen regulären Level mit steigender Schwierigkeit.
-*Offen:* Schwierigkeitskurve, neue Kombinationen von Rätseln.
 
 ### Boss: Koloss (Level 1-3) (#49)
 Lädt sich auf und stürmt geradeaus; lehrt das Timing des Dash.
@@ -61,7 +60,7 @@ Lädt sich auf und stürmt geradeaus; lehrt das Timing des Dash.
 Spawnt laufend Runner; Schaden machen unter Kontrolle der Spawns.
 
 ### Boss: Mega-Boomer (Level 3-3) (#51)
-Explosive Pfützen, teilt sich bei halber Gesundheit in zwei Boomer.
+Pfützen, teilt sich bei halber Gesundheit in zwei Boomer.
 
 ## v1.0.0 – Release
 
