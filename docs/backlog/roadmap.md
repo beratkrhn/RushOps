@@ -48,6 +48,8 @@ Drei Inseln mit Brücken, sequenzielle Freischaltung, Sterne pro Level.
 
 ## v0.6.0 – Inhalte und Bosse
 
+Entwurf der Stories: [`v0.6.0.md`](v0.6.0.md). Er wartet auf die Fragen C1 bis C12 in [`design-fragen.md`](design-fragen.md); danach werden die Story-Issues angelegt.
+
 ### Level 1-2, 2-1, 2-2, 3-1, 3-2 (#48)
 Die übrigen regulären Level mit steigender Schwierigkeit.
 *Offen:* Schwierigkeitskurve, neue Kombinationen von Rätseln.
