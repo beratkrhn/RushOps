@@ -94,6 +94,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Projektile zeigen aktive Perks: rot und dicker bei Doppelschaden, hell mit langer Spur bei Insta-Kill. Die Sprites erzeugt `Tools/gen_pixelart.py` (Issue #25).
 - **Schutzschild** wirkt jetzt: 8 s *(Startwert)* kein Schaden, auch nicht durch Explosionen. Eine Blase um die Figur zeigt den Schild und flackert in den letzten 2 s. Gegner, die den Schild berühren, werden leicht zurückgestoßen (Issue #26, F-PRK-04). Flackerzeit und Rückstoß stehen in `Data/Perks/ShieldConfig`.
 - `PlayerShield` am Spieler, `ShieldMath` als reine Logik mit EditMode-Tests, `ActivePerks.RemainingOf`. `PlayerHealth` beachtet ein `IDamageBlocker`, Gegner lassen sich über `IKnockbackable` wegstoßen (Issue #26).
+- **Nuke** wirkt jetzt: Beim Aufsammeln sterben alle Gegner im Kamerabereich, außer Bosse. Gegner außerhalb des Bildschirms und die Spawn-Warteschlange bleiben unberührt. Nuke-Kills zählen für Kill-Gates (Issue #27, F-PRK-04, F-LVL-03, F-BOS-02). Dazu kommen ein weißer Bildschirmblitz, ein starker Screenshake und ein eigener Sound (`Nuke.wav` aus `Tools/gen_sfx.py`); die Stärken stehen in `Data/Perks/NukeConfig`.
+- `NukeSystem`, `NukeTargeting` (reine Logik mit EditMode-Tests), `ScreenFlash` im HUD und `FeelMath.FlashFade` (Issue #27).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -122,6 +124,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Wellen *(Startwerte)* mit Runnern: `Arena_Test` 12 Walker / 12 Walker + 4 Runner / 14 Walker + 6 Runner; `Arena_Zonen` Zone 2 6 / 8 + 2 / 9 + 3, Zone 3 6 + 2 / 8 + 4 / 10 + 6; Zone 1 bleibt nur mit Walkern (Issue #20).
 - Wellen *(Startwerte)* mit Brutes: `Arena_Test` 1 Brute in Welle 3, `Arena_Zonen` Zone 3 je 1 bzw. 2 Brutes in Welle 2 und 3 (Issue #21).
 - Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
+- Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).

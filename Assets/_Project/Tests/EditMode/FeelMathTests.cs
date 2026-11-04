@@ -82,5 +82,20 @@ namespace RushOps.Tests.EditMode
         {
             Assert.AreEqual(expected, FeelMath.Pitch(random, 0.06f), 1e-5f);
         }
+    
+        [TestCase(0f, 0.9f)]
+        [TestCase(0.25f, 0.45f)]
+        [TestCase(0.5f, 0f)]
+        [TestCase(-0.1f, 0f)]
+        public void FlashFade_FadesOutLinearlyFromPeak(float elapsed, float expected)
+        {
+            Assert.AreEqual(expected, FeelMath.FlashFade(elapsed, 0.5f, 0.9f), 1e-5f);
+        }
+
+        [Test]
+        public void FlashFade_NoDuration_Off()
+        {
+            Assert.AreEqual(0f, FeelMath.FlashFade(0f, 0f, 1f));
+        }
     }
 }

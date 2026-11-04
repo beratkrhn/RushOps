@@ -16,6 +16,7 @@ Output (under Assets/_Project/Audio/SFX/):
   BoomerApproach.wav  warning: two-tone alarm beeps that speed up over a fizzing fuse (issue #22, F-AUD-03)
   Explosion.wav       deep boom with a noise blast and a rumbling tail (issue #22)
   PerkPickup.wav      quick sparkly upward sweep with two bell tones when a perk is collected (issue #23)
+  Nuke.wav            rising charge whine, a sharp crack and a huge sub-bass boom with a long rumble (issue #27)
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -233,6 +234,32 @@ def perk_pickup(rng: random.Random) -> list[float]:
     return out
 
 
+def nuke(rng: random.Random) -> list[float]:
+    # A short charge whine sweeping up, then a white-noise crack and a sub-bass drop far below the boomer's
+    # explosion, with a long dark rumble: bigger than any blast in the level.
+    charge = 0.28
+    length = 2.2
+    out = []
+    bright = dark = 0.0
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        sample = 0.0
+        if t < charge:
+            whine = math.sin(sweep(220, 1800, t, charge)) * (t / charge) ** 2
+            sample += 0.35 * whine
+        tb = t - charge
+        if tb >= 0:
+            noise = rng.uniform(-1, 1)
+            bright += 0.6 * (noise - bright)
+            dark += 0.02 * (noise - dark)
+            crack = bright * max(0.0, 1 - tb / 0.12)
+            boom = math.sin(sweep(90, 22, tb, 1.2)) * envelope(tb, 1.4, 0.002)
+            rumble = 4.0 * dark * envelope(tb, length - charge, 0.01)
+            sample += 0.8 * crack + 1.0 * boom + 0.8 * rumble
+        out.append(sample)
+    return out
+
+
 def write(path: Path, samples: list[float]) -> None:
     peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
@@ -249,7 +276,7 @@ def main() -> None:
                        ("MissionDone", mission_done), ("RunnerSpawn", runner_spawn),
                        ("RunnerApproach", runner_approach), ("BoomerSpawn", boomer_spawn),
                        ("BoomerApproach", boomer_approach), ("Explosion", explosion),
-                       ("PerkPickup", perk_pickup)):
+                       ("PerkPickup", perk_pickup), ("Nuke", nuke)):
         path = SFX_DIR / f"{name}.wav"
         write(path, make(rng))
         print(f"Wrote {path.relative_to(ROOT)}")

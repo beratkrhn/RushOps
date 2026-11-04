@@ -143,6 +143,7 @@ namespace RushOps.Editor.Scenes
         private const int ProjectileSortingOrder = 3;
         // Blasts cover the characters they hit.
         private const int EffectSortingOrder = 4;
+        private const string NukeConfigPath = "Assets/_Project/Data/Perks/NukeConfig.asset";
         private const string ShieldConfigPath = "Assets/_Project/Data/Perks/ShieldConfig.asset";
         private const string ShieldBarrierSpritePath = "Assets/_Project/Art/Sprites/Effects/Shield_Barrier.png";
         // Figures are pivoted at their feet on a 64x64 canvas, so its center lies one unit up.
@@ -458,7 +459,7 @@ namespace RushOps.Editor.Scenes
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
             PauseController pause = CreateHud(
                 LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), target.GetComponent<PlayerPerks>(),
-                PixelFontBuilder.Build(), out MissionTracker tracker);
+                PixelFontBuilder.Build(), out MissionTracker tracker, out ScreenFlash flash);
             CreateLevelRestarter(target.GetComponent<PlayerHealth>());
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
             Material flashMaterial = LoadOrCreateFlashMaterial();
@@ -498,7 +499,9 @@ namespace RushOps.Editor.Scenes
             var playerPerks = new SerializedObject(target.GetComponent<PlayerPerks>());
             playerPerks.FindProperty("_pickups").objectReferenceValue = perks;
             playerPerks.ApplyModifiedPropertiesWithoutUndo();
-            SfxPlayer sfx = CreateGameFeel(feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks);
+            NukeSystem nuke = CreateNukeSystem(target.GetComponent<PlayerPerks>(), cameraFollow, enemyPools);
+            SfxPlayer sfx = CreateGameFeel(
+                feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, nuke, flash);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx));
 
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -994,7 +997,8 @@ namespace RushOps.Editor.Scenes
 
         private static SfxPlayer CreateGameFeel(
             FeelConfig config, Transform player, EnemyPool[] enemies, CameraFollow camera, PauseController pause,
-            ExplosionSystem explosions, ExplosionEffectPool explosionEffects, PerkPickupPool perks)
+            ExplosionSystem explosions, ExplosionEffectPool explosionEffects, PerkPickupPool perks, NukeSystem nuke,
+            ScreenFlash flash)
         {
             var go = new GameObject("GameFeel");
             var hitstop = go.AddComponent<Hitstop>();
@@ -1016,6 +1020,9 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_explosionEffects").objectReferenceValue = explosionEffects;
             serialized.FindProperty("_perks").objectReferenceValue = perks;
             serialized.FindProperty("_perkPickupClip").objectReferenceValue = LoadClip("PerkPickup.wav");
+            serialized.FindProperty("_nuke").objectReferenceValue = nuke;
+            serialized.FindProperty("_flash").objectReferenceValue = flash;
+            serialized.FindProperty("_nukeClip").objectReferenceValue = LoadClip("Nuke.wav");
             serialized.FindProperty("_hitstop").objectReferenceValue = hitstop;
             serialized.FindProperty("_sfx").objectReferenceValue = sfx;
             serialized.FindProperty("_shotClip").objectReferenceValue = LoadClip("Shot.wav");
@@ -1114,7 +1121,7 @@ namespace RushOps.Editor.Scenes
         }
 
         private static PauseController CreateHud(
-            HudConfig config, PlayerHealth player, PlayerPerks perks, Font font, out MissionTracker tracker)
+            HudConfig config, PlayerHealth player, PlayerPerks perks, Font font, out MissionTracker tracker, out ScreenFlash flash)
         {
             var root = new GameObject("HUD", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
@@ -1128,6 +1135,8 @@ namespace RushOps.Editor.Scenes
             root.AddComponent<GraphicRaycaster>();
             var pause = root.AddComponent<PauseController>();
 
+            // The flash covers the game but stays behind the HUD elements, which keep readable.
+            flash = CreateScreenFlash((RectTransform)root.transform);
             RectTransform safeArea = CreateUiRect("SafeArea", root.transform, Vector2.zero, Vector2.one);
             safeArea.gameObject.AddComponent<SafeAreaFitter>();
             float heartsHeight = CreateHearts(safeArea, config, player);
@@ -1141,6 +1150,33 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_overlay").objectReferenceValue = overlay;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return pause;
+        }
+
+        // Full screen, beyond the safe area, so the nuke flash also covers notches.
+        private static ScreenFlash CreateScreenFlash(RectTransform parent)
+        {
+            RectTransform rect = CreateUiRect("ScreenFlash", parent, Vector2.zero, Vector2.one);
+            var image = rect.gameObject.AddComponent<Image>();
+            image.color = new Color(PaletteWhite.r, PaletteWhite.g, PaletteWhite.b, 0f);
+            image.raycastTarget = false;
+            image.enabled = false;
+            var flash = rect.gameObject.AddComponent<ScreenFlash>();
+            var serialized = new SerializedObject(flash);
+            serialized.FindProperty("_image").objectReferenceValue = image;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return flash;
+        }
+
+        private static NukeSystem CreateNukeSystem(PlayerPerks perks, CameraFollow camera, EnemyPool[] pools)
+        {
+            var nuke = new GameObject("NukeSystem").AddComponent<NukeSystem>();
+            var serialized = new SerializedObject(nuke);
+            serialized.FindProperty("_config").objectReferenceValue = LoadOrCreateConfig<NukeConfig>(NukeConfigPath);
+            serialized.FindProperty("_perks").objectReferenceValue = perks;
+            serialized.FindProperty("_camera").objectReferenceValue = camera;
+            SetPools(serialized, pools);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return nuke;
         }
 
         // Returns the height of the heart row in reference units.

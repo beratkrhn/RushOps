@@ -4,6 +4,7 @@ using RushOps.Combat;
 using RushOps.Enemies;
 using RushOps.Perks;
 using RushOps.Player;
+using RushOps.UI;
 using UnityEngine;
 
 namespace RushOps.Feel
@@ -12,7 +13,8 @@ namespace RushOps.Feel
     /// Connects game events to the hit feedback (issue #12): camera shake when the player takes damage,
     /// hitstop when an enemy dies, and the placeholder sounds for shots, hits and deaths, plus the spawn and approach
     /// sounds an enemy type brings in its <see cref="EnemyDefinition"/> (issue #20), and for every explosion a strong
-    /// shake, its sound and its blast effect (issue #22), and a sound when the player collects a perk (issue #23). Enemies flash and
+    /// shake, its sound and its blast effect (issue #22), and a sound when the player collects a perk (issue #23), and the white flash, strong shake and sound of the nuke
+    /// (issue #27). Many deaths in one frame play the death sound once. Enemies flash and
     /// get knocked back by themselves (<see cref="Enemy"/>).
     /// </summary>
     public class GameFeel : MonoBehaviour
@@ -25,6 +27,9 @@ namespace RushOps.Feel
         [SerializeField] private ExplosionSystem _explosions;
         [SerializeField] private ExplosionEffectPool _explosionEffects;
         [SerializeField] private PerkPickupPool _perks;
+        [SerializeField] private NukeSystem _nuke;
+        [SerializeField] private ScreenFlash _flash;
+        [SerializeField] private AudioClip _nukeClip;
         [SerializeField] private CameraFollow _camera;
         [SerializeField] private Hitstop _hitstop;
         [SerializeField] private SfxPlayer _sfx;
@@ -34,6 +39,7 @@ namespace RushOps.Feel
         [SerializeField] private AudioClip _perkPickupClip;
 
         private int _hearts = -1;
+        private int _deathSoundFrame = -1;
 
         private void OnEnable()
         {
@@ -55,6 +61,11 @@ namespace RushOps.Feel
             if (_perks != null)
             {
                 _perks.Collected += OnPerkCollected;
+            }
+
+            if (_nuke != null)
+            {
+                _nuke.Detonated += OnNukeDetonated;
             }
 
             foreach (EnemyPool pool in _pools)
@@ -89,6 +100,11 @@ namespace RushOps.Feel
             if (_perks != null)
             {
                 _perks.Collected -= OnPerkCollected;
+            }
+
+            if (_nuke != null)
+            {
+                _nuke.Detonated -= OnNukeDetonated;
             }
 
             foreach (EnemyPool pool in _pools)
@@ -145,7 +161,13 @@ namespace RushOps.Feel
 
         private void OnEnemyDied(Enemy enemy)
         {
-            Play(_deathClip, _config != null ? _config.DeathVolume : 0f);
+            // A nuke or a chain of blasts kills many at once; one sound is enough and keeps the mix from clipping.
+            if (_deathSoundFrame != Time.frameCount)
+            {
+                _deathSoundFrame = Time.frameCount;
+                Play(_deathClip, _config != null ? _config.DeathVolume : 0f);
+            }
+
             if (_config != null && _config.HitstopEnabled && _hitstop != null)
             {
                 _hitstop.Trigger(_config.HitstopDuration);
@@ -170,6 +192,27 @@ namespace RushOps.Feel
         private void OnPerkCollected(PerkPickup pickup)
         {
             Play(_perkPickupClip, _config != null ? _config.PerkPickupVolume : 0f);
+        }
+
+        private void OnNukeDetonated(int kills)
+        {
+            NukeConfig nuke = _nuke.Config;
+            if (nuke == null)
+            {
+                return;
+            }
+
+            if (_camera != null)
+            {
+                _camera.Shake(nuke.ShakeStrength, nuke.ShakeDuration, nuke.ShakeFrequency);
+            }
+
+            if (_flash != null)
+            {
+                _flash.Play(nuke.FlashAlpha, nuke.FlashDuration);
+            }
+
+            Play(_nukeClip, nuke.Volume);
         }
 
         private void Play(AudioClip clip, float volume)
