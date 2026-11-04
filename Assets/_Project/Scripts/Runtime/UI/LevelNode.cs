@@ -18,6 +18,8 @@ namespace RushOps.UI
         [SerializeField] private Button _button;
         [SerializeField] private Text _label;
         [SerializeField] private Text _soon;
+        [Tooltip("Short name of the level under the point (decision C11).")]
+        [SerializeField] private Text _name;
         [SerializeField] private Image[] _stars = System.Array.Empty<Image>();
 
         /// <summary>Island of this point.</summary>
@@ -69,6 +71,25 @@ namespace RushOps.UI
                 {
                     _stars[i].sprite = i < StarsShown ? config.StarFull : config.StarEmpty;
                 }
+            }
+        }
+
+        /// <summary>Name shown under the point; empty while the level is not built.</summary>
+        public string NameShown => _name != null && _name.enabled ? _name.text : string.Empty;
+
+        /// <summary>Shows <paramref name="levelName"/> under the point; null or empty hides it.</summary>
+        public void ShowName(string levelName)
+        {
+            if (_name == null)
+            {
+                return;
+            }
+
+            bool visible = !string.IsNullOrEmpty(levelName);
+            _name.enabled = visible;
+            if (visible && !string.Equals(_name.text, levelName, System.StringComparison.Ordinal))
+            {
+                _name.text = levelName;
             }
         }
 

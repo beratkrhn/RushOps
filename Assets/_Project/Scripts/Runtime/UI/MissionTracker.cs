@@ -12,7 +12,8 @@ namespace RushOps.UI
     /// after a moment. For a puzzle gate it shows the current puzzle's text with a progress bar or a countdown (issue #30).
     /// A puzzle in a zone whose gate has no such condition, e.g. the last zone, is shown on its own and ends with
     /// „Geschafft!“ (issue #32). In the zone of the level exit it shows „Alle Gegner besiegen“ while the exit is locked
-    /// and „Zum Ausgang!“ once it is open. Gates with other conditions are not shown.
+    /// and „Zum Ausgang!“ once it is open. A gate with a <see cref="GateConditionGroup"/> shows its kill goal and its
+    /// puzzle one below the other (decision L2). Gates with other conditions are not shown.
     /// </summary>
     public class MissionTracker : MonoBehaviour
     {
@@ -44,6 +45,9 @@ namespace RushOps.UI
         private int _shownKills = -1;
         private float _doneTime = -1f;
         private bool _tracksExit;
+        private string _killLine;
+        private Vector2 _barPosition;
+        private bool _barShifted;
 
         /// <summary>Text currently shown; empty while hidden.</summary>
         public string Text => _label != null && _label.enabled ? _label.text : string.Empty;
@@ -71,6 +75,14 @@ namespace RushOps.UI
             if (_gate == null)
             {
                 Hide();
+            }
+        }
+
+        private void Awake()
+        {
+            if (_progressBar != null)
+            {
+                _barPosition = ((RectTransform)_progressBar.transform).anchoredPosition;
             }
         }
 
@@ -130,15 +142,33 @@ namespace RushOps.UI
                 return;
             }
 
-            if (_kills != null && _gate.State == GateState.Closed && _kills.CurrentKills != _shownKills)
+            bool closed = _gate != null && _gate.State == GateState.Closed;
+            if (_kills != null && closed && _kills.CurrentKills != _shownKills)
             {
                 _shownKills = _kills.CurrentKills;
-                Show(MissionText.KillGate(_shownKills, _kills.RequiredKills));
+                _killLine = MissionText.KillGate(_shownKills, _kills.RequiredKills);
+                // With a puzzle at the same gate the next ShowPuzzle rebuilds both lines.
+                _shownPuzzle = null;
+                if (_puzzles == null || _puzzles.Current == null)
+                {
+                    Show(_killLine);
+                }
             }
 
-            if (_puzzles != null && _gate.State == GateState.Closed)
+            if (_puzzles != null && closed)
             {
-                ShowPuzzle(_puzzles.Current);
+                Puzzle current = _puzzles.Current;
+                if (current != null)
+                {
+                    ShowPuzzle(current);
+                }
+                else if (_kills != null && _shownPuzzle != null)
+                {
+                    // Puzzle done, kills still missing: only the kill line stays.
+                    _shownPuzzle = null;
+                    SetProgressVisible(false);
+                    Show(_killLine);
+                }
             }
 
             if (_loose != null)
@@ -165,15 +195,39 @@ namespace RushOps.UI
                 _shownText = display.Text;
                 _shownKind = display.Kind;
                 _shownSeconds = seconds;
-                Show(MissionText.Puzzle(display));
+                string text = MissionText.Puzzle(display);
+                Show(Combined ? MissionText.Lines(_killLine, text) : text);
             }
 
             bool progress = display.Kind == PuzzleDisplayKind.Progress;
             SetProgressVisible(progress);
+            ShiftProgressBar(progress && Combined);
             if (progress && _progressFill != null)
             {
                 _progressFill.anchorMax = new Vector2(display.Value, 1f);
             }
+        }
+
+        // True while a kill goal and a puzzle of the same gate share the label.
+        private bool Combined => _kills != null && _puzzles != null && _killLine != null && _loose == null;
+
+        // With two lines the bar moves one line down, under the puzzle line.
+        private void ShiftProgressBar(bool shifted)
+        {
+            if (_progressBar == null || _barShifted == shifted)
+            {
+                return;
+            }
+
+            _barShifted = shifted;
+            float line = 0f;
+            if (shifted && _label != null)
+            {
+                float height = _label.font != null && _label.font.lineHeight > 0 ? _label.font.lineHeight : _label.fontSize;
+                line = height * _label.lineSpacing * _label.rectTransform.localScale.y;
+            }
+
+            ((RectTransform)_progressBar.transform).anchoredPosition = _barPosition - new Vector2(0f, line);
         }
 
         private void SetProgressVisible(bool visible)
@@ -187,8 +241,10 @@ namespace RushOps.UI
         private void Track(Zone zone)
         {
             Gate gate = zone.ExitGate;
-            var kills = gate != null ? gate.Condition as KillGateCondition : null;
-            var puzzles = gate != null ? gate.Condition as PuzzleSolvedCondition : null;
+            IGateCondition condition = gate != null ? gate.Condition : null;
+            var group = condition as GateConditionGroup;
+            var kills = group != null ? group.Find<KillGateCondition>() : condition as KillGateCondition;
+            var puzzles = group != null ? group.Find<PuzzleSolvedCondition>() : condition as PuzzleSolvedCondition;
             if ((kills == null && puzzles == null) || gate.State != GateState.Closed)
             {
                 Puzzle loose = LoosePuzzleIn(zone);
@@ -244,6 +300,8 @@ namespace RushOps.UI
             _gate = gate;
             _kills = null;
             _puzzles = null;
+            _killLine = null;
+            ShiftProgressBar(false);
             if (_gate != null)
             {
                 _gate.Opening += OnGateOpening;

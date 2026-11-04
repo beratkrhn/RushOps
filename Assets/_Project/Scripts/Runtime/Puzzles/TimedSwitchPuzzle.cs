@@ -1,4 +1,5 @@
 using RushOps.Combat;
+using RushOps.Levels;
 using UnityEngine;
 
 namespace RushOps.Puzzles
@@ -12,6 +13,8 @@ namespace RushOps.Puzzles
     public class TimedSwitchPuzzle : Puzzle
     {
         [SerializeField] private TimedSwitchConfig _switchConfig;
+        [Tooltip("Difficulty of the level; scales the time limit. Empty = as in the switch config.")]
+        [SerializeField] private LevelDifficulty _difficulty;
         [Tooltip("The plates, 2 to 5 per puzzle.")]
         [SerializeField] private FloorSwitch[] _switches = System.Array.Empty<FloorSwitch>();
         [SerializeField] private AudioClip _pressClip;
@@ -23,7 +26,8 @@ namespace RushOps.Puzzles
 
         /// <summary>The switch rules of this puzzle.</summary>
         public SwitchSequence Sequence => _sequence ??= new SwitchSequence(
-            _switches.Length, _switchConfig != null ? _switchConfig.TimeLimit : 0f);
+            _switches.Length,
+            DifficultyMath.SwitchTimeLimit(_switchConfig != null ? _switchConfig.TimeLimit : 0f, _difficulty));
 
         /// <summary>The plates of this puzzle.</summary>
         public FloorSwitch[] Switches => _switches;

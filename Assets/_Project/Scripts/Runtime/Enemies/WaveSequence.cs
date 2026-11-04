@@ -1,4 +1,5 @@
 using System;
+using RushOps.Levels;
 
 namespace RushOps.Enemies
 {
@@ -10,15 +11,20 @@ namespace RushOps.Enemies
     public class WaveSequence
     {
         private readonly WaveDefinition _definition;
+        private readonly float _density;
         private readonly int[] _handedOut;
         private int _cursor;
         private int _remaining;
         private float _timer;
 
-        /// <summary>Creates an idle sequence over the waves of <paramref name="definition"/>.</summary>
-        public WaveSequence(WaveDefinition definition)
+        /// <summary>
+        /// Creates an idle sequence over the waves of <paramref name="definition"/>. A <paramref name="density"/> above 1
+        /// shortens spawn interval and pause between waves by that factor (decision C3).
+        /// </summary>
+        public WaveSequence(WaveDefinition definition, float density = 1f)
         {
             _definition = definition;
+            _density = density;
             int maxEntries = 0;
             if (definition != null)
             {
@@ -101,7 +107,7 @@ namespace RushOps.Enemies
                 while (_timer <= 0f && _remaining > 0)
                 {
                     HandOutNext();
-                    _timer += _definition.SpawnInterval;
+                    _timer += DifficultyMath.WaveTime(_definition.SpawnInterval, _density);
                 }
 
                 if (_remaining == 0)
@@ -157,7 +163,7 @@ namespace RushOps.Enemies
             }
 
             WaveIndex = next;
-            _timer = _definition.PauseBetweenWaves;
+            _timer = DifficultyMath.WaveTime(_definition.PauseBetweenWaves, _density);
             Phase = WavePhase.Pause;
         }
 

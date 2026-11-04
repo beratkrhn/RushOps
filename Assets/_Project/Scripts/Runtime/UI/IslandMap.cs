@@ -140,6 +140,8 @@ namespace RushOps.UI
 
                 LevelNodeState state = unlocks.StateOf(node.Island, node.Level, progress);
                 node.Show(state, ProgressRules.StarsOf(progress, unlocks.LevelId(node.Island, node.Level)), _config);
+                LevelDefinition definition = _campaign.LevelAt(node.Island, node.Level);
+                node.ShowName(definition != null ? definition.DisplayName : null);
             }
 
             for (int i = 0; i < _lockedCovers.Length; i++)

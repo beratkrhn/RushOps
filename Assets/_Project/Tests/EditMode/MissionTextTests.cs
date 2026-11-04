@@ -10,5 +10,11 @@ namespace RushOps.Tests.EditMode
         {
             Assert.AreEqual("Tor gesperrt: 4/10 Kills", MissionText.KillGate(4, 10));
         }
+
+        [Test]
+        public void Lines_PutsTwoConditionsOneBelowTheOther()
+        {
+            Assert.AreEqual("Tor gesperrt: 4/10 Kills\nZone halten", MissionText.Lines(MissionText.KillGate(4, 10), "Zone halten"));
+        }
     }
 }

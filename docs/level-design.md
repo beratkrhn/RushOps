@@ -43,12 +43,14 @@ Kein Gegner darf einen Radius von 0,5 oder mehr haben: Das Flow-Field führt Geg
 
 ## Ablauf eines Levels
 
+- Zonen dürfen seitlich abzweigen (senkrechte Trennwand mit Tor, Entscheidung L3). Ein Tor kann an Kills und Rätseln zugleich hängen (L2).
+
 - Jede Zone führt höchstens einen neuen Gegnertyp ein (Level 1-1: Walker → Runner → Boomer → Brute).
 - Zonen mit Tor wiederholen ihre letzte Welle, bis das Tor offen ist; die letzte Zone endet nach ihren Wellen.
 - Der Ausgang liegt hinter dem letzten Tor.
 
 ## Prüfen
 
-- Level-Builder rufen vor dem Speichern `LevelLayoutCheck` auf (siehe `Level1_1SceneBuilder.Validate`): Alle Ziele (Tore, Rätselteile, Spawnpunkte, Ausgang) müssen für einen 2 × 2 Kacheln großen Körper erreichbar sein, Spawnpunkte brauchen 1 Kachel Abstand zu Wänden, und die Sichtlinien-Regel für Rätsel wird geprüft. Ein Verstoß bricht den Bau mit einer Liste der Probleme ab; der EditMode-Test `LevelLayoutCheckTests` prüft dasselbe.
+- Level werden als `LevelBlueprint` beschrieben und von `LevelBlueprintBuilder` gebaut (ADR 0010); er prüft vor dem Speichern mit `LevelLayoutCheck`: Alle Ziele (Tore, Rätselteile, Spawnpunkte, Ausgang) müssen für einen 2 × 2 Kacheln großen Körper erreichbar sein, Spawnpunkte brauchen 1 Kachel Abstand zu Wänden, und die Sichtlinien-Regel für Rätsel wird geprüft. Ein Verstoß bricht den Bau mit einer Liste der Probleme ab; die EditMode-Tests `LevelLayoutCheckTests` und `LevelBlueprintTests` prüfen dasselbe. Die Sichtlinie wird vom Zoneneingang aus geprüft: eine Kachel hinter dem Tor, das aus einer anderen Zone hereinführt, in der Startzone vom Startpunkt.
 - Die PlayMode-Tests `BruteTests` und `RunnerTests` lassen Gegner in `Arena_Test` um Hindernisse herum zum Spieler laufen und schlagen fehl, wenn einer stecken bleibt oder in eine Wand gerät.
 - Neue Testlevel: im Editor eine Welle mit Brutes spawnen lassen und zusehen, ob alle Gegner den Spieler überall erreichen.
