@@ -23,6 +23,21 @@ namespace RushOps.UI
             return "Kills: " + (kills > 0 ? kills : 0).ToString(CultureInfo.InvariantCulture);
         }
 
+        /// <summary>
+        /// Hint for the next star, e.g. „2 Sterne ab 1500 Punkten“; empty with all three stars.
+        /// </summary>
+        public static string NextStar(int stars, int twoStarScore, int threeStarScore)
+        {
+            if (stars >= 3)
+            {
+                return string.Empty;
+            }
+
+            return stars <= 1
+                ? $"2 Sterne ab {ScoreText.Score(twoStarScore)} Punkten"
+                : $"3 Sterne ab {ScoreText.Score(threeStarScore)} Punkten";
+        }
+
         /// <summary>Time line in minutes and seconds, e.g. „Zeit: 3:07“; seconds are rounded down.</summary>
         public static string Time(float seconds)
         {

@@ -148,7 +148,7 @@ Rätsel sind Action-Rätsel: Während sie gelöst werden, spawnen weiterhin Gegn
 | ID | Anforderung | Prio |
 |---|---|---|
 | F-PRK-01 | Perks erscheinen als leuchtende, animierte Icons und werden durch Berührung aufgesammelt. | Muss |
-| F-PRK-02 | Jeder besiegte Gegner hat eine globale Drop-Chance von **8 %** *(Startwert)*. Welcher Perk erscheint, bestimmt ein gewichteter Zufallspool. | Muss |
+| F-PRK-02 | Jeder besiegte Gegner hat eine globale Drop-Chance von **12 %** *(Startwert; nach dem Spieltest v0.3.0 von 8 % erhöht)*. Welcher Perk erscheint, bestimmt ein gewichteter Zufallspool. | Muss |
 | F-PRK-03 | Liegengebliebene Perks verschwinden nach **10 s** *(Startwert)*. In den letzten 3 s blinken sie. | Muss |
 | F-PRK-04 | Aktive zeitlich begrenzte Perks werden im HUD mit ablaufendem Timer angezeigt. Erneutes Aufsammeln setzt die Dauer zurück. | Muss |
 
@@ -292,3 +292,4 @@ Alle Werte sind *Startwerte*.
 | 0.2 | 29.10.2026 | Nur Hochformat; Sprache Deutsch; reine Top-down-Perspektive; unbegrenzte Munition, Perk „Maximale Munition“ durch „Schnellfeuer“ ersetzt; Insta-Kill und Doppelschaden als getrennte Perks; Nuke trifft nur sichtbare Gegner; Kill-Gates zählen global inkl. Nuke- und Explosions-Kills; Timer bei Schaltern sichtbar; Zonen-Kontrolle pausiert; Schießen beim Tragen erlaubt; Herzen statt Lebensbalken, Unverwundbarkeit nach Treffer; Wellen an festen Spawnpunkten, max. 10 Gegner; 3 Inseln × 3 Level; Bosse, Score mit Kombo und Sterne ergänzt; Zielhilfe ergänzt; Skins in 1.0 rein kosmetisch; Logo-Animation als Startsequenz; Anforderungs-IDs und Prioritäten eingeführt; Kapitelnummerierung bereinigt. |
 | 0.3 | 29.10.2026 | F-GFX-02: Schrägansicht mit 8 Richtungs-Sprites statt reiner Top-down-Ansicht mit rotierten Sprites (ADR 0006, Issue #58). |
 | 0.4 | 30.10.2026 | Offene Punkte entschieden: Bundle-ID `com.beratkrhn.rushops`, Mindestversionen Android 8.0 und iOS 15 (Issue #13). |
+| 0.5 | 04.11.2026 | F-PRK-02: Drop-Chance 12 % statt 8 % (Spieltest v0.3.0). |

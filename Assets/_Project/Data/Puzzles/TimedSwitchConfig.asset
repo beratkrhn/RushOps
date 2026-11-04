@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TimedSwitchConfig
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Puzzles.TimedSwitchConfig
   _timeLimit: 12
-  _text: Schalter
+  _text: Alle Schalter betreten
   _resetFlashDuration: 0.8
   _resetFlashInterval: 0.1
   _resetColor: {r: 1, g: 0.3, b: 0.3, a: 1}

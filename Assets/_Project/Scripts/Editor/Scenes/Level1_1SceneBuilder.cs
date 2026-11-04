@@ -15,7 +15,7 @@ namespace RushOps.Editor.Scenes
     /// <item>Halten: hold-the-line zone under its own faster waves; runners join.</item>
     /// <item>Schalter: two lanes split by a long wall, three timed switches; boomers join.</item>
     /// <item>Generator: two energy cells on both sides of a wall, carried to the generator; brutes join.</item>
-    /// <item>Ausgang: a last rush of all types between the final gate and the level exit.</item>
+    /// <item>Ausgang: a last rush of all types; the level exit opens once it is beaten.</item>
     /// </list>
     /// The layout is checked against <c>docs/level-design.md</c> before the scene is saved (<see cref="Validate"/>).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.Level1_1SceneBuilder.Build</c>
@@ -28,7 +28,7 @@ namespace RushOps.Editor.Scenes
         private const string WavesPrefix = WavesDir + "/Level_1-1_";
 
         // Starting star thresholds for a new level definition; tuned in the asset after playtests.
-        private static readonly Vector2Int StarScores = new Vector2Int(2000, 4000);
+        private static readonly Vector2Int StarScores = new Vector2Int(1500, 3000);
 
         private const int Width = 24;
         private const int Height = 118;
@@ -242,7 +242,8 @@ namespace RushOps.Editor.Scenes
             PuzzleBuilder.SetPuzzles(gates[3].GetComponent<PuzzleSolvedCondition>(), transport);
 
             PuzzleBuilder.SetLevelPuzzles(arena, hold, switches, transport);
-            LevelPieceBuilder.CreateExit(arena, ExitCenter);
+            // The exit opens only after the last rush, so it cannot be skipped (playtest v0.3.0).
+            LevelPieceBuilder.CreateExit(arena, ExitCenter, zones[4]);
         }
 
         // While the hold zone runs, zone 2 sends small waves at a fast pace; once it is held, the zone goes quiet.

@@ -6,6 +6,14 @@ namespace RushOps.Tests.EditMode
 {
     public class LevelResultTests
     {
+        [TestCase(1, "2 Sterne ab 1500 Punkten")]
+        [TestCase(2, "3 Sterne ab 3000 Punkten")]
+        [TestCase(3, "")]
+        public void NextStar_NamesScoreForNextStar(int stars, string expected)
+        {
+            Assert.AreEqual(expected, ResultText.NextStar(stars, 1500, 3000));
+        }
+
         [TestCase(0, 1)]
         [TestCase(999, 1)]
         [TestCase(1000, 2)]

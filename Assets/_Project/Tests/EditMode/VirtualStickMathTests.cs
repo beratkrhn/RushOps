@@ -83,6 +83,18 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Origin_Floating_NearEdge_KeepsClearance_SoFullDeflectionStaysOnScreen()
+        {
+            var home = new Vector2(72f, 72f);
+            const float margin = 24f;
+
+            Vector2 origin = VirtualStickMath.Origin(StickMode.Floating, home, new Vector2(2f, 200f), Zone, Radius + margin);
+
+            Assert.AreEqual(Radius + margin, origin.x, 1e-5f);
+            Assert.GreaterOrEqual(VirtualStickMath.KnobPosition(origin, Vector2.left, Radius).x, margin - 1e-5f);
+        }
+
+        [Test]
         public void Value_WithinRadius_IsProportional()
         {
             Vector2 value = VirtualStickMath.Value(new Vector2(100f, 100f), new Vector2(124f, 100f), Radius);

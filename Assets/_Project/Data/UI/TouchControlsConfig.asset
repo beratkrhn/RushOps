@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TouchControlsConfig
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.UI.TouchControlsConfig
   _mode: 0
-  _stickSize: 96
+  _stickSize: 67
   _knobScale: 0.5
   _edgeMargin: 24
   _fixedGrabScale: 1.5

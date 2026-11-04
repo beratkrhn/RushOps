@@ -75,7 +75,9 @@ namespace RushOps.UI
 
             _pressed = true;
             _pointerId = eventData.pointerId;
-            _origin = VirtualStickMath.Origin(_config.Mode, Home, press, ZoneSize, radius);
+            // A floating stick keeps the same margin from the screen edges as its home position, so the thumb can
+            // reach full deflection before it hits the edge.
+            _origin = VirtualStickMath.Origin(_config.Mode, Home, press, ZoneSize, radius + _config.EdgeMargin);
             SetVisualAlpha(1f);
             UpdateValue(press);
         }

@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: Level 1-1
   _sceneName: Level_1-1
-  _twoStarScore: 2000
-  _threeStarScore: 4000
+  _twoStarScore: 1500
+  _threeStarScore: 3000
