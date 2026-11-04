@@ -3,7 +3,7 @@ using UnityEngine;
 namespace RushOps.Characters
 {
     /// <summary>
-    /// Frame selection for looping sprite animations.
+    /// Frame selection for sprite animations.
     /// </summary>
     public static class FrameAnimationMath
     {
@@ -20,6 +20,26 @@ namespace RushOps.Characters
             }
 
             return Mathf.FloorToInt(time * framesPerSecond) % frameCount;
+        }
+
+        /// <summary>
+        /// Returns the frame to show after <paramref name="time"/> seconds of an animation that plays once
+        /// and then holds its last frame.
+        /// </summary>
+        public static int OneShotFrameIndex(float time, float framesPerSecond, int frameCount)
+        {
+            if (frameCount < 2 || framesPerSecond <= 0f || time <= 0f)
+            {
+                return 0;
+            }
+
+            return Mathf.Min(Mathf.FloorToInt(time * framesPerSecond), frameCount - 1);
+        }
+
+        /// <summary>Seconds one pass of <paramref name="frameCount"/> frames takes; 0 for a non-positive frame rate.</summary>
+        public static float Duration(float framesPerSecond, int frameCount)
+        {
+            return framesPerSecond > 0f && frameCount > 0 ? frameCount / framesPerSecond : 0f;
         }
     }
 }

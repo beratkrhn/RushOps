@@ -1,4 +1,5 @@
 using System;
+using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Feel;
 using RushOps.Navigation;
@@ -8,8 +9,9 @@ namespace RushOps.Enemies
 {
     /// <summary>
     /// A pooled enemy (F-GEG-01, F-GEG-04, NF-02): health and contact damage from its <see cref="EnemyDefinition"/>,
-    /// takes projectile hits with a white flash and a knockback (issue #12), and on death plays a short
-    /// shrink-and-fade effect before it hands itself back to its pool. Once per life it reports coming close to
+    /// takes projectile hits with a white flash, a knockback (issue #12) and a hit reaction, and on death plays its
+    /// death animation to the end and fades out before it hands itself back to its pool (issue #100); without a
+    /// death animation it shrinks while fading. Once per life it reports coming close to
     /// the chased target (<see cref="Approached"/>, issue #20). An enemy with an <see cref="EnemyDefinition.Explosion"/>
     /// dies as soon as it touches its target, so it blows up there (boomer, issue #22). Movement is done by
     /// <see cref="EnemyMovement"/>; this component switches it on and off. The flash needs a material with
@@ -23,6 +25,9 @@ namespace RushOps.Enemies
         [SerializeField] private FeelConfig _feel;
         [SerializeField] private SpriteRenderer _renderer;
 
+        [Tooltip("Plays the hit and death animations; optional.")]
+        [SerializeField] private DirectionalSpriteAnimator _view;
+
         private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount");
 
         private Health _health;
@@ -31,6 +36,7 @@ namespace RushOps.Enemies
         private Collider2D _collider;
         private Action<Enemy> _release;
         private float _dyingTime = -1f;
+        private float _deathAnimationTime;
         private float _sinceHit = -1f;
         private MaterialPropertyBlock _block;
         private readonly ApproachTrigger _approach = new ApproachTrigger();
@@ -59,6 +65,10 @@ namespace RushOps.Enemies
 
         /// <summary>Center of the body, where shots should go; the transform sits at the feet.</summary>
         public Vector2 AimPoint => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
+
+        /// <summary>Seconds from the killing hit until the enemy returns to its pool: death animation plus fade.</summary>
+        public float DeathTime => EnemyDeathMath.TotalDuration(
+            _view != null ? _view.DeathDuration : 0f, _definition != null ? _definition.DeathDuration : 0f);
 
         /// <inheritdoc />
         public Vector2 ExplosionPoint => AimPoint;
@@ -90,6 +100,11 @@ namespace RushOps.Enemies
             }
 
             SetAlpha(1f);
+            if (_view != null)
+            {
+                _view.PlayLoop();
+            }
+
             _target = navigator != null ? navigator.Target : null;
             _approach.Reset(_definition != null ? _definition.ApproachDistance : 0f);
             _movement.Begin(
@@ -115,7 +130,23 @@ namespace RushOps.Enemies
             {
                 Die();
             }
-            else if (_feel != null)
+            else
+            {
+                if (_view != null)
+                {
+                    _view.PlayHit();
+                }
+
+                ApplyHitKnockback(direction);
+            }
+
+            Hit?.Invoke(this);
+            return true;
+        }
+
+        private void ApplyHitKnockback(Vector2 direction)
+        {
+            if (_feel != null)
             {
                 float scale = _definition != null ? _definition.KnockbackScale : 1f;
                 Vector2 velocity = FeelMath.KnockbackVelocity(direction, _feel.KnockbackSpeed, scale);
@@ -124,9 +155,6 @@ namespace RushOps.Enemies
                     _movement.Knockback(velocity, _feel.KnockbackDuration);
                 }
             }
-
-            Hit?.Invoke(this);
-            return true;
         }
 
         /// <inheritdoc />
@@ -189,11 +217,15 @@ namespace RushOps.Enemies
             }
 
             _dyingTime += Time.deltaTime;
-            float duration = _definition != null ? _definition.DeathDuration : 0f;
-            float t = duration > 0f ? Mathf.Clamp01(_dyingTime / duration) : 1f;
-            transform.localScale = Vector3.one * (1f - 0.6f * t);
+            float fade = _definition != null ? _definition.DeathDuration : 0f;
+            float t = EnemyDeathMath.FadeProgress(_dyingTime, _deathAnimationTime, fade);
+            if (_deathAnimationTime <= 0f)
+            {
+                transform.localScale = Vector3.one * (1f - 0.6f * t);
+            }
+
             SetAlpha(1f - t);
-            if (t >= 1f)
+            if (_dyingTime >= _deathAnimationTime && t >= 1f)
             {
                 Finish();
             }
@@ -239,6 +271,13 @@ namespace RushOps.Enemies
             _body.linearVelocity = Vector2.zero;
             _body.simulated = false;
             _dyingTime = 0f;
+            _deathAnimationTime = 0f;
+            if (_view != null)
+            {
+                _view.PlayDeath();
+                _deathAnimationTime = _view.DeathDuration;
+            }
+
             Died?.Invoke(this);
         }
 

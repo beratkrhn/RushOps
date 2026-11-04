@@ -19,6 +19,18 @@ namespace RushOps.Editor.Art
         /// <summary>Asset path of the walker's walk animation.</summary>
         public const string WalkerWalkPath = AnimationsDir + "/Walker_Walk.asset";
 
+        /// <summary>Asset path of the walker's hit reaction (issue #100).</summary>
+        public const string WalkerHitPath = AnimationsDir + "/Walker_Hit.asset";
+
+        /// <summary>Asset path of the walker's death (issue #100).</summary>
+        public const string WalkerDeathPath = AnimationsDir + "/Walker_Death.asset";
+
+        /// <summary>Asset path of the runner's hit reaction (issue #100).</summary>
+        public const string RunnerHitPath = AnimationsDir + "/Runner_Hit.asset";
+
+        /// <summary>Asset path of the runner's death (issue #100).</summary>
+        public const string RunnerDeathPath = AnimationsDir + "/Runner_Death.asset";
+
         /// <summary>Asset path of the runner's run animation.</summary>
         public const string RunnerRunPath = AnimationsDir + "/Runner_Run.asset";
 
@@ -29,6 +41,10 @@ namespace RushOps.Editor.Art
         public const string BoomerWalkPath = AnimationsDir + "/Boomer_Walk.asset";
 
         private const string AnimationsDir = "Assets/_Project/Data/Animations";
+
+        // Start values for new hit and death assets; tuned values in existing assets are kept.
+        private const float HitFramesPerSecond = 12f;
+        private const float DeathFramesPerSecond = 10f;
         private const string SpritesDir = "Assets/_Project/Art/Sprites";
 
         [MenuItem("RushOps/Art/Richtungs-Animationen aktualisieren")]
@@ -36,7 +52,11 @@ namespace RushOps.Editor.Art
         {
             CreateOrUpdate(PlayerIdlePath, SpritesDir + "/Player", "Player_Idle");
             CreateOrUpdate(WalkerWalkPath, SpritesDir + "/Enemies", "Walker_Walk");
+            CreateOrUpdate(WalkerHitPath, SpritesDir + "/Enemies", "Walker_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(WalkerDeathPath, SpritesDir + "/Enemies", "Walker_Death", false, DeathFramesPerSecond);
             CreateOrUpdate(RunnerRunPath, SpritesDir + "/Enemies", "Runner_Run");
+            CreateOrUpdate(RunnerHitPath, SpritesDir + "/Enemies", "Runner_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(RunnerDeathPath, SpritesDir + "/Enemies", "Runner_Death", false, DeathFramesPerSecond);
             CreateOrUpdate(BruteWalkPath, SpritesDir + "/Enemies", "Brute_Walk");
             CreateOrUpdate(BoomerWalkPath, SpritesDir + "/Enemies", "Boomer_Walk");
             AssetDatabase.SaveAssets();
@@ -45,11 +65,15 @@ namespace RushOps.Editor.Art
         /// <summary>
         /// Creates or updates the animation at <paramref name="assetPath"/> with the sprites
         /// <c>&lt;folder&gt;/&lt;prefix&gt;_&lt;DIR&gt;[_&lt;Frame&gt;].png</c> for all 8 directions.
+        /// <paramref name="loops"/> is always applied; <paramref name="framesPerSecond"/> only to a new asset
+        /// (a negative value keeps the asset default).
         /// </summary>
-        public static DirectionalAnimation CreateOrUpdate(string assetPath, string folder, string prefix)
+        public static DirectionalAnimation CreateOrUpdate(
+            string assetPath, string folder, string prefix, bool loops = true, float framesPerSecond = -1f)
         {
             var animation = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(assetPath);
-            if (animation == null)
+            bool created = animation == null;
+            if (created)
             {
                 EnsureFolder(Path.GetDirectoryName(assetPath).Replace('\\', '/'));
                 animation = ScriptableObject.CreateInstance<DirectionalAnimation>();
@@ -57,6 +81,12 @@ namespace RushOps.Editor.Art
             }
 
             var serialized = new SerializedObject(animation);
+            serialized.FindProperty("_loops").boolValue = loops;
+            if (created && framesPerSecond >= 0f)
+            {
+                serialized.FindProperty("_framesPerSecond").floatValue = framesPerSecond;
+            }
+
             SerializedProperty directions = serialized.FindProperty("_directions");
             directions.arraySize = Direction8Math.Count;
             for (int d = 0; d < Direction8Math.Count; d++)

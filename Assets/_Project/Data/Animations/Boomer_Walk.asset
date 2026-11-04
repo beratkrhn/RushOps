@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Boomer_Walk
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
   _framesPerSecond: 8
+  _loops: 1
   _directions:
   - _frames:
     - {fileID: 21300000, guid: c8928cbf8c7f248e3a2ed73a1dbfb25f, type: 3}

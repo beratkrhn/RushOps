@@ -1,5 +1,6 @@
 using System.Collections;
 using NUnit.Framework;
+using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Enemies;
 using RushOps.Navigation;
@@ -103,10 +104,31 @@ namespace RushOps.Tests.PlayMode
             Assert.IsTrue(died);
             Assert.IsTrue(walker.IsDead);
             Assert.AreEqual(0, walker.ContactDamage, "dying walkers do not hurt");
-            yield return new WaitForSeconds(walker.Definition.DeathDuration + 0.1f);
+            var view = walker.GetComponent<DirectionalSpriteAnimator>();
+            Assert.AreEqual(SpriteAnimationMode.Death, view.Mode, "the death animation plays");
+            Assert.Greater(view.DeathDuration, 0f);
+
+            // The death animation runs to its end before the walker goes back to the pool.
+            yield return new WaitForSeconds(view.DeathDuration * 0.9f);
+            Assert.IsTrue(walker.gameObject.activeSelf, "walker left before its death animation ended");
+            yield return new WaitForSeconds(walker.DeathTime - view.DeathDuration * 0.9f + 0.1f);
 
             Assert.IsFalse(walker.gameObject.activeSelf);
             Assert.AreEqual(0, _pool.CountActive);
+        }
+
+        [UnityTest]
+        public IEnumerator Walker_Hit_PlaysHitReactionThenWalksOn()
+        {
+            Enemy walker = _pool.Spawn(new Vector2(5.5f, 5.5f));
+            yield return null;
+            var view = walker.GetComponent<DirectionalSpriteAnimator>();
+
+            Assert.IsTrue(((IDamageable)walker).TakeHit(1, Vector2.right));
+            Assert.AreEqual(SpriteAnimationMode.Hit, view.Mode);
+
+            yield return new WaitForSeconds(0.4f);
+            Assert.AreEqual(SpriteAnimationMode.Loop, view.Mode);
         }
 
         [UnityTest]

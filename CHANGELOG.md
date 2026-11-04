@@ -6,6 +6,10 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ### Hinzugefügt
 - **Finale Palette** (Issue #99, F-GFX-01): Die 32 Farben sind in Gruppen eingeteilt: Basis, Figuren und je 8 Akzentfarben für Strand, düstere Stadt und Vulkan (`PALETTE_GROUPS` in `Tools/gen_pixelart.py`). Der Generator prüft die Gruppenregeln und schreibt die Übersicht `docs/art/palette.png`/`palette.md`. ADR 0006 ergänzt. Bestehende Sprites bleiben unverändert gültig.
+- **Gegner-Animationen Walker und Runner** (Issue #100, F-GFX-02): Zu den Laufzyklen kommen je 8 Richtungen Treffer (2 Frames, Rückstoß nach hinten) und Tod (5 Frames). Der Walker kippt nach hinten, der Runner stürzt mit Schwung nach vorn; im letzten Frame liegt er in einer Blutlache, die Augen erlöschen. Erzeugt von `Tools/gen_pixelart.py`, Vorschau mit `--animations` (`docs/art/animations/Walker.gif`, `Runner.gif` und Sprite-Sheets).
+- `DirectionalSpriteAnimator` spielt neben der Schleife eine Treffer- und eine Todesanimation ab (`SpriteAnimationState`, EditMode-getestet). `DirectionalAnimation` hat dafür den Schalter `Loops`; einmalige Animationen halten ihren letzten Frame. Die Tempi stehen in `Data/Animations/*_Hit` (12 fps) und `*_Death` (10 fps).
+- Gegner spielen ihre Todesanimation zu Ende, bevor sie verblassen und in den Pool zurückgehen (`EnemyDeathMath`). `EnemyDefinition.DeathDuration` ist jetzt die Ausblendzeit danach; Gegner ohne Todesanimation (Brute, Boomer bis #101) schrumpfen wie bisher.
+- Menü „RushOps → Szenen → Alle erzeugen“ (`AllScenesBuilder.BuildAll`, auch für den Batchmode).
 
 ## [0.3.0] – 2026-11-04
 

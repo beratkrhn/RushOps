@@ -9,7 +9,11 @@ character tool and is imported with Tools/import_character.py.
 Output (under Assets/_Project/Art/):
   Palettes/RushOps_Palette.png             one pixel per palette color, in order
   Sprites/Enemies/Walker_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames
+  Sprites/Enemies/Walker_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames, recoil (issue #100)
+  Sprites/Enemies/Walker_Death_<DIR>_<F>.png 64x64, 8 directions x 5 frames, topples backward (issue #100)
   Sprites/Enemies/Runner_Run_<DIR>_<F>.png  64x64, 8 directions x 4 frames (issue #20)
+  Sprites/Enemies/Runner_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames, recoil (issue #100)
+  Sprites/Enemies/Runner_Death_<DIR>_<F>.png 64x64, 8 directions x 5 frames, pitches forward (issue #100)
   Sprites/Enemies/Brute_Walk_<DIR>_<F>.png  96x96, 8 directions x 4 frames (issue #21)
   Sprites/Enemies/Boomer_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames, pulsing belly (issue #22)
   Sprites/Effects/Explosion_<F>.png         160x160, 6 frames of the boomer blast, radius 2.5 tiles (issue #22)
@@ -47,10 +51,12 @@ Output (under Assets/_Project/Art/):
   Tiles/Wall_Front.png                     32x32 wall top plus front face
 
 Usage:
-  python3 Tools/gen_pixelart.py [--preview PATH]
+  python3 Tools/gen_pixelart.py [--preview PATH] [--animations DIR]
 
 --preview writes an upscaled contact sheet (characters on the floor next to
 walls) for a visual check before committing. It is not part of the project.
+--animations writes one upscaled GIF per enemy (all 8 directions playing walk,
+hit and death) plus a sprite sheet, for the product owner to sign off.
 """
 import argparse
 import json
@@ -249,27 +255,67 @@ RAMP = {
 }
 
 
+class Pose:
+    """Whole-body tilt for hit and death frames (issue #100).
+
+    tilt: degrees the body tips over around the feet; positive falls backward, negative falls forward.
+    shift: ground offset along the facing (pixels) at a full 90 degree fall, keeps a lying body on the canvas.
+    squash: share of the height lost as the knees buckle (0 = upright, 0.3 = sagging).
+    """
+
+    def __init__(self, tilt: float = 0.0, shift: float = 0.0, squash: float = 0.0):
+        self.tilt = tilt
+        self.shift = shift
+        self.squash = squash
+
+
+UPRIGHT = Pose()
+
+
 class Model:
     """Collects sphere samples and rasterises them for one facing angle."""
 
-    def __init__(self, angle_deg: float, size: int = CHARACTER):
+    def __init__(self, angle_deg: float, size: int = CHARACTER, pose: Pose = UPRIGHT):
         a = math.radians(angle_deg)
         self.size = size
         self.forward = (math.cos(a), math.sin(a))
         self.right = (math.sin(a), -math.cos(a))
+        self.pose = pose
         self.samples = []
 
     def ground(self, f: float, s: float) -> tuple[float, float]:
         """Local (forward, right) offset to world ground (east, north)."""
         return (f * self.forward[0] + s * self.right[0], f * self.forward[1] + s * self.right[1])
 
+    def posed(self, f: float, s: float, z: float) -> tuple[float, float, float]:
+        """Applies the pose: squashes the height, then tips the body around the feet."""
+        z *= 1.0 - self.pose.squash
+        t = math.radians(self.pose.tilt)
+        # Positive tilt rotates "up" towards "back" (-f).
+        f, z = f * math.cos(t) - z * math.sin(t), f * math.sin(t) + z * math.cos(t)
+        f += self.pose.shift * math.sin(t)
+        return f, s, z
+
     def project(self, f: float, s: float, z: float) -> tuple[float, float, float]:
         """Local point to canvas (x, y) plus its depth (north, larger = farther)."""
+        f, s, z = self.posed(f, s, z)
+        return self._project_raw(f, s, z)
+
+    def _project_raw(self, f: float, s: float, z: float) -> tuple[float, float, float]:
         east, north = self.ground(f, s)
         return self.size / 2 + east, self.size - FOOT_MARGIN - 0.5 - z - north * 0.5, north
 
     def sphere(self, f: float, s: float, z: float, r: float, material: str) -> None:
-        self.samples.append((*self.project(f, s, z), z, r, material))
+        f, s, z = self.posed(f, s, z)
+        # A body part never sinks into the floor.
+        z = max(z, r * 0.7)
+        self.samples.append((*self._project_raw(f, s, z), z, r, material))
+
+    def ground_stain(self, canvas: "Canvas", f: float, s: float, rx: float, color: str, rim: str) -> None:
+        """Paints a flat pool on the floor at local (f, s) (not posed), before the body, e.g. blood under a corpse."""
+        x, y, _ = self._project_raw(f, s, 0.0)
+        canvas.ellipse(x, y, rx, rx * 0.5, rim)
+        canvas.ellipse(x, y - 0.5, rx - 1.5, rx * 0.5 - 1.0, color)
 
     def capsule(self, a: tuple, b: tuple, r: float, material: str) -> None:
         """Capsule between local points a and b, each (f, s, z)."""
@@ -297,9 +343,15 @@ class Model:
                     canvas.set(x, y, color)
 
 
-def walker_frame(direction: int, frame: int) -> Canvas:
-    """Walker in one of 8 directions, frame 0..3 of a slow shamble."""
-    m = Model(direction * 45.0)
+def walker_frame(direction: int, frame: int, pose: Pose = UPRIGHT, eyes: bool = True,
+                 stain: float = 0.0) -> Canvas:
+    """Walker in one of 8 directions, frame 0..3 of a slow shamble. Hit and death frames pass a pose; dead
+    walkers lose the glow in their eyes, and a stain radius > 0 puts a blood pool under the body."""
+    m = Model(direction * 45.0, pose=pose)
+    c = Canvas(CHARACTER, CHARACTER)
+    if stain > 0:
+        m.ground_stain(c, m.posed(0.0, 0.0, 44.0)[0], 0.0, stain, "red_0", "outline")
+    limp = pose.tilt > 30.0
     phase = frame / 4 * 2 * math.pi
     stride = 4.0 * math.sin(phase)
     bob = 1.0 if frame % 2 == 1 else 0.0
@@ -317,20 +369,23 @@ def walker_frame(direction: int, frame: int) -> Canvas:
         shoulder = (1.5, side + sway, 33 - bob)
         elbow = (7.0 + reach * 0.5, side * 0.85 + sway, 31 - bob)
         hand = (14.0 + reach, side * 0.75 + sway, 30 - bob)
+        if limp:
+            # Dead arms fall to the sides.
+            elbow = (2.5, side * 1.1, 26.0)
+            hand = (4.0, side * 1.2, 19.0)
         m.capsule(shoulder, elbow, 2.9, "shirt")
         m.capsule(elbow, hand, 2.5, "skin")
     # Head, hanging forward.
     head = (3.0, sway, 42 - bob)
     m.sphere(*head, 6.8, "skin")
 
-    c = Canvas(CHARACTER, CHARACTER)
     m.paint(c)
 
     # Glowing eyes, only where they face the viewer.
     _, _, head_north = m.project(*head)
     for s in (-2.4, 2.4):
         x, y, north = m.project(head[0] + 5.4, head[1] + s, head[2] + 0.5)
-        if north <= head_north + 0.5:
+        if eyes and north <= head_north + 0.5:
             c.set(int(x), int(y), "red_1")
     # Blood stain on the chest when the chest is visible.
     x, y, north = m.project(7.0, sway + 1.5, 27 - bob)
@@ -341,10 +396,14 @@ def walker_frame(direction: int, frame: int) -> Canvas:
     return c
 
 
-def runner_frame(direction: int, frame: int) -> Canvas:
+def runner_frame(direction: int, frame: int, pose: Pose = UPRIGHT, eyes: bool = True,
+                 stain: float = 0.0) -> Canvas:
     """Runner in one of 8 directions, frame 0..3 of a sprint: smaller and thinner than the walker,
-    leaning far forward with long strides and pumping arms."""
-    m = Model(direction * 45.0)
+    leaning far forward with long strides and pumping arms. Hit and death frames as with the walker."""
+    m = Model(direction * 45.0, pose=pose)
+    c = Canvas(CHARACTER, CHARACTER)
+    if stain > 0:
+        m.ground_stain(c, m.posed(0.0, 0.0, 32.0)[0], 0.0, stain, "red_0", "outline")
     phase = frame / 4 * 2 * math.pi
     stride = 7.0 * math.sin(phase)
     # Highest in the passing frames, lowest when the legs are spread.
@@ -373,14 +432,13 @@ def runner_frame(direction: int, frame: int) -> Canvas:
     head = (shoulder_f + 3.0, 0.0, shoulder_z + 5)
     m.sphere(*head, 5.0, "pale")
 
-    c = Canvas(CHARACTER, CHARACTER)
     m.paint(c)
 
     # Yellow eyes, only where they face the viewer.
     _, _, head_north = m.project(*head)
     for s in (-1.8, 1.8):
         x, y, north = m.project(head[0] + 4.0, head[1] + s, head[2] + 0.5)
-        if north <= head_north + 0.5:
+        if eyes and north <= head_north + 0.5:
             c.set(int(x), int(y), "yellow")
     c.outline("outline")
     return c
@@ -487,6 +545,34 @@ def boomer_frame(direction: int, frame: int) -> Canvas:
             c.set(int(x), int(y), "green_2")
     c.outline("outline")
     return c
+
+
+# Hit and death frames (issue #100). Hit: the body jerks back from the impact and settles. Death: the walker
+# topples backward from the shot, the runner pitches forward with its momentum; the last frame lies in a pool.
+HIT_POSES = [Pose(tilt=14.0), Pose(tilt=6.0)]
+WALKER_DEATH_POSES = [Pose(tilt=24.0, shift=26.0, squash=0.08), Pose(tilt=48.0, shift=26.0, squash=0.15),
+                      Pose(tilt=70.0, shift=26.0, squash=0.2), Pose(tilt=84.0, shift=26.0, squash=0.22),
+                      Pose(tilt=90.0, shift=26.0, squash=0.22)]
+RUNNER_DEATH_POSES = [Pose(tilt=-28.0, shift=20.0, squash=0.1), Pose(tilt=-55.0, shift=20.0, squash=0.18),
+                      Pose(tilt=-76.0, shift=20.0, squash=0.22), Pose(tilt=-88.0, shift=20.0, squash=0.24),
+                      Pose(tilt=-90.0, shift=20.0, squash=0.24)]
+DEATH_STAIN = [0.0, 0.0, 0.0, 8.0, 12.0]
+
+
+def walker_hit(direction: int, frame: int) -> Canvas:
+    return walker_frame(direction, 0, HIT_POSES[frame])
+
+
+def walker_death(direction: int, frame: int) -> Canvas:
+    return walker_frame(direction, 0, WALKER_DEATH_POSES[frame], eyes=frame == 0, stain=DEATH_STAIN[frame])
+
+
+def runner_hit(direction: int, frame: int) -> Canvas:
+    return runner_frame(direction, 1, HIT_POSES[frame])
+
+
+def runner_death(direction: int, frame: int) -> Canvas:
+    return runner_frame(direction, 1, RUNNER_DEATH_POSES[frame], eyes=frame == 0, stain=DEATH_STAIN[frame])
 
 
 # --- Projectile and effects --------------------------------------------------------
@@ -1236,6 +1322,12 @@ def outputs() -> dict[str, Image.Image]:
     for perk in PERK_IDS:
         files[f"Sprites/Pickups/Perk_{perk}.png"] = perk_icon(perk).to_image()
     for d, name in enumerate(DIRECTIONS):
+        for frame in range(len(HIT_POSES)):
+            files[f"Sprites/Enemies/Walker_Hit_{name}_{frame}.png"] = walker_hit(d, frame).to_image()
+            files[f"Sprites/Enemies/Runner_Hit_{name}_{frame}.png"] = runner_hit(d, frame).to_image()
+        for frame in range(len(DEATH_STAIN)):
+            files[f"Sprites/Enemies/Walker_Death_{name}_{frame}.png"] = walker_death(d, frame).to_image()
+            files[f"Sprites/Enemies/Runner_Death_{name}_{frame}.png"] = runner_death(d, frame).to_image()
         for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
@@ -1291,9 +1383,64 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
     sheet.resize((sheet.width * scale, sheet.height * scale), Image.NEAREST).save(path)
 
 
+# Animation previews (issue #100): which states each enemy has, in playback order, with their frame rates.
+# The frame rates match the DirectionalAnimation assets the editor builder creates.
+ANIMATION_PREVIEWS = {
+    "Walker": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
+    "Runner": [("Run", 8, 3), ("Hit", 12, 1), ("Death", 10, 1)],
+}
+# Pause on the last death frame before the preview loops, in milliseconds.
+PREVIEW_HOLD_MS = 800
+
+
+def animation_preview(files: dict[str, Image.Image], name: str, out_dir: Path, scale: int = 4) -> None:
+    """Writes <name>.gif (8 directions side by side, playing every state) and <name>_Sheet.png (one row per
+    direction, all frames of all states) to out_dir."""
+    states = ANIMATION_PREVIEWS[name]
+    frames_of = {}
+    for state, _, _ in states:
+        frames_of[state] = []
+        for direction in DIRECTIONS:
+            row = []
+            for i in range(99):
+                key = f"Sprites/Enemies/{name}_{state}_{direction}_{i}.png"
+                if key not in files:
+                    break
+                row.append(files[key])
+            frames_of[state].append(row)
+    size = files[f"Sprites/Enemies/{name}_{states[0][0]}_E_0.png"].width
+    background = PALETTE["slate_0"] + (255,)
+
+    gif_frames, durations = [], []
+    for state, fps, repeats in states:
+        count = len(frames_of[state][0])
+        for _ in range(repeats):
+            for i in range(count):
+                img = Image.new("RGBA", (size * 8, size), background)
+                for d in range(8):
+                    img.alpha_composite(frames_of[state][d][i], (d * size, 0))
+                gif_frames.append(img.resize((img.width * scale, img.height * scale), Image.NEAREST).convert("RGB"))
+                durations.append(round(1000 / fps))
+    durations[-1] = PREVIEW_HOLD_MS
+    out_dir.mkdir(parents=True, exist_ok=True)
+    gif_frames[0].save(out_dir / f"{name}.gif", save_all=True, append_images=gif_frames[1:], duration=durations,
+                       loop=0, disposal=1)
+
+    columns = sum(len(frames_of[state][0]) for state, _, _ in states)
+    sheet = Image.new("RGBA", (columns * size, 8 * size), background)
+    for d in range(8):
+        x = 0
+        for state, _, _ in states:
+            for img in frames_of[state][d]:
+                sheet.alpha_composite(img, (x, d * size))
+                x += size
+    sheet.resize((sheet.width * scale, sheet.height * scale), Image.NEAREST).save(out_dir / f"{name}_Sheet.png")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--preview", type=Path, help="write an upscaled contact sheet to this path")
+    parser.add_argument("--animations", type=Path, help="write upscaled animation previews (GIF + sheet) to this folder")
     args = parser.parse_args()
 
     check_palette_groups()
@@ -1317,6 +1464,11 @@ def main() -> None:
     if args.preview:
         preview(files, args.preview)
         print(f"Wrote preview {args.preview}")
+
+    if args.animations:
+        for name in ANIMATION_PREVIEWS:
+            animation_preview(files, name, args.animations)
+            print(f"Wrote animation preview {args.animations / name}.gif")
 
 
 if __name__ == "__main__":
