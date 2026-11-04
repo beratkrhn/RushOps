@@ -18,6 +18,7 @@ Output (under Assets/_Project/Art/):
   Sprites/Projectiles/Bullet_InstaKill.png 16x16, pale and longer, during insta-kill (issue #25)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
+  Sprites/Effects/Shield_Barrier.png       64x64 bubble around the player while the shield runs (issue #26)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
@@ -685,6 +686,33 @@ def perk_icon(perk: str) -> Canvas:
     return c
 
 
+SHIELD_BARRIER = 64
+
+
+def shield_barrier() -> Canvas:
+    """Bubble around the player during the shield perk: a bright rim in the blue of the perk icon, a darker inner
+    edge, a highlight at the upper left and a few glints. The inside stays empty, so the player shows through."""
+    c = Canvas(SHIELD_BARRIER, SHIELD_BARRIER)
+    cx = cy = SHIELD_BARRIER / 2
+    for y in range(SHIELD_BARRIER):
+        for x in range(SHIELD_BARRIER):
+            r = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+            if 29.0 <= r <= 31.0:
+                c.set(x, y, "blue_2")
+            elif 27.5 <= r < 29.0:
+                c.set(x, y, "blue_1")
+    for y in range(SHIELD_BARRIER):
+        for x in range(SHIELD_BARRIER):
+            dx, dy = x + 0.5 - cx, y + 0.5 - cy
+            r = math.hypot(dx, dy)
+            angle = math.degrees(math.atan2(-dy, dx))
+            if 28.5 <= r <= 30.5 and 115.0 <= angle <= 155.0:
+                c.set(x, y, "white")
+    for x, y in [(44, 12), (45, 13), (52, 40), (14, 46), (15, 47), (38, 54)]:
+        c.set(x, y, "glow")
+    return c
+
+
 def perk_glow() -> Canvas:
     """Light pool on the floor under a dropped perk, squashed for the oblique view; its alpha pulses in game."""
     c = Canvas(32, 16)
@@ -951,6 +979,7 @@ def outputs() -> dict[str, Image.Image]:
         "Tiles/Wall_Top.png": wall_top().to_image(),
         "Tiles/Wall_Front.png": wall_front().to_image(),
         "Sprites/Effects/SpawnMarker.png": spawn_marker().to_image(),
+        "Sprites/Effects/Shield_Barrier.png": shield_barrier().to_image(),
         "Sprites/Level/Gate_Bars.png": gate_bars().to_image(),
         "Sprites/UI/Heart_Full.png": heart(True).to_image(),
         "Sprites/UI/Heart_Empty.png": heart(False).to_image(),
