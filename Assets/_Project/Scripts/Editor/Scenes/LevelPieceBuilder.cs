@@ -14,6 +14,7 @@ namespace RushOps.Editor.Scenes
         private const string GateConfigPath = "Assets/_Project/Data/Levels/GateConfig.asset";
         private const string GateSpritePath = "Assets/_Project/Art/Sprites/Level/Gate_Bars.png";
         private const string ExitSpritePath = "Assets/_Project/Art/Sprites/Level/Exit_Pad.png";
+        private const string ExitLockedSpritePath = "Assets/_Project/Art/Sprites/Level/Exit_Pad_Locked.png";
 
         /// <summary>Size of the exit trigger in units, matching its sprite (4 x 1.5 units).</summary>
         public static readonly Vector2 ExitSize = new Vector2(4f, 1.5f);
@@ -111,6 +112,9 @@ namespace RushOps.Editor.Scenes
             serializedExit.FindProperty("_zone").objectReferenceValue = lockZone;
             serializedExit.FindProperty("_director").objectReferenceValue = arena.Director;
             serializedExit.FindProperty("_renderer").objectReferenceValue = renderer;
+            serializedExit.FindProperty("_openSprite").objectReferenceValue = renderer.sprite;
+            serializedExit.FindProperty("_lockedSprite").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<Sprite>(ExitLockedSpritePath);
             serializedExit.ApplyModifiedPropertiesWithoutUndo();
             var tracker = new SerializedObject(arena.Tracker);
             tracker.FindProperty("_exit").objectReferenceValue = exit;
