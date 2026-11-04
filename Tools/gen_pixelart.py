@@ -25,7 +25,9 @@ Output (under Assets/_Project/Art/):
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Projectiles/Bullet_DoubleDamage.png 16x16, red and thicker, during double damage (issue #25)
   Sprites/Projectiles/Bullet_InstaKill.png 16x16, pale and longer, during insta-kill (issue #25)
-  Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X)
+  Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X) from the centre (issue #107)
+  Sprites/Effects/HitSpark_<F>.png         16x16, 3 frames of sparks flying towards +X (issue #107)
+  Sprites/Effects/DeathSplat_<F>.png       32x32, 4 frames of blood flying apart when an enemy dies (issue #107)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
   Sprites/Effects/Shield_Barrier.png       64x64 bubble around the player while the shield runs (issue #26)
   Sprites/Level/HoldZone_Ring.png          128x128 ring on the floor of a hold-the-line zone, radius 2 tiles (issue #31)
@@ -719,12 +721,68 @@ def bullet_insta_kill() -> Canvas:
 
 
 def muzzle_flash() -> Canvas:
+    """Muzzle flash pointing right (+X) from the canvas centre, where the muzzle sits (issue #107): a hot core with
+    a long forward prong and two short side prongs."""
     c = Canvas(16, 16)
-    c.ellipse(7.0, 8.0, 5.5, 4.0, "orange")
-    for x, y in [(12, 7), (13, 8), (14, 8), (13, 7), (6, 3), (6, 12), (9, 4), (9, 11)]:
-        c.set(x, y, "orange")
-    c.ellipse(7.5, 8.0, 4.0, 2.6, "yellow")
-    c.ellipse(7.0, 8.0, 2.4, 1.5, "glow")
+    c.ellipse(9.5, 8.0, 3.5, 3.5, "orange")
+    for i in range(6):
+        c.set(10 + i, 7, "orange")
+        c.set(10 + i, 8, "yellow" if i < 4 else "orange")
+    for i in range(3):
+        c.set(10 + i, 5 - i, "orange")
+        c.set(10 + i, 10 + i, "orange")
+    c.ellipse(9.5, 8.0, 2.4, 2.0, "yellow")
+    c.ellipse(9.0, 7.5, 1.3, 1.0, "glow")
+    c.set(9, 7, "white")
+    return c
+
+
+HIT_SPARK = 16
+HIT_SPARK_FRAMES = 3
+
+
+def hit_spark(frame: int) -> Canvas:
+    """Sparks where a shot hits, flying towards +X (the game turns them back towards the shooter): a bright burst,
+    then streaks flying apart, then a few dying embers (issue #107)."""
+    c = Canvas(HIT_SPARK, HIT_SPARK)
+    cx, cy = 5, 8
+    if frame == 0:
+        c.ellipse(cx + 0.5, cy + 0.5, 3.0, 3.0, "yellow")
+        c.ellipse(cx + 0.5, cy + 0.5, 1.6, 1.6, "glow")
+        for a in (-50, -20, 0, 25, 55):
+            r = math.radians(a)
+            for d in range(3, 6):
+                c.set(cx + round(math.cos(r) * d), cy + round(math.sin(r) * d), "orange")
+    else:
+        reach = 6 + frame * 3
+        for a in (-55, -25, 5, 30, 60):
+            r = math.radians(a)
+            for d in range(reach - 3, reach):
+                color = "yellow" if frame == 1 and d >= reach - 2 else "orange"
+                c.set(cx + round(math.cos(r) * d), cy + round(math.sin(r) * d), color if frame == 1 else "red_1")
+    return c
+
+
+DEATH_SPLAT = 32
+DEATH_SPLAT_FRAMES = 4
+
+
+def death_splat(frame: int) -> Canvas:
+    """Splatter where an enemy dies (issue #107): a burst of blood drops flying outward and falling, ending in
+    small stains; the corpse animation lies underneath."""
+    c = Canvas(DEATH_SPLAT, DEATH_SPLAT)
+    rng = random.Random(7000)
+    drops = [(rng.uniform(0, 2 * math.pi), rng.uniform(0.6, 1.0), rng.choice((1.0, 1.5))) for _ in range(12)]
+    t = (frame + 1) / DEATH_SPLAT_FRAMES
+    if frame == 0:
+        c.ellipse(16.0, 16.0, 5.0, 4.0, "red_1")
+        c.ellipse(15.5, 15.5, 2.5, 2.0, "orange")
+    for angle, speed, size in drops:
+        d = 4.0 + 10.0 * t * speed
+        x = 16 + math.cos(angle) * d
+        y = 16 - math.sin(angle) * d * 0.7 + 4.0 * t * t
+        color = "red_1" if frame < 2 else "red_0"
+        c.ellipse(x, y, size, size * 0.8, color)
     return c
 
 
@@ -2072,6 +2130,8 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Projectiles/Bullet_DoubleDamage.png": bullet_double_damage().to_image(),
         "Sprites/Projectiles/Bullet_InstaKill.png": bullet_insta_kill().to_image(),
         "Sprites/Effects/MuzzleFlash.png": muzzle_flash().to_image(),
+        **{f"Sprites/Effects/HitSpark_{f}.png": hit_spark(f).to_image() for f in range(HIT_SPARK_FRAMES)},
+        **{f"Sprites/Effects/DeathSplat_{f}.png": death_splat(f).to_image() for f in range(DEATH_SPLAT_FRAMES)},
         "Tiles/Wall_Top.png": wall_top().to_image(),
         "Tiles/Wall_Front.png": wall_front().to_image(),
         "Sprites/Effects/SpawnMarker.png": spawn_marker().to_image(),

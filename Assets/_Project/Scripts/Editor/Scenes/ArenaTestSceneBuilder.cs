@@ -68,6 +68,18 @@ namespace RushOps.Editor.Scenes
         private const string ExplosionFramesPrefix = "Assets/_Project/Art/Sprites/Effects/Explosion_";
         private const int ExplosionFrameCount = 6;
         private const string ExplosionEffectPrefabPath = "Assets/_Project/Prefabs/Effects/Explosion.prefab";
+        // Combat effects and accent lights (issue #107).
+        private const string EffectsConfigPath = "Assets/_Project/Data/Feel/EffectsConfig.asset";
+        private const string EffectsSpritesDir = "Assets/_Project/Art/Sprites/Effects";
+        private const string HitSparkPrefabPath = "Assets/_Project/Prefabs/Effects/HitSpark.prefab";
+        private const string DeathSplatPrefabPath = "Assets/_Project/Prefabs/Effects/DeathSplat.prefab";
+        private const int HitSparkFrameCount = 3;
+        private const int DeathSplatFrameCount = 4;
+        private static readonly Color ExplosionLightColor = new Color(1f, 0.6f, 0.25f);
+        private const float ExplosionLightRadius = 3.5f;
+        private const float ExplosionLightIntensity = 2f;
+        private static readonly Color MuzzleLightColor = new Color(1f, 0.8f, 0.4f);
+        private const float MuzzleLightRadius = 1.8f;
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
         private const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
         private const string FlashShaderName = "RushOps/Sprite Flash";
@@ -523,7 +535,8 @@ namespace RushOps.Editor.Scenes
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
             ExplosionSystem explosions = CreateExplosionSystem(enemyPools, target.GetComponent<PlayerHealth>());
-            ExplosionEffectPool explosionEffects = CreateExplosionEffectPool(CreateOrUpdateExplosionEffectPrefab());
+            CreateGameEffects(LoadOrCreateEffectsConfig(), target, pool, enemyPools);
+            SpriteEffectPool explosionEffects = CreateEffectPool("ExplosionEffectPool", CreateOrUpdateExplosionEffectPrefab(), 4, 16);
             PerkPickupPool perks = PerkDropsBuilder.Create(enemyPools, navigator);
             var playerPerks = new SerializedObject(target.GetComponent<PlayerPerks>());
             playerPerks.FindProperty("_pickups").objectReferenceValue = perks;
@@ -1126,30 +1139,130 @@ namespace RushOps.Editor.Scenes
         }
 
         // Rebuilt on every run, so the prefab stays reproducible from code.
-        private static ExplosionEffect CreateOrUpdateExplosionEffectPrefab()
+        // The blast flares up an orange accent light that fades with it (issue #107).
+        private static SpriteEffect CreateOrUpdateExplosionEffectPrefab()
         {
-            var go = new GameObject("Explosion");
-            var renderer = go.AddComponent<SpriteRenderer>();
-            renderer.sortingOrder = EffectSortingOrder;
-            go.AddComponent<ExplosionEffect>();
-            EnsureFolder(Path.GetDirectoryName(ExplosionEffectPrefabPath).Replace('\\', '/'));
-            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, ExplosionEffectPrefabPath);
-            Object.DestroyImmediate(go);
-            return prefab.GetComponent<ExplosionEffect>();
+            return CreateOrUpdateEffectPrefab(
+                "Explosion", ExplosionEffectPrefabPath, ExplosionLightColor, ExplosionLightRadius, ExplosionLightIntensity);
         }
 
-        private static ExplosionEffectPool CreateExplosionEffectPool(ExplosionEffect prefab)
+        // Rebuilt on every run; a light radius of 0 means no light.
+        private static SpriteEffect CreateOrUpdateEffectPrefab(
+            string name, string prefabPath, Color lightColor, float lightRadius, float lightIntensity)
         {
-            var pool = new GameObject("ExplosionEffectPool").AddComponent<ExplosionEffectPool>();
+            var go = new GameObject(name);
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sortingOrder = EffectSortingOrder;
+            var effect = go.AddComponent<SpriteEffect>();
+            if (lightRadius > 0f)
+            {
+                Light2D light = AddPointLight(go.transform, lightColor, lightRadius);
+                light.enabled = false;
+                var serialized = new SerializedObject(effect);
+                serialized.FindProperty("_light").objectReferenceValue = light;
+                serialized.FindProperty("_lightIntensity").floatValue = lightIntensity;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+            }
+
+            EnsureFolder(Path.GetDirectoryName(prefabPath).Replace('\\', '/'));
+            GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, prefabPath);
+            Object.DestroyImmediate(go);
+            return prefab.GetComponent<SpriteEffect>();
+        }
+
+        /// <summary>Adds a child "Light" with a 2D point light, the accent light of effects, perks and puzzles.</summary>
+        internal static Light2D AddPointLight(Transform parent, Color color, float radius)
+        {
+            var lightGo = new GameObject("Light");
+            lightGo.transform.SetParent(parent, false);
+            var light = lightGo.AddComponent<Light2D>();
+            light.lightType = Light2D.LightType.Point;
+            light.color = color;
+            light.pointLightInnerRadius = 0f;
+            light.pointLightOuterRadius = radius;
+            return light;
+        }
+
+        private static SpriteEffectPool CreateEffectPool(string name, SpriteEffect prefab, int capacity, int maxSize)
+        {
+            var pool = new GameObject(name).AddComponent<SpriteEffectPool>();
             var serialized = new SerializedObject(pool);
             serialized.FindProperty("_prefab").objectReferenceValue = prefab;
+            serialized.FindProperty("_defaultCapacity").intValue = capacity;
+            serialized.FindProperty("_maxSize").intValue = maxSize;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return pool;
         }
 
+        // Sprite references are refreshed; tuned timings stay (issue #107).
+        private static EffectsConfig LoadOrCreateEffectsConfig()
+        {
+            EffectsConfig config = LoadOrCreateConfig<EffectsConfig>(EffectsConfigPath);
+            var serialized = new SerializedObject(config);
+            SetFrames(serialized.FindProperty("_hitSparkFrames"), $"{EffectsSpritesDir}/HitSpark_", HitSparkFrameCount);
+            SetFrames(serialized.FindProperty("_deathFrames"), $"{EffectsSpritesDir}/DeathSplat_", DeathSplatFrameCount);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(config);
+            return config;
+        }
+
+        private static void SetFrames(SerializedProperty list, string prefix, int count)
+        {
+            list.arraySize = count;
+            for (int i = 0; i < count; i++)
+            {
+                string path = $"{prefix}{i}.png";
+                var sprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
+                if (sprite == null)
+                {
+                    throw new System.InvalidOperationException($"Sprite not found at {path}; run Tools/gen_pixelart.py");
+                }
+
+                list.GetArrayElementAtIndex(i).objectReferenceValue = sprite;
+            }
+        }
+
+        // Muzzle flash on the player, sparks and death splatter from pools (issue #107).
+        private static void CreateGameEffects(EffectsConfig config, Transform player, ProjectilePool projectiles, EnemyPool[] enemies)
+        {
+            var flashGo = new GameObject("MuzzleFlash");
+            flashGo.transform.SetParent(player, false);
+            var flashRenderer = flashGo.AddComponent<SpriteRenderer>();
+            flashRenderer.sprite = AssetDatabase.LoadAssetAtPath<Sprite>($"{EffectsSpritesDir}/MuzzleFlash.png");
+            flashRenderer.sortingOrder = EffectSortingOrder;
+            Light2D flashLight = AddPointLight(flashGo.transform, MuzzleLightColor, MuzzleLightRadius);
+            var muzzle = flashGo.AddComponent<MuzzleFlash>();
+            var serializedMuzzle = new SerializedObject(muzzle);
+            serializedMuzzle.FindProperty("_config").objectReferenceValue = config;
+            serializedMuzzle.FindProperty("_light").objectReferenceValue = flashLight;
+            serializedMuzzle.ApplyModifiedPropertiesWithoutUndo();
+
+            SpriteEffectPool sparks = CreateEffectPool(
+                "HitSparkPool", CreateOrUpdateEffectPrefab("HitSpark", HitSparkPrefabPath, Color.white, 0f, 0f), 16, 64);
+            SpriteEffectPool deaths = CreateEffectPool(
+                "DeathSplatPool", CreateOrUpdateEffectPrefab("DeathSplat", DeathSplatPrefabPath, Color.white, 0f, 0f), 8, 32);
+
+            var effects = new GameObject("GameEffects").AddComponent<GameEffects>();
+            var serialized = new SerializedObject(effects);
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_weapon").objectReferenceValue = player.GetComponent<PlayerWeapon>();
+            serialized.FindProperty("_muzzleFlash").objectReferenceValue = muzzle;
+            serialized.FindProperty("_projectiles").objectReferenceValue = projectiles;
+            serialized.FindProperty("_hitSparks").objectReferenceValue = sparks;
+            serialized.FindProperty("_deaths").objectReferenceValue = deaths;
+            SerializedProperty list = serialized.FindProperty("_enemies");
+            list.arraySize = enemies.Length;
+            for (int i = 0; i < enemies.Length; i++)
+            {
+                list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         private static SfxPlayer CreateGameFeel(
             FeelConfig config, Transform player, EnemyPool[] enemies, CameraFollow camera, PauseController pause,
-            ExplosionSystem explosions, ExplosionEffectPool explosionEffects, PerkPickupPool perks, NukeSystem nuke,
+            ExplosionSystem explosions, SpriteEffectPool explosionEffects, PerkPickupPool perks, NukeSystem nuke,
             ScreenFlash flash)
         {
             var go = new GameObject("GameFeel");

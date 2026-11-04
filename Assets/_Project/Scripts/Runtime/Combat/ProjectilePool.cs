@@ -16,6 +16,10 @@ namespace RushOps.Combat
 
         private ObjectPool<Projectile> _pool;
         private Action<Projectile> _release;
+        private Action<Projectile, Vector2> _onImpacted;
+
+        /// <summary>Raised when one of the pool's projectiles hits a collider: hit point and flight direction (issue #107).</summary>
+        public event Action<Vector2, Vector2> Impacted;
 
         /// <summary>Number of projectiles currently in flight.</summary>
         public int CountActive => _pool != null ? _pool.CountActive : 0;
@@ -41,6 +45,7 @@ namespace RushOps.Combat
         {
             // Cached so launching does not allocate a delegate per shot.
             _release = Release;
+            _onImpacted = OnImpacted;
             if (_prefab != null)
             {
                 _pool = new ObjectPool<Projectile>(
@@ -62,7 +67,13 @@ namespace RushOps.Combat
         {
             Projectile projectile = Instantiate(_prefab, transform);
             projectile.gameObject.SetActive(false);
+            projectile.Impacted += _onImpacted;
             return projectile;
+        }
+
+        private void OnImpacted(Projectile projectile, Vector2 point)
+        {
+            Impacted?.Invoke(point, projectile.Direction);
         }
 
         private static void OnGet(Projectile projectile)

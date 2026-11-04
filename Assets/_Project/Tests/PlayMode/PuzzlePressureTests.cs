@@ -69,7 +69,8 @@ namespace RushOps.Tests.PlayMode
         {
             yield return EnterZone(_hold.transform.position);
             Time.timeScale = 5f;
-            float timeout = Time.realtimeSinceStartup + 8f;
+            // Generous: at a low frame rate (batch mode) the game runs slower than 5x real time.
+            float timeout = Time.realtimeSinceStartup + 15f;
             while (Time.realtimeSinceStartup < timeout && _hold.State != PuzzleState.Solved)
             {
                 yield return null;

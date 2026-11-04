@@ -4,6 +4,7 @@ using RushOps.Navigation;
 using RushOps.Perks;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace RushOps.Editor.Scenes
 {
@@ -143,6 +144,10 @@ namespace RushOps.Editor.Scenes
             return config;
         }
 
+        private static readonly Color PerkLightColor = new Color(1f, 0.9f, 0.6f);
+        private const float PerkLightRadius = 1.4f;
+        private const float PerkLightIntensity = 0.8f;
+
         // Rebuilt on every run, so the prefab stays reproducible from code.
         private static PerkPickup CreateOrUpdatePickupPrefab()
         {
@@ -161,6 +166,10 @@ namespace RushOps.Editor.Scenes
             glow.sprite = LoadSprite(GlowSpritePath);
             glow.color = new Color(1f, 1f, 1f, GlowAlpha);
             glow.sortingOrder = ArenaTestSceneBuilder.FloorMarkSortingOrder;
+
+            // Warm accent light under the perk (issue #107, G8).
+            Light2D light = ArenaTestSceneBuilder.AddPointLight(go.transform, PerkLightColor, PerkLightRadius);
+            light.intensity = PerkLightIntensity;
 
             var iconGo = new GameObject("Icon");
             iconGo.transform.SetParent(go.transform, false);

@@ -31,6 +31,9 @@ namespace RushOps.Combat
         private Action<Projectile> _expire;
         private bool _flying;
 
+        /// <summary>Raised when the projectile hits a collider, with the hit point (issue #107: hit sparks).</summary>
+        public event Action<Projectile, Vector2> Impacted;
+
         /// <summary>Unit vector of the flight direction.</summary>
         public Vector2 Direction => _direction;
 
@@ -69,6 +72,7 @@ namespace RushOps.Combat
             Collider2D overlap = Physics2D.OverlapPoint(origin, _hitLayers);
             if (overlap != null)
             {
+                Impacted?.Invoke(this, origin);
                 Hit(overlap);
                 Expire();
             }
@@ -87,6 +91,7 @@ namespace RushOps.Combat
             if (hit.collider != null)
             {
                 transform.position = hit.point;
+                Impacted?.Invoke(this, hit.point);
                 Hit(hit.collider);
                 Expire();
                 return;

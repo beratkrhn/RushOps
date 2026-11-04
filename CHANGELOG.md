@@ -24,7 +24,17 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `IslandTheme` (ScriptableObject, `Data/Islands/`) beschreibt das Aussehen einer Insel; die Szenen-Builder wählen es über den Theme-Pfad. Bodenvariante und Dekoration je Zelle sind deterministisch (`IslandThemeMath`, EditMode-getestet). `Gate` spielt die Tor-Frames des Themes beim Öffnen ab. Dekorationen liegen in einer eigenen Tilemap `Decor` ohne Collider. ADR 0009 (Issue #104).
 - **Tileset Insel 2: Düstere Stadt** (Issue #105, F-GFX-01, F-LVL-06): grauer Asphalt in drei Varianten (schlicht, gerissen, ausgebessert), Backsteinmauern mit dunklem Kiesdach und kaltem Neonstreifen als Außenwand, Container als Hindernisse, flache Dekorationen ohne Kollision (Pfütze, Zeitung, Ziegelbrocken, Glasscherben, Gully). Das Tor ist ein Rolltor, das beim Öffnen in 5 Frames in seinen Kasten hochrollt. Testszene `Arena_Stadt` mit dem Layout von `Arena_Zonen` (Menü „RushOps → Szenen → Arena_Stadt erzeugen“, im Testmenü als „Stadt-Test“). Vorschau `docs/art/islands/Stadt.png`.
 - **Tileset Insel 3: Vulkan** (Issue #106, F-GFX-01, F-LVL-06): Aschenboden in drei Varianten (schlicht, glühender Riss, Ascheverwehung), Basaltsäulen als Außenwand mit roter Glut am Fuß, erkaltete Lavablöcke als Hindernisse, Dekorationen ohne Kollision und ohne Schaden (kleiner Lavasee, Lavariss, Glut, Asche, verkohlte Knochen). Das Tor ist ein Stahlgitter, das beim Öffnen in 5 Frames in einen glühenden Bodenschlitz sinkt. Testszene `Arena_Vulkan` (Menü „RushOps → Szenen → Arena_Vulkan erzeugen“, im Testmenü als „Vulkan-Test“). Vorschau `docs/art/islands/Vulkan.png`.
+- **Effekte und 2D-Licht** (Issue #107, F-GFX-04, Entscheidung G8):
+  - Mündungsfeuer bei jedem Schuss mit kurzem Akzentlicht (`MuzzleFlash`).
+  - Treffer-Funken, wo ein Schuss trifft, zurück zum Schützen gedreht (`ProjectilePool.Impacted`).
+  - Blutspritzer beim Tod von Gegnern ohne Explosion.
+  - Explosionen mit orangem Licht, das mit dem Effekt verblasst.
+  - Warmes Licht unter Perks.
+  - Alle Effekte kommen aus Pools (`SpriteEffectPool`, vorher `ExplosionEffectPool`). Timings in `Data/Feel/EffectsConfig`, Logik in `EffectMath` mit EditMode-Tests. Neue Sprites `HitSpark_*`, `DeathSplat_*` und ein neues `MuzzleFlash`.
 - Menü „RushOps → Szenen → Alle erzeugen“ (`AllScenesBuilder.BuildAll`, auch für den Batchmode).
+
+### Geändert
+- `PuzzlePressurePlayTests.SolvedPuzzle_ZoneReturnsToItsWaves` wartet bis zu 15 s statt 8 s Echtzeit. Bei niedriger Bildrate im Batchmode ist er sonst einmal rot geworden (Issue #107).
 
 ## [0.3.0] – 2026-11-04
 
