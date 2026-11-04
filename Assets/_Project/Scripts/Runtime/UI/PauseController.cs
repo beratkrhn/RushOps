@@ -5,14 +5,17 @@ using UnityEngine.SceneManagement;
 namespace RushOps.UI
 {
     /// <summary>
-    /// Pauses the game (F-HUD-06): stops the game time, shows the pause overlay with Resume and Restart,
+    /// Pauses the game (F-HUD-06): stops the game time, shows the pause overlay with Resume, Restart and main menu,
     /// and pauses by itself when the app goes to the background (F-HUD-08). Buttons call <see cref="Pause"/>,
-    /// <see cref="Resume"/> and <see cref="Restart"/>.
+    /// <see cref="Resume"/>, <see cref="Restart"/> and <see cref="QuitToMenu"/>.
     /// </summary>
     public class PauseController : MonoBehaviour
     {
         [Tooltip("Overlay with the pause menu; shown only while paused.")]
         [SerializeField] private GameObject _overlay;
+
+        [Tooltip("Scene the „Hauptmenü“ button loads (issue #125).")]
+        [SerializeField] private string _menuScene = "MainMenu";
 
         /// <summary>Raised when the game pauses.</summary>
         public event Action Paused;
@@ -84,6 +87,15 @@ namespace RushOps.UI
             _frozen = false;
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+
+        /// <summary>Leaves the level for the main menu.</summary>
+        public void QuitToMenu()
+        {
+            IsPaused = false;
+            _frozen = false;
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(_menuScene);
         }
 
         private void Awake()

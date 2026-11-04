@@ -58,6 +58,8 @@ Output (under Assets/_Project/Art/):
   Sprites/UI/Perk_Slot.png                 28x28 HUD slot of an active perk: dark disc with an empty ring (issue #24)
   Sprites/UI/Perk_Timer.png                28x28 ring over the slot, filled radially with the remaining time (issue #24)
   Sprites/UI/Logo_<F>.png                  RUSHOPS logo, 13 frames: letters slam in, then a light sweep (issue #124)
+  Sprites/UI/Button[_Primary][_Pressed].png 112x22 menu button with a 3 px lip; pressed sinks in (issue #125)
+  Sprites/UI/Button_Disabled.png           112x22 greyed-out menu button (issue #125)
   Tiles/Floor_0..2.png                     32x32 floor variants
   Tiles/Wall_Top.png                       32x32 wall seen from above
   Tiles/Wall_Front.png                     32x32 wall top plus front face
@@ -1442,6 +1444,45 @@ def logo_preview(files: dict[str, Image.Image], out_dir: Path, scale: int = 4) -
     frames[-1].save(out_dir / "Logo.png")
 
 
+# --- Menu buttons (issue #125) -----------------------------------------------------------
+BUTTON_WIDTH = 112
+BUTTON_HEIGHT = 22
+BUTTON_LIP = 4
+# (light top edge, body, shade at the bottom of the plate, lip below) per look.
+BUTTON_LOOKS = {
+    "Button": ("slate_4", "slate_2", "slate_1", "slate_0"),
+    "Button_Primary": ("yellow", "orange", "red_1", "red_0"),
+    "Button_Disabled": ("slate_2", "slate_1", "slate_0", "night"),
+}
+
+
+def menu_button(look: str, pressed: bool = False) -> Canvas:
+    """Chunky menu button: a plate with cut corners on a darker lip that makes it look raised. Pressed, the plate
+    sinks down onto the lip, so the button looks pushed in. The label is drawn by the UI on top."""
+    light, body, shade, lip = BUTTON_LOOKS[look]
+    c = Canvas(BUTTON_WIDTH, BUTTON_HEIGHT)
+    plate_h = BUTTON_HEIGHT - 2 - (BUTTON_LIP - 1)
+    top = BUTTON_LIP if pressed else 1
+    x0, x1 = 1, BUTTON_WIDTH - 2
+
+    def plate(y0: int, y1: int, color: str) -> None:
+        for y in range(y0, y1 + 1):
+            cut = 1 if y in (y0, y1) else 0
+            for x in range(x0 + cut, x1 - cut + 1):
+                c.set(x, y, color)
+
+    if not pressed:
+        plate(top + 2, top + plate_h + BUTTON_LIP - 2, lip)
+    plate(top, top + plate_h - 1, body)
+    for x in range(x0 + 1, x1):
+        c.set(x, top, light)
+    for x in range(x0 + 2, x1 - 1):
+        c.set(x, top + plate_h - 1, shade)
+        c.set(x, top + plate_h - 2, shade)
+    c.outline()
+    return c
+
+
 def star(full: bool) -> Canvas:
     """Five-pointed star for the result screen: gold with a light upper half when earned, a dark hollow when not."""
     c = Canvas(16, 16)
@@ -2416,6 +2457,11 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),
         "Sprites/UI/Star_Full.png": star(True).to_image(),
         **{f"Sprites/UI/Logo_{f}.png": logo_frame(f).to_image() for f in range(LOGO_FRAMES)},
+        "Sprites/UI/Button.png": menu_button("Button").to_image(),
+        "Sprites/UI/Button_Pressed.png": menu_button("Button", True).to_image(),
+        "Sprites/UI/Button_Primary.png": menu_button("Button_Primary").to_image(),
+        "Sprites/UI/Button_Primary_Pressed.png": menu_button("Button_Primary", True).to_image(),
+        "Sprites/UI/Button_Disabled.png": menu_button("Button_Disabled").to_image(),
         "Sprites/Level/Exit_Pad.png": exit_pad(True).to_image(),
         "Sprites/Level/Exit_Pad_Locked.png": exit_pad(False).to_image(),
         "Sprites/UI/Star_Empty.png": star(False).to_image(),

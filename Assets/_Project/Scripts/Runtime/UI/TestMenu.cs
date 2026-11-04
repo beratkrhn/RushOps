@@ -5,8 +5,8 @@ using UnityEngine.SceneManagement;
 namespace RushOps.UI
 {
     /// <summary>
-    /// Developer menu listing the test levels (issue #35); „Weiter“ on the result screen leads here until the level
-    /// selection exists. Its buttons call <see cref="Load"/> with the index of a level.
+    /// Developer menu listing the test levels (issue #35), reached from the main menu in development builds
+    /// (issue #125). Its buttons call <see cref="Load"/> with the index of a level.
     /// </summary>
     public class TestMenu : MonoBehaviour
     {

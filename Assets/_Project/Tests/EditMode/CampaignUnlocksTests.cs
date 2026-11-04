@@ -123,6 +123,27 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void TryGetLevelToPlay_IsTheNextOpenLevel_OrTheFirstWhenAllAreDone()
+        {
+            var unlocks = new CampaignUnlocks(new[] { new[] { "1-1", null, null }, new[] { (string)null } });
+
+            Assert.IsTrue(unlocks.TryGetLevelToPlay(_progress, out int island, out int level));
+            Assert.AreEqual((0, 0), (island, level));
+
+            Finish("1-1");
+            Assert.IsTrue(unlocks.TryGetLevelToPlay(_progress, out island, out level));
+            Assert.AreEqual((0, 0), (island, level));
+        }
+
+        [Test]
+        public void TryGetLevelToPlay_WithoutBuiltLevels_IsFalse()
+        {
+            var unlocks = new CampaignUnlocks(new[] { new[] { (string)null } });
+
+            Assert.IsFalse(unlocks.TryGetLevelToPlay(_progress, out _, out _));
+        }
+
+        [Test]
         public void CampaignAsset_HasThreeIslandsWithThreeSlots_StartingWithLevel1_1()
         {
             var campaign = AssetDatabase.LoadAssetAtPath<Campaign>("Assets/_Project/Data/Levels/Campaign.asset");

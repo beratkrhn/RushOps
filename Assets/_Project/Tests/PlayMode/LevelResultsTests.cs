@@ -115,17 +115,29 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Continue_LoadsTestMenu()
+        public IEnumerator Continue_LoadsMainMenu()
         {
             _results.ShowDone();
             _results.Continue();
             yield return null;
             yield return null;
 
-            Assert.AreEqual("TestMenu", SceneManager.GetActiveScene().name);
-            var menu = Object.FindFirstObjectByType<TestMenu>();
-            Assert.IsNotNull(menu, "test menu has no TestMenu");
-            Assert.GreaterOrEqual(menu.Levels.Length, 2, "test menu lists no levels");
+            Assert.AreEqual("MainMenu", SceneManager.GetActiveScene().name);
+            Assert.IsNotNull(Object.FindFirstObjectByType<MainMenu>(), "main menu has no MainMenu");
+            Assert.AreEqual(1f, Time.timeScale);
+        }
+
+        [UnityTest]
+        public IEnumerator PauseMenu_LeadsToMainMenu()
+        {
+            _pause.Pause();
+            Assert.AreEqual(0f, Time.timeScale);
+
+            _pause.QuitToMenu();
+            yield return null;
+            yield return null;
+
+            Assert.AreEqual("MainMenu", SceneManager.GetActiveScene().name);
             Assert.AreEqual(1f, Time.timeScale);
         }
 

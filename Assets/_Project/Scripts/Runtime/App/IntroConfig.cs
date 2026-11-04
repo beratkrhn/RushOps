@@ -23,7 +23,7 @@ namespace RushOps.App
         [SerializeField, Min(0.1f)] private float _maxDuration = 3f;
 
         [Tooltip("Scene loaded after the logo.")]
-        [SerializeField] private string _nextScene = "TestMenu";
+        [SerializeField] private string _nextScene = "MainMenu";
 
         /// <summary>Frames of the logo animation.</summary>
         public Sprite[] Frames => _frames;

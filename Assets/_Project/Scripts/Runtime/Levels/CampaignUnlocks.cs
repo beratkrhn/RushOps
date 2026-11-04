@@ -130,6 +130,22 @@ namespace RushOps.Levels
             return false;
         }
 
+        /// <summary>
+        /// Level „Story Mode“ starts while there is no island map (issue #125): the next open level, or the first
+        /// level once every open level is finished. False if the campaign has no playable level.
+        /// </summary>
+        public bool TryGetLevelToPlay(ProgressData progress, out int island, out int level)
+        {
+            if (TryGetNextOpen(progress, out island, out level))
+            {
+                return true;
+            }
+
+            island = 0;
+            level = 0;
+            return IsLevelUnlocked(0, 0, progress);
+        }
+
         private bool IsIsland(int island)
         {
             return island >= 0 && island < _islands.Length;
