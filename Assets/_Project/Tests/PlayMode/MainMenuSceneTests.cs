@@ -1,6 +1,5 @@
 using System.Collections;
 using NUnit.Framework;
-using RushOps.Save;
 using RushOps.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -59,15 +58,13 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator StoryMode_StartsLevel1_1OnANewGame()
+        public IEnumerator StoryMode_OpensTheIslandMap()
         {
-            Assert.AreEqual("Level_1-1", _menu.StoryScene);
-
             FindButton("StoryButton").onClick.Invoke();
             yield return null;
             yield return null;
 
-            Assert.AreEqual("Level_1-1", SceneManager.GetActiveScene().name);
+            Assert.AreEqual("IslandMap", SceneManager.GetActiveScene().name);
         }
 
         [UnityTest]
@@ -78,14 +75,6 @@ namespace RushOps.Tests.PlayMode
             yield return null;
 
             Assert.AreEqual("TestMenu", SceneManager.GetActiveScene().name);
-        }
-
-        [Test]
-        public void StoryMode_AfterLevel1_1_PlaysItAgainUntilMoreLevelsExist()
-        {
-            ProgressRules.RecordCompletion(SaveGameIsolation.Service.Data.Progress, "Level_1-1", 3, 5000);
-
-            Assert.AreEqual("Level_1-1", _menu.StoryScene);
         }
     }
 }

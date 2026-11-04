@@ -18,6 +18,7 @@ namespace RushOps.Editor.Scenes
             IslandTestScenesBuilder.BuildVulkan();
             TestMenuSceneBuilder.Build();
             MainMenuSceneBuilder.Build();
+            IslandMapSceneBuilder.Build();
             BootSceneBuilder.Build();
         }
     }

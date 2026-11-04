@@ -1830,7 +1830,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_starEmpty").objectReferenceValue = empty;
             serialized.FindProperty("_failedPanel").objectReferenceValue = failed.gameObject;
             serialized.FindProperty("_failedScore").objectReferenceValue = failedScore;
-            serialized.FindProperty("_continueScene").stringValue = MainMenu.SceneName;
+            serialized.FindProperty("_continueScene").stringValue = IslandMap.SceneName;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             done.gameObject.SetActive(false);
             failed.gameObject.SetActive(false);

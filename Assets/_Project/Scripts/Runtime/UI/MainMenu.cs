@@ -1,5 +1,3 @@
-using RushOps.Levels;
-using RushOps.Save;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -7,9 +5,8 @@ using UnityEngine.UI;
 namespace RushOps.UI
 {
     /// <summary>
-    /// Main menu (issue #125, F-UI-02): Story Mode, Spielerauswahl, Einstellungen. Until the island map exists (#127)
-    /// „Story Mode“ starts the next open level of the <see cref="Campaign"/> directly. Shows the build version and,
-    /// in development builds only, a button to the test menu. Buttons call <see cref="StartStory"/> and
+    /// Main menu (issue #125, F-UI-02): Story Mode opens the island map (#127), Spielerauswahl, Einstellungen. Shows
+    /// the build version and, in development builds only, a button to the test menu. Buttons call <see cref="StartStory"/> and
     /// <see cref="OpenTestMenu"/>.
     /// </summary>
     public class MainMenu : MonoBehaviour
@@ -17,8 +14,8 @@ namespace RushOps.UI
         /// <summary>Name of the main menu scene.</summary>
         public const string SceneName = "MainMenu";
 
-        [SerializeField] private Campaign _campaign;
-        [SerializeField] private SaveGameService _save;
+        [Tooltip("Scene „Story Mode“ opens: the island map.")]
+        [SerializeField] private string _storyScene = "IslandMap";
         [SerializeField] private string _testMenuScene = "TestMenu";
 
         [Tooltip("Shows the build version, e.g. „v0.5.0“.")]
@@ -27,26 +24,10 @@ namespace RushOps.UI
         [Tooltip("Only shown in development builds (and in the editor).")]
         [SerializeField] private GameObject _testMenuButton;
 
-        /// <summary>Scene „Story Mode“ loads now; empty if the campaign has no playable level.</summary>
-        public string StoryScene
-        {
-            get
-            {
-                if (_campaign == null || _save == null
-                    || !_campaign.Unlocks.TryGetLevelToPlay(_save.Data.Progress, out int island, out int level))
-                {
-                    return string.Empty;
-                }
-
-                LevelDefinition definition = _campaign.LevelAt(island, level);
-                return definition != null ? definition.SceneName : string.Empty;
-            }
-        }
-
-        /// <summary>Starts the story („Story Mode“).</summary>
+        /// <summary>Opens the island map („Story Mode“).</summary>
         public void StartStory()
         {
-            Load(StoryScene);
+            Load(_storyScene);
         }
 
         /// <summary>Opens the developer test menu.</summary>

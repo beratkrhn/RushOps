@@ -61,6 +61,9 @@ Output (under Assets/_Project/Art/):
   Sprites/UI/Button[_Primary][_Pressed].png 112x22 menu button with a 3 px lip; pressed sinks in (issue #125)
   Sprites/UI/Button_Disabled.png           112x22 greyed-out menu button (issue #125)
   Sprites/UI/Slider_Knob.png               10x14 knob of the volume sliders (issue #126)
+  Sprites/UI/Map_<Island>.png              160x320 island on the map with its path and bridges (issue #127)
+  Sprites/UI/Map_Node_<State>.png          22x22 level point on the map: Open, Done, Locked, Soon (issue #127)
+  Sprites/UI/Map_Arrow.png                 16x10 arrow to the next island (points up) (issue #127)
   Tiles/Floor_0..2.png                     32x32 floor variants
   Tiles/Wall_Top.png                       32x32 wall seen from above
   Tiles/Wall_Front.png                     32x32 wall top plus front face
@@ -1501,6 +1504,130 @@ def slider_knob() -> Canvas:
     return c
 
 
+# --- Island map (issue #127) --------------------------------------------------------------
+# Every island sprite is one screen of the map at half resolution (the UI draws it 2x): the island in the middle,
+# a bridge leaving at the top towards the next island and one arriving at the bottom from the previous one. The
+# sprites are stacked without gaps, so the bridges meet. MAP_NODES must match IslandMapSceneBuilder.NodePixels.
+MAP_WIDTH = 160
+MAP_HEIGHT = 320
+MAP_NODES = [(84, 222), (52, 160), (100, 100)]
+MAP_ISLANDS = {
+    # name: (rim, ground, ground shade, path, bridge at the top, bridge at the bottom)
+    "Strand": ("cream", "peach", "apricot", "clay", True, False),
+    "Stadt": ("slate_3", "slate_1", "navy_1", "blue_2", True, True),
+    "Vulkan": ("brown_1", "brown_0", "night", "orange", False, True),
+}
+
+
+def island_radius(angle: float, seed: int) -> float:
+    """Wobbly outline of an island: radius factor around 1 for an angle in radians."""
+    return 1.0 + 0.07 * math.sin(3 * angle + seed) + 0.05 * math.sin(5 * angle + 2 * seed) + 0.03 * math.sin(9 * angle)
+
+
+def map_bridge(c: Canvas, y0: int, y1: int) -> None:
+    """Plank bridge in the middle of the map from row y0 to y1: rails left and right, planks across."""
+    cx = MAP_WIDTH // 2
+    for y in range(y0, y1 + 1):
+        c.set(cx - 8, y, "brown_0")
+        c.set(cx + 7, y, "brown_0")
+        for x in range(cx - 7, cx + 7):
+            c.set(x, y, "brown_1" if y % 4 else "brown_0")
+
+
+def map_island(name: str) -> Canvas:
+    rim, ground, shade, path, bridge_up, bridge_down = MAP_ISLANDS[name]
+    seed = list(MAP_ISLANDS).index(name) + 1
+    c = Canvas(MAP_WIDTH, MAP_HEIGHT)
+    cx, cy, rx, ry = MAP_WIDTH / 2, MAP_HEIGHT / 2 + 4, 70.0, 108.0
+    if bridge_up:
+        map_bridge(c, 0, int(cy - ry) + 12)
+    if bridge_down:
+        map_bridge(c, int(cy + ry) - 12, MAP_HEIGHT - 1)
+    for y in range(MAP_HEIGHT):
+        for x in range(MAP_WIDTH):
+            dx, dy = (x + 0.5 - cx) / rx, (y + 0.5 - cy) / ry
+            d = math.hypot(dx, dy) / island_radius(math.atan2(dy, dx), seed)
+            if d <= 0.9:
+                # Shade the lower right of the ground, so the island reads as a raised plateau.
+                c.set(x, y, shade if dx * 0.6 + dy * 0.8 > 0.55 else ground)
+            elif d <= 1.0:
+                c.set(x, y, rim)
+
+    if name == "Strand":
+        # Palms: green fronds on curved trunks.
+        for px, py in ((38, 118), (118, 146), (56, 246), (120, 232)):
+            for i in range(10):
+                c.set(px + (1 if i < 4 else 0), py + i, "brown_1")
+                c.set(px + 1 + (1 if i < 4 else 0), py + i, "brown_0")
+            for k in range(-6, 7):
+                c.set(px + k, py - 1 + abs(k) // 2, "green_1")
+                c.set(px + k, py + abs(k) // 2, "green_0" if abs(k) > 3 else "green_1")
+            for k in range(-2, 3):
+                c.set(px + k, py - 3 + abs(k), "green_1")
+    elif name == "Stadt":
+        # Blocks of houses with lit windows.
+        for bx, by, bw, bh in ((30, 112, 16, 22), (110, 128, 14, 26), (34, 196, 18, 18), (104, 196, 16, 20)):
+            c.rect(bx, by, bx + bw - 1, by + bh - 1, "navy_0")
+            for wy in range(by + 3, by + bh - 2, 5):
+                for wx in range(bx + 3, bx + bw - 2, 4):
+                    c.set(wx, wy, "yellow" if (wx + wy) % 3 else "blue_2")
+    else:
+        # Volcano cone with a glowing crater and a lava stream.
+        for y in range(80, 122):
+            half = (y - 80) * 0.8 + 3
+            for x in range(int(cx - half), int(cx + half) + 1):
+                c.set(x, y, "brown_1" if x < cx else "brown_0")
+        c.rect(int(cx) - 3, 80, int(cx) + 2, 82, "red_1")
+        c.rect(int(cx) - 2, 80, int(cx) + 1, 81, "yellow")
+        for i, y in enumerate(range(83, 150)):
+            x = int(cx + 6 * math.sin(y / 9.0)) - 1
+            c.set(x, y, "orange")
+            c.set(x + 1, y, "red_1" if i % 5 else "yellow")
+
+    # Dotted path through the level points, bottom to top.
+    for (x0, y0), (x1, y1) in zip(MAP_NODES, MAP_NODES[1:]):
+        steps = int(math.hypot(x1 - x0, y1 - y0))
+        for i in range(0, steps, 4):
+            t = i / steps
+            x, y = round(x0 + (x1 - x0) * t), round(y0 + (y1 - y0) * t)
+            c.rect(x, y, x + 1, y + 1, path)
+    c.outline()
+    return c
+
+
+def map_node(state: str) -> Canvas:
+    """Level point on the map: orange when open, green when done, dark with a padlock when locked, hollow when the
+    level is not built yet."""
+    c = Canvas(22, 22)
+    colors = {"Open": ("yellow", "orange"), "Done": ("green_2", "green_1"), "Locked": ("slate_2", "slate_1"),
+              "Soon": ("slate_1", "slate_0")}
+    light, body = colors[state]
+    c.ellipse(11.0, 11.0, 10.0, 10.0, body)
+    c.ellipse(10.0, 9.0, 7.0, 6.0, light)
+    c.ellipse(11.0, 11.0, 7.5, 7.5, body)
+    if state == "Locked":
+        for y in range(5, 11):
+            for x in range(7, 15):
+                if 2.0 <= math.hypot(x + 0.5 - 11.0, y + 0.5 - 9.0) <= 3.4 and y < 10:
+                    c.set(x, y, "slate_5")
+        c.rect(7, 10, 14, 16, "yellow")
+        c.rect(10, 12, 11, 14, "brown_0")
+    elif state == "Soon":
+        c.ellipse(11.0, 11.0, 5.0, 5.0, None)
+    c.outline()
+    return c
+
+
+def map_arrow() -> Canvas:
+    """Arrow pointing up to the next island; the UI turns it for the way down."""
+    c = Canvas(16, 10)
+    for y in range(1, 9):
+        for x in range(8 - y, 8 + y):
+            c.set(x, y, "white" if y < 3 else "slate_5")
+    c.outline()
+    return c
+
+
 def star(full: bool) -> Canvas:
     """Five-pointed star for the result screen: gold with a light upper half when earned, a dark hollow when not."""
     c = Canvas(16, 16)
@@ -2481,6 +2608,9 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/UI/Button_Primary_Pressed.png": menu_button("Button_Primary", True).to_image(),
         "Sprites/UI/Button_Disabled.png": menu_button("Button_Disabled").to_image(),
         "Sprites/UI/Slider_Knob.png": slider_knob().to_image(),
+        **{f"Sprites/UI/Map_{name}.png": map_island(name).to_image() for name in MAP_ISLANDS},
+        **{f"Sprites/UI/Map_Node_{state}.png": map_node(state).to_image() for state in ("Open", "Done", "Locked", "Soon")},
+        "Sprites/UI/Map_Arrow.png": map_arrow().to_image(),
         "Sprites/Level/Exit_Pad.png": exit_pad(True).to_image(),
         "Sprites/Level/Exit_Pad_Locked.png": exit_pad(False).to_image(),
         "Sprites/UI/Star_Empty.png": star(False).to_image(),

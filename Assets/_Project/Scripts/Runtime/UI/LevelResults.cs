@@ -21,8 +21,8 @@ namespace RushOps.UI
         [SerializeField] private LevelScore _score;
         [SerializeField] private LevelKills _kills;
         [SerializeField] private PauseController _pause;
-        [Tooltip("Scene „Weiter“ leads to; the main menu until the island map exists (#127).")]
-        [SerializeField] private string _continueScene = "MainMenu";
+        [Tooltip("Scene „Weiter“ leads to: the island map (#127).")]
+        [SerializeField] private string _continueScene = "IslandMap";
 
         [Header("Level geschafft")]
         [SerializeField] private GameObject _donePanel;
