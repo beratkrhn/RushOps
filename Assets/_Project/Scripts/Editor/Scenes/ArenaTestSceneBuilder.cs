@@ -839,6 +839,8 @@ namespace RushOps.Editor.Scenes
                 AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerHitPath);
             serializedView.FindProperty("_death").objectReferenceValue =
                 AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerDeathPath);
+            serializedView.FindProperty("_dash").objectReferenceValue =
+                AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerDashPath);
             serializedView.ApplyModifiedPropertiesWithoutUndo();
             GameObject go = view.gameObject;
             go.tag = "Player";

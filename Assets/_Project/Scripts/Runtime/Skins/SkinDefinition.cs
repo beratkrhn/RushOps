@@ -21,6 +21,7 @@ namespace RushOps.Skins
         [SerializeField] private DirectionalAnimation _walk;
         [SerializeField] private DirectionalAnimation _hit;
         [SerializeField] private DirectionalAnimation _death;
+        [SerializeField] private DirectionalAnimation _dash;
 
         [Header("Freischaltung")]
         [SerializeField] private SkinUnlockKind _unlockKind = SkinUnlockKind.Default;
@@ -54,6 +55,9 @@ namespace RushOps.Skins
 
         /// <summary>Death.</summary>
         public DirectionalAnimation Death => _death;
+
+        /// <summary>Dash somersault (issue #142).</summary>
+        public DirectionalAnimation Dash => _dash;
 
         /// <summary>How the skin is unlocked.</summary>
         public SkinUnlockKind UnlockKind => _unlockKind;

@@ -1,6 +1,6 @@
 # Skins
 
-Erzeugt von `Tools/gen_skins.py` (Issue #129). Jeder Skin ist eine Umfärbung der Spielerfigur aus dem Character-Tool: Die Idle-Posen werden umgefärbt, Laufen, Treffer und Tod daraus genauso abgeleitet wie beim Standard-Skin. Alle Skins haben also dieselben Animationen. Nur Farben aus der Palette.
+Erzeugt von `Tools/gen_skins.py` (Issue #129). Jeder Skin ist eine Umfärbung der Spielerfigur aus dem Character-Tool: Die Idle-Posen werden umgefärbt, Laufen, Purzelbaum (Dash), Treffer und Tod daraus genauso abgeleitet wie beim Standard-Skin. Alle Skins haben also dieselben Animationen. Nur Farben aus der Palette.
 
 Vorschau zur Abnahme: [`skins/skins.png`](skins/skins.png) (Spalten: Standard und die 12 Skins in Katalog-Reihenfolge; Zeilen: S, SE, E, N und das Ende der Todesanimation) und [`skins/skins.gif`](skins/skins.gif) (alle laufen zum Betrachter).
 

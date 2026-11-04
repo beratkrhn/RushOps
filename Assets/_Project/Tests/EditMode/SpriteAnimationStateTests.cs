@@ -29,6 +29,35 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Dash_ReturnsToLoopAfterItsDuration()
+        {
+            var state = new SpriteAnimationState();
+            Assert.IsTrue(state.PlayDash(0.2f));
+
+            state.Tick(0.1f, 0.5f);
+            Assert.AreEqual(SpriteAnimationMode.Dash, state.Mode);
+
+            state.Tick(0.15f, 0.5f);
+            Assert.AreEqual(SpriteAnimationMode.Loop, state.Mode);
+            Assert.AreEqual(0.05f, state.Time, 1e-5f);
+        }
+
+        [Test]
+        public void Dash_IsNotInterruptedByAHit_ButByDeath()
+        {
+            var state = new SpriteAnimationState();
+            state.PlayDash(0.2f);
+
+            Assert.IsFalse(state.PlayHit());
+            Assert.AreEqual(SpriteAnimationMode.Dash, state.Mode);
+
+            state.PlayDeath();
+            Assert.AreEqual(SpriteAnimationMode.Death, state.Mode);
+            Assert.IsFalse(state.PlayDash(0.2f));
+            Assert.AreEqual(SpriteAnimationMode.Death, state.Mode);
+        }
+
+        [Test]
         public void Hit_WhileHit_Restarts()
         {
             var state = new SpriteAnimationState();

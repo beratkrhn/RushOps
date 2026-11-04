@@ -18,6 +18,7 @@ MonoBehaviour:
   _walk: {fileID: 11400000, guid: 0f98883b2002b4d5bbe705f7e86f0af3, type: 2}
   _hit: {fileID: 11400000, guid: cec6662204d8f40f3a0666700f953d8f, type: 2}
   _death: {fileID: 11400000, guid: c871d1882d5e341349ce6f1611e10cd0, type: 2}
+  _dash: {fileID: 11400000, guid: 256bc9341a7c84878bcba01ffe786a9c, type: 2}
   _unlockKind: 1
   _levelId: Level_2-1
   _levelName: Level 2-1

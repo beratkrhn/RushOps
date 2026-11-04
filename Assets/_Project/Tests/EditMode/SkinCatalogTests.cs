@@ -37,6 +37,7 @@ namespace RushOps.Tests.EditMode
                 Assert.IsNotNull(skin.Walk, skin.Id);
                 Assert.IsNotNull(skin.Hit, skin.Id);
                 Assert.IsNotNull(skin.Death, skin.Id);
+                Assert.IsNotNull(skin.Dash, skin.Id);
                 levels += skin.UnlockKind == SkinUnlockKind.LevelCompleted ? 1 : 0;
                 milestones += skin.UnlockKind == SkinUnlockKind.Milestone ? 1 : 0;
             }
@@ -96,6 +97,7 @@ namespace RushOps.Tests.EditMode
                 AssertSameShape(standard.Walk, skin.Walk, skin.Id);
                 AssertSameShape(standard.Hit, skin.Hit, skin.Id);
                 AssertSameShape(standard.Death, skin.Death, skin.Id);
+                AssertSameShape(standard.Dash, skin.Dash, skin.Id);
             }
         }
 

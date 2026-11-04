@@ -9,7 +9,7 @@ using UnityEngine.TestTools;
 
 namespace RushOps.Tests.PlayMode
 {
-    /// <summary>The player's walk, hit and death animations (issue #102).</summary>
+    /// <summary>The player's walk, hit and death animations (issue #102) and the dash somersault (issue #142).</summary>
     public class PlayerAnimationTests
     {
         private PlayerHealth _health;
@@ -19,6 +19,8 @@ namespace RushOps.Tests.PlayMode
         [UnitySetUp]
         public IEnumerator LoadScene()
         {
+            // The standard skin, whatever earlier tests chose.
+            SaveGameIsolation.Reset();
             yield return SceneManager.LoadSceneAsync("Arena_Test", LoadSceneMode.Single);
             yield return null;
 
@@ -35,6 +37,25 @@ namespace RushOps.Tests.PlayMode
         public void RestoreTime()
         {
             Time.timeScale = 1f;
+        }
+
+        [UnityTest]
+        public IEnumerator Dash_RollsInTheDashDirectionForTheDashTime()
+        {
+            var dash = _health.GetComponent<PlayerDash>();
+            float duration = _movement.Config.DashDuration;
+            yield return null;
+            _movement.MoveInput = Vector2.left;
+            Assert.IsTrue(dash.TryDash());
+            _view.SetFacing(Vector2.right);
+            yield return null;
+
+            Assert.AreEqual(SpriteAnimationMode.Dash, _view.Mode);
+            Assert.AreEqual(Direction8.W, _view.Direction, "the roll turns with the aim instead of the dash");
+            StringAssert.StartsWith("Player_Dash_W", _health.GetComponent<SpriteRenderer>().sprite.name);
+
+            yield return new WaitForSeconds(duration + 0.1f);
+            Assert.AreEqual(SpriteAnimationMode.Loop, _view.Mode, "the roll outlasts the dash");
         }
 
         [UnityTest]

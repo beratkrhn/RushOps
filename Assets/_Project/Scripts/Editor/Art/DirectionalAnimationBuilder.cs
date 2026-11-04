@@ -25,6 +25,9 @@ namespace RushOps.Editor.Art
         /// <summary>Asset path of the player's death (issue #102).</summary>
         public const string PlayerDeathPath = AnimationsDir + "/Player_Death.asset";
 
+        /// <summary>Asset path of the player's dash somersault (issue #142).</summary>
+        public const string PlayerDashPath = AnimationsDir + "/Player_Dash.asset";
+
         /// <summary>Asset path of the walker's walk animation.</summary>
         public const string WalkerWalkPath = AnimationsDir + "/Walker_Walk.asset";
 
@@ -71,6 +74,8 @@ namespace RushOps.Editor.Art
         private const float DeathFramesPerSecond = 10f;
         private const float SwellFramesPerSecond = 12f;
         private const float PlayerWalkFramesPerSecond = 10f;
+        // Only the order of the frames matters: the animator stretches the somersault to the dash time.
+        private const float PlayerDashFramesPerSecond = 30f;
         private const string SpritesDir = "Assets/_Project/Art/Sprites";
 
         [MenuItem("RushOps/Art/Richtungs-Animationen aktualisieren")]
@@ -80,6 +85,7 @@ namespace RushOps.Editor.Art
             CreateOrUpdate(PlayerWalkPath, SpritesDir + "/Player", "Player_Walk", true, PlayerWalkFramesPerSecond);
             CreateOrUpdate(PlayerHitPath, SpritesDir + "/Player", "Player_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(PlayerDeathPath, SpritesDir + "/Player", "Player_Death", false, DeathFramesPerSecond);
+            CreateOrUpdate(PlayerDashPath, SpritesDir + "/Player", "Player_Dash", false, PlayerDashFramesPerSecond);
             CreateOrUpdate(WalkerWalkPath, SpritesDir + "/Enemies", "Walker_Walk");
             CreateOrUpdate(WalkerHitPath, SpritesDir + "/Enemies", "Walker_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(WalkerDeathPath, SpritesDir + "/Enemies", "Walker_Death", false, DeathFramesPerSecond);

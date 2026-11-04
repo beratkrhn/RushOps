@@ -9,6 +9,9 @@ namespace RushOps.Characters
         /// <summary>The short hit reaction; returns to <see cref="Loop"/> when it ends.</summary>
         Hit,
 
+        /// <summary>The dash somersault (issue #142); returns to <see cref="Loop"/> when it ends.</summary>
+        Dash,
+
         /// <summary>The death animation; holds its last frame.</summary>
         Death,
     }
