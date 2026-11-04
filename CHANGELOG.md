@@ -20,6 +20,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
   - Zonen-Kreis: gestrichelter Rand mit Leuchtmarken.
   - Ausgang: offen mit leuchtenden Pfeilen, gesperrt (neu, `Exit_Pad_Locked`) grau mit rotem Rand und Schloss.
   - `LevelExit` tauscht das Sprite statt es nur abzudunkeln. Übersicht in `docs/art/level_objects.png`.
+- **Tileset Insel 1: Strand** (Issue #104, F-GFX-01, F-LVL-06): dunkler Sand in drei Varianten (schlicht, Windrippel, Kiesel), Klippen mit Palmenhecke als Außenwand, Holzkisten als Hindernisse und flache Dekorationen ohne Kollision (Muschel, Seestern, Seetang, Kiesel, Treibholz). Das Tor ist eine Holzpalisade, deren Pfähle beim Öffnen in 5 Frames im Sand versinken. `Level_1-1` nutzt das Tileset. Vorschau `docs/art/islands/Strand.png`.
+- `IslandTheme` (ScriptableObject, `Data/Islands/`) beschreibt das Aussehen einer Insel; die Szenen-Builder wählen es über den Theme-Pfad. Bodenvariante und Dekoration je Zelle sind deterministisch (`IslandThemeMath`, EditMode-getestet). `Gate` spielt die Tor-Frames des Themes beim Öffnen ab. Dekorationen liegen in einer eigenen Tilemap `Decor` ohne Collider. ADR 0009 (Issue #104).
 - Menü „RushOps → Szenen → Alle erzeugen“ (`AllScenesBuilder.BuildAll`, auch für den Batchmode).
 
 ## [0.3.0] – 2026-11-04

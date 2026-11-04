@@ -13,8 +13,9 @@ namespace RushOps.Editor.Scenes
     {
         public ArenaScene(
             Tilemap walls, Transform player, FlowFieldNavigator navigator, EnemyPool[] enemies, WaveDirector director,
-            LevelKills kills, MissionTracker tracker, SfxPlayer sfx, LevelResults results)
+            LevelKills kills, MissionTracker tracker, SfxPlayer sfx, LevelResults results, IslandTheme theme)
         {
+            Theme = theme;
             Results = results;
             Walls = walls;
             Player = player;
@@ -25,6 +26,9 @@ namespace RushOps.Editor.Scenes
             Tracker = tracker;
             Sfx = sfx;
         }
+
+        /// <summary>Look of the island; gates take their frames from it (issue #104).</summary>
+        public IslandTheme Theme { get; }
 
         /// <summary>Result screens of the level; level builders set its exit (issue #35).</summary>
         public LevelResults Results { get; }

@@ -39,6 +39,13 @@ namespace RushOps.Editor.Scenes
             return inside && (border || IsInnerWall(x, y));
         }
 
+        /// <summary>True if (x, y) is part of the outer wall ring; inner walls are obstacles (issue #104).</summary>
+        public bool IsOuterWall(int x, int y)
+        {
+            bool inside = x >= 0 && y >= 0 && x < Width && y < Height;
+            return inside && (x == 0 || y == 0 || x == Width - 1 || y == Height - 1);
+        }
+
         private bool IsInnerWall(int x, int y)
         {
             foreach (RectInt wall in _walls)

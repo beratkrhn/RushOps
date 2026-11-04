@@ -12,3 +12,4 @@ Jede größere technische Entscheidung wird als kurzes Dokument festgehalten, da
 | [0006](0006-schraegansicht-8-richtungen.md) | Schrägansicht mit 8 Richtungs-Sprites und 32-px-Raster | angenommen |
 | [0007](0007-unity-cli-pipeline.md) | Unity CLI und Pipeline-Paket für Kompilieren und Tests | angenommen |
 | [0008](0008-touch-steuerung-ugui.md) | Touch-Steuerung als On-Screen-Controls in uGUI | angenommen |
+| [0009](0009-insel-tilesets.md) | Insel-Tilesets über IslandTheme | angenommen |

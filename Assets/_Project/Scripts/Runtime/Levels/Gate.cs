@@ -8,8 +8,8 @@ namespace RushOps.Levels
     /// <summary>
     /// A gate between two zones (F-LVL-02): a block of cells around the transform that stops the player, enemies
     /// and shots, and keeps the flow field from leading through it. It opens once its <see cref="IGateCondition"/>
-    /// is met: the bars shake and sink into the floor with a sound, then the passage is free and the flow field
-    /// is rebuilt.
+    /// is met: the bars shake and sink into the floor with a sound, or play the island's opening frames
+    /// (issue #104), then the passage is free and the flow field is rebuilt.
     /// </summary>
     public class Gate : MonoBehaviour
     {
@@ -22,6 +22,8 @@ namespace RushOps.Levels
         [SerializeField] private Collider2D _blocker;
         [Tooltip("Bar sprites that shake and sink when the gate opens.")]
         [SerializeField] private SpriteRenderer[] _bars;
+        [Tooltip("Frames of one gate cell from closed to open (IslandTheme); with fewer than two the bars sink instead.")]
+        [SerializeField] private Sprite[] _openFrames = new Sprite[0];
         [SerializeField] private FlowFieldNavigator _navigator;
         [SerializeField] private SfxPlayer _sfx;
         [SerializeField] private AudioClip _openClip;
@@ -128,6 +130,18 @@ namespace RushOps.Levels
                 SpriteRenderer bar = _bars[i];
                 if (bar == null)
                 {
+                    continue;
+                }
+
+                if (_openFrames != null && _openFrames.Length > 1)
+                {
+                    Sprite frame = _openFrames[IslandThemeMath.GateFrame(sink, _openFrames.Length)];
+                    if (bar.sprite != frame)
+                    {
+                        bar.sprite = frame;
+                    }
+
+                    bar.transform.localPosition = _barPositions[i] + new Vector3(shake, 0f, 0f);
                     continue;
                 }
 

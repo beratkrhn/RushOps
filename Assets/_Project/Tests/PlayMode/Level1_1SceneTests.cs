@@ -8,6 +8,7 @@ using RushOps.Puzzles;
 using RushOps.UI;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Tilemaps;
 using UnityEngine.TestTools;
 
 namespace RushOps.Tests.PlayMode
@@ -44,6 +45,45 @@ namespace RushOps.Tests.PlayMode
                 Assert.IsNotEmpty(zone.SpawnPoints, $"{zone.name} has no spawn points");
                 Assert.IsNotNull(zone.Waves, $"{zone.name} has no waves");
             }
+        }
+
+        [Test]
+        public void Scene_UsesBeachTileset()
+        {
+            // Obstacle tiles, decorations and the palisade gate exist only in the island tilesets (issue #104).
+            AssertBeachTileset();
+        }
+
+        private static void AssertBeachTileset()
+        {
+            Tilemap floor = Find<Tilemap>("Floor");
+            Tilemap walls = Find<Tilemap>("Walls");
+            Tilemap decor = Find<Tilemap>("Decor");
+            Assert.IsNotNull(decor, "no decoration tilemap");
+            Assert.IsNull(decor.GetComponent<Collider2D>(), "decorations must not collide");
+
+            int decorations = 0;
+            foreach (Vector3Int cell in floor.cellBounds.allPositionsWithin)
+            {
+                Sprite sprite = floor.GetSprite(cell);
+                if (sprite != null)
+                {
+                    StringAssert.StartsWith("Floor_", sprite.name);
+                }
+
+                decorations += decor.HasTile(cell) ? 1 : 0;
+            }
+
+            Assert.Greater(decorations, 0, "no decorations on the beach");
+            bool obstacle = false;
+            foreach (Vector3Int cell in walls.cellBounds.allPositionsWithin)
+            {
+                Sprite sprite = walls.GetSprite(cell);
+                obstacle |= sprite != null && sprite.name.StartsWith("Obstacle_");
+            }
+
+            Assert.IsTrue(obstacle, "inner walls do not use the obstacle tiles");
+            Assert.AreEqual("Gate_0", Find<Gate>("Gate_1").GetComponentInChildren<SpriteRenderer>().sprite.name);
         }
 
         [UnityTest]
