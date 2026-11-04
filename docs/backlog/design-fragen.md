@@ -47,6 +47,27 @@ Sammlung für Issue #37: Diese Fragen müssen beantwortet sein, bevor die Epics 
 | L7 | #49 | Koloss: Wie wird der Ansturm angekündigt (Aufladen sichtbar, Linie am Boden)? | Aufladen 1 s mit Linie am Boden |Dein Vorschlag|
 | L8 | #51 | Mega-Boomer: Bleiben die Pfützen bis zum Ende liegen oder verschwinden sie? | Verschwinden nach einigen Sekunden |Dein VOrschlag|
 
+## v0.6.0 – Feinplanung (nach v0.5.0)
+
+Entwurf der Stories: [`v0.6.0.md`](v0.6.0.md). L1 bis L8 und P1 bis P3 sind beantwortet; diese Fragen klären die Werte und den Zuschnitt, bevor die Story-Issues angelegt werden. Antworten bitte in die Spalte „Entscheidung“; „Dein Vorschlag“ reicht.
+
+| # | Story | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|---|
+| C1 | alle | 12 Stories sind viel für einen Milestone. Ein Milestone v0.6.0 oder je Insel einer (v0.6.0 Insel 1 und Boss-Grundlage, v0.7.0 Insel 2, v0.8.0 Insel 3), jeweils mit eigenem Spieltest? | Je Insel ein Milestone; so wird jeder Boss am Gerät abgenommen, bevor der nächste kommt. Roadmap und Versionsnummern bis v1.0.0 verschieben sich entsprechend | |
+| C2 | 3, 6, 7, 9, 10 | Wie lang ist ein reguläres Level? | Wie 1-1 (5 Zonen, etwa 4 bis 6 Minuten); Insel 2 und 3 je 6 Zonen | |
+| C3 | 2 | Welche Stellschrauben machen eine Insel schwerer? Gegnerwerte selbst (Tempo, Leben) bleiben gleich, damit die Gegner lernbar bleiben. | Insel 2: Wellen 20 % dichter, Haltezeit der Zone +3 s. Insel 3: zusätzlich Schalter-Zeitlimits −20 %, mehr Runner und Boomer in den Wellen | |
+| C4 | 3 | 1-1 führt die Gegnertypen einzeln ein. Sind ab 1-2 alle Typen von Anfang an gemischt? | Ja, gemischt; jede Zone setzt einen Schwerpunkt (z. B. viele Runner) | |
+| C5 | 4, 5, 8, 11 | Wie lange soll ein Bosskampf dauern? Daraus folgen die Lebenspunkte. | Ohne Perks: Koloss etwa 60 s, Brutmutter etwa 90 s, Mega-Boomer etwa 90 s (beide Hälften zusammen) | |
+| C6 | 4 | Besteht ein Boss-Level nur aus der Arena oder gibt es Zonen davor? | Zwei kurze Zonen mit Kill-Gate bzw. einem Rätsel, dann die Arena; das Tor schließt sich hinter dem Spieler | |
+| C7 | 5 | Koloss: Was passiert beim Aufprall an der Wand, und wie viel Schaden macht der Ansturm? | 1,5 s benommen (Zeitfenster zum Schießen); Ansturm kostet wie jeder Kontakt 1 Herz | |
+| C8 | 8 | Brutmutter: Wie oft spawnt sie, und zählen ihre Runner zur Höchstzahl von 10 Gegnern? | Alle 3 s ein Runner, unter halber Gesundheit alle 2 s; ihre Runner zählen zu den 10 | |
+| C9 | 4, 11 | Perks im Bosskampf: Koloss und Mega-Boomer haben keine Begleiter, also fallen keine Perks. Sollen Bosse an Lebensschwellen Perks abwerfen? | Ja: bei 66 % und 33 % Leben fällt je ein zufälliger Perk (ohne Nuke und Insta-Kill, die wirken auf Bosse nicht) | |
+| C9a | 11 | Mega-Boomer: Sind die zwei Hälften kleine Bosse mit eigenem Leben (zusammen in einer Leiste) oder normale Boomer? | Kleine Bosse mit je der halben Restgesundheit, eine gemeinsame Leiste; beide müssen fallen | |
+| C9b | 11 | Mega-Boomer: Was tun die Pfützen? | Sie glühen 1 s auf, schaden dann bei Kontakt (1 Herz) und verschwinden nach 6 s; sie explodieren nicht, damit der Kampf lesbar bleibt | |
+| C10 | 4, 5, 8, 11 | Größe der Bosse und Punkte beim Sieg? | Leinwand 128×128 (Koloss, Mega-Boomer) bzw. 96×96 (Brutmutter); Sieg gibt 1000 Punkte, Sterne-Schwellen pro Boss-Level eigen | |
+| C11 | 3 bis 11 | Haben Level einen Namen auf der Karte (z. B. „1-2 Strandpromenade“) oder nur die Nummer? | Nummer und kurzer Name; Namen schlage ich mit den Leveln vor | |
+| C12 | 11 | Was passiert nach dem Sieg über den Mega-Boomer (Ende der Kampagne)? | „Alle Inseln geschafft!“ auf dem Ergebnisbildschirm, danach Karte; kein Abspann in v0.6.0 | |
+
 ## Aus Level 1-1 (vor dem Spieltest)
 
 | # | Frage | Vorschlag | Entscheidung |
