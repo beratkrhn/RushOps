@@ -17,8 +17,8 @@ namespace RushOps.Editor.Scenes
     /// <summary>
     /// Builds the <c>MainMenu</c> scene (issue #125, F-UI-02): logo, the player in the standard skin and the buttons
     /// „Story Mode“, „Spielerauswahl“ and „Einstellungen“ inside the safe area; the version and, in development
-    /// builds, a button to the test menu at the bottom. Spielerauswahl (#130) and Einstellungen (#126) are greyed
-    /// out until their screens exist.
+    /// builds, a button to the test menu at the bottom. Spielerauswahl (#130) is greyed
+    /// out until its screen exists; „Einstellungen“ opens the settings screen (#126, <see cref="SettingsScreenBuilder"/>).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.MainMenuSceneBuilder.Build</c>
     /// </summary>
     public static class MainMenuSceneBuilder
@@ -65,12 +65,13 @@ namespace RushOps.Editor.Scenes
             safeArea.gameObject.AddComponent<SafeAreaFitter>();
 
             var menu = root.AddComponent<MainMenu>();
+            var settings = root.AddComponent<SettingsMenu>();
             CreateSprite("Logo", safeArea, ArenaTestSceneBuilder.LoadUiSprite(LogoFile), new Vector2(0f, LogoY));
             CreateFigure(safeArea);
 
             CreateButton("StoryButton", safeArea, font, "Story Mode", 0, true, true, menu.StartStory);
             CreateButton("SkinsButton", safeArea, font, "Spielerauswahl", 1, false, false, null);
-            CreateButton("SettingsButton", safeArea, font, "Einstellungen", 2, false, false, null);
+            CreateButton("SettingsButton", safeArea, font, "Einstellungen", 2, false, true, settings.Open);
 
             Text version = ArenaTestSceneBuilder.CreateText(
                 "Version", safeArea, font, "v0.0.0", 1, new Vector2(140f, FooterY));
@@ -88,6 +89,7 @@ namespace RushOps.Editor.Scenes
 
             var audio = new GameObject("Audio");
             ArenaTestSceneBuilder.CreateAudio(audio);
+            SettingsScreenBuilder.Create(safeArea, font, settings, audio.GetComponent<RushOps.Audio.AudioVolumes>());
             ArenaTestSceneBuilder.AddClickSounds(audio.GetComponent<RushOps.Audio.UiClickSound>());
 
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -96,7 +98,7 @@ namespace RushOps.Editor.Scenes
             Debug.Log($"[MainMenuSceneBuilder] Saved {ScenePath}");
         }
 
-        private static Image CreateSprite(string name, RectTransform parent, Sprite sprite, Vector2 position)
+        internal static Image CreateSprite(string name, RectTransform parent, Sprite sprite, Vector2 position)
         {
             var center = new Vector2(0.5f, 0.5f);
             RectTransform rect = ArenaTestSceneBuilder.CreateUiRect(name, parent, center, center);
@@ -121,12 +123,18 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        private static void CreateButton(string name, RectTransform parent, Font font, string label, int row, bool primary,
+        internal static Button CreateButton(string name, RectTransform parent, Font font, string label, int row, bool primary,
             bool interactable, UnityEngine.Events.UnityAction action)
+        {
+            return CreateButton(name, parent, font, label, new Vector2(0f, FirstButtonY - row * ButtonStep), primary, interactable, action);
+        }
+
+        internal static Button CreateButton(string name, RectTransform parent, Font font, string label, Vector2 position,
+            bool primary, bool interactable, UnityEngine.Events.UnityAction action)
         {
             string look = primary ? "Button_Primary" : "Button";
             Sprite normal = ArenaTestSceneBuilder.LoadUiSprite(look + ".png");
-            Image image = CreateSprite(name, parent, normal, new Vector2(0f, FirstButtonY - row * ButtonStep));
+            Image image = CreateSprite(name, parent, normal, position);
             image.raycastTarget = true;
             var button = image.gameObject.AddComponent<Button>();
             button.targetGraphic = image;
@@ -155,6 +163,8 @@ namespace RushOps.Editor.Scenes
             {
                 text.color = PaletteOutline;
             }
+
+            return button;
         }
 
         private static GameObject CreateTestMenuButton(RectTransform parent, Font font, MainMenu menu)

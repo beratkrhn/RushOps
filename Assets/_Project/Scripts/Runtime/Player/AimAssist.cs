@@ -1,5 +1,6 @@
 using RushOps.Combat;
 using RushOps.Enemies;
+using RushOps.Save;
 using UnityEngine;
 
 namespace RushOps.Player
@@ -13,6 +14,9 @@ namespace RushOps.Player
     {
         [Tooltip("Pools of all enemy types in the level.")]
         [SerializeField] private EnemyPool[] _pools = System.Array.Empty<EnemyPool>();
+
+        [Tooltip("Save game with the player's settings (issue #126); empty uses the weapon config.")]
+        [SerializeField] private SaveGameService _save;
 
         private Vector2[] _targets = new Vector2[16];
         private PlayerWeapon _weapon;
@@ -55,6 +59,10 @@ namespace RushOps.Player
         private void Awake()
         {
             _weapon = GetComponent<PlayerWeapon>();
+            if (_save != null && _save.Data.Settings.Customized)
+            {
+                _enabledOverride = _save.Data.Settings.AimAssist;
+            }
         }
 
         private int CollectTargets()
