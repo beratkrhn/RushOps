@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Koloss_Stun
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 6
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: d5964edd9fe2d4bb4978b74c052d3651, type: 3}
+    - {fileID: 21300000, guid: e5a0e66cb37344ada98e5860277c55dd, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 873e01d77634e4b8eb6e5c49875908b4, type: 3}
+    - {fileID: 21300000, guid: 89b8fcb4c01824aa78fc771210ea8a11, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 1b4bf0240916b430b902053ed934aa88, type: 3}
+    - {fileID: 21300000, guid: 01e6151f22880489a9e4e74885b249e2, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 791ca5b61469d4de0a3762a8a8922e89, type: 3}
+    - {fileID: 21300000, guid: 3d75ef0d1a240445a8242d48ef29e907, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 8b032ef08ed8e4cdfa2619b294557bb8, type: 3}
+    - {fileID: 21300000, guid: 4b63fb495750240cfa1dabc9e65bfcde, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: b4d363af74c8a4cf5bad32e0607b34b8, type: 3}
+    - {fileID: 21300000, guid: 8ab60e1f32b1f4cf3a81ab9cdd50f1fe, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: dc8dda87e25e04e358e3b7433e510653, type: 3}
+    - {fileID: 21300000, guid: 2c80492066ca74037a39e05de13c86a7, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: b40f0f4a05ce649378b8fcd14089df18, type: 3}
+    - {fileID: 21300000, guid: 8736433342ae94428a471c5a6823aeb5, type: 3}

@@ -20,6 +20,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Brute_Walk_<DIR>_<F>.png  96x96, 8 directions x 4 frames (issue #21)
   Sprites/Enemies/Brute_Hit_<DIR>_<F>.png   96x96, 8 directions x 2 frames (issue #101)
   Sprites/Enemies/Brute_Death_<DIR>_<F>.png 96x96, 8 directions x 5 frames, slams face down (issue #101)
+  Sprites/Enemies/Koloss_<STATE>_<DIR>_<F>.png 128x128, Koloss boss: Walk 4, Windup 2, Charge 4, Stun 2, Hit 2, Death 5 (issue #151)
+  Sprites/Effects/Koloss_ChargeLine.png    32x8, floor mark of the Koloss charge, stretched (issue #151)
   Sprites/Enemies/Boomer_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames, pulsing belly (issue #22)
   Sprites/Enemies/Boomer_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames (issue #101)
   Sprites/Enemies/Boomer_Swell_<DIR>_<F>.png 64x64, 8 directions x 4 frames, inflated and glowing near the player (issue #101)
@@ -192,6 +194,8 @@ TILE = 32
 CHARACTER = 64
 # The brute is drawn on a larger canvas (ADR 0006).
 BRUTE = 96
+# The Koloss boss is drawn on a 128 px canvas (decision C10).
+KOLOSS = 128
 # Character feet rest this many pixels above the bottom edge (ADR 0006).
 FOOT_MARGIN = 5
 
@@ -275,6 +279,9 @@ RAMP = {
     "trousers": ("brown_0", "brown_1", "brown_1"),
     # Boomer (issue #22): sickly mauve, swollen skin with glowing yellow boils, so it reads as "explosive".
     "bloat": ("dusk", "mauve", "clay"),
+    # Koloss (issue #151): a giant brute with sun-burnt skin and stone-grey armour plates on shoulders and chest.
+    "burnt": ("brown_0", "skin_0", "clay"),
+    "plate": ("slate_1", "slate_3", "slate_5"),
     "rags": ("green_0", "green_1", "green_1"),
 }
 
@@ -604,6 +611,106 @@ def brute_hit(direction: int, frame: int) -> Canvas:
 
 def brute_death(direction: int, frame: int) -> Canvas:
     return brute_frame(direction, 0, BRUTE_DEATH_POSES[frame], eyes=frame == 0, stain=BRUTE_DEATH_STAIN[frame])
+
+
+# --- Koloss (issue #151) ---------------------------------------------------------------
+# The brute's body at 1.3 times the size with armour plates. Modes: "walk" (4 frames), "windup" (2 frames, crouched
+# with glowing eyes before the charge, decision L7), "charge" (4 frames, leaning far forward), "stun" (2 frames, dazed
+# with circling stars after hitting a wall, decision C7).
+KOLOSS_SCALE = 1.3
+KOLOSS_DEATH_POSES = [Pose(tilt=p.tilt, shift=p.shift * KOLOSS_SCALE, squash=p.squash) for p in BRUTE_DEATH_POSES]
+KOLOSS_DEATH_STAIN = [v * KOLOSS_SCALE for v in BRUTE_DEATH_STAIN]
+
+
+def koloss_frame(direction: int, frame: int, pose: Pose = UPRIGHT, mode: str = "walk", eyes: bool = True,
+                 stain: float = 0.0) -> Canvas:
+    k = KOLOSS_SCALE
+    if mode == "charge":
+        pose = Pose(tilt=-16.0, shift=0.0)
+    elif mode == "stun":
+        pose = Pose(tilt=5.0 + 2.0 * frame)
+    m = Model(direction * 45.0, KOLOSS, pose)
+    c = Canvas(KOLOSS, KOLOSS)
+    if stain > 0:
+        m.ground_stain(c, m.posed(0.0, 0.0, 56.0 * k)[0], 0.0, stain, "red_0", "outline")
+    phase = frame / 4 * 2 * math.pi
+    stride = {"walk": 4.5, "charge": 8.0}.get(mode, 0.0) * math.sin(phase) * k
+    bob = (1.5 * abs(math.sin(phase)) if mode in ("walk", "charge") else 0.0) * k
+    sway = (1.5 * math.sin(phase) if mode == "walk" else (0.8 if frame % 2 else -0.8) if mode == "windup" else 0.0) * k
+    crouch = 5.0 * k if mode == "windup" else 0.0
+    hip_z = 24 * k - bob - crouch
+
+    for side, step in ((-6.5 * k, stride), (6.5 * k, -stride)):
+        m.capsule((0, side, hip_z), (step, side * 1.15, 6 * k), 6.0 * k, "trousers")
+        m.sphere(step + 1.5 * k, side * 1.15, 4.0 * k, 5.0 * k, "shoe")
+    top = 48 * k - bob - crouch
+    for side in (-5.0 * k, 5.0 * k):
+        m.capsule((0, side + sway * 0.5, hip_z + 2 * k), (3.0 * k, side + sway, top), 10.5 * k, "burnt")
+    # Chest plate.
+    m.sphere(7.0 * k, sway, top - 8 * k, 9.0 * k, "plate")
+    for side, swing in ((-19.0 * k, -stride), (19.0 * k, stride)):
+        shoulder = (3.0 * k, side + sway, 50 * k - bob - crouch)
+        if mode == "charge":
+            # Arms swept back, fists behind the hips.
+            elbow = (-4.0 * k, side * 1.05 + sway, 38 * k - bob)
+            fist = (-10.0 * k + swing * 0.3, side * 1.0 + sway, 28 * k - bob)
+        elif mode == "windup":
+            # Fists forward on the ground, ready to push off.
+            elbow = (8.0 * k, side * 1.1 + sway, 34 * k - crouch)
+            fist = (14.0 * k, side * 1.0 + sway, 12 * k)
+        else:
+            elbow = (6.0 * k + swing * 0.5, side * 1.08 + sway, 37 * k - bob - crouch)
+            fist = (9.0 * k + swing, side * 1.05 + sway, 23 * k - bob - crouch)
+        m.capsule(shoulder, elbow, 5.0 * k, "burnt")
+        m.capsule(elbow, fist, 4.5 * k, "burnt")
+        m.sphere(*fist, 5.5 * k, "burnt")
+        m.sphere(*shoulder, 7.5 * k, "plate")
+    head = (8.0 * k, sway, 62 * k - bob - crouch * 1.4)
+    m.sphere(*head, 7.0 * k, "burnt")
+    m.paint(c)
+
+    eye = "red_1" if eyes else "skin_0"
+    if mode == "windup":
+        eye = "glow" if frame % 2 == 0 else "yellow"
+    elif mode == "stun":
+        eye = "slate_4"
+    _, _, head_north = m.project(*head)
+    for s in (-2.8 * k, 2.8 * k):
+        x, y, north = m.project(head[0] + 5.0 * k, head[1] + s, head[2] + 2.0 * k)
+        if north <= head_north + 0.5:
+            c.set(int(x), int(y) - 1, "skin_0")
+            c.set(int(x) + 1, int(y) - 1, "skin_0")
+            c.set(int(x), int(y), eye)
+            c.set(int(x) + 1, int(y), eye)
+    c.outline("outline")
+    if mode == "stun":
+        # Three stars circling above the head; they move on by half a step each frame.
+        hx, hy, _ = m.project(head[0], head[1], head[2] + 12 * k)
+        for i in range(3):
+            a = (i / 3 + frame / 6) * 2 * math.pi
+            sx, sy = int(hx + math.cos(a) * 14), int(hy + math.sin(a) * 5)
+            for dx, dy in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1), (2, 0), (-2, 0), (0, 2), (0, -2)):
+                c.set(sx + dx, sy + dy, "outline")
+            for dx, dy in ((0, 0), (1, 0), (-1, 0), (0, 1), (0, -1)):
+                c.set(sx + dx, sy + dy, "yellow")
+            c.set(sx, sy, "glow")
+    return c
+
+
+def koloss_hit(direction: int, frame: int) -> Canvas:
+    return koloss_frame(direction, 0, Pose(tilt=HIT_POSES[frame].tilt * 0.5))
+
+
+def koloss_death(direction: int, frame: int) -> Canvas:
+    return koloss_frame(direction, 0, KOLOSS_DEATH_POSES[frame], eyes=frame == 0, stain=KOLOSS_DEATH_STAIN[frame])
+
+
+def koloss_charge_line() -> Canvas:
+    """Floor mark of the Koloss charge (decision L7): a 32x8 red strip, stretched along the rush path."""
+    c = Canvas(TILE, 8)
+    c.rect(0, 2, TILE - 1, 5, "red_0")
+    c.rect(0, 3, TILE - 1, 4, "red_1")
+    return c
 
 
 def boomer_hit(direction: int, frame: int) -> Canvas:
@@ -2702,11 +2809,20 @@ def outputs() -> dict[str, Image.Image]:
             files[f"Sprites/Enemies/Boomer_Swell_{name}_{frame}.png"] = boomer_swell(d, frame).to_image()
         for frame in range(BOOMER_DEATH_FRAMES):
             files[f"Sprites/Enemies/Boomer_Death_{name}_{frame}.png"] = boomer_death(d, frame).to_image()
+        for mode, file_state, count in (("walk", "Walk", 4), ("windup", "Windup", 2), ("charge", "Charge", 4),
+                                        ("stun", "Stun", 2)):
+            for frame in range(count):
+                files[f"Sprites/Enemies/Koloss_{file_state}_{name}_{frame}.png"] = koloss_frame(d, frame, mode=mode).to_image()
+        for frame in range(len(HIT_POSES)):
+            files[f"Sprites/Enemies/Koloss_Hit_{name}_{frame}.png"] = koloss_hit(d, frame).to_image()
+        for frame, c in enumerate(death_frames(koloss_death, d, len(KOLOSS_DEATH_STAIN))):
+            files[f"Sprites/Enemies/Koloss_Death_{name}_{frame}.png"] = c.to_image()
         for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Brute_Walk_{name}_{frame}.png"] = brute_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Boomer_Walk_{name}_{frame}.png"] = boomer_frame(d, frame).to_image()
+    files["Sprites/Effects/Koloss_ChargeLine.png"] = koloss_charge_line().to_image()
     for frame in range(EXPLOSION_FRAMES):
         files[f"Sprites/Effects/Explosion_{frame}.png"] = explosion_frame(frame).to_image()
     for variant in range(3):
@@ -2766,6 +2882,7 @@ ANIMATION_PREVIEWS = {
     "Runner": [("Run", 8, 3), ("Hit", 12, 1), ("Death", 10, 1)],
     "Brute": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Boomer": [("Walk", 8, 2), ("Hit", 12, 1), ("Swell", 12, 4), ("Death", 10, 1)],
+    "Koloss": [("Walk", 8, 2), ("Windup", 8, 3), ("Charge", 12, 2), ("Stun", 6, 3), ("Hit", 12, 1), ("Death", 10, 1)],
     "Player": [("Walk", 10, 3), ("Dash", 10, 2), ("Hit", 12, 1), ("Death", 10, 1)],
 }
 # Pause on the last death frame before the preview loops, in milliseconds.

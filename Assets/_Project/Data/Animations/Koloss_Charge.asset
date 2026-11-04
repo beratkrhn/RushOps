@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Koloss_Charge
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 2f42c16f2e3fc4cf2bdd017caeea84f9, type: 3}
+    - {fileID: 21300000, guid: e58e39ecf5b5a4f789a0b017eeb7ba3b, type: 3}
+    - {fileID: 21300000, guid: 7ac8216ef096044c894345f02e2559f3, type: 3}
+    - {fileID: 21300000, guid: ded0bc432a37448a8b1b5268495941fa, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: f3378a71133e94706bb5284f993679a3, type: 3}
+    - {fileID: 21300000, guid: 7c6d0c044cfff4618bdb109f73df1054, type: 3}
+    - {fileID: 21300000, guid: 7825511074a2c4759b6eb46a52de8ba0, type: 3}
+    - {fileID: 21300000, guid: 5b688763686ff4e129bda5ad54ed0f52, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 70d02539366aa416bbb6a0c686fe7189, type: 3}
+    - {fileID: 21300000, guid: 08660c79fb8204b43909a06e926fa6c8, type: 3}
+    - {fileID: 21300000, guid: a76bff4a05ade4c67bcbcba06e972ab2, type: 3}
+    - {fileID: 21300000, guid: 63b65306f543b476a8faaa07fca7c796, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 913b91cb839954e1187a221cefc964a1, type: 3}
+    - {fileID: 21300000, guid: 255ce8d85968645aca77ca2aee098517, type: 3}
+    - {fileID: 21300000, guid: 6474920c84bb94788afd332f6e293409, type: 3}
+    - {fileID: 21300000, guid: f4618abe970b34fe2aa61dfb3be40baf, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 8e1d94feebc734f4b8bf3893e9abd4f6, type: 3}
+    - {fileID: 21300000, guid: 9f7128020a6634d989bfe49e021987a8, type: 3}
+    - {fileID: 21300000, guid: 93e4e827a05f54134a3b34d3ab54c205, type: 3}
+    - {fileID: 21300000, guid: 17facdf095e2543c7a3f4f283514a936, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 81c4adfaeaa9d409c977c29a3bc9c3b3, type: 3}
+    - {fileID: 21300000, guid: 9b7d7f2a9181244b9aab3e13e5ca8180, type: 3}
+    - {fileID: 21300000, guid: 8bae2d51719094cde8d458605078fffa, type: 3}
+    - {fileID: 21300000, guid: b4f2529f5a75346dfb8d0b2105ad0ae0, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: f4f806516513344b4896ad91c07022a9, type: 3}
+    - {fileID: 21300000, guid: c34dd3624bc4e46a097fd39a24159d70, type: 3}
+    - {fileID: 21300000, guid: 464a342b372274c0e891ab066ca454a2, type: 3}
+    - {fileID: 21300000, guid: 293aaa98309344b71b6dec3eb4d88fae, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 42e0134e6f1cd437aab60e38f0406856, type: 3}
+    - {fileID: 21300000, guid: fc6a2466678ac4d06b4fdfbc8fa3911b, type: 3}
+    - {fileID: 21300000, guid: 20a1994d580d44ebf86a6aa32c6f9a86, type: 3}
+    - {fileID: 21300000, guid: c00f6a44035de4032a6a40a2a04b324e, type: 3}

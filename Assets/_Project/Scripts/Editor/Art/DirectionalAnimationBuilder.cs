@@ -67,12 +67,25 @@ namespace RushOps.Editor.Art
         /// <summary>Asset path of the boomer's walk animation.</summary>
         public const string BoomerWalkPath = AnimationsDir + "/Boomer_Walk.asset";
 
+        public const string KolossWalkPath = AnimationsDir + "/Koloss_Walk.asset";
+
+        public const string KolossWindupPath = AnimationsDir + "/Koloss_Windup.asset";
+
+        public const string KolossChargePath = AnimationsDir + "/Koloss_Charge.asset";
+
+        public const string KolossStunPath = AnimationsDir + "/Koloss_Stun.asset";
+
+        public const string KolossHitPath = AnimationsDir + "/Koloss_Hit.asset";
+
+        public const string KolossDeathPath = AnimationsDir + "/Koloss_Death.asset";
+
         private const string AnimationsDir = "Assets/_Project/Data/Animations";
 
         // Start values for new hit and death assets; tuned values in existing assets are kept.
         private const float HitFramesPerSecond = 12f;
         private const float DeathFramesPerSecond = 10f;
         private const float SwellFramesPerSecond = 12f;
+        private const float KolossStunFramesPerSecond = 6f;
         private const float PlayerWalkFramesPerSecond = 10f;
         // Only the order of the frames matters: the animator stretches the somersault to the dash time.
         private const float PlayerDashFramesPerSecond = 30f;
@@ -99,6 +112,12 @@ namespace RushOps.Editor.Art
             CreateOrUpdate(BoomerHitPath, SpritesDir + "/Enemies", "Boomer_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(BoomerSwellPath, SpritesDir + "/Enemies", "Boomer_Swell", true, SwellFramesPerSecond);
             CreateOrUpdate(BoomerDeathPath, SpritesDir + "/Enemies", "Boomer_Death", false, DeathFramesPerSecond);
+            CreateOrUpdate(KolossWalkPath, SpritesDir + "/Enemies", "Koloss_Walk");
+            CreateOrUpdate(KolossWindupPath, SpritesDir + "/Enemies", "Koloss_Windup", true, SwellFramesPerSecond);
+            CreateOrUpdate(KolossChargePath, SpritesDir + "/Enemies", "Koloss_Charge", true, SwellFramesPerSecond);
+            CreateOrUpdate(KolossStunPath, SpritesDir + "/Enemies", "Koloss_Stun", true, KolossStunFramesPerSecond);
+            CreateOrUpdate(KolossHitPath, SpritesDir + "/Enemies", "Koloss_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(KolossDeathPath, SpritesDir + "/Enemies", "Koloss_Death", false, DeathFramesPerSecond);
             AssetDatabase.SaveAssets();
         }
 

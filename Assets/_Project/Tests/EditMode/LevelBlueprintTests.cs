@@ -45,6 +45,16 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Level1_3_FollowsLevelDesignRules_WithKolossAfterTwoZones()
+        {
+            CollectionAssert.IsEmpty(Level1_3SceneBuilder.Validate());
+            LevelBlueprint level = Level1_3SceneBuilder.Blueprint;
+            Assert.AreEqual(3, level.Zones.Count, "decision C6: two short zones, then the arena");
+            Assert.AreEqual(typeof(RushOps.Bosses.ColossusDefinition), level.Boss.DefinitionType);
+            Assert.AreEqual(2, level.Slot);
+        }
+
+        [Test]
         public void BossTest_FollowsLevelDesignRules()
         {
             CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(BossTestSceneBuilder.Blueprint));
