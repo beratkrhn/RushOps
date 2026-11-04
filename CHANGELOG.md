@@ -92,6 +92,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Offensive Perks wirken jetzt: **Doppelschaden** verdoppelt den Waffenschaden, **Schnellfeuer** verdoppelt die Feuerrate, **Insta-Kill** lässt jeden Treffer töten, jeweils 10 s *(Startwerte)*. Insta-Kill wirkt nicht auf Bosse, Doppelschaden schon (Issue #25, F-PRK-04, F-BOS-02). Die Perks lassen sich frei kombinieren.
 - `WeaponMath` (Schuss- und Trefferschaden, Feuerrate, Projektil-Optik) und `ShotModifiers` als reine Logik mit EditMode-Tests; `PlayerWeapon.Modifiers` wird von `PlayerPerks` gesetzt. `IDamageable.TakeHit` kennt dafür einen tödlichen Treffer (Issue #25).
 - Projektile zeigen aktive Perks: rot und dicker bei Doppelschaden, hell mit langer Spur bei Insta-Kill. Die Sprites erzeugt `Tools/gen_pixelart.py` (Issue #25).
+- **Schutzschild** wirkt jetzt: 8 s *(Startwert)* kein Schaden, auch nicht durch Explosionen. Eine Blase um die Figur zeigt den Schild und flackert in den letzten 2 s. Gegner, die den Schild berühren, werden leicht zurückgestoßen (Issue #26, F-PRK-04). Flackerzeit und Rückstoß stehen in `Data/Perks/ShieldConfig`.
+- `PlayerShield` am Spieler, `ShieldMath` als reine Logik mit EditMode-Tests, `ActivePerks.RemainingOf`. `PlayerHealth` beachtet ein `IDamageBlocker`, Gegner lassen sich über `IKnockbackable` wegstoßen (Issue #26).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
