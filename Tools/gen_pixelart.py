@@ -21,6 +21,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Effects/Shield_Barrier.png       64x64 bubble around the player while the shield runs (issue #26)
   Sprites/Level/HoldZone_Ring.png          128x128 ring on the floor of a hold-the-line zone, radius 2 tiles (issue #31)
   Sprites/Level/HoldZone_Fill.png          128x128 disc inside the ring; the game scales it with the progress (issue #31)
+  Sprites/Level/Switch_Off.png             32x32 floor switch, not pressed: dark plate with a dim red lamp (issue #32)
+  Sprites/Level/Switch_On.png              32x32 floor switch, pressed: plate sunk in, bright green lamp with glow (issue #32)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
@@ -719,6 +721,27 @@ def hold_zone_fill() -> Canvas:
     return c
 
 
+def floor_switch(on: bool) -> Canvas:
+    """Square pressure plate on the floor. Off: raised plate with a dim red lamp. On: the plate sits lower and darker
+    while the lamp glows green with a bright ring, readable from across the screen."""
+    c = Canvas(TILE, TILE)
+    c.rect(3, 3, 28, 28, "slate_0")
+    top = 5 if not on else 6
+    c.rect(5, top, 26, 26, "slate_2" if not on else "slate_1")
+    if not on:
+        c.rect(5, 5, 26, 5, "slate_3")
+        c.rect(5, 26, 26, 26, "slate_1")
+    if on:
+        c.ellipse(16.0, 16.5, 9.0, 9.0, "green_1")
+        c.ellipse(16.0, 16.5, 7.0, 7.0, "green_2")
+        c.ellipse(16.0, 16.5, 4.0, 4.0, "glow")
+    else:
+        c.ellipse(16.0, 16.0, 6.0, 6.0, "red_0")
+        c.ellipse(15.0, 15.0, 2.0, 2.0, "red_1")
+    c.outline()
+    return c
+
+
 SHIELD_BARRIER = 64
 
 
@@ -1015,6 +1038,8 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Effects/Shield_Barrier.png": shield_barrier().to_image(),
         "Sprites/Level/HoldZone_Ring.png": hold_zone_ring().to_image(),
         "Sprites/Level/HoldZone_Fill.png": hold_zone_fill().to_image(),
+        "Sprites/Level/Switch_Off.png": floor_switch(False).to_image(),
+        "Sprites/Level/Switch_On.png": floor_switch(True).to_image(),
         "Sprites/Level/Gate_Bars.png": gate_bars().to_image(),
         "Sprites/UI/Heart_Full.png": heart(True).to_image(),
         "Sprites/UI/Heart_Empty.png": heart(False).to_image(),
