@@ -17,6 +17,7 @@ Output (under Assets/_Project/Audio/SFX/):
   Explosion.wav       deep boom with a noise blast and a rumbling tail (issue #22)
   PerkPickup.wav      quick sparkly upward sweep with two bell tones when a perk is collected (issue #23)
   Nuke.wav            rising charge whine, a sharp crack and a huge sub-bass boom with a long rumble (issue #27)
+  PuzzleSolved.wav    placeholder: a mechanical unlock click and a warm rising two-note sine chord (issue #30)
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -260,6 +261,24 @@ def nuke(rng: random.Random) -> list[float]:
     return out
 
 
+def puzzle_solved(rng: random.Random) -> list[float]:
+    # Placeholder: a short noise click like a lock snapping open, then two soft sine notes a fourth apart with
+    # overtones; warmer and slower than the square-wave chime of an opened kill gate.
+    length = 0.7
+    out = []
+    for i in range(int(RATE * length)):
+        t = i / RATE
+        click = rng.uniform(-1, 1) * max(0.0, 1 - t / 0.015) * 0.8
+        sample = click
+        for start, freq in ((0.03, 523.25), (0.16, 698.46)):
+            tb = t - start
+            if tb >= 0:
+                tone = math.sin(2 * math.pi * freq * tb) + 0.25 * math.sin(2 * math.pi * freq * 2 * tb)
+                sample += 0.45 * tone * envelope(tb, length - start, 0.01)
+        out.append(sample)
+    return out
+
+
 def write(path: Path, samples: list[float]) -> None:
     peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
@@ -276,7 +295,8 @@ def main() -> None:
                        ("MissionDone", mission_done), ("RunnerSpawn", runner_spawn),
                        ("RunnerApproach", runner_approach), ("BoomerSpawn", boomer_spawn),
                        ("BoomerApproach", boomer_approach), ("Explosion", explosion),
-                       ("PerkPickup", perk_pickup), ("Nuke", nuke)):
+                       ("PerkPickup", perk_pickup), ("Nuke", nuke),
+                       ("PuzzleSolved", puzzle_solved)):
         path = SFX_DIR / f"{name}.wav"
         write(path, make(rng))
         print(f"Wrote {path.relative_to(ROOT)}")
