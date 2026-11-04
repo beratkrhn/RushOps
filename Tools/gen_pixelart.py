@@ -55,7 +55,7 @@ Output (under Assets/_Project/Art/):
   Tiles/Floor_0..2.png                     32x32 floor variants
   Tiles/Wall_Top.png                       32x32 wall seen from above
   Tiles/Wall_Front.png                     32x32 wall top plus front face
-  Tiles/<Island>/Floor_0..2.png            island floor variants (issue #104: Strand)
+  Tiles/<Island>/Floor_0..2.png            island floor variants (issue #104: Strand, #105: Stadt)
   Tiles/<Island>/Wall_Top.png, Wall_Front.png        outer wall of the island
   Tiles/<Island>/Obstacle_Top.png, Obstacle_Front.png inner walls (obstacles)
   Tiles/<Island>/Decor_<N>.png             32x32 flat decorations without collision
@@ -1613,7 +1613,7 @@ def beach_decoration(kind: int) -> Canvas:
 
 BEACH_DECORATIONS = 5
 # Folders under Tiles/ with an island tileset.
-ISLAND_TILESETS = ["Strand"]
+ISLAND_TILESETS = ["Strand", "Stadt"]
 
 
 def palisade(frame: int) -> Canvas:
@@ -1657,6 +1657,169 @@ def palisade(frame: int) -> Canvas:
     return c
 
 
+# --- Island 2: dark city (issue #105) ---------------------------------------------
+# Cold navy asphalt and brick at night, mauve containers; the cold neon blue is kept for small highlights.
+
+def asphalt(variant: int) -> Canvas:
+    """Grey asphalt (light enough that the dark navy player stands out). Variant 0 plain, 1 cracked, 2 patched."""
+    c = Canvas(TILE, TILE, fill="slate_2")
+    rng = random.Random(5100 + variant)
+    for _ in range(40):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "slate_1")
+    for _ in range(14):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "dusk")
+    for _ in range(3):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "slate_3")
+    if variant == 1:
+        x, y = 4, 20
+        for step in range(26):
+            c.set(x, y, "slate_0")
+            c.set(x, y + 1, "slate_3")
+            x += 1
+            y += rng.choice((-1, 0, 0, 1))
+            y = min(max(y, 6), 26)
+            if step == 12:
+                for k in range(5):
+                    c.set(x + k // 2, y - k, "slate_0")
+    elif variant == 2:
+        # A darker patch of newer asphalt with a seam around it.
+        c.rect(7, 9, 24, 22, "slate_0")
+        c.rect(8, 10, 23, 21, "slate_1")
+        for _ in range(16):
+            c.set(rng.randrange(8, 24), rng.randrange(10, 22), "slate_0")
+    return c
+
+
+def brick_top_face(c: Canvas, y0: int, y1: int) -> None:
+    """Dark gravel roof of a city building, seen from above."""
+    c.rect(0, y0, TILE - 1, y1, "navy_1")
+    rng = random.Random(5200)
+    for _ in range(30):
+        x, y = rng.randrange(TILE), rng.randrange(TILE)
+        if y0 <= y <= y1:
+            wrap_set(c, x, y, "navy_0")
+    for _ in range(10):
+        x, y = rng.randrange(TILE), rng.randrange(TILE)
+        if y0 <= y <= y1:
+            wrap_set(c, x, y, "dusk")
+
+
+def brick_top() -> Canvas:
+    c = Canvas(TILE, TILE)
+    brick_top_face(c, 0, TILE - 1)
+    return c
+
+
+def brick_front() -> Canvas:
+    """City wall with nothing to the south: concrete cap above, dark brick below with a strip of cold neon."""
+    c = Canvas(TILE, TILE)
+    top = 9
+    brick_top_face(c, 0, top - 1)
+    c.rect(0, top - 1, TILE - 1, top - 1, "slate_2")
+    c.rect(0, top, TILE - 1, TILE - 1, "dusk")
+    for row, y in enumerate(range(top, TILE, 4)):
+        c.rect(0, y + 3, TILE - 1, y + 3, "navy_1")
+        offset = 0 if row % 2 == 0 else 4
+        for x in range(offset, TILE, 8):
+            c.rect(x, y, x, min(y + 2, TILE - 1), "navy_1")
+    rng = random.Random(5300)
+    for _ in range(8):
+        c.set(rng.randrange(TILE), rng.randrange(top, TILE - 3), "mauve")
+    # Neon strip under the cap.
+    c.rect(0, top + 1, TILE - 1, top + 1, "blue_2")
+    c.rect(0, top + 2, TILE - 1, top + 2, "navy_1")
+    c.rect(0, TILE - 2, TILE - 1, TILE - 1, "night")
+    return c
+
+
+def container_top_face(c: Canvas, y0: int, y1: int) -> None:
+    """Roof of a shipping container: corrugated ribs across."""
+    c.rect(0, y0, TILE - 1, y1, "mauve")
+    for x in range(1, TILE, 4):
+        c.rect(x, y0, x, y1, "dusk")
+    c.rect(0, y0, 0, y1, "navy_1")
+    c.rect(TILE - 1, y0, TILE - 1, y1, "navy_1")
+
+
+def container_top() -> Canvas:
+    c = Canvas(TILE, TILE)
+    container_top_face(c, 0, TILE - 1)
+    return c
+
+
+def container_front() -> Canvas:
+    """Container with nothing to the south: roof above, the corrugated door side with locking bars below."""
+    c = Canvas(TILE, TILE)
+    top = 10
+    container_top_face(c, 0, top - 1)
+    c.rect(0, top - 1, TILE - 1, top - 1, "white")
+    c.rect(0, top, TILE - 1, TILE - 1, "dusk")
+    for x in range(0, TILE, 3):
+        c.rect(x, top, x, TILE - 3, "navy_1")
+    for x in (9, 22):
+        c.rect(x, top + 1, x, TILE - 4, "slate_3")
+        c.rect(x - 1, top + 8, x + 1, top + 9, "slate_3")
+    c.rect(0, TILE - 2, TILE - 1, TILE - 1, "night")
+    return c
+
+
+def city_decoration(kind: int) -> Canvas:
+    """Flat things on the asphalt: 0 puddle, 1 newspaper, 2 broken bricks, 3 glass shards, 4 drain grate."""
+    c = Canvas(TILE, TILE)
+    if kind == 0:
+        c.ellipse(16.0, 17.0, 7.0, 3.5, "navy_0")
+        c.rect(12, 16, 15, 16, "blue_2")
+        c.set(19, 18, "slate_3")
+    elif kind == 1:
+        c.rect(11, 14, 21, 20, "slate_4")
+        c.rect(11, 14, 21, 14, "white")
+        for y in (16, 18):
+            c.rect(13, y, 19, y, "slate_2")
+        c.set(21, 20, "slate_3")
+    elif kind == 2:
+        for x, y in ((11, 17), (16, 15), (19, 19)):
+            c.rect(x, y, x + 3, y + 1, "dusk")
+            c.rect(x, y, x + 3, y, "mauve")
+    elif kind == 3:
+        for x, y in ((12, 16), (16, 18), (19, 15), (14, 20)):
+            c.set(x, y, "blue_2")
+            c.set(x + 1, y + 1, "slate_3")
+    elif kind == 4:
+        c.rect(10, 13, 21, 20, "slate_2")
+        c.rect(11, 14, 20, 19, "night")
+        for x in range(12, 20, 2):
+            c.rect(x, 14, x, 19, "slate_1")
+    c.outline("outline")
+    return c
+
+
+CITY_DECORATIONS = 5
+
+
+def roller_door(frame: int) -> Canvas:
+    """One cell of the city gate: a steel roller shutter under its housing. Opening, the slats roll up into the
+    housing from the bottom until only the housing is left."""
+    c = Canvas(TILE, TILE)
+    housing = 7
+    bottom = TILE - 2
+    lowest = bottom - round(frame / (GATE_FRAMES - 1) * (bottom - housing))
+    for y in range(housing, lowest + 1):
+        c.rect(1, y, TILE - 2, y, "slate_3" if (y - housing) % 3 else "slate_2")
+    if lowest > housing:
+        # Bottom rail with hazard stripes.
+        for x in range(1, TILE - 1):
+            c.set(x, lowest, "yellow" if (x // 3) % 2 == 0 else "night")
+    # Guide rails at the sides and the housing on top.
+    c.rect(0, housing, 0, bottom, "slate_1")
+    c.rect(TILE - 1, housing, TILE - 1, bottom, "slate_1")
+    c.rect(0, 0, TILE - 1, housing - 1, "navy_1")
+    c.rect(0, 0, TILE - 1, 0, "slate_2")
+    c.rect(0, housing - 1, TILE - 1, housing - 1, "navy_0")
+    c.set(3, 3, "blue_2" if frame == GATE_FRAMES - 1 else "red_1")
+    c.outline("outline")
+    return c
+
+
 def island_files(files: dict[str, Image.Image]) -> None:
     """Tiles and gate frames of the islands (issues #104 to #106), under Tiles/<Island>/."""
     for variant in range(3):
@@ -1669,6 +1832,16 @@ def island_files(files: dict[str, Image.Image]) -> None:
         files[f"Tiles/Strand/Decor_{kind}.png"] = beach_decoration(kind).to_image()
     for frame in range(GATE_FRAMES):
         files[f"Tiles/Strand/Gate_{frame}.png"] = palisade(frame).to_image()
+    for variant in range(3):
+        files[f"Tiles/Stadt/Floor_{variant}.png"] = asphalt(variant).to_image()
+    files["Tiles/Stadt/Wall_Top.png"] = brick_top().to_image()
+    files["Tiles/Stadt/Wall_Front.png"] = brick_front().to_image()
+    files["Tiles/Stadt/Obstacle_Top.png"] = container_top().to_image()
+    files["Tiles/Stadt/Obstacle_Front.png"] = container_front().to_image()
+    for kind in range(CITY_DECORATIONS):
+        files[f"Tiles/Stadt/Decor_{kind}.png"] = city_decoration(kind).to_image()
+    for frame in range(GATE_FRAMES):
+        files[f"Tiles/Stadt/Gate_{frame}.png"] = roller_door(frame).to_image()
 
 
 def island_preview(files: dict[str, Image.Image], island: str, path: Path, scale: int = 3) -> None:

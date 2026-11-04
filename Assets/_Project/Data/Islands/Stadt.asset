@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0edb591f223ac4f3bb4314e263491952, type: 3}
+  m_Name: Stadt
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.IslandTheme
+  _displayName: "D\xFCstere Stadt"
+  _floor:
+  - {fileID: 21300000, guid: 8505b7a16934b4ea4b0df8907adaffc0, type: 3}
+  - {fileID: 21300000, guid: cf5a19396ed3e48dcb2c9a9686c6b84c, type: 3}
+  - {fileID: 21300000, guid: bfc257b0a4b5e466e8db3697e238d12e, type: 3}
+  _plainFloorShare: 0.7
+  _wallTop: {fileID: 21300000, guid: c27c811d13106457fba6601c7b91fbc5, type: 3}
+  _wallFront: {fileID: 21300000, guid: 12733d35712db48b48b9b8e8deaab477, type: 3}
+  _obstacleTop: {fileID: 21300000, guid: 8264fda1dc7e7430aa9b0c7f0dc3b766, type: 3}
+  _obstacleFront: {fileID: 21300000, guid: 8ffbf9c5ffafb453780d2dbca6b504ba, type: 3}
+  _decorations:
+  - {fileID: 21300000, guid: 41a2e37a998514e22b4149954d4b7648, type: 3}
+  - {fileID: 21300000, guid: 29cb34aa0319e48b9864afb3662df9e3, type: 3}
+  - {fileID: 21300000, guid: 14845587dd4184450a251d4da69adf8a, type: 3}
+  - {fileID: 21300000, guid: 4afd3322f93f4473c88d0ea0e8a589ae, type: 3}
+  - {fileID: 21300000, guid: da3a249ca673e41078dcf0b6d05304e8, type: 3}
+  _decorationDensity: 0.05
+  _gateFrames:
+  - {fileID: 21300000, guid: a1d486e8920e4452b9d685a6561b505f, type: 3}
+  - {fileID: 21300000, guid: 41e7d9e2aad184e3793a8e89b42b305b, type: 3}
+  - {fileID: 21300000, guid: 1211d55f677a44c6f876e805a76933b8, type: 3}
+  - {fileID: 21300000, guid: 5841d9117346840febac024369751422, type: 3}
+  - {fileID: 21300000, guid: b3435f12b805246e195d59f53580c013, type: 3}
