@@ -4,6 +4,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.4.0] – 2026-11-04
+
 ### Hinzugefügt
 - **Finale Palette** (Issue #99, F-GFX-01): Die 32 Farben sind in Gruppen eingeteilt: Basis, Figuren und je 8 Akzentfarben für Strand, düstere Stadt und Vulkan (`PALETTE_GROUPS` in `Tools/gen_pixelart.py`). Der Generator prüft die Gruppenregeln und schreibt die Übersicht `docs/art/palette.png`/`palette.md`. ADR 0006 ergänzt. Bestehende Sprites bleiben unverändert gültig.
 - **Gegner-Animationen Walker und Runner** (Issue #100, F-GFX-02): Zu den Laufzyklen kommen je 8 Richtungen Treffer (2 Frames, Rückstoß nach hinten) und Tod (5 Frames). Der Walker kippt nach hinten, der Runner stürzt mit Schwung nach vorn; im letzten Frame liegt er in einer Blutlache, die Augen erlöschen. Erzeugt von `Tools/gen_pixelart.py`, Vorschau mit `--animations` (`docs/art/animations/Walker.gif`, `Runner.gif` und Sprite-Sheets).
@@ -43,6 +45,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
   - Treffer: 2 Frames, der Oberkörper zuckt zurück.
   - Tod: 5 Frames, die Figur kippt um und liegt in einer Blutlache.
   - „Gescheitert“ erscheint erst, wenn die Todesanimation abgelaufen ist (`LevelRestarter`). `PlayerView` steuert die Animationen, `DirectionalSpriteAnimator` hat dafür eine Lauf-Schleife (`SetMoving`). Vorschau `docs/art/animations/Player.gif`.
+- Spieltest v0.4.0 auf dem iPhone 16 Pro protokolliert (`docs/testprotokolle/v0.4.0.md`): Animationen, Tilesets, Effekte und Sounds abgenommen (Issue #109).
 - Menü „RushOps → Szenen → Alle erzeugen“ (`AllScenesBuilder.BuildAll`, auch für den Batchmode).
 
 ### Geändert
