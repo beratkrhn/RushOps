@@ -147,6 +147,7 @@ namespace RushOps.Save
                 data.Progress ??= new ProgressData();
                 data.Progress.Levels ??= new List<LevelRecord>();
                 data.Stats ??= new StatsData();
+                data.Settings ??= new SettingsData();
                 return true;
             }
             catch (Exception)

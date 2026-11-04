@@ -54,7 +54,7 @@ namespace RushOps.Editor.Scenes
         private const string AimPointActionPath = "Player/AimPoint";
         private const string AimPressActionPath = "Player/AimPress";
         private const string DashActionPath = "Player/Dash";
-        private const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
+        internal const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
         private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
         private const string BulletDoubleDamageSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet_DoubleDamage.png";
         private const string BulletInstaKillSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet_InstaKill.png";
@@ -92,7 +92,7 @@ namespace RushOps.Editor.Scenes
         // enemies aside rather than pushing them ahead of it (issue #21).
         private const string EnemyBodyMaterialPath = "Assets/_Project/Data/Physics/EnemyBody.physicsMaterial2D";
         private const string SfxDir = "Assets/_Project/Audio/SFX";
-        private const string AudioConfigPath = "Assets/_Project/Data/Audio/AudioConfig.asset";
+        internal const string AudioConfigPath = "Assets/_Project/Data/Audio/AudioConfig.asset";
         private const string SpawnerConfigPath = "Assets/_Project/Data/Enemies/SpawnerConfig.asset";
         private const string SpawnMarkerSpritePath = "Assets/_Project/Art/Sprites/Effects/SpawnMarker.png";
         private const string WavesPath = "Assets/_Project/Data/Waves/Arena_Test.asset";
@@ -574,6 +574,7 @@ namespace RushOps.Editor.Scenes
             CreateProgressRecorder(results, score, kills);
             var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
             SetPools(aimAssist, enemyPools);
+            aimAssist.FindProperty("_save").objectReferenceValue = LoadOrCreateConfig<SaveGameService>(SaveGameServicePath);
             aimAssist.ApplyModifiedPropertiesWithoutUndo();
             CameraFollow cameraFollow = CreateCamera(cameraConfig, target, walls);
             ExplosionSystem explosions = CreateExplosionSystem(enemyPools, target.GetComponent<PlayerHealth>());
@@ -1375,6 +1376,7 @@ namespace RushOps.Editor.Scenes
             var serializedVolumes = new SerializedObject(volumes);
             serializedVolumes.FindProperty("_mixer").objectReferenceValue = mixer;
             serializedVolumes.FindProperty("_config").objectReferenceValue = config;
+            serializedVolumes.FindProperty("_save").objectReferenceValue = LoadOrCreateConfig<SaveGameService>(SaveGameServicePath);
             serializedVolumes.ApplyModifiedPropertiesWithoutUndo();
 
             var click = go.AddComponent<UiClickSound>();

@@ -3,7 +3,7 @@ using System;
 namespace RushOps.Save
 {
     /// <summary>
-    /// The whole save game (F-DAT-04, ADR 0005): meta progress and statistics, written as JSON by
+    /// The whole save game (F-DAT-04, ADR 0005): meta progress, statistics and settings, written as JSON by
     /// <see cref="SaveGameStore"/>. Plain data only; the rules that change it live elsewhere. New fields may be added
     /// without a new <see cref="Version"/> as long as their default is right for older saves; renaming or reshaping
     /// fields needs a version step and an <see cref="ISaveMigration"/>.
@@ -23,5 +23,8 @@ namespace RushOps.Save
 
         /// <summary>Statistics across all games.</summary>
         public StatsData Stats = new StatsData();
+
+        /// <summary>The player's settings (issue #126).</summary>
+        public SettingsData Settings = new SettingsData();
     }
 }
