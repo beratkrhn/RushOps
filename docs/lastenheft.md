@@ -278,9 +278,12 @@ Alle Werte sind *Startwerte*.
 - Bundle-ID für iOS und Android: `com.beratkrhn.rushops` (30.10.2026, Issue #13)
 - Mindestversionen: Android 8.0 (API 26), iOS 15 (30.10.2026, Issue #13)
 
+- Musik: vorerst keine; falls später, per Skript erzeugt (04.11.2026, Design-Frage G11)
+- Inselthemen: Strand, düstere Stadt, Vulkan (04.11.2026, Design-Frage G6)
+
 ### Offene Punkte
 
-- Herkunft der Musik (selbst erzeugt oder lizenzfreie Packs)
+- keine
 
 ---
 
@@ -292,4 +295,4 @@ Alle Werte sind *Startwerte*.
 | 0.2 | 29.10.2026 | Nur Hochformat; Sprache Deutsch; reine Top-down-Perspektive; unbegrenzte Munition, Perk „Maximale Munition“ durch „Schnellfeuer“ ersetzt; Insta-Kill und Doppelschaden als getrennte Perks; Nuke trifft nur sichtbare Gegner; Kill-Gates zählen global inkl. Nuke- und Explosions-Kills; Timer bei Schaltern sichtbar; Zonen-Kontrolle pausiert; Schießen beim Tragen erlaubt; Herzen statt Lebensbalken, Unverwundbarkeit nach Treffer; Wellen an festen Spawnpunkten, max. 10 Gegner; 3 Inseln × 3 Level; Bosse, Score mit Kombo und Sterne ergänzt; Zielhilfe ergänzt; Skins in 1.0 rein kosmetisch; Logo-Animation als Startsequenz; Anforderungs-IDs und Prioritäten eingeführt; Kapitelnummerierung bereinigt. |
 | 0.3 | 29.10.2026 | F-GFX-02: Schrägansicht mit 8 Richtungs-Sprites statt reiner Top-down-Ansicht mit rotierten Sprites (ADR 0006, Issue #58). |
 | 0.4 | 30.10.2026 | Offene Punkte entschieden: Bundle-ID `com.beratkrhn.rushops`, Mindestversionen Android 8.0 und iOS 15 (Issue #13). |
-| 0.5 | 04.11.2026 | F-PRK-02: Drop-Chance 12 % statt 8 % (Spieltest v0.3.0). |
+| 0.5 | 04.11.2026 | F-PRK-02: Drop-Chance 12 % statt 8 % (Spieltest v0.3.0). Offene Punkte entschieden: Musik vorerst nicht, Inselthemen festgelegt. |
