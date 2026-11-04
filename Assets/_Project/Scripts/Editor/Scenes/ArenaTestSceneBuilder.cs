@@ -13,6 +13,7 @@ using RushOps.Navigation;
 using RushOps.Perks;
 using RushOps.Player;
 using RushOps.Puzzles;
+using RushOps.Save;
 using RushOps.Scoring;
 using RushOps.UI;
 using UnityEditor;
@@ -82,6 +83,7 @@ namespace RushOps.Editor.Scenes
         private const float ExplosionLightIntensity = 2f;
         private static readonly Color MuzzleLightColor = new Color(1f, 0.8f, 0.4f);
         private const float MuzzleLightRadius = 1.8f;
+        internal const string SaveGameServicePath = "Assets/_Project/Data/Save/SaveGameService.asset";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
         private const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
         private const string FlashShaderName = "RushOps/Sprite Flash";
@@ -447,6 +449,18 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
+        // Autosave at the end of the level (issue #123).
+        private static void CreateProgressRecorder(LevelResults results, LevelScore score, LevelKills kills)
+        {
+            var recorder = new GameObject("LevelProgressRecorder").AddComponent<LevelProgressRecorder>();
+            var serialized = new SerializedObject(recorder);
+            serialized.FindProperty("_save").objectReferenceValue = LoadOrCreateConfig<SaveGameService>(SaveGameServicePath);
+            serialized.FindProperty("_results").objectReferenceValue = results;
+            serialized.FindProperty("_score").objectReferenceValue = score;
+            serialized.FindProperty("_kills").objectReferenceValue = kills;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         private static LevelKills CreateLevelKills(EnemyPool[] pools)
         {
             var kills = new GameObject("LevelKills").AddComponent<LevelKills>();
@@ -557,6 +571,7 @@ namespace RushOps.Editor.Scenes
             serializedResults.FindProperty("_kills").objectReferenceValue = kills;
             serializedResults.FindProperty("_pause").objectReferenceValue = pause;
             serializedResults.ApplyModifiedPropertiesWithoutUndo();
+            CreateProgressRecorder(results, score, kills);
             var aimAssist = new SerializedObject(target.GetComponent<AimAssist>());
             SetPools(aimAssist, enemyPools);
             aimAssist.ApplyModifiedPropertiesWithoutUndo();

@@ -1,3 +1,4 @@
+using System;
 using RushOps.Levels;
 using RushOps.Player;
 using RushOps.Scoring;
@@ -38,6 +39,12 @@ namespace RushOps.UI
         [SerializeField] private GameObject _failedPanel;
         [SerializeField] private Text _failedScore;
 
+        /// <summary>Raised when „Level geschafft!“ appears, with the stars and the score (issue #123).</summary>
+        public event Action<int, int> Completed;
+
+        /// <summary>Raised when „Gescheitert“ appears (issue #123).</summary>
+        public event Action Failed;
+
         /// <summary>True while „Level geschafft!“ shows.</summary>
         public bool ShowsDone => _donePanel != null && _donePanel.activeSelf;
 
@@ -76,6 +83,7 @@ namespace RushOps.UI
 
             Freeze();
             _donePanel.SetActive(true);
+            Completed?.Invoke(StarsShown, score);
         }
 
         /// <summary>Shows „Gescheitert“ and freezes the game.</summary>
@@ -89,6 +97,7 @@ namespace RushOps.UI
             SetText(_failedScore, ResultText.Score(_score != null ? _score.Keeper.Score : 0));
             Freeze();
             _failedPanel.SetActive(true);
+            Failed?.Invoke();
         }
 
         /// <inheritdoc />

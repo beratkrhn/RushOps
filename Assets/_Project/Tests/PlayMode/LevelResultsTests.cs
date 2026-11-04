@@ -3,6 +3,7 @@ using NUnit.Framework;
 using RushOps.Enemies;
 using RushOps.Levels;
 using RushOps.Player;
+using RushOps.Save;
 using RushOps.Scoring;
 using RushOps.UI;
 using UnityEngine;
@@ -75,6 +76,42 @@ namespace RushOps.Tests.PlayMode
             _pause.Resume();
             Assert.AreEqual(0f, Time.timeScale);
             Assert.IsTrue(_pause.IsFrozen);
+        }
+
+        [UnityTest]
+        public IEnumerator ReachingExit_SavesLevelStarsAndStats()
+        {
+            SaveGameService save = SaveGameIsolation.Reset();
+            Assert.IsNotNull(save, "no SaveGameService asset");
+            Object.FindFirstObjectByType<LevelScore>().Keeper.RegisterKill(10);
+            yield return null;
+
+            Teleport(_exit.transform.position);
+            yield return new WaitForFixedUpdate();
+            yield return null;
+
+            Assert.IsTrue(_results.ShowsDone);
+            Assert.IsTrue(ProgressRules.IsCompleted(save.Data.Progress, SceneName), "level not saved as done");
+            Assert.AreEqual(1, ProgressRules.StarsOf(save.Data.Progress, SceneName));
+            Assert.AreEqual(10, ProgressRules.Find(save.Data.Progress, SceneName).BestScore);
+            Assert.AreEqual(1, save.Data.Stats.LevelsCompleted);
+            Assert.Greater(save.Data.Stats.PlayTimeSeconds, 0f);
+
+            SaveData onDisk = new SaveGameStore(SaveGameIsolation.Files, "playmode-tests").Load();
+            Assert.IsTrue(ProgressRules.IsCompleted(onDisk.Progress, SceneName), "save not written");
+        }
+
+        [UnityTest]
+        public IEnumerator Failing_CountsADeath()
+        {
+            SaveGameService save = SaveGameIsolation.Reset();
+            yield return null;
+
+            _results.ShowFailed();
+
+            Assert.AreEqual(1, save.Data.Stats.Deaths);
+            Assert.IsFalse(ProgressRules.IsCompleted(save.Data.Progress, SceneName));
+            Assert.AreEqual(1, new SaveGameStore(SaveGameIsolation.Files, "playmode-tests").Load().Stats.Deaths);
         }
 
         [UnityTest]

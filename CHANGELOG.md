@@ -6,6 +6,10 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ### Hinzugefügt
 - **Savegame-Kern** (Issue #122, F-DAT-01, F-DAT-05, F-DAT-06, ADR 0005): Spielstand als versioniertes JSON (`save.json` in `Application.persistentDataPath`) mit Fortschritt pro Level und Statistiken. Atomares Schreiben über `save.json.tmp` und `save.json.bak`; beim Laden Hauptdatei, sonst Backup, sonst neuer Spielstand, ohne Absturz. Migrationskette pro Version (`SaveMigrator`). Der `SaveGameService` (Asset unter `Data/Save/`) lädt den Spielstand einmal und hält ihn für alle Szenen bereit. Noch nichts im Spiel speichert automatisch, das folgt mit #123.
+- **Fortschritt und Statistiken speichern** (Issue #123, F-DAT-03, F-DAT-04, F-SCO-03, F-UI-06): „Level geschafft“ speichert das Level als geschafft mit Sternen und bestem Score; beides wird nur verbessert. Kills gesamt, Tode, Spielzeit, beste Kombo und geschaffte Level werden beim Levelende, beim Tod, beim Wechsel in den Hintergrund und beim Verlassen des Levels gespeichert, ohne doppelt zu zählen (`LevelStatsTracker`). Der `LevelProgressRecorder` steckt in jeder Level-Szene.
+- `Campaign`-Asset (`Data/Levels/Campaign.asset`): drei Inseln (Strand, düstere Stadt, Vulkan) mit je drei Plätzen, bisher nur Level 1-1. Die Freischaltregeln (`CampaignUnlocks`): nächstes Level, sobald das vorige geschafft ist, nächste Insel, sobald alle Level der vorigen geschafft sind.
+- `ScoreKeeper.BestMultiplier`: höchster Multiplikator im Level.
+- PlayMode-Tests speichern nur im Speicher (`SaveGameIsolation`) und verändern den eigenen Spielstand im Editor nicht.
 - `docs/backlog/v0.5.0.md`: Stories für v0.5.0 (#122 bis #131).
 
 ## [0.4.0] – 2026-11-04
