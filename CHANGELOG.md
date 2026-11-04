@@ -9,6 +9,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Level-Baukasten** (Issue #148, ADR 0010): Level werden als `LevelBlueprint` beschrieben (Wände, Trennwände mit Toren, Zonen, Wellen, Rätsel, Ausgang) und von `LevelBlueprintBuilder` geprüft, gebaut und in die `Campaign` eingetragen. Level 1-1 ist darauf umgestellt und kommt unverändert heraus. Tore können senkrecht in seitlichen Abzweigungen stehen (L3) und an Kills und Rätseln zugleich hängen (`GateConditionGroup`, L2); der Missions-Tracker zeigt dann beide Zeilen untereinander.
 - **Schwierigkeit pro Insel** (Entscheidung C3): ScriptableObject `LevelDifficulty` mit Wellendichte, Faktor auf Schalter-Zeitlimits und Zusatz-Haltezeit; Insel 1 neutral, Insel 2 Wellen 20 % dichter und +3 s Haltezeit, Insel 3 zusätzlich Schalter −20 %.
 - **Levelname auf der Inselkarte** (C11): unter den Sternen steht der Kurzname aus der `LevelDefinition`; Level 1-1 heißt „Strandbad“.
+- **Level 1-2 „Strandpromenade“** (Issue #149): fünf Zonen, alle Gegnertypen von Anfang an gemischt mit Schwerpunkt pro Zone (C4). Zone halten gleich am Start, vier Zeitschalter auf zwei Ebenen (Trennwand mit Durchgängen an beiden Enden), Kill-Gate „Strandbar“ (18 Kills ab Betreten der Zone, P1), Generator mit zwei Energiezellen hinter der Seebrücke, Schlussansturm vor dem Ausgang. Sterne ab 1800/3600 Punkten; steht auf der Karte und schaltet den Skin „Surfer“ frei.
 
 ## [0.5.0] – 2026-11-04
 

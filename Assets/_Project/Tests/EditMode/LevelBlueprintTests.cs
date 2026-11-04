@@ -27,6 +27,24 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Level1_2_FollowsLevelDesignRules()
+        {
+            CollectionAssert.IsEmpty(Level1_2SceneBuilder.Validate());
+        }
+
+        [Test]
+        public void Level1_2_HasThreePuzzleKindsAndAZoneKillGate()
+        {
+            LevelBlueprint level = Level1_2SceneBuilder.Blueprint;
+
+            Assert.AreEqual(5, level.Zones.Count, "decision C2: as long as 1-1");
+            CollectionAssert.AreEquivalent(
+                new[] { LevelPuzzleKind.HoldZone, LevelPuzzleKind.TimedSwitches, LevelPuzzleKind.Transport },
+                level.Puzzles.ConvertAll(p => p.Kind));
+            Assert.That(level.Gates, Has.Some.Matches<LevelGate>(g => g.Kills > 0 && g.CountKillsFromZone >= 0));
+        }
+
+        [Test]
         public void HorizontalDivider_LeavesTheGateOpen()
         {
             var level = new LevelBlueprint("Test", "Test", 24, 30, new Vector2Int(12, 3));
