@@ -31,6 +31,21 @@ namespace RushOps.Editor.Art
         /// <summary>Asset path of the runner's death (issue #100).</summary>
         public const string RunnerDeathPath = AnimationsDir + "/Runner_Death.asset";
 
+        /// <summary>Asset path of the brute's hit reaction (issue #101).</summary>
+        public const string BruteHitPath = AnimationsDir + "/Brute_Hit.asset";
+
+        /// <summary>Asset path of the brute's death (issue #101).</summary>
+        public const string BruteDeathPath = AnimationsDir + "/Brute_Death.asset";
+
+        /// <summary>Asset path of the boomer's hit reaction (issue #101).</summary>
+        public const string BoomerHitPath = AnimationsDir + "/Boomer_Hit.asset";
+
+        /// <summary>Asset path of the boomer's swelling near the player (issue #101).</summary>
+        public const string BoomerSwellPath = AnimationsDir + "/Boomer_Swell.asset";
+
+        /// <summary>Asset path of the boomer's burst (issue #101).</summary>
+        public const string BoomerDeathPath = AnimationsDir + "/Boomer_Death.asset";
+
         /// <summary>Asset path of the runner's run animation.</summary>
         public const string RunnerRunPath = AnimationsDir + "/Runner_Run.asset";
 
@@ -45,6 +60,7 @@ namespace RushOps.Editor.Art
         // Start values for new hit and death assets; tuned values in existing assets are kept.
         private const float HitFramesPerSecond = 12f;
         private const float DeathFramesPerSecond = 10f;
+        private const float SwellFramesPerSecond = 12f;
         private const string SpritesDir = "Assets/_Project/Art/Sprites";
 
         [MenuItem("RushOps/Art/Richtungs-Animationen aktualisieren")]
@@ -58,7 +74,12 @@ namespace RushOps.Editor.Art
             CreateOrUpdate(RunnerHitPath, SpritesDir + "/Enemies", "Runner_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(RunnerDeathPath, SpritesDir + "/Enemies", "Runner_Death", false, DeathFramesPerSecond);
             CreateOrUpdate(BruteWalkPath, SpritesDir + "/Enemies", "Brute_Walk");
+            CreateOrUpdate(BruteHitPath, SpritesDir + "/Enemies", "Brute_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(BruteDeathPath, SpritesDir + "/Enemies", "Brute_Death", false, DeathFramesPerSecond);
             CreateOrUpdate(BoomerWalkPath, SpritesDir + "/Enemies", "Boomer_Walk");
+            CreateOrUpdate(BoomerHitPath, SpritesDir + "/Enemies", "Boomer_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(BoomerSwellPath, SpritesDir + "/Enemies", "Boomer_Swell", true, SwellFramesPerSecond);
+            CreateOrUpdate(BoomerDeathPath, SpritesDir + "/Enemies", "Boomer_Death", false, DeathFramesPerSecond);
             AssetDatabase.SaveAssets();
         }
 

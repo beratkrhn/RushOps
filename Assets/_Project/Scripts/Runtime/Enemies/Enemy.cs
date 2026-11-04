@@ -261,6 +261,12 @@ namespace RushOps.Enemies
             float sqrDistance = ((Vector2)_target.position - (Vector2)transform.position).sqrMagnitude;
             if (_approach.Check(sqrDistance))
             {
+                // The boomer swells as the visual side of its warning sound (issue #101).
+                if (_view != null)
+                {
+                    _view.SetAlert(true);
+                }
+
                 Approached?.Invoke(this);
             }
         }

@@ -478,6 +478,11 @@ namespace RushOps.Editor.Scenes
             var runnerDeath = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.RunnerDeathPath);
             var bruteWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BruteWalkPath);
             var boomerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BoomerWalkPath);
+            var bruteHit = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BruteHitPath);
+            var bruteDeath = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BruteDeathPath);
+            var boomerHit = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BoomerHitPath);
+            var boomerSwell = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BoomerSwellPath);
+            var boomerDeath = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BoomerDeathPath);
 
             CreateGlobalLight();
             Tilemap walls = CreateArena(layout, floorTiles, wallTop, wallFront);
@@ -500,11 +505,11 @@ namespace RushOps.Editor.Scenes
                 RunnerColliderRadius,
                 PlayerColliderOffset);
             Enemy brutePrefab = CreateOrUpdateEnemyPrefab(
-                "Brute", BrutePrefabPath, new EnemyAnimations(bruteWalk, null, null), LoadOrCreateBrute(), feelConfig, flashMaterial, enemyBody,
+                "Brute", BrutePrefabPath, new EnemyAnimations(bruteWalk, bruteHit, bruteDeath), LoadOrCreateBrute(), feelConfig, flashMaterial, enemyBody,
                 BruteColliderRadius,
                 BruteColliderOffset);
             Enemy boomerPrefab = CreateOrUpdateEnemyPrefab(
-                "Boomer", BoomerPrefabPath, new EnemyAnimations(boomerWalk, null, null), LoadOrCreateBoomer(), feelConfig, flashMaterial, enemyBody,
+                "Boomer", BoomerPrefabPath, new EnemyAnimations(boomerWalk, boomerHit, boomerDeath, boomerSwell), LoadOrCreateBoomer(), feelConfig, flashMaterial, enemyBody,
                 BoomerColliderRadius,
                 BoomerColliderOffset);
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
@@ -890,18 +895,22 @@ namespace RushOps.Editor.Scenes
             return level;
         }
 
-        // Walk loop plus the optional one-shot hit and death animations of an enemy (issue #100).
+        // Walk loop plus the optional one-shot hit and death animations of an enemy (issue #100) and an optional
+        // alert loop near the player (boomer swelling, issue #101).
         private readonly struct EnemyAnimations
         {
             public readonly DirectionalAnimation Walk;
             public readonly DirectionalAnimation Hit;
             public readonly DirectionalAnimation Death;
+            public readonly DirectionalAnimation Alert;
 
-            public EnemyAnimations(DirectionalAnimation walk, DirectionalAnimation hit, DirectionalAnimation death)
+            public EnemyAnimations(
+                DirectionalAnimation walk, DirectionalAnimation hit, DirectionalAnimation death, DirectionalAnimation alert = null)
             {
                 Walk = walk;
                 Hit = hit;
                 Death = death;
+                Alert = alert;
             }
         }
 
@@ -914,6 +923,7 @@ namespace RushOps.Editor.Scenes
             var serializedView = new SerializedObject(view);
             serializedView.FindProperty("_hit").objectReferenceValue = animations.Hit;
             serializedView.FindProperty("_death").objectReferenceValue = animations.Death;
+            serializedView.FindProperty("_alert").objectReferenceValue = animations.Alert;
             serializedView.ApplyModifiedPropertiesWithoutUndo();
             GameObject go = view.gameObject;
             go.GetComponent<SpriteRenderer>().sharedMaterial = flashMaterial;

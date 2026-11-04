@@ -15,7 +15,12 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Runner_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames, recoil (issue #100)
   Sprites/Enemies/Runner_Death_<DIR>_<F>.png 64x64, 8 directions x 5 frames, pitches forward (issue #100)
   Sprites/Enemies/Brute_Walk_<DIR>_<F>.png  96x96, 8 directions x 4 frames (issue #21)
+  Sprites/Enemies/Brute_Hit_<DIR>_<F>.png   96x96, 8 directions x 2 frames (issue #101)
+  Sprites/Enemies/Brute_Death_<DIR>_<F>.png 96x96, 8 directions x 5 frames, slams face down (issue #101)
   Sprites/Enemies/Boomer_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames, pulsing belly (issue #22)
+  Sprites/Enemies/Boomer_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames (issue #101)
+  Sprites/Enemies/Boomer_Swell_<DIR>_<F>.png 64x64, 8 directions x 4 frames, inflated and glowing near the player (issue #101)
+  Sprites/Enemies/Boomer_Death_<DIR>_<F>.png 64x64, 8 directions x 4 frames, bursts (issue #101)
   Sprites/Effects/Explosion_<F>.png         160x160, 6 frames of the boomer blast, radius 2.5 tiles (issue #22)
   Sprites/Projectiles/Bullet.png           16x16, flying right (+X)
   Sprites/Projectiles/Bullet_DoubleDamage.png 16x16, red and thicker, during double damage (issue #25)
@@ -307,8 +312,9 @@ class Model:
 
     def sphere(self, f: float, s: float, z: float, r: float, material: str) -> None:
         f, s, z = self.posed(f, s, z)
-        # A body part never sinks into the floor.
-        z = max(z, r * 0.7)
+        # A tipped-over body part rests on the floor instead of sinking into it.
+        if self.pose.tilt:
+            z = max(z, r)
         self.samples.append((*self._project_raw(f, s, z), z, r, material))
 
     def ground_stain(self, canvas: "Canvas", f: float, s: float, rx: float, color: str, rim: str) -> None:
@@ -444,10 +450,14 @@ def runner_frame(direction: int, frame: int, pose: Pose = UPRIGHT, eyes: bool = 
     return c
 
 
-def brute_frame(direction: int, frame: int) -> Canvas:
+def brute_frame(direction: int, frame: int, pose: Pose = UPRIGHT, eyes: bool = True,
+                stain: float = 0.0) -> Canvas:
     """Brute in one of 8 directions, frame 0..3 of a heavy stomp: broad and hunched, with a small head
-    between huge shoulders and long bare arms hanging almost to the ground."""
-    m = Model(direction * 45.0, BRUTE)
+    between huge shoulders and long bare arms hanging almost to the ground. Hit and death frames as with the walker."""
+    m = Model(direction * 45.0, BRUTE, pose)
+    c = Canvas(BRUTE, BRUTE)
+    if stain > 0:
+        m.ground_stain(c, m.posed(0.0, 0.0, 56.0)[0], 0.0, stain, "red_0", "outline")
     phase = frame / 4 * 2 * math.pi
     stride = 4.5 * math.sin(phase)
     # The whole body sinks onto each step and rolls from side to side.
@@ -475,7 +485,6 @@ def brute_frame(direction: int, frame: int) -> Canvas:
     head = (8.0, sway, 62 - bob)
     m.sphere(*head, 7.0, "hide")
 
-    c = Canvas(BRUTE, BRUTE)
     m.paint(c)
 
     # Deep-set red eyes under a dark brow, only where they face the viewer.
@@ -485,7 +494,7 @@ def brute_frame(direction: int, frame: int) -> Canvas:
         if north <= head_north + 0.5:
             c.set(int(x), int(y) - 1, "skin_0")
             c.set(int(x) + 1, int(y) - 1, "skin_0")
-            c.set(int(x), int(y), "red_1")
+            c.set(int(x), int(y), "red_1" if eyes else "skin_0")
     # Torn vest: a bloody gash across the chest when the chest is visible.
     for k in range(-2, 3):
         x, y, north = m.project(13.0, sway + k * 2.5, 40 - bob - k)
@@ -495,16 +504,18 @@ def brute_frame(direction: int, frame: int) -> Canvas:
     return c
 
 
-def boomer_frame(direction: int, frame: int) -> Canvas:
+def boomer_frame(direction: int, frame: int, pose: Pose = UPRIGHT, swell: float = 0.0, eyes: bool = True) -> Canvas:
     """Boomer in one of 8 directions, frame 0..3 of a waddle: short legs and arms on a huge swollen belly that
-    pulses (inflates and sags over the 4 frames) with glowing boils that flare at the fullest frame."""
-    m = Model(direction * 45.0)
+    pulses (inflates and sags over the 4 frames) with glowing boils that flare at the fullest frame.
+    swell > 0 inflates the belly further (pixels of extra radius) and keeps the boils glowing: the warning
+    before it blows up (issue #101)."""
+    m = Model(direction * 45.0, pose=pose)
     phase = frame / 4 * 2 * math.pi
     stride = 3.0 * math.sin(phase)
     sway = 1.2 * math.sin(phase)
     # Pulse: fullest in frame 1, slackest in frame 3.
     pulse = math.sin(phase)
-    belly_r = 12.0 + 2.0 * pulse
+    belly_r = 12.0 + 2.0 * pulse + swell
     hip_z = 12.0
 
     # Stubby legs, spread wide under the weight.
@@ -528,21 +539,22 @@ def boomer_frame(direction: int, frame: int) -> Canvas:
     m.paint(c)
 
     # Boils on the visible side of the belly; they glow brightest when the belly is fullest.
-    hot = "glow" if pulse > 0.5 else "yellow"
+    hot = "glow" if pulse > 0.5 or swell > 0 else "yellow"
+    rim = "yellow" if swell > 0 and pulse > -0.5 else "orange"
     for f, s, z in ((belly_r * 0.8, -4.0, 24.0), (belly_r * 0.75, 4.5, 19.0), (belly_r * 0.6, 0.5, 14.5),
                     (belly_r * 0.55, -7.0, 17.0), (belly_r * 0.5, 8.0, 25.0)):
         x, y, north = m.project(belly[0] + f, belly[1] + s, z)
         if north <= belly_r * 0.25:
             for dx, dy in ((-1, 0), (2, 0), (0, -1), (1, -1), (0, 2), (1, 2)):
-                c.set(int(x) + dx, int(y) + dy, "orange")
+                c.set(int(x) + dx, int(y) + dy, rim)
             for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
                 c.set(int(x) + dx, int(y) + dy, hot)
     # Green eyes, only where they face the viewer.
     _, _, head_north = m.project(*head)
     for s in (-2.0, 2.0):
         x, y, north = m.project(head[0] + 4.4, head[1] + s, head[2] + 0.5)
-        if north <= head_north + 0.5:
-            c.set(int(x), int(y), "green_2")
+        if eyes and north <= head_north + 0.5:
+            c.set(int(x), int(y), "glow" if swell > 0 else "green_2")
     c.outline("outline")
     return c
 
@@ -557,6 +569,95 @@ RUNNER_DEATH_POSES = [Pose(tilt=-28.0, shift=20.0, squash=0.1), Pose(tilt=-55.0,
                       Pose(tilt=-76.0, shift=20.0, squash=0.22), Pose(tilt=-88.0, shift=20.0, squash=0.24),
                       Pose(tilt=-90.0, shift=20.0, squash=0.24)]
 DEATH_STAIN = [0.0, 0.0, 0.0, 8.0, 12.0]
+# Brute (issue #101): heavy, it sinks to its knees first and then slams face down.
+BRUTE_DEATH_POSES = [Pose(tilt=-8.0, shift=34.0, squash=0.15), Pose(tilt=-30.0, shift=34.0, squash=0.25),
+                     Pose(tilt=-62.0, shift=34.0, squash=0.3), Pose(tilt=-86.0, shift=34.0, squash=0.32),
+                     Pose(tilt=-90.0, shift=34.0, squash=0.32)]
+BRUTE_DEATH_STAIN = [0.0, 0.0, 0.0, 12.0, 18.0]
+# Boomer (issue #101): the swollen warning loop near the player, and a burst on death.
+BOOMER_SWELL = 4.0
+BOOMER_DEATH_FRAMES = 4
+
+
+def brute_hit(direction: int, frame: int) -> Canvas:
+    return brute_frame(direction, 0, Pose(tilt=HIT_POSES[frame].tilt * 0.6))
+
+
+def brute_death(direction: int, frame: int) -> Canvas:
+    return brute_frame(direction, 0, BRUTE_DEATH_POSES[frame], eyes=frame == 0, stain=BRUTE_DEATH_STAIN[frame])
+
+
+def boomer_hit(direction: int, frame: int) -> Canvas:
+    return boomer_frame(direction, 1, HIT_POSES[frame])
+
+
+def boomer_swell(direction: int, frame: int) -> Canvas:
+    return boomer_frame(direction, frame, swell=BOOMER_SWELL)
+
+
+def boomer_death(direction: int, frame: int) -> Canvas:
+    """Frame 0: blown up to bursting, glowing all over. Frame 1: the burst, chunks flying. Frames 2..3: the
+    remains, a sticky pool with scraps. The explosion effect plays on top."""
+    if frame == 0:
+        c = boomer_frame(direction, 1, swell=BOOMER_SWELL + 3.0, eyes=False)
+        # Cracks of light all over the skin.
+        rng = random.Random(direction * 31 + 7)
+        for _ in range(14):
+            x, y = rng.randint(18, 45), rng.randint(22, 52)
+            if c.get(x, y) in ("dusk", "mauve", "clay"):
+                c.set(x, y, "glow")
+                c.set(x + 1, y, "yellow")
+        return c
+    c = Canvas(CHARACTER, CHARACTER)
+    cx, cy = CHARACTER / 2, CHARACTER - FOOT_MARGIN - 8
+    pool = 8.0 + 2.5 * frame
+    c.ellipse(cx, cy, pool + 1, pool * 0.5 + 1, "outline")
+    c.ellipse(cx, cy - 0.5, pool, pool * 0.5, "green_0")
+    c.ellipse(cx - 1, cy - 1, pool * 0.55, pool * 0.3, "dusk")
+    rng = random.Random(direction * 13 + frame)
+    # Chunks: high and far in the burst frame, settled on the floor afterwards.
+    reach, lift = (16.0, 14.0) if frame == 1 else (pool + 1.0, 0.0)
+    for i in range(7):
+        a = rng.uniform(0, 2 * math.pi)
+        d = rng.uniform(0.5, 1.0) * reach
+        x = cx + math.cos(a) * d
+        y = cy - math.sin(a) * d * 0.5 - lift * rng.uniform(0.4, 1.0)
+        material = ("mauve", "clay", "rags", "dusk")[i % 4]
+        color = RAMP[material][1] if material in RAMP else material
+        c.ellipse(x, y, 1.8, 1.4, color)
+    if frame == 1:
+        c.ellipse(cx, cy - 10, 5, 4, "glow")
+        c.ellipse(cx, cy - 10, 3, 2.5, "white")
+    c.outline("outline")
+    return c
+
+
+def lowest_row(c: Canvas) -> int:
+    """Index of the lowest row with a filled pixel, -1 if empty."""
+    for y in range(c.height - 1, -1, -1):
+        if any(px is not None for px in c.px[y]):
+            return y
+    return -1
+
+
+def shifted_up(c: Canvas, dy: int) -> Canvas:
+    out = Canvas(c.width, c.height)
+    out.px = c.px[dy:] + [[None] * c.width for _ in range(dy)]
+    return out
+
+
+def keep_on_canvas(frames: list[Canvas], margin: int = 1) -> list[Canvas]:
+    """A body falling towards the viewer lies below the feet and would leave the canvas at the bottom. Lifts each
+    frame just enough, never less than the frame before, so the corpse slides up smoothly instead of jumping."""
+    lift, out = 0, []
+    for c in frames:
+        lift = max(lift, lowest_row(c) - (c.height - 1 - margin))
+        out.append(shifted_up(c, lift) if lift > 0 else c)
+    return out
+
+
+def death_frames(draw, direction: int, count: int) -> list[Canvas]:
+    return keep_on_canvas([draw(direction, f) for f in range(count)])
 
 
 def walker_hit(direction: int, frame: int) -> Canvas:
@@ -1325,9 +1426,17 @@ def outputs() -> dict[str, Image.Image]:
         for frame in range(len(HIT_POSES)):
             files[f"Sprites/Enemies/Walker_Hit_{name}_{frame}.png"] = walker_hit(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Hit_{name}_{frame}.png"] = runner_hit(d, frame).to_image()
-        for frame in range(len(DEATH_STAIN)):
-            files[f"Sprites/Enemies/Walker_Death_{name}_{frame}.png"] = walker_death(d, frame).to_image()
-            files[f"Sprites/Enemies/Runner_Death_{name}_{frame}.png"] = runner_death(d, frame).to_image()
+        for enemy, draw, count in (("Walker", walker_death, len(DEATH_STAIN)), ("Runner", runner_death, len(DEATH_STAIN)),
+                                   ("Brute", brute_death, len(BRUTE_DEATH_STAIN))):
+            for frame, c in enumerate(death_frames(draw, d, count)):
+                files[f"Sprites/Enemies/{enemy}_Death_{name}_{frame}.png"] = c.to_image()
+        for frame in range(len(HIT_POSES)):
+            files[f"Sprites/Enemies/Brute_Hit_{name}_{frame}.png"] = brute_hit(d, frame).to_image()
+            files[f"Sprites/Enemies/Boomer_Hit_{name}_{frame}.png"] = boomer_hit(d, frame).to_image()
+        for frame in range(4):
+            files[f"Sprites/Enemies/Boomer_Swell_{name}_{frame}.png"] = boomer_swell(d, frame).to_image()
+        for frame in range(BOOMER_DEATH_FRAMES):
+            files[f"Sprites/Enemies/Boomer_Death_{name}_{frame}.png"] = boomer_death(d, frame).to_image()
         for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
@@ -1388,6 +1497,8 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
 ANIMATION_PREVIEWS = {
     "Walker": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Runner": [("Run", 8, 3), ("Hit", 12, 1), ("Death", 10, 1)],
+    "Brute": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
+    "Boomer": [("Walk", 8, 2), ("Hit", 12, 1), ("Swell", 12, 4), ("Death", 10, 1)],
 }
 # Pause on the last death frame before the preview loops, in milliseconds.
 PREVIEW_HOLD_MS = 800
