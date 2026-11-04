@@ -30,7 +30,25 @@ Kein Gegner darf einen Radius von 0,5 oder mehr haben: Das Flow-Field führt Geg
 - Zwischen Hindernis und Außenwand bleiben mindestens 2 Kacheln frei, sonst entsteht ein Engpass nach der Tabelle oben.
 - Spawnpunkte liegen auf freien Kacheln mit mindestens 1 Kachel Abstand zu Wänden, damit auch der Brute frei erscheint.
 
+## Spawnpunkte und Sicht
+
+- Gegner erscheinen nie im Kamerabild oder nah am Spieler (`SpawnRules`, Abstand und Rand in `SpawnerConfig`). Ein Spawnpunkt, der gerade sichtbar ist, wird übersprungen. Damit eine Zone nicht verstummt, braucht sie Spawnpunkte an **beiden Seiten und am fernen Ende**: Das Kamerabild ist 11,25 × 20 Kacheln groß, eine 24 Kacheln breite Zone hat also immer eine Seite außerhalb der Sicht.
+- Keine Spawnpunkte direkt am Eingang einer Zone; der Spieler soll nicht beim Durchschreiten eines Tores angefallen werden.
+
+## Rätsel
+
+- Mindestens ein Teil jedes Rätsels (Kreis, ein Schalter, Generator) liegt in **Sichtlinie vom Zoneneingang** und höchstens eine Bildschirmhöhe (20 Kacheln) entfernt, damit der Spieler sofort sieht, was zu tun ist. Weitere Teile (z. B. Energiezellen) dürfen hinter Wänden liegen.
+- Der Kreis der Zonen-Kontrolle liegt auf freiem Boden ohne Hindernis im Radius; rundherum bleibt Platz zum Ausweichen.
+- Zeitkritische Schalter so verteilen, dass der kürzeste Weg über alle Schalter im Zeitlimit gut, aber nicht im Schlendern zu schaffen ist (Level 1-1: etwa 33 Kacheln bei 12 s Zeitlimit und Tempo 5).
+
+## Ablauf eines Levels
+
+- Jede Zone führt höchstens einen neuen Gegnertyp ein (Level 1-1: Walker → Runner → Boomer → Brute).
+- Zonen mit Tor wiederholen ihre letzte Welle, bis das Tor offen ist; die letzte Zone endet nach ihren Wellen.
+- Der Ausgang liegt hinter dem letzten Tor.
+
 ## Prüfen
 
+- Level-Builder rufen vor dem Speichern `LevelLayoutCheck` auf (siehe `Level1_1SceneBuilder.Validate`): Alle Ziele (Tore, Rätselteile, Spawnpunkte, Ausgang) müssen für einen 2 × 2 Kacheln großen Körper erreichbar sein, Spawnpunkte brauchen 1 Kachel Abstand zu Wänden, und die Sichtlinien-Regel für Rätsel wird geprüft. Ein Verstoß bricht den Bau mit einer Liste der Probleme ab; der EditMode-Test `LevelLayoutCheckTests` prüft dasselbe.
 - Die PlayMode-Tests `BruteTests` und `RunnerTests` lassen Gegner in `Arena_Test` um Hindernisse herum zum Spieler laufen und schlagen fehl, wenn einer stecken bleibt oder in eine Wand gerät.
 - Neue Testlevel: im Editor eine Welle mit Brutes spawnen lassen und zusehen, ob alle Gegner den Spieler überall erreichen.
