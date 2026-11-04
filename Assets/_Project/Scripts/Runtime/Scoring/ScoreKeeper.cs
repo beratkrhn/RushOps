@@ -36,6 +36,9 @@ namespace RushOps.Scoring
         /// <summary>Current multiplier, 1 to the maximum.</summary>
         public int Multiplier { get; private set; } = 1;
 
+        /// <summary>Highest multiplier reached since level start (design question M6, best combo).</summary>
+        public int BestMultiplier { get; private set; } = 1;
+
         /// <summary>Kills in the running combo.</summary>
         public int ComboKills { get; private set; }
 
@@ -90,6 +93,11 @@ namespace RushOps.Scoring
             }
 
             Multiplier = multiplier;
+            if (multiplier > BestMultiplier)
+            {
+                BestMultiplier = multiplier;
+            }
+
             MultiplierChanged?.Invoke(Multiplier);
         }
     }

@@ -145,5 +145,21 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(0, _keeper.Score);
             Assert.AreEqual(1, _keeper.ComboKills);
         }
+
+        [Test]
+        public void BestMultiplier_KeepsTheHighestAfterTheComboBreaks()
+        {
+            Assert.AreEqual(1, _keeper.BestMultiplier);
+            for (int i = 0; i < 10; i++)
+            {
+                _keeper.RegisterKill(10);
+            }
+
+            _keeper.BreakCombo();
+            _keeper.RegisterKill(10);
+
+            Assert.AreEqual(1, _keeper.Multiplier);
+            Assert.AreEqual(3, _keeper.BestMultiplier);
+        }
     }
 }
