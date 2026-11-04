@@ -10,7 +10,8 @@ namespace RushOps.Editor.Scenes
     /// Builds the <c>Arena_Zonen</c> test level (issues #17, #18, #19): the arena of <see cref="ArenaTestSceneBuilder"/>
     /// in a tall layout with three zones stacked from south to north, separated by two gates. Each zone has its own
     /// spawn points and waves. The first gate is a kill gate; the second is a puzzle gate that opens once the player
-    /// held the <see cref="HoldZonePuzzle"/> in zone 2 (issues #30, #31).
+    /// held the <see cref="HoldZonePuzzle"/> in zone 2 (issues #30, #31). Zone 3 has timed switches without a gate
+    /// (issue #32).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaZonenSceneBuilder.Build</c>
     /// </summary>
     public static class ArenaZonenSceneBuilder
@@ -26,6 +27,11 @@ namespace RushOps.Editor.Scenes
         private const int GateWidth = 4;
         // Hold zone in zone 2: free floor between the pillars, away from the gates.
         private static readonly Vector2 HoldZoneCenter = new Vector2(12f, 38.5f);
+        // Timed switches in zone 3: two sides and the far end, around the pillars.
+        private static readonly Vector2[] SwitchPlates =
+        {
+            new Vector2(3.5f, 60.5f), new Vector2(20.5f, 66.5f), new Vector2(12.5f, 78.5f),
+        };
         private const string WavesDir = "Assets/_Project/Data/Waves";
         // Kills since level start that open the first gate.
         private const int KillGateKills = 10;
@@ -89,6 +95,7 @@ namespace RushOps.Editor.Scenes
             WaveDefinition[] waves = CreateWaves();
             var zonesRoot = new GameObject("Zones").transform;
             var zones = new Zone[gates.Length + 1];
+            HoldZonePuzzle hold = null;
             int bottom = 1;
             for (int i = 0; i < zones.Length; i++)
             {
@@ -99,14 +106,16 @@ namespace RushOps.Editor.Scenes
                 zones[i] = zone;
                 if (exit != null && exit.GetComponent<PuzzleSolvedCondition>() != null)
                 {
-                    HoldZonePuzzle puzzle = PuzzleBuilder.CreateHoldZone($"HoldZone_{zone.name}", HoldZoneCenter, zone, arena);
-                    PuzzleBuilder.SetPuzzles(exit.GetComponent<PuzzleSolvedCondition>(), puzzle);
+                    hold = PuzzleBuilder.CreateHoldZone($"HoldZone_{zone.name}", HoldZoneCenter, zone, arena);
+                    PuzzleBuilder.SetPuzzles(exit.GetComponent<PuzzleSolvedCondition>(), hold);
                 }
 
                 bottom = top;
             }
 
             ArenaTestSceneBuilder.AssignZones(arena, zones);
+            TimedSwitchPuzzle switches = PuzzleBuilder.CreateTimedSwitches("Switches_Zone_3", SwitchPlates, zones[2], arena);
+            PuzzleBuilder.SetLevelPuzzles(arena, hold, switches);
         }
 
         // Waves grow from zone to zone; the first two repeat their last wave until the gate opens, the last one ends.
