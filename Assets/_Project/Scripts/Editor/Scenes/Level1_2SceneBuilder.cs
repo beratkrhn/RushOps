@@ -102,7 +102,7 @@ namespace RushOps.Editor.Scenes
                 Island = 0,
                 Slot = 1,
                 ThemePath = IslandThemes.StrandPath,
-                StarScores = new Vector2Int(1800, 3600),
+                StarScores = new Vector2Int(1450, 2000),
                 DifficultyPath = LevelDifficulties.Island1Path,
                 ExitCenter = new Vector2(12f, Height - 2.25f),
                 ExitLockZone = 4,

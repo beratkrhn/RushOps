@@ -104,7 +104,7 @@ namespace RushOps.Editor.Scenes
                 Island = 0,
                 Slot = 0,
                 ThemePath = IslandThemes.StrandPath,
-                StarScores = new Vector2Int(1500, 3000),
+                StarScores = new Vector2Int(1150, 1600),
                 DifficultyPath = LevelDifficulties.Island1Path,
                 // The exit lies on the last floor rows at the north end.
                 ExitCenter = new Vector2(12f, Height - 2.25f),
