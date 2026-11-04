@@ -4,6 +4,10 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Savegame-Kern** (Issue #122, F-DAT-01, F-DAT-05, F-DAT-06, ADR 0005): Spielstand als versioniertes JSON (`save.json` in `Application.persistentDataPath`) mit Fortschritt pro Level und Statistiken. Atomares Schreiben über `save.json.tmp` und `save.json.bak`; beim Laden Hauptdatei, sonst Backup, sonst neuer Spielstand, ohne Absturz. Migrationskette pro Version (`SaveMigrator`). Der `SaveGameService` (Asset unter `Data/Save/`) lädt den Spielstand einmal und hält ihn für alle Szenen bereit. Noch nichts im Spiel speichert automatisch, das folgt mit #123.
+- `docs/backlog/v0.5.0.md`: Stories für v0.5.0 (#122 bis #131).
+
 ## [0.4.0] – 2026-11-04
 
 ### Hinzugefügt
