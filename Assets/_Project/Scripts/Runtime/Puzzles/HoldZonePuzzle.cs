@@ -1,3 +1,4 @@
+using RushOps.Levels;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
@@ -15,6 +16,8 @@ namespace RushOps.Puzzles
         private const float SpriteRadius = 2f;
 
         [SerializeField] private HoldZoneConfig _holdConfig;
+        [Tooltip("Difficulty of the level; adds to the hold duration. Empty = as in the hold zone config.")]
+        [SerializeField] private LevelDifficulty _difficulty;
         [Tooltip("Whose feet must be inside the circle.")]
         [SerializeField] private Transform _player;
         [SerializeField] private SpriteRenderer _ring;
@@ -38,7 +41,8 @@ namespace RushOps.Puzzles
         public override PuzzleDisplay Display =>
             PuzzleDisplay.WithProgress(_holdConfig != null ? _holdConfig.Text : string.Empty, Progress);
 
-        private HoldProgress Hold => _progress ??= new HoldProgress(_holdConfig != null ? _holdConfig.Duration : 0f);
+        private HoldProgress Hold => _progress ??= new HoldProgress(
+            DifficultyMath.HoldDuration(_holdConfig != null ? _holdConfig.Duration : 0f, _difficulty));
 
         /// <inheritdoc />
         protected override void OnSolved()

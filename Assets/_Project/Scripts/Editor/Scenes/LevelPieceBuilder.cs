@@ -20,12 +20,15 @@ namespace RushOps.Editor.Scenes
         public static readonly Vector2 ExitSize = new Vector2(4f, 1.5f);
 
         /// <summary>
-        /// A gate of <paramref name="width"/> x 1 cells centered at <paramref name="center"/>. With
-        /// <paramref name="killGateKills"/> above 0 it is a kill gate; otherwise it gets a
-        /// <see cref="PuzzleSolvedCondition"/> whose puzzles are set later with <see cref="PuzzleBuilder.SetPuzzles"/>.
+        /// A gate of <paramref name="width"/> x 1 cells (1 x <paramref name="width"/> if <paramref name="vertical"/>)
+        /// centered at <paramref name="center"/>. With <paramref name="killGateKills"/> above 0 it is a kill gate;
+        /// otherwise it gets a <see cref="PuzzleSolvedCondition"/> whose puzzles are set later with
+        /// <see cref="PuzzleBuilder.SetPuzzles"/>. With both <paramref name="killGateKills"/> and
+        /// <paramref name="withPuzzles"/> it waits for kills and puzzles (<see cref="GateConditionGroup"/>, decision L2).
         /// </summary>
         public static Gate CreateGate(
-            string name, Transform parent, Vector2 center, int width, ArenaScene arena, int killGateKills)
+            string name, Transform parent, Vector2 center, int width, ArenaScene arena, int killGateKills,
+            bool vertical = false, bool withPuzzles = false)
         {
             var config = ArenaTestSceneBuilder.LoadOrCreateConfig<GateConfig>(GateConfigPath);
             Sprite[] frames = arena.Theme != null ? arena.Theme.GateFrames : null;
@@ -41,39 +44,53 @@ namespace RushOps.Editor.Scenes
             // On the walls layer, so the player, enemies and shots treat a closed gate like a wall.
             go.layer = ArenaTestSceneBuilder.RequireLayer(ArenaTestSceneBuilder.WallsLayer);
             var blocker = go.AddComponent<BoxCollider2D>();
-            blocker.size = new Vector2(width, 1f);
+            blocker.size = vertical ? new Vector2(1f, width) : new Vector2(width, 1f);
 
             var bars = new SpriteRenderer[width];
             for (int i = 0; i < width; i++)
             {
                 var bar = new GameObject($"Bars_{i}");
                 bar.transform.SetParent(go.transform, false);
-                bar.transform.localPosition = new Vector3(i - (width - 1) * 0.5f, 0f, 0f);
+                float offset = i - (width - 1) * 0.5f;
+                bar.transform.localPosition = vertical ? new Vector3(0f, offset, 0f) : new Vector3(offset, 0f, 0f);
                 bars[i] = bar.AddComponent<SpriteRenderer>();
                 bars[i].sprite = barSprite;
                 bars[i].sortingOrder = ArenaTestSceneBuilder.ActorSortingOrder;
             }
 
             MonoBehaviour condition;
+            KillGateCondition kills = null;
             if (killGateKills > 0)
             {
-                var kills = go.AddComponent<KillGateCondition>();
+                kills = go.AddComponent<KillGateCondition>();
                 var serializedKills = new SerializedObject(kills);
                 serializedKills.FindProperty("_kills").objectReferenceValue = arena.Kills;
                 serializedKills.FindProperty("_requiredKills").intValue = killGateKills;
                 serializedKills.ApplyModifiedPropertiesWithoutUndo();
-                condition = kills;
+            }
+
+            if (kills != null && withPuzzles)
+            {
+                var puzzles = go.AddComponent<PuzzleSolvedCondition>();
+                var group = go.AddComponent<GateConditionGroup>();
+                var serializedGroup = new SerializedObject(group);
+                SerializedProperty list = serializedGroup.FindProperty("_conditions");
+                list.arraySize = 2;
+                list.GetArrayElementAtIndex(0).objectReferenceValue = kills;
+                list.GetArrayElementAtIndex(1).objectReferenceValue = puzzles;
+                serializedGroup.ApplyModifiedPropertiesWithoutUndo();
+                condition = group;
             }
             else
             {
-                condition = go.AddComponent<PuzzleSolvedCondition>();
+                condition = kills != null ? kills : go.AddComponent<PuzzleSolvedCondition>();
             }
 
             var gate = go.AddComponent<Gate>();
             var serialized = new SerializedObject(gate);
             serialized.FindProperty("_config").objectReferenceValue = config;
             serialized.FindProperty("_condition").objectReferenceValue = condition;
-            serialized.FindProperty("_size").vector2IntValue = new Vector2Int(width, 1);
+            serialized.FindProperty("_size").vector2IntValue = vertical ? new Vector2Int(1, width) : new Vector2Int(width, 1);
             serialized.FindProperty("_blocker").objectReferenceValue = blocker;
             serialized.FindProperty("_navigator").objectReferenceValue = arena.Navigator;
             serialized.FindProperty("_sfx").objectReferenceValue = arena.Sfx;

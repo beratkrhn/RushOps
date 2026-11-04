@@ -177,6 +177,21 @@ namespace RushOps.Tests.EditMode
             Assert.IsEmpty(requests);
         }
 
+        [Test]
+        public void Density_ShortensSpawnIntervalAndPause()
+        {
+            // Decision C3: denser waves on later islands.
+            var sequence = new WaveSequence(
+                Waves(AfterLastWave.RepeatAll, 1f, 4f, new Wave(new WaveEntry(_walker, 2))), 2f);
+            var requests = Record(sequence);
+            sequence.Start();
+
+            sequence.Tick(0.01f);
+            Assert.AreEqual(1, requests.Count);
+            sequence.Tick(0.5f);
+            Assert.AreEqual(2, requests.Count, "interval 1 s at density 2 is 0.5 s");
+        }
+
         private WaveDefinition Waves(AfterLastWave after, float interval, float pause, params Wave[] waves)
         {
             var definition = Create<WaveDefinition>();

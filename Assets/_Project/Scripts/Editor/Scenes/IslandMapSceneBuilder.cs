@@ -35,6 +35,8 @@ namespace RushOps.Editor.Scenes
         private static readonly Vector2 ArrowTouchArea = new Vector2(96f, 44f);
         private const float StarSpacing = 17f;
         private const float BelowNode = 30f;
+        // Level name one text line under the stars (decision C11).
+        private const float NameBelowStars = 11f;
         private static readonly Color Sea = new Color32(13, 43, 69, 255);
 
         [MenuItem("RushOps/Szenen/IslandMap erzeugen")]
@@ -163,6 +165,8 @@ namespace RushOps.Editor.Scenes
             Text label = ArenaTestSceneBuilder.CreateText("Label", rect, font, $"{islandIndex + 1}-{level + 1}", 1, Vector2.zero);
             label.color = new Color32(13, 11, 20, 255);
             Text soon = ArenaTestSceneBuilder.CreateText("Soon", rect, font, "bald", 1, new Vector2(0f, -BelowNode + 6f));
+            Text levelName = ArenaTestSceneBuilder.CreateText("Name", rect, font, string.Empty, 1, new Vector2(0f, -BelowNode - NameBelowStars));
+            levelName.enabled = false;
             var stars = new Image[StarRating.MaxStars];
             Sprite empty = ArenaTestSceneBuilder.LoadUiSprite("Star_Empty.png");
             for (int i = 0; i < stars.Length; i++)
@@ -186,6 +190,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_button").objectReferenceValue = button;
             serialized.FindProperty("_label").objectReferenceValue = label;
             serialized.FindProperty("_soon").objectReferenceValue = soon;
+            serialized.FindProperty("_name").objectReferenceValue = levelName;
             SetArray(serialized.FindProperty("_stars"), stars);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return node;

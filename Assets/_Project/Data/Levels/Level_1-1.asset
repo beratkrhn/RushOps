@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dd04b125ff784be6a5c229f9a6a90982, type: 3}
   m_Name: Level_1-1
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
-  _displayName: Level 1-1
+  _displayName: Strandbad
   _sceneName: Level_1-1
   _twoStarScore: 1500
   _threeStarScore: 3000

@@ -24,6 +24,8 @@ namespace RushOps.Enemies
         [SerializeField] private Transform _player;
         [Tooltip("Camera whose view excludes spawn points; the main camera if empty.")]
         [SerializeField] private Camera _camera;
+        [Tooltip("Difficulty of the level; its wave density shortens spawn intervals and pauses. Empty = as in the waves.")]
+        [SerializeField] private LevelDifficulty _difficulty;
 
         private readonly SpawnQueue _queue = new SpawnQueue();
         private readonly Dictionary<Enemy, WaveSequence> _owners = new Dictionary<Enemy, WaveSequence>();
@@ -152,7 +154,7 @@ namespace RushOps.Enemies
 
         private WaveSequence CreateSequence(int owner, WaveDefinition waves)
         {
-            var sequence = new WaveSequence(waves);
+            var sequence = new WaveSequence(waves, _difficulty != null ? _difficulty.WaveDensity : 1f);
             sequence.SpawnRequested += enemy => OnSpawnRequested(owner, sequence, enemy);
             sequence.WaveStarted += wave => WaveStarted?.Invoke(_zones[owner], wave);
             return sequence;

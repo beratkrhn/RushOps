@@ -6,6 +6,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ### Hinzugefügt
 - **Kill-Gates ab Zone zählen** (Issue #147, F-LVL-03, Entscheidung P1): `KillGateCondition` hat das Feld „Count From Zone“. Ist eine Zone eingetragen, zählen nur Kills nach dem Betreten dieser Zone; Nuke- und Explosions-Kills zählen weiter mit, der Missions-Tracker zeigt die Kills ab Betreten. Ohne Zone bleibt es beim globalen Zählen ab Levelstart (Level 1-1 unverändert). Für Level-Builder gibt es `LevelPieceBuilder.CountKillsFromZone`.
+- **Level-Baukasten** (Issue #148, ADR 0010): Level werden als `LevelBlueprint` beschrieben (Wände, Trennwände mit Toren, Zonen, Wellen, Rätsel, Ausgang) und von `LevelBlueprintBuilder` geprüft, gebaut und in die `Campaign` eingetragen. Level 1-1 ist darauf umgestellt und kommt unverändert heraus. Tore können senkrecht in seitlichen Abzweigungen stehen (L3) und an Kills und Rätseln zugleich hängen (`GateConditionGroup`, L2); der Missions-Tracker zeigt dann beide Zeilen untereinander.
+- **Schwierigkeit pro Insel** (Entscheidung C3): ScriptableObject `LevelDifficulty` mit Wellendichte, Faktor auf Schalter-Zeitlimits und Zusatz-Haltezeit; Insel 1 neutral, Insel 2 Wellen 20 % dichter und +3 s Haltezeit, Insel 3 zusätzlich Schalter −20 %.
+- **Levelname auf der Inselkarte** (C11): unter den Sternen steht der Kurzname aus der `LevelDefinition`; Level 1-1 heißt „Strandbad“.
 
 ## [0.5.0] – 2026-11-04
 

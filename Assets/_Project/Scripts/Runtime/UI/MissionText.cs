@@ -21,6 +21,12 @@ namespace RushOps.UI
             return $"Tor gesperrt: {kills}/{required} Kills";
         }
 
+        /// <summary>Two conditions of one gate one below the other (decision L2), e.g. kills over the puzzle.</summary>
+        public static string Lines(string first, string second)
+        {
+            return $"{first}\n{second}";
+        }
+
         /// <summary>
         /// Text of a puzzle: its own text, for a countdown followed by the whole seconds left rounded up, e.g.
         /// „Schalter: 7 s“.
