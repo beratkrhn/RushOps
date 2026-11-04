@@ -4,6 +4,7 @@ using NUnit.Framework;
 using RushOps.Enemies;
 using RushOps.Levels;
 using RushOps.Navigation;
+using RushOps.Player;
 using RushOps.Puzzles;
 using RushOps.UI;
 using UnityEngine;
@@ -59,67 +60,79 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator PuzzleGate_Solved_OpensFreesPassageAndCompletesZone()
+        public IEnumerator HoldZone_Held_SolvesPuzzle_OpensGate_TrackerShowsGateOpen()
         {
             yield return null;
             Gate gate = Find<Gate>("Gate_2");
             Assert.IsInstanceOf<PuzzleSolvedCondition>(gate.Condition, "Gate_2 should be a puzzle gate");
+            var hold = Find<HoldZonePuzzle>("HoldZone_Zone_2");
             FlowFieldNavigator navigator = Object.FindFirstObjectByType<FlowFieldNavigator>();
+            MissionTracker tracker = Object.FindFirstObjectByType<MissionTracker>();
+            KeepPlayerAlive();
             bool opened = false;
             gate.Opened += _ => opened = true;
 
-            Find<DebugPuzzle>("Puzzle_Zone_2").Force();
+            Teleport(hold.transform.position);
+            // Speeds up the 10 s hold; the result must not depend on the frame rate.
+            Time.timeScale = 5f;
+            float timeout = Time.realtimeSinceStartup + 8f;
+            while (Time.realtimeSinceStartup < timeout && hold.State != PuzzleState.Solved)
+            {
+                yield return null;
+            }
+
+            Assert.AreEqual(PuzzleState.Solved, hold.State, "holding the zone did not solve it");
             yield return null;
-            Assert.AreEqual(GateState.Opening, gate.State);
-            yield return new WaitForSeconds(1.5f);
+            Assert.AreEqual(MissionText.GateOpen, tracker.Text);
+            Assert.IsFalse(tracker.ShowsProgress);
+            timeout = Time.realtimeSinceStartup + 3f;
+            while (Time.realtimeSinceStartup < timeout && gate.State != GateState.Open)
+            {
+                yield return null;
+            }
 
             Assert.IsTrue(opened);
-            Assert.AreEqual(GateState.Open, gate.State);
             Assert.IsNull(Physics2D.OverlapPoint(gate.transform.position, LayerMask.GetMask("Walls")), "Open gate still blocks");
             Assert.IsTrue(navigator.Field.IsWalkable(navigator.CellOf(gate.transform.position)));
             Assert.AreEqual(ZoneState.Completed, Find<Zone>("Zone_2").State);
         }
 
         [UnityTest]
-        public IEnumerator Puzzle_InactiveUntilItsZoneIsActive_ThenTrackerShowsProgress()
+        public IEnumerator HoldZone_FillsOnlyInside_PausesOutside_TrackerShowsBar()
         {
             yield return null;
-            var puzzle = Find<DebugPuzzle>("Puzzle_Zone_2");
+            var hold = Find<HoldZonePuzzle>("HoldZone_Zone_2");
             Zone zone = Find<Zone>("Zone_2");
             MissionTracker tracker = Object.FindFirstObjectByType<MissionTracker>();
-            Assert.AreEqual(PuzzleState.Inactive, puzzle.State);
-            Assert.IsFalse(tracker.ShowsProgress);
+            KeepPlayerAlive();
+            Assert.AreEqual(PuzzleState.Inactive, hold.State);
 
-            var body = zone.Player.GetComponent<Rigidbody2D>();
-            body.position = zone.transform.position;
-            zone.Player.position = zone.transform.position;
-            yield return new WaitForFixedUpdate();
-            yield return null;
+            // In zone 2, but outside the circle.
+            Vector2 outside = (Vector2)hold.transform.position + new Vector2(0f, hold.Radius + 1.5f);
+            Assert.IsTrue(zone.Contains(outside));
+            Teleport(outside);
             yield return new WaitForSeconds(0.5f);
 
-            Assert.AreEqual(PuzzleState.Active, puzzle.State);
-            Assert.AreEqual(MissionText.Puzzle(puzzle.Display), tracker.Text);
-            Assert.IsTrue(tracker.ShowsProgress, "no progress bar for the puzzle");
-            Assert.Greater(tracker.Progress, 0f, "progress bar does not fill");
-        }
+            Assert.AreEqual(PuzzleState.Active, hold.State, "puzzle did not become active with its zone");
+            Assert.AreEqual(0f, hold.Progress, "progress rose outside the circle");
+            Assert.AreEqual(MissionText.Puzzle(hold.Display), tracker.Text);
+            Assert.IsTrue(tracker.ShowsProgress, "no progress bar for the hold zone");
 
-        [UnityTest]
-        public IEnumerator PuzzleSolved_TrackerShowsGateOpen_AndHidesBar()
-        {
-            Zone zone = Find<Zone>("Zone_2");
-            var body = zone.Player.GetComponent<Rigidbody2D>();
-            body.position = zone.transform.position;
-            zone.Player.position = zone.transform.position;
+            Teleport(hold.transform.position);
+            yield return new WaitForSeconds(1f);
+            Assert.IsTrue(hold.PlayerInside);
+            float held = hold.Progress;
+            Assert.Greater(held, 0.05f, "progress did not rise inside the circle");
+            Assert.AreEqual(held, tracker.Progress, 0.02f, "HUD bar does not follow the progress");
+
+            Teleport(outside);
             yield return new WaitForFixedUpdate();
-            yield return new WaitForSeconds(0.2f);
-            MissionTracker tracker = Object.FindFirstObjectByType<MissionTracker>();
-
-            Find<DebugPuzzle>("Puzzle_Zone_2").Force();
             yield return null;
-            yield return null;
+            float paused = hold.Progress;
+            yield return new WaitForSeconds(1f);
 
-            Assert.AreEqual(MissionText.GateOpen, tracker.Text);
-            Assert.IsFalse(tracker.ShowsProgress);
+            Assert.AreEqual(paused, hold.Progress, 1e-5f, "progress did not pause outside the circle");
+            Assert.Greater(paused, 0f, "progress dropped outside the circle");
         }
 
         [UnityTest]
@@ -219,6 +232,26 @@ namespace RushOps.Tests.PlayMode
             {
                 CollectionAssert.Contains(second.SpawnPoints, point);
             }
+        }
+
+        [TearDown]
+        public void RestoreTime()
+        {
+            Time.timeScale = 1f;
+        }
+
+        // Enemies of zone 2 must not interfere with the hold tests.
+        private static void KeepPlayerAlive()
+        {
+            Object.FindFirstObjectByType<WaveDirector>().enabled = false;
+            Object.FindFirstObjectByType<LevelRestarter>().enabled = false;
+        }
+
+        private static void Teleport(Vector2 position)
+        {
+            var body = Object.FindFirstObjectByType<PlayerHealth>().GetComponent<Rigidbody2D>();
+            body.position = position;
+            body.transform.position = position;
         }
 
         private static T Find<T>(string name) where T : Component

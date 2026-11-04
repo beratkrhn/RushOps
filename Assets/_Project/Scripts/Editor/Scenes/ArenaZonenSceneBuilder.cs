@@ -9,8 +9,8 @@ namespace RushOps.Editor.Scenes
     /// <summary>
     /// Builds the <c>Arena_Zonen</c> test level (issues #17, #18, #19): the arena of <see cref="ArenaTestSceneBuilder"/>
     /// in a tall layout with three zones stacked from south to north, separated by two gates. Each zone has its own
-    /// spawn points and waves. The first gate is a kill gate; the second is a puzzle gate whose <see cref="DebugPuzzle"/>
-    /// in zone 2 solves itself some seconds after the zone became active (issue #30).
+    /// spawn points and waves. The first gate is a kill gate; the second is a puzzle gate that opens once the player
+    /// held the <see cref="HoldZonePuzzle"/> in zone 2 (issues #30, #31).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaZonenSceneBuilder.Build</c>
     /// </summary>
     public static class ArenaZonenSceneBuilder
@@ -24,9 +24,8 @@ namespace RushOps.Editor.Scenes
         private static readonly int[] DividerRows = { 27, 55 };
         private const int GateX = 10;
         private const int GateWidth = 4;
-        // The debug puzzle is solved this many seconds after its zone became active, leaving time for some waves.
-        private const float DebugPuzzleDuration = 20f;
-        private const string PuzzleConfigPath = "Assets/_Project/Data/Puzzles/PuzzleConfig.asset";
+        // Hold zone in zone 2: free floor between the pillars, away from the gates.
+        private static readonly Vector2 HoldZoneCenter = new Vector2(12f, 38.5f);
         private const string WavesDir = "Assets/_Project/Data/Waves";
         // Kills since level start that open the first gate.
         private const int KillGateKills = 10;
@@ -100,34 +99,14 @@ namespace RushOps.Editor.Scenes
                 zones[i] = zone;
                 if (exit != null && exit.GetComponent<PuzzleSolvedCondition>() != null)
                 {
-                    DebugPuzzle puzzle = CreateDebugPuzzle($"Puzzle_{zone.name}", zone, arena);
-                    var condition = new SerializedObject(exit.GetComponent<PuzzleSolvedCondition>());
-                    SerializedProperty puzzles = condition.FindProperty("_puzzles");
-                    puzzles.arraySize = 1;
-                    puzzles.GetArrayElementAtIndex(0).objectReferenceValue = puzzle;
-                    condition.ApplyModifiedPropertiesWithoutUndo();
+                    HoldZonePuzzle puzzle = PuzzleBuilder.CreateHoldZone($"HoldZone_{zone.name}", HoldZoneCenter, zone, arena);
+                    PuzzleBuilder.SetPuzzles(exit.GetComponent<PuzzleSolvedCondition>(), puzzle);
                 }
 
                 bottom = top;
             }
 
             ArenaTestSceneBuilder.AssignZones(arena, zones);
-        }
-
-        private static DebugPuzzle CreateDebugPuzzle(string name, Zone zone, ArenaScene arena)
-        {
-            var go = new GameObject(name);
-            go.transform.position = zone.transform.position;
-            var puzzle = go.AddComponent<DebugPuzzle>();
-            var serialized = new SerializedObject(puzzle);
-            serialized.FindProperty("_zone").objectReferenceValue = zone;
-            serialized.FindProperty("_config").objectReferenceValue =
-                ArenaTestSceneBuilder.LoadOrCreateConfig<PuzzleConfig>(PuzzleConfigPath);
-            serialized.FindProperty("_sfx").objectReferenceValue = arena.Sfx;
-            serialized.FindProperty("_solvedClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("PuzzleSolved.wav");
-            serialized.FindProperty("_duration").floatValue = DebugPuzzleDuration;
-            serialized.ApplyModifiedPropertiesWithoutUndo();
-            return puzzle;
         }
 
         // Waves grow from zone to zone; the first two repeat their last wave until the gate opens, the last one ends.
