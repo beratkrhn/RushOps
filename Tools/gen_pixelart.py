@@ -37,7 +37,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Level/Generator_On.png           32x48 generator running, slot and lights glowing (issue #33)
   Sprites/UI/Dash_Locked.png               24x24 padlock over the dash button while it is locked (issue #33)
   Sprites/UI/Star_Full.png                 16x16 earned star on the result screen (issue #35)
-  Sprites/Level/Exit_Pad.png               128x48 glowing exit field on the floor with arrows pointing on (issue #35)
+  Sprites/Level/Exit_Pad.png               128x48 glowing exit field on the floor with arrows pointing on (issue #35, #103)
+  Sprites/Level/Exit_Pad_Locked.png        128x48 the exit while locked: dark plate, red rim and padlock (issue #103)
   Sprites/UI/Star_Empty.png                16x16 missing star on the result screen (issue #35)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
@@ -792,16 +793,27 @@ def explosion_frame(frame: int) -> Canvas:
 
 
 def spawn_marker() -> Canvas:
-    """Flat warning ring on the floor, squashed for the oblique view, with four inward ticks."""
+    """Cracked floor glowing red from below where an enemy is about to climb out (issue #103): a dim warning ring,
+    squashed for the oblique view, around a star of glowing cracks with a hot centre."""
     c = Canvas(32, 32)
-    c.ellipse(16.0, 16.0, 13.0, 8.0, "red_0")
-    c.ellipse(16.0, 16.0, 11.0, 6.5, "red_1")
-    c.ellipse(16.0, 16.0, 9.0, 5.0, None)
-    for x, y in [(16, 9), (16, 22), (3, 16), (28, 16)]:
+    c.ellipse(16.0, 16.5, 14.0, 8.5, "red_0")
+    c.ellipse(16.0, 16.5, 12.5, 7.3, None)
+    for x, y in [(16, 8), (16, 25), (2, 16), (29, 16)]:
         c.set(x, y, "orange")
-    for x, y in [(15, 10), (17, 10), (15, 21), (17, 21)]:
-        c.set(x, y, "red_1")
-    c.ellipse(16.0, 16.0, 2.0, 1.2, "red_0")
+    # Cracks: jagged strokes out from the centre.
+    cracks = [[(16, 16), (13, 14), (11, 14), (8, 12)], [(16, 16), (19, 14), (21, 15), (24, 13)],
+              [(16, 16), (14, 19), (12, 20), (10, 21)], [(16, 16), (18, 19), (21, 20), (23, 21)],
+              [(16, 16), (16, 13), (17, 11)]]
+    for crack in cracks:
+        for (x0, y0), (x1, y1) in zip(crack, crack[1:]):
+            steps = max(abs(x1 - x0), abs(y1 - y0))
+            for i in range(steps + 1):
+                x = round(x0 + (x1 - x0) * i / steps)
+                y = round(y0 + (y1 - y0) * i / steps)
+                c.set(x, y + 1, "red_0")
+                c.set(x, y, "red_1")
+    c.ellipse(16.0, 16.0, 3.0, 2.0, "orange")
+    c.ellipse(16.0, 16.0, 1.6, 1.1, "yellow")
     return c
 
 
@@ -945,21 +957,28 @@ HOLD_ZONE = 128
 
 def hold_zone_ring() -> Canvas:
     """Rim of a hold-the-line zone, a true circle on the floor grid (radius 2 tiles = 64 px) so it matches the area
-    the game checks: a bright blue rim with a dark inner edge and short ticks pointing inward every 45 degrees."""
+    the game checks (issue #103): a dashed bright blue rim on a dark band, glowing marks every 45 degrees with
+    short ticks pointing inward."""
     c = Canvas(HOLD_ZONE, HOLD_ZONE)
     cx = cy = HOLD_ZONE / 2
     for y in range(HOLD_ZONE):
         for x in range(HOLD_ZONE):
             r = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
+            a = math.degrees(math.atan2(cy - y - 0.5, x + 0.5 - cx)) % 360.0
             if 61.0 <= r <= 63.5:
-                c.set(x, y, "blue_2")
-            elif 59.5 <= r < 61.0:
+                # 24 dashes, bright with a darker gap.
+                c.set(x, y, "blue_2" if (a % 15.0) < 11.0 else "blue_1")
+            elif 59.0 <= r < 61.0:
                 c.set(x, y, "blue_0")
     for k in range(8):
         a = math.radians(k * 45.0)
-        for step in range(5):
-            r = 58.5 - step
-            c.set(int(cx + math.cos(a) * r), int(cy - math.sin(a) * r), "blue_1" if step else "glow")
+        for step in range(6):
+            r = 62.5 - step
+            c.set(int(cx + math.cos(a) * r), int(cy - math.sin(a) * r), "glow" if step < 3 else "blue_2")
+        # Small bright marker on the rim.
+        for da in (-1.2, 1.2):
+            b = a + math.radians(da)
+            c.set(int(cx + math.cos(b) * 62.0), int(cy - math.sin(b) * 62.0), "white")
     return c
 
 
@@ -972,64 +991,105 @@ def hold_zone_fill() -> Canvas:
 
 
 def floor_switch(on: bool) -> Canvas:
-    """Square pressure plate on the floor. Off: raised plate with a dim red lamp. On: the plate sits lower and darker
-    while the lamp glows green with a bright ring, readable from across the screen."""
+    """Square pressure plate on the floor (issue #103), the same on every island. A steel frame with hazard stripes in
+    the corners holds a raised button. Off: the button stands proud (front face visible) with a dim red lamp.
+    On: the button is pressed flush and glows green with a bright ring and light spilling onto the frame."""
     c = Canvas(TILE, TILE)
-    c.rect(3, 3, 28, 28, "slate_0")
-    top = 5 if not on else 6
-    c.rect(5, top, 26, 26, "slate_2" if not on else "slate_1")
-    if not on:
-        c.rect(5, 5, 26, 5, "slate_3")
-        c.rect(5, 26, 26, 26, "slate_1")
+    # Frame with a lit top edge and a dark front edge.
+    c.rect(2, 3, 29, 29, "slate_1")
+    c.rect(2, 3, 29, 3, "slate_3")
+    c.rect(2, 29, 29, 29, "slate_0")
+    c.rect(4, 5, 27, 27, "slate_0")
+    # Hazard stripes in the four corners.
+    for x0, y0 in ((2, 3), (25, 3), (2, 25), (25, 25)):
+        for i in range(5):
+            for j in range(5):
+                if (i + j) % 4 < 2:
+                    c.set(x0 + i, y0 + j, "yellow")
     if on:
-        c.ellipse(16.0, 16.5, 9.0, 9.0, "green_1")
-        c.ellipse(16.0, 16.5, 7.0, 7.0, "green_2")
-        c.ellipse(16.0, 16.5, 4.0, 4.0, "glow")
+        c.rect(6, 7, 25, 26, "slate_1")
+        c.ellipse(16.0, 16.5, 10.0, 10.0, "green_0")
+        c.ellipse(16.0, 16.5, 8.5, 8.5, "green_1")
+        c.ellipse(16.0, 16.5, 6.5, 6.5, "green_2")
+        c.ellipse(16.0, 16.5, 3.5, 3.5, "glow")
+        c.set(14, 14, "white")
+        # Light spilling into the frame.
+        for x, y in ((16, 5), (16, 27), (4, 16), (27, 16)):
+            c.set(x, y, "green_2")
     else:
-        c.ellipse(16.0, 16.0, 6.0, 6.0, "red_0")
-        c.ellipse(15.0, 15.0, 2.0, 2.0, "red_1")
+        # Raised button: top face and a visible front face.
+        c.rect(6, 6, 25, 22, "slate_2")
+        c.rect(6, 6, 25, 6, "slate_4")
+        c.rect(6, 23, 25, 25, "slate_1")
+        c.rect(6, 26, 25, 26, "night")
+        c.ellipse(16.0, 14.5, 6.0, 5.0, "red_0")
+        c.ellipse(16.0, 14.0, 4.0, 3.2, "red_1")
+        c.set(14, 12, "orange")
+        c.set(15, 12, "orange")
     c.outline()
     return c
 
 
 def energy_cell() -> Canvas:
-    """Upright energy cell: dark caps at both ends, a glowing green core with a bright stripe."""
+    """Upright energy cell (issue #103): steel caps with terminals at both ends, a glowing green core in a glass tube
+    with a bright highlight and a lightning bolt."""
     c = Canvas(16, 16)
-    c.rect(5, 1, 10, 2, "slate_2")
-    c.rect(4, 3, 11, 13, "slate_1")
+    c.rect(6, 0, 9, 1, "slate_3")
+    c.rect(4, 2, 11, 3, "slate_2")
+    c.rect(4, 2, 11, 2, "slate_4")
+    c.rect(4, 4, 11, 12, "green_0")
     c.rect(5, 4, 10, 12, "green_1")
     c.rect(6, 4, 9, 12, "green_2")
-    c.rect(7, 5, 7, 11, "glow")
-    c.rect(4, 14, 11, 14, "slate_2")
-    c.rect(5, 8, 10, 8, "slate_1")
+    c.rect(5, 5, 5, 11, "glow")
+    # Lightning bolt.
+    for x, y in ((9, 5), (8, 6), (7, 7), (8, 7), (9, 7), (8, 8), (7, 9), (6, 10)):
+        c.set(x, y, "white")
+    c.rect(4, 13, 11, 14, "slate_2")
+    c.rect(4, 14, 11, 14, "slate_0")
     c.outline()
     return c
 
 
 def generator(on: bool) -> Canvas:
-    """Squat machine with a cell slot in front and two lamps on top; running, the slot and lamps glow green."""
+    """Squat machine (issue #103), the same on every island: a lit top with two lamps and a vent grille, a hazard
+    band, a cell slot in the front panel with a lightning sign above it and cables at the foot. Running, the
+    slot, lamps and sign glow green and yellow; waiting, the lamps are red and the slot is dark."""
     c = Canvas(32, 48)
-    c.rect(4, 14, 27, 45, "slate_1")
-    c.rect(4, 14, 27, 17, "slate_3")
-    c.rect(6, 18, 25, 43, "slate_2")
-    c.rect(4, 44, 27, 45, "slate_0")
+    # Top face (seen from above) and front face.
+    c.rect(4, 12, 27, 19, "slate_3")
+    c.rect(4, 12, 27, 12, "slate_4")
+    for x in range(12, 21, 2):
+        c.rect(x, 14, x, 17, "slate_1")
+    c.rect(4, 20, 27, 45, "slate_1")
+    c.rect(6, 22, 25, 43, "slate_2")
+    # Hazard band.
+    for x in range(4, 28):
+        c.set(x, 20, "yellow" if (x // 2) % 2 == 0 else "night")
+        c.set(x, 21, "yellow" if ((x + 1) // 2) % 2 == 0 else "night")
     # Lamps on top.
-    for x in (9, 22):
-        c.rect(x - 2, 9, x + 2, 13, "slate_0")
-        c.rect(x - 1, 10, x + 1, 12, "green_2" if on else "red_0")
-        if on:
-            c.set(x, 11, "glow")
+    for x in (7, 24):
+        c.rect(x - 2, 7, x + 2, 12, "slate_0")
+        c.rect(x - 1, 8, x + 1, 10, "green_2" if on else "red_0")
+        c.set(x - 1, 8, "glow" if on else "red_1")
+    # Lightning sign.
+    bolt = ((17, 24), (16, 25), (15, 26), (16, 26), (17, 26), (16, 27), (15, 28))
+    for x, y in bolt:
+        c.set(x, y, "yellow" if on else "slate_3")
     # Cell slot.
-    c.rect(11, 24, 20, 39, "night")
+    c.rect(11, 30, 20, 41, "night")
     if on:
-        c.rect(12, 25, 19, 38, "green_1")
-        c.rect(14, 26, 17, 37, "green_2")
-        c.rect(15, 27, 16, 36, "glow")
+        c.rect(12, 31, 19, 40, "green_1")
+        c.rect(13, 31, 18, 40, "green_2")
+        c.rect(14, 32, 14, 39, "glow")
+        c.rect(10, 30, 10, 41, "green_2")
+        c.rect(21, 30, 21, 41, "green_2")
     else:
-        c.rect(12, 25, 19, 26, "slate_0")
-    # Vents.
-    for y in (20, 41):
-        c.rect(8, y, 23, y, "slate_1")
+        c.rect(12, 31, 19, 32, "slate_0")
+        c.rect(12, 40, 19, 40, "slate_0")
+    # Foot and cables.
+    c.rect(3, 44, 28, 45, "slate_0")
+    c.rect(0, 43, 3, 44, "night")
+    c.rect(28, 42, 31, 43, "night")
     c.outline()
     return c
 
@@ -1085,19 +1145,44 @@ def star(full: bool) -> Canvas:
     return c
 
 
-def exit_pad() -> Canvas:
-    """Level exit on the floor: a dark green field with a bright rim and three chevrons pointing up (north)."""
+def exit_pad(open_: bool = True) -> Canvas:
+    """Level exit on the floor (issue #103). Open: a green field with a bright, dashed rim and three glowing
+    chevrons pointing on (north). Locked: the same plate dark grey with a red rim, unlit chevrons and a red padlock
+    in the middle, so it reads as "not yet" from across the screen."""
     c = Canvas(128, 48)
-    c.rect(2, 2, 125, 45, "green_2")
-    c.rect(4, 4, 123, 43, "green_0")
-    c.rect(6, 6, 121, 41, "green_1")
+    rim, edge, field, chevron = (("green_2", "green_0", "green_1", "glow") if open_
+                                 else ("red_1", "slate_0", "slate_1", "slate_2"))
+    c.rect(2, 2, 125, 45, rim)
+    # Dashes along the rim.
+    for x in range(2, 126):
+        if (x // 4) % 2 == 0:
+            c.set(x, 2, edge if not open_ else "glow")
+            c.set(x, 45, edge)
+    c.rect(4, 4, 123, 43, edge)
+    c.rect(6, 6, 121, 41, field)
     for cx in (32, 64, 96):
+        if not open_ and cx == 64:
+            continue
         # Chevron: two diagonal strokes meeting at the top.
         for i in range(10):
             for t in range(3):
-                c.set(cx - 10 + i, 32 - i + t, "glow")
-                c.set(cx + 10 - i, 32 - i + t, "glow")
-        c.rect(cx - 1, 22, cx + 1, 24, "glow")
+                c.set(cx - 10 + i, 32 - i + t, chevron)
+                c.set(cx + 10 - i, 32 - i + t, chevron)
+        c.rect(cx - 1, 22, cx + 1, 24, chevron)
+        if open_:
+            for i in range(10):
+                c.set(cx - 10 + i, 35 - i, "green_2")
+                c.set(cx + 10 - i, 35 - i, "green_2")
+    if not open_:
+        # Padlock.
+        c.rect(58, 13, 59, 21, "red_1")
+        c.rect(68, 13, 69, 21, "red_1")
+        c.rect(60, 11, 67, 12, "red_1")
+        c.rect(55, 21, 72, 36, "red_1")
+        c.rect(57, 23, 70, 34, "red_0")
+        c.rect(63, 26, 64, 31, "night")
+        c.set(57, 23, "orange")
+        c.set(58, 23, "orange")
     c.outline()
     return c
 
@@ -1405,7 +1490,8 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/Generator_On.png": generator(True).to_image(),
         "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),
         "Sprites/UI/Star_Full.png": star(True).to_image(),
-        "Sprites/Level/Exit_Pad.png": exit_pad().to_image(),
+        "Sprites/Level/Exit_Pad.png": exit_pad(True).to_image(),
+        "Sprites/Level/Exit_Pad_Locked.png": exit_pad(False).to_image(),
         "Sprites/UI/Star_Empty.png": star(False).to_image(),
         "Sprites/Level/Gate_Bars.png": gate_bars().to_image(),
         "Sprites/UI/Heart_Full.png": heart(True).to_image(),

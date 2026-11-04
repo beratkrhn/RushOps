@@ -12,6 +12,14 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Gegner-Animationen Brute und Boomer** (Issue #101, F-GFX-02, F-AUD-03): Treffer (2 Frames) und Tod für beide. Der Brute sackt in die Knie und schlägt vornüber auf (5 Frames). Der Boomer bläht sich auf, sobald er in Warnweite kommt (gleicher Auslöser wie das Warnsignal): Der Bauch wird größer, Beulen und Augen glühen dauerhaft (`Boomer_Swell`, 12 fps). Beim Tod platzt er (4 Frames: überbläht, Platzen, Reste am Boden). Vorschau `docs/art/animations/Brute.gif` und `Boomer.gif`.
 - `DirectionalSpriteAnimator` hat eine optionale Alarm-Schleife (`SetAlert`), die statt der Grundschleife läuft (Issue #101).
 - Todesframes von Figuren, die zum Betrachter hin fallen, rutschen schrittweise nach oben, damit sie nicht unten aus der Leinwand ragen. Umgekippte Körperteile liegen auf dem Boden auf (betrifft auch Walker- und Runner-Tod aus #100, Issue #101).
+- **Gemeinsame Level-Objekte final** (Issue #103, Entscheidung G7): neu gezeichnet und auf allen Inseln gleich, nur Palettenfarben.
+  - Bodenschalter: Stahlrahmen mit Warnstreifen, erhabener roter Knopf bzw. gedrückt und grün leuchtend.
+  - Generator: Lüftungsgitter, Warnband, Blitzzeichen, Kabel; läuft er, leuchten Schacht, Lampen und Blitz.
+  - Energiezelle: Glasröhre mit Blitz.
+  - Spawn-Markierung: rot glühende Risse im Boden.
+  - Zonen-Kreis: gestrichelter Rand mit Leuchtmarken.
+  - Ausgang: offen mit leuchtenden Pfeilen, gesperrt (neu, `Exit_Pad_Locked`) grau mit rotem Rand und Schloss.
+  - `LevelExit` tauscht das Sprite statt es nur abzudunkeln. Übersicht in `docs/art/level_objects.png`.
 - Menü „RushOps → Szenen → Alle erzeugen“ (`AllScenesBuilder.BuildAll`, auch für den Batchmode).
 
 ## [0.3.0] – 2026-11-04

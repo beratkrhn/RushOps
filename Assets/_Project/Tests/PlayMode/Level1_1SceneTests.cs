@@ -81,6 +81,8 @@ namespace RushOps.Tests.PlayMode
             Object.FindFirstObjectByType<LevelRestarter>().enabled = false;
             Assert.AreSame(last, exit.Zone);
             Assert.IsFalse(exit.IsOpen, "exit is open before the last zone was played");
+            SpriteRenderer exitRenderer = exit.GetComponent<SpriteRenderer>();
+            Assert.AreEqual("Exit_Pad_Locked", exitRenderer.sprite.name, "locked exit does not show its locked sprite");
 
             Teleport(exit.transform.position);
             yield return new WaitForFixedUpdate();
@@ -104,6 +106,7 @@ namespace RushOps.Tests.PlayMode
             }
 
             Assert.IsTrue(exit.IsOpen, "exit did not open after the last waves");
+            Assert.AreEqual("Exit_Pad", exitRenderer.sprite.name, "open exit still shows the locked sprite");
             Assert.IsTrue(results.ShowsDone, "player standing on the exit did not finish once it opened");
         }
 
