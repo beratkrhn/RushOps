@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e93a4b07de12a41d9b69ad877d8200b1, type: 3}
+  m_Name: IntroConfig
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.App.IntroConfig
+  _frames:
+  - {fileID: 21300000, guid: 37ca3399cb7ca49c7b5ea33bf0cee578, type: 3}
+  - {fileID: 21300000, guid: 36ff986fa47004c0c9d3985698f0d4c6, type: 3}
+  - {fileID: 21300000, guid: 3629a20713ad64b70af0e3a797a2420d, type: 3}
+  - {fileID: 21300000, guid: 1806b0465985f4ba7a18439fa9f56827, type: 3}
+  - {fileID: 21300000, guid: 873f95d026a2f474db0a1dd1de4a95ab, type: 3}
+  - {fileID: 21300000, guid: 73ec56becaa1c4ad7b753393187a825f, type: 3}
+  - {fileID: 21300000, guid: b53a9a5a1d5f646c9b8b4a221e7479e8, type: 3}
+  - {fileID: 21300000, guid: 4656eb4b2dd6d4ea2aad6211ea07d46f, type: 3}
+  - {fileID: 21300000, guid: 9bcd69031a07b4c609275f76568aec87, type: 3}
+  - {fileID: 21300000, guid: a0b0458cce12d401c938f82d1e2d341b, type: 3}
+  - {fileID: 21300000, guid: 73fcc949f1cec4e48adec89b450fe27b, type: 3}
+  - {fileID: 21300000, guid: c64dc580dc4d14bb6a8eb35e736a2e81, type: 3}
+  - {fileID: 21300000, guid: 4c47199ffc3ef4227908588e2a3107db, type: 3}
+  _frameRate: 14
+  _hold: 1.2
+  _fade: 0.4
+  _maxDuration: 3
+  _nextScene: TestMenu

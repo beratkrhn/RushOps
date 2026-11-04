@@ -17,6 +17,7 @@ namespace RushOps.Editor.Scenes
             IslandTestScenesBuilder.BuildStadt();
             IslandTestScenesBuilder.BuildVulkan();
             TestMenuSceneBuilder.Build();
+            BootSceneBuilder.Build();
         }
     }
 }
