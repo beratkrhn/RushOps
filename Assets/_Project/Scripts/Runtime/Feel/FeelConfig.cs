@@ -43,6 +43,10 @@ namespace RushOps.Feel
         [SerializeField, Range(0f, 1f)] private float _enemyApproachVolume = 0.5f;
         [Tooltip("Volume of the sound when the player collects a perk.")]
         [SerializeField, Range(0f, 1f)] private float _perkPickupVolume = 0.7f;
+        [Tooltip("Volume of the sound when the player loses a heart.")]
+        [SerializeField, Range(0f, 1f)] private float _playerHurtVolume = 0.8f;
+        [Tooltip("Volume of the dash sound.")]
+        [SerializeField, Range(0f, 1f)] private float _dashVolume = 0.5f;
 
         [Tooltip("Random pitch change per sound, e.g. 0.06 for up to 6 percent up or down.")]
         [SerializeField, Range(0f, 0.5f)] private float _pitchVariation = 0.06f;
@@ -88,6 +92,12 @@ namespace RushOps.Feel
 
         /// <summary>Volume of the perk pickup sound.</summary>
         public float PerkPickupVolume => _perkPickupVolume;
+
+        /// <summary>Volume of the sound when the player loses a heart.</summary>
+        public float PlayerHurtVolume => _playerHurtVolume;
+
+        /// <summary>Volume of the dash sound.</summary>
+        public float DashVolume => _dashVolume;
 
         /// <summary>Random pitch change per sound as a fraction.</summary>
         public float PitchVariation => _pitchVariation;

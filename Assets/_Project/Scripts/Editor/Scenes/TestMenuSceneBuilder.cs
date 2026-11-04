@@ -74,6 +74,11 @@ namespace RushOps.Editor.Scenes
                 CreateLevelButton(rect, font, menu, i, levels[i].DisplayName, new Vector2(0f, 70f - i * step));
             }
 
+            // Sound player with the mixer volumes; every button clicks (issue #108).
+            var audio = new GameObject("Audio");
+            ArenaTestSceneBuilder.CreateAudio(audio);
+            ArenaTestSceneBuilder.AddClickSounds(audio.GetComponent<RushOps.Audio.UiClickSound>());
+
             EditorSceneManager.SaveScene(scene, ScenePath);
             ArenaTestSceneBuilder.AddToBuildSettings(ScenePath, false);
             AssetDatabase.SaveAssets();

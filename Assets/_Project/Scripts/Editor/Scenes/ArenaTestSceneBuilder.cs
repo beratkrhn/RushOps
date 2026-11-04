@@ -4,6 +4,7 @@ using RushOps.Cameras;
 using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Editor.Art;
+using RushOps.Editor.Audio;
 using RushOps.Audio;
 using RushOps.Enemies;
 using RushOps.Feel;
@@ -18,6 +19,7 @@ using UnityEditor;
 using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.OnScreen;
@@ -88,6 +90,7 @@ namespace RushOps.Editor.Scenes
         // enemies aside rather than pushing them ahead of it (issue #21).
         private const string EnemyBodyMaterialPath = "Assets/_Project/Data/Physics/EnemyBody.physicsMaterial2D";
         private const string SfxDir = "Assets/_Project/Audio/SFX";
+        private const string AudioConfigPath = "Assets/_Project/Data/Audio/AudioConfig.asset";
         private const string SpawnerConfigPath = "Assets/_Project/Data/Enemies/SpawnerConfig.asset";
         private const string SpawnMarkerSpritePath = "Assets/_Project/Art/Sprites/Effects/SpawnMarker.png";
         private const string WavesPath = "Assets/_Project/Data/Waves/Arena_Test.asset";
@@ -231,6 +234,28 @@ namespace RushOps.Editor.Scenes
         /// Loads the runner definition (issue #20), or creates it with the start values of the backlog and its
         /// placeholder sounds. An existing definition keeps its tuned values.
         /// </summary>
+        // Gives an enemy type its spawn and approach sounds (issue #108) unless it already has some.
+        private static void AssignMissingSounds(EnemyDefinition definition, string spawnClip, string approachClip)
+        {
+            var serialized = new SerializedObject(definition);
+            SerializedProperty spawn = serialized.FindProperty("_spawnClip");
+            SerializedProperty approach = serialized.FindProperty("_approachClip");
+            if (spawn.objectReferenceValue == null)
+            {
+                spawn.objectReferenceValue = LoadClip(spawnClip);
+            }
+
+            if (approach.objectReferenceValue == null)
+            {
+                approach.objectReferenceValue = LoadClip(approachClip);
+            }
+
+            if (serialized.ApplyModifiedPropertiesWithoutUndo())
+            {
+                EditorUtility.SetDirty(definition);
+            }
+        }
+
         internal static EnemyDefinition LoadOrCreateRunner()
         {
             var runner = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(RunnerDefinitionPath);
@@ -498,6 +523,8 @@ namespace RushOps.Editor.Scenes
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
             Material flashMaterial = LoadOrCreateFlashMaterial();
             PhysicsMaterial2D enemyBody = LoadOrCreateEnemyBodyMaterial();
+            AssignMissingSounds(LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), "WalkerSpawn.wav", "WalkerApproach.wav");
+            AssignMissingSounds(LoadOrCreateBrute(), "BruteSpawn.wav", "BruteApproach.wav");
             Enemy walkerPrefab = CreateOrUpdateEnemyPrefab(
                 "Walker", WalkerPrefabPath, new EnemyAnimations(walkerWalk, walkerHit, walkerDeath), LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig,
                 flashMaterial, enemyBody, WalkerColliderRadius, PlayerColliderOffset);
@@ -544,6 +571,7 @@ namespace RushOps.Editor.Scenes
             NukeSystem nuke = CreateNukeSystem(target.GetComponent<PlayerPerks>(), cameraFollow, enemyPools);
             SfxPlayer sfx = CreateGameFeel(
                 feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, nuke, flash);
+            AddClickSounds(sfx.GetComponent<UiClickSound>());
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
 
             EditorSceneManager.SaveScene(scene, scenePath);
@@ -1271,14 +1299,16 @@ namespace RushOps.Editor.Scenes
             serializedHitstop.FindProperty("_pause").objectReferenceValue = pause;
             serializedHitstop.ApplyModifiedPropertiesWithoutUndo();
 
-            var sfx = go.AddComponent<SfxPlayer>();
-            go.GetComponent<AudioSource>().playOnAwake = false;
+            SfxPlayer sfx = CreateAudio(go);
 
             var feel = go.AddComponent<GameFeel>();
             var serialized = new SerializedObject(feel);
             serialized.FindProperty("_config").objectReferenceValue = config;
             serialized.FindProperty("_player").objectReferenceValue = player.GetComponent<PlayerHealth>();
             serialized.FindProperty("_weapon").objectReferenceValue = player.GetComponent<PlayerWeapon>();
+            serialized.FindProperty("_dash").objectReferenceValue = player.GetComponent<PlayerDash>();
+            serialized.FindProperty("_playerHurtClip").objectReferenceValue = LoadClip("PlayerHurt.wav");
+            serialized.FindProperty("_dashClip").objectReferenceValue = LoadClip("Dash.wav");
             SetPools(serialized, enemies);
             serialized.FindProperty("_camera").objectReferenceValue = camera;
             serialized.FindProperty("_explosions").objectReferenceValue = explosions;
@@ -1295,6 +1325,44 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_deathClip").objectReferenceValue = LoadClip("Death.wav");
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return sfx;
+        }
+
+        /// <summary>
+        /// Adds the sound player (through the effects group of the mixer), the mixer volumes and the UI click to
+        /// <paramref name="go"/> (issue #108).
+        /// </summary>
+        internal static SfxPlayer CreateAudio(GameObject go)
+        {
+            AudioMixer mixer = AudioMixerBuilder.LoadOrCreate();
+            var sfx = go.AddComponent<SfxPlayer>();
+            go.GetComponent<AudioSource>().playOnAwake = false;
+            var serializedSfx = new SerializedObject(sfx);
+            serializedSfx.FindProperty("_output").objectReferenceValue = AudioMixerBuilder.Group(mixer, AudioMixerBuilder.EffectsGroup);
+            serializedSfx.ApplyModifiedPropertiesWithoutUndo();
+
+            AudioConfig config = LoadOrCreateConfig<AudioConfig>(AudioConfigPath);
+            var volumes = go.AddComponent<AudioVolumes>();
+            var serializedVolumes = new SerializedObject(volumes);
+            serializedVolumes.FindProperty("_mixer").objectReferenceValue = mixer;
+            serializedVolumes.FindProperty("_config").objectReferenceValue = config;
+            serializedVolumes.ApplyModifiedPropertiesWithoutUndo();
+
+            var click = go.AddComponent<UiClickSound>();
+            var serializedClick = new SerializedObject(click);
+            serializedClick.FindProperty("_sfx").objectReferenceValue = sfx;
+            serializedClick.FindProperty("_config").objectReferenceValue = config;
+            serializedClick.FindProperty("_clip").objectReferenceValue = LoadClip("UiClick.wav");
+            serializedClick.ApplyModifiedPropertiesWithoutUndo();
+            return sfx;
+        }
+
+        /// <summary>Lets every button of the open scene play the UI click (issue #108, F-AUD-02).</summary>
+        internal static void AddClickSounds(UiClickSound click)
+        {
+            foreach (Button button in Object.FindObjectsByType<Button>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                UnityEventTools.AddPersistentListener(button.onClick, click.Play);
+            }
         }
 
         internal static AudioClip LoadClip(string file)
