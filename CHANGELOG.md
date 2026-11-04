@@ -4,6 +4,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Kill-Gates ab Zone zählen** (Issue #147, F-LVL-03, Entscheidung P1): `KillGateCondition` hat das Feld „Count From Zone“. Ist eine Zone eingetragen, zählen nur Kills nach dem Betreten dieser Zone; Nuke- und Explosions-Kills zählen weiter mit, der Missions-Tracker zeigt die Kills ab Betreten. Ohne Zone bleibt es beim globalen Zählen ab Levelstart (Level 1-1 unverändert). Für Level-Builder gibt es `LevelPieceBuilder.CountKillsFromZone`.
+
 ## [0.5.0] – 2026-11-04
 
 ### Hinzugefügt

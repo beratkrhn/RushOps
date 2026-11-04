@@ -34,7 +34,7 @@ namespace RushOps.Tests.EditMode
         [Test]
         public void KillsBeforeGoalWasCreated_Count()
         {
-            // Counted globally from level start, not from when a zone or gate became relevant.
+            // By default counted globally from level start, not from when a zone or gate became relevant.
             var counter = new KillCounter();
             counter.Register();
             counter.Register();
@@ -73,6 +73,76 @@ namespace RushOps.Tests.EditMode
             gate.Tick(0.1f);
 
             Assert.AreEqual(GateState.Open, gate.State);
+        }
+
+        [Test]
+        public void CountFromZone_CountsNothingBeforeStart()
+        {
+            var counter = new KillCounter();
+            var goal = new KillGoal(counter, 2, countFromLevelStart: false);
+            counter.Register();
+            counter.Register();
+            counter.Register();
+
+            Assert.IsFalse(goal.IsCounting);
+            Assert.AreEqual(0, goal.Current);
+            Assert.IsFalse(goal.IsMet);
+        }
+
+        [Test]
+        public void CountFromZone_CountsOnlyKillsAfterStart()
+        {
+            // Decision P1: a later kill gate is not already open when the player arrives.
+            var counter = new KillCounter();
+            var goal = new KillGoal(counter, 3, countFromLevelStart: false);
+            for (int i = 0; i < 5; i++)
+            {
+                counter.Register();
+            }
+
+            goal.StartCounting();
+            counter.Register();
+            counter.Register();
+            Assert.AreEqual(2, goal.Current);
+            Assert.IsFalse(goal.IsMet);
+
+            counter.Register();
+            Assert.IsTrue(goal.IsMet);
+        }
+
+        [Test]
+        public void StartCountingAgain_KeepsKillsCountedSoFar()
+        {
+            var counter = new KillCounter();
+            var goal = new KillGoal(counter, 5, countFromLevelStart: false);
+            goal.StartCounting();
+            counter.Register();
+            counter.Register();
+
+            goal.StartCounting();
+
+            Assert.AreEqual(2, goal.Current);
+        }
+
+        [Test]
+        public void StartCounting_OnLevelStartGoal_ChangesNothing()
+        {
+            var counter = new KillCounter();
+            var goal = new KillGoal(counter, 5);
+            counter.Register();
+
+            goal.StartCounting();
+
+            Assert.AreEqual(1, goal.Current);
+        }
+
+        [Test]
+        public void CountFromZone_WithoutCounter_StartsSafely()
+        {
+            var goal = new KillGoal(null, 1, countFromLevelStart: false);
+            goal.StartCounting();
+
+            Assert.IsFalse(goal.IsMet);
         }
     }
 }

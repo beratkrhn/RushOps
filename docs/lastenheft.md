@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Version** | 0.4 |
+| **Version** | 0.7 |
 | **Stand** | 30.10.2026 |
 | **Status** | Entwurf, nicht final |
 | **Autor** | Berat Karahan |
@@ -111,7 +111,7 @@ Jede Insel endet mit einem Boss im dritten Level. Bosse folgen ebenfalls dem Kon
 |---|---|---|
 | F-LVL-01 | Level sind größer als der Bildschirm. Die Kamera folgt dem Spieler. | Muss |
 | F-LVL-02 | Ein Level ist in Zonen unterteilt, die durch Tore getrennt sind. | Muss |
-| F-LVL-03 | **Kill-Gates** öffnen sich nach einer festen Anzahl Kills. Gezählt wird **global im Level**. Kills durch Nuke und Boomer-Explosionen zählen mit. | Muss |
+| F-LVL-03 | **Kill-Gates** öffnen sich nach einer festen Anzahl Kills. Gezählt wird standardmäßig **global im Level**; ein Kill-Gate kann stattdessen erst ab Betreten seiner Zone zählen (Entscheidung P1). Kills durch Nuke und Boomer-Explosionen zählen mit. | Muss |
 | F-LVL-04 | Weitere Tore öffnen sich durch das Lösen von Rätseln (2.6). | Muss |
 | F-LVL-05 | Ein Level gilt als geschafft, wenn das Levelziel erreicht ist (letztes Tor bzw. Boss besiegt). | Muss |
 | F-LVL-06 | Umfang Version 1.0: **3 Inseln mit je 3 Leveln**, das dritte Level jeder Insel ist ein Boss-Level. | Muss |
@@ -297,3 +297,4 @@ Alle Werte sind *Startwerte*.
 | 0.4 | 30.10.2026 | Offene Punkte entschieden: Bundle-ID `com.beratkrhn.rushops`, Mindestversionen Android 8.0 und iOS 15 (Issue #13). |
 | 0.5 | 04.11.2026 | F-PRK-02: Drop-Chance 12 % statt 8 % (Spieltest v0.3.0). Offene Punkte entschieden: Musik vorerst nicht, Inselthemen festgelegt. |
 | 0.6 | 04.11.2026 | F-UI-04: keine Stick-Einstellungen im Menü (Design-Frage M3). |
+| 0.7 | 04.11.2026 | F-LVL-03: Kill-Gates können ab Betreten ihrer Zone zählen (Design-Frage P1, Issue #147). |
