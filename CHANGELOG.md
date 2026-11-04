@@ -97,9 +97,6 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Nuke** wirkt jetzt: Beim Aufsammeln sterben alle Gegner im Kamerabereich, außer Bosse. Gegner außerhalb des Bildschirms und die Spawn-Warteschlange bleiben unberührt. Nuke-Kills zählen für Kill-Gates (Issue #27, F-PRK-04, F-LVL-03, F-BOS-02). Dazu kommen ein weißer Bildschirmblitz, ein starker Screenshake und ein eigener Sound (`Nuke.wav` aus `Tools/gen_sfx.py`); die Stärken stehen in `Data/Perks/NukeConfig`.
 - `NukeSystem`, `NukeTargeting` (reine Logik mit EditMode-Tests), `ScreenFlash` im HUD und `FeelMath.FlashFade` (Issue #27).
 
-### Geändert (Issue #27)
-- Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal.
-
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
 - `bundleVersion` auf 0.1.0, Firmenname gesetzt.
@@ -128,6 +125,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Wellen *(Startwerte)* mit Brutes: `Arena_Test` 1 Brute in Welle 3, `Arena_Zonen` Zone 3 je 1 bzw. 2 Brutes in Welle 2 und 3 (Issue #21).
 - Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
 
+- Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
