@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0edb591f223ac4f3bb4314e263491952, type: 3}
+  m_Name: Vulkan
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.IslandTheme
+  _displayName: Vulkan
+  _floor:
+  - {fileID: 21300000, guid: 3a7cae87d5141489d9b5a0202808fc20, type: 3}
+  - {fileID: 21300000, guid: 1158e3416cc784f65af64ef62e7f04e4, type: 3}
+  - {fileID: 21300000, guid: c43e5481b64a2401e996a5317d420798, type: 3}
+  _plainFloorShare: 0.7
+  _wallTop: {fileID: 21300000, guid: c68ff5c1085174fc98917a11048a9a87, type: 3}
+  _wallFront: {fileID: 21300000, guid: 68724b99418c945d3b82deed85f9f59d, type: 3}
+  _obstacleTop: {fileID: 21300000, guid: 08728190f4ba94e5eb7b4e029a1450be, type: 3}
+  _obstacleFront: {fileID: 21300000, guid: 2b506c634cbff448a9307f4cb8c77fa4, type: 3}
+  _decorations:
+  - {fileID: 21300000, guid: dd7a600c43bb544c18354911f3ef6313, type: 3}
+  - {fileID: 21300000, guid: 55a324b4fc9a542428ea050362f1bb71, type: 3}
+  - {fileID: 21300000, guid: 0ae6dff30a5484e619f961c56485f152, type: 3}
+  - {fileID: 21300000, guid: 8d0ba4604b6bb4f2eae82265c4e0ebb2, type: 3}
+  - {fileID: 21300000, guid: 3c0ec5b229674466a8379cd6092243cf, type: 3}
+  _decorationDensity: 0.05
+  _gateFrames:
+  - {fileID: 21300000, guid: 77ef8aeecda254b37a70574670c6e832, type: 3}
+  - {fileID: 21300000, guid: dbd1ad75eac8a47c3abd57cc8081c194, type: 3}
+  - {fileID: 21300000, guid: 6cd7046b20cd947f5aca3bcb484c3602, type: 3}
+  - {fileID: 21300000, guid: b9228478255ca4a4abbbdc02a7039b27, type: 3}
+  - {fileID: 21300000, guid: 5a3e1c8fe082640c5b56701795fb9a7e, type: 3}

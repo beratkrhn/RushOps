@@ -9,11 +9,18 @@ namespace RushOps.Editor.Scenes
     public static class IslandTestScenesBuilder
     {
         private const string StadtScenePath = "Assets/_Project/Scenes/Arena_Stadt.unity";
+        private const string VulkanScenePath = "Assets/_Project/Scenes/Arena_Vulkan.unity";
 
         [MenuItem("RushOps/Szenen/Arena_Stadt erzeugen")]
         public static void BuildStadt()
         {
             ArenaZonenSceneBuilder.BuildWithTheme(StadtScenePath, "Stadt-Test", IslandThemes.StadtPath);
+        }
+
+        [MenuItem("RushOps/Szenen/Arena_Vulkan erzeugen")]
+        public static void BuildVulkan()
+        {
+            ArenaZonenSceneBuilder.BuildWithTheme(VulkanScenePath, "Vulkan-Test", IslandThemes.VulkanPath);
         }
     }
 }

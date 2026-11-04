@@ -12,7 +12,7 @@ namespace RushOps.Tests.PlayMode
     public class IslandSceneTests
     {
         [UnityTest]
-        public IEnumerator TestScene_UsesIslandTilesetWithZonesAndGates([Values("Arena_Stadt")] string sceneName)
+        public IEnumerator TestScene_UsesIslandTilesetWithZonesAndGates([Values("Arena_Stadt", "Arena_Vulkan")] string sceneName)
         {
             yield return SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Single);
             yield return null;

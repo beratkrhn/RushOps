@@ -55,7 +55,7 @@ Output (under Assets/_Project/Art/):
   Tiles/Floor_0..2.png                     32x32 floor variants
   Tiles/Wall_Top.png                       32x32 wall seen from above
   Tiles/Wall_Front.png                     32x32 wall top plus front face
-  Tiles/<Island>/Floor_0..2.png            island floor variants (issue #104: Strand, #105: Stadt)
+  Tiles/<Island>/Floor_0..2.png            island floor variants (issue #104: Strand, #105: Stadt, #106: Vulkan)
   Tiles/<Island>/Wall_Top.png, Wall_Front.png        outer wall of the island
   Tiles/<Island>/Obstacle_Top.png, Obstacle_Front.png inner walls (obstacles)
   Tiles/<Island>/Decor_<N>.png             32x32 flat decorations without collision
@@ -1613,7 +1613,7 @@ def beach_decoration(kind: int) -> Canvas:
 
 BEACH_DECORATIONS = 5
 # Folders under Tiles/ with an island tileset.
-ISLAND_TILESETS = ["Strand", "Stadt"]
+ISLAND_TILESETS = ["Strand", "Stadt", "Vulkan"]
 
 
 def palisade(frame: int) -> Canvas:
@@ -1820,6 +1820,164 @@ def roller_door(frame: int) -> Canvas:
     return c
 
 
+# --- Island 3: volcano (issue #106) ----------------------------------------------
+# Brown ash ground and black basalt; lava glows only in cracks and pools that are decoration (no damage).
+
+def ash_ground(variant: int) -> Canvas:
+    """Ash-covered rock. Variant 0 plain, 1 with a glowing crack, 2 with grey ash drifts."""
+    c = Canvas(TILE, TILE, fill="brown_0")
+    rng = random.Random(6100 + variant)
+    for _ in range(34):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "brown_1")
+    for _ in range(26):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "night")
+    for _ in range(2):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "red_0")
+    if variant == 1:
+        x, y = 5, 9
+        for step in range(22):
+            c.set(x, y, "night")
+            c.set(x, y + 1, "red_0" if step % 4 else "orange")
+            x += 1
+            y += rng.choice((0, 0, 1))
+            y = min(y, 25)
+    elif variant == 2:
+        for cx, cy in ((10, 12), (22, 20)):
+            c.ellipse(cx, cy, 5.0, 2.5, "slate_2")
+            c.ellipse(cx - 1, cy - 0.5, 3.0, 1.2, "slate_3")
+    return c
+
+
+def basalt_top_face(c: Canvas, y0: int, y1: int) -> None:
+    """Tops of basalt columns seen from above: dark hexagons with lit edges."""
+    c.rect(0, y0, TILE - 1, y1, "night")
+    for cx, cy in ((8, 8), (24, 8), (16, 22), (0, 22), (32, 22)):
+        for y in range(cy - 6, cy + 7):
+            for x in range(cx - 7, cx + 8):
+                if y0 <= y <= y1 and 0 <= x < TILE and abs(x - cx) + abs(y - cy) * 0.6 <= 6.5:
+                    edge = abs(x - cx) + abs(y - cy) * 0.6 > 5.3
+                    c.set(x, y, "slate_1" if edge and y < cy else "slate_0")
+
+
+def basalt_top() -> Canvas:
+    c = Canvas(TILE, TILE)
+    basalt_top_face(c, 0, TILE - 1)
+    return c
+
+
+def basalt_front() -> Canvas:
+    """Basalt cliff with nothing to the south: column tops above, vertical columns below, glowing at the foot."""
+    c = Canvas(TILE, TILE)
+    top = 10
+    basalt_top_face(c, 0, top - 1)
+    c.rect(0, top, TILE - 1, TILE - 1, "slate_0")
+    for x in range(0, TILE, 8):
+        c.rect(x, top, x, TILE - 3, "night")
+        c.rect(x + 1, top, x + 1, TILE - 3, "slate_1")
+    c.rect(0, TILE - 3, TILE - 1, TILE - 3, "red_0")
+    c.rect(0, TILE - 2, TILE - 1, TILE - 1, "night")
+    return c
+
+
+def lava_rock_top_face(c: Canvas, y0: int, y1: int) -> None:
+    """Cooled lava block from above: crusty brown rock with faint glowing seams."""
+    c.rect(0, y0, TILE - 1, y1, "brown_1")
+    rng = random.Random(6200)
+    for _ in range(40):
+        x, y = rng.randrange(TILE), rng.randrange(TILE)
+        if y0 <= y <= y1:
+            wrap_set(c, x, y, "brown_0")
+    for x0, y0_, x1 in ((3, 6, 12), (18, 18, 28)):
+        for x in range(x0, x1):
+            yy = y0_ + (x % 3 == 0)
+            if y0 <= yy <= y1:
+                c.set(x, yy, "red_0")
+    c.rect(0, y0, TILE - 1, y0, "brown_0")
+
+
+def lava_rock_top() -> Canvas:
+    c = Canvas(TILE, TILE)
+    lava_rock_top_face(c, 0, TILE - 1)
+    return c
+
+
+def lava_rock_front() -> Canvas:
+    c = Canvas(TILE, TILE)
+    top = 11
+    lava_rock_top_face(c, 0, top - 1)
+    c.rect(0, top, TILE - 1, TILE - 1, "brown_0")
+    rng = random.Random(6300)
+    for _ in range(30):
+        c.set(rng.randrange(TILE), rng.randrange(top, TILE - 2), "night")
+    for x in range(4, TILE, 9):
+        for y in range(top + 3, TILE - 4):
+            if (x + y) % 5 == 0:
+                c.set(x, y, "orange")
+                c.set(x + 1, y + 1, "red_0")
+    c.rect(0, TILE - 2, TILE - 1, TILE - 1, "night")
+    return c
+
+
+def volcano_decoration(kind: int) -> Canvas:
+    """Flat things on the ash, without collision and without damage: 0 small lava pool, 1 lava crack, 2 embers,
+    3 ash pile, 4 charred bones."""
+    c = Canvas(TILE, TILE)
+    if kind == 0:
+        c.ellipse(16.0, 17.0, 7.0, 4.0, "red_0")
+        c.ellipse(16.0, 16.8, 5.5, 3.0, "orange")
+        c.ellipse(15.0, 16.5, 3.0, 1.5, "yellow")
+        c.set(13, 16, "glow")
+    elif kind == 1:
+        x, y = 8, 14
+        for step in range(16):
+            c.set(x, y, "red_0")
+            c.set(x, y + 1, "orange" if step % 3 else "yellow")
+            x += 1
+            y += (0, 1, 0, -1)[step % 4]
+    elif kind == 2:
+        for x, y in ((12, 16), (16, 18), (19, 15), (14, 20), (21, 19)):
+            c.set(x, y, "orange")
+            c.set(x + 1, y, "red_0")
+        c.set(16, 17, "yellow")
+    elif kind == 3:
+        c.ellipse(16.0, 18.0, 6.0, 3.0, "slate_2")
+        c.ellipse(15.0, 17.0, 3.5, 1.8, "slate_3")
+    elif kind == 4:
+        c.rect(10, 17, 20, 18, "slate_4")
+        c.rect(9, 16, 10, 19, "slate_5")
+        c.rect(20, 16, 21, 19, "slate_5")
+        c.set(15, 17, "slate_2")
+    c.outline("outline")
+    return c
+
+
+VOLCANO_DECORATIONS = 5
+
+
+def steel_grate(frame: int) -> Canvas:
+    """One cell of the volcano gate: a heavy steel lattice glowing red-hot at its foot. Opening, it lowers into a
+    glowing slot in the ground until only the slot is left."""
+    c = Canvas(TILE, TILE)
+    slot = TILE - 4
+    drop = round(frame / (GATE_FRAMES - 1) * (slot - 2))
+    top = 2 + drop
+    for y in range(top, slot):
+        for x in range(1, TILE - 1):
+            bar = x % 6 in (0, 1)
+            cross = (y - top) % 8 in (0, 1)
+            if bar or cross:
+                lit = x % 6 == 0 or (y - top) % 8 == 0
+                hot = y >= slot - 4
+                c.set(x, y, ("orange" if lit else "red_1") if hot else ("slate_3" if lit else "slate_1"))
+    if top < slot:
+        c.rect(1, top, TILE - 2, top, "slate_4")
+    c.rect(0, slot, TILE - 1, TILE - 1, "night")
+    c.rect(1, slot + 1, TILE - 2, slot + 1, "red_0" if frame < GATE_FRAMES - 1 else "orange")
+    c.rect(1, slot + 2, TILE - 2, slot + 2, "red_0")
+    c.outline("outline")
+    return c
+
+
 def island_files(files: dict[str, Image.Image]) -> None:
     """Tiles and gate frames of the islands (issues #104 to #106), under Tiles/<Island>/."""
     for variant in range(3):
@@ -1842,6 +2000,16 @@ def island_files(files: dict[str, Image.Image]) -> None:
         files[f"Tiles/Stadt/Decor_{kind}.png"] = city_decoration(kind).to_image()
     for frame in range(GATE_FRAMES):
         files[f"Tiles/Stadt/Gate_{frame}.png"] = roller_door(frame).to_image()
+    for variant in range(3):
+        files[f"Tiles/Vulkan/Floor_{variant}.png"] = ash_ground(variant).to_image()
+    files["Tiles/Vulkan/Wall_Top.png"] = basalt_top().to_image()
+    files["Tiles/Vulkan/Wall_Front.png"] = basalt_front().to_image()
+    files["Tiles/Vulkan/Obstacle_Top.png"] = lava_rock_top().to_image()
+    files["Tiles/Vulkan/Obstacle_Front.png"] = lava_rock_front().to_image()
+    for kind in range(VOLCANO_DECORATIONS):
+        files[f"Tiles/Vulkan/Decor_{kind}.png"] = volcano_decoration(kind).to_image()
+    for frame in range(GATE_FRAMES):
+        files[f"Tiles/Vulkan/Gate_{frame}.png"] = steel_grate(frame).to_image()
 
 
 def island_preview(files: dict[str, Image.Image], island: str, path: Path, scale: int = 3) -> None:
