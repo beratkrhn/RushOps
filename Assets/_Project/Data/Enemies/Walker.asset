@@ -17,3 +17,11 @@ MonoBehaviour:
   _contactDamage: 1
   _deathDuration: 0.25
   _points: 10
+  _isBoss: 0
+  _mass: 1
+  _knockbackScale: 1
+  _separationScale: 1
+  _explosion: {fileID: 0}
+  _spawnClip: {fileID: 8300000, guid: 44234249b471c4779a69d071c0d87671, type: 3}
+  _approachClip: {fileID: 8300000, guid: b0b91abfdfc914193876a235e29728dc, type: 3}
+  _approachDistance: 4

@@ -1,25 +1,33 @@
 #!/usr/bin/env python3
-"""Generates the placeholder sound effects (issue #12) as 16-bit mono WAV files.
+"""Generates the RushOps sound effects in an 8-bit style (issue #108, design decisions G9 and G10).
 
-The sounds are synthesised from code with a fixed random seed, so they are reproducible.
-They are placeholders until real sound design arrives; only the standard library is used.
+Every sound is built from the voices of an old console sound chip: pulse waves with a duty cycle, a triangle and
+LFSR noise, with pitch moving in steps (arpeggios, slides) and the output quantised to 16 levels like a 4-bit DAC.
+A fixed seed keeps the files reproducible; only the standard library is used.
 
-Output (under Assets/_Project/Audio/SFX/):
-  Shot.wav    short bright blip with a falling pitch
-  Hit.wav     dull thump with a noise burst
-  Death.wav   lower, longer squelch with a falling saw tone
-  GateOpen.wav  rattling chain with a heavy rising clunk at the end (issue #17)
-  MissionDone.wav  bright rising three-note chime when a kill gate opens (issue #19)
-  RunnerSpawn.wav     short raspy shriek rising in pitch when a runner appears (issue #20)
-  RunnerApproach.wav  fast panting hiss that swells, when a runner closes in (issue #20)
-  BoomerSpawn.wav     low wet gurgle of bubbles when a boomer appears (issue #22)
-  BoomerApproach.wav  warning: two-tone alarm beeps that speed up over a fizzing fuse (issue #22, F-AUD-03)
-  Explosion.wav       deep boom with a noise blast and a rumbling tail (issue #22)
-  PerkPickup.wav      quick sparkly upward sweep with two bell tones when a perk is collected (issue #23)
-  Nuke.wav            rising charge whine, a sharp crack and a huge sub-bass boom with a long rumble (issue #27)
-  PuzzleSolved.wav    placeholder: a mechanical unlock click and a warm rising two-note sine chord (issue #30)
-  SwitchOn.wav        heavy plate click with a short bright confirm blip when a floor switch is pressed (issue #32)
-  SwitchReset.wav     falling square-wave buzzer, three pulses, when the switch timer runs out (issue #32)
+Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
+  Shot.wav            short pulse "pew" falling in pitch, with a noise click
+  Hit.wav             dull noise thump on an enemy
+  Death.wav           falling pulse slide with crunchy noise
+  PlayerHurt.wav      harsh two-step down buzz when the player loses a heart
+  Dash.wav            quick rising noise whoosh
+  UiClick.wav         tiny high blip for buttons
+  GateOpen.wav        rattling noise ratchet ending in a low clunk
+  MissionDone.wav     rising three-note arpeggio chime
+  WalkerSpawn.wav     low wobbling groan
+  WalkerApproach.wav  slow two-note moan
+  RunnerSpawn.wav     raspy rising shriek
+  RunnerApproach.wav  fast panting noise bursts
+  BruteSpawn.wav      deep growl with a heavy noise rumble
+  BruteApproach.wav   two heavy stomps
+  BoomerSpawn.wav     low bubbling gurgle
+  BoomerApproach.wav  warning: fast high two-tone alarm over a fizzing fuse, unlike any other enemy (F-AUD-03)
+  Explosion.wav       noise boom with a falling rumble
+  PerkPickup.wav      bright upward arpeggio
+  Nuke.wav            rising charge, a crack and a long low boom
+  PuzzleSolved.wav    unlock click and a warm two-note chord
+  SwitchOn.wav        plate click with a confirm blip
+  SwitchReset.wav     three falling buzzer pulses
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -33,306 +41,310 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 SFX_DIR = ROOT / "Assets/_Project/Audio/SFX"
 RATE = 22050
+# Output levels of the 4-bit DAC.
+LEVELS = 16
 
 
-def envelope(t: float, length: float, attack: float = 0.004) -> float:
-    """Fast attack, exponential decay towards the end of the sound."""
+class Noise:
+    """15-bit LFSR noise like the NES noise channel; short mode gives a metallic buzz."""
+
+    def __init__(self, short: bool = False):
+        self.reg = 1
+        self.tap = 6 if short else 1
+        self.phase = 0.0
+        self.value = 1.0
+
+    def sample(self, freq: float) -> float:
+        self.phase += freq / RATE
+        while self.phase >= 1.0:
+            self.phase -= 1.0
+            bit = (self.reg ^ (self.reg >> self.tap)) & 1
+            self.reg = (self.reg >> 1) | (bit << 14)
+            self.value = 1.0 if self.reg & 1 else -1.0
+        return self.value
+
+
+class Pulse:
+    """Pulse wave with a duty cycle (0.125, 0.25, 0.5)."""
+
+    def __init__(self, duty: float = 0.5):
+        self.duty = duty
+        self.phase = 0.0
+
+    def sample(self, freq: float) -> float:
+        self.phase = (self.phase + freq / RATE) % 1.0
+        return 1.0 if self.phase < self.duty else -1.0
+
+
+class Triangle:
+    """Stepped triangle (16 steps per half cycle)."""
+
+    def __init__(self):
+        self.phase = 0.0
+
+    def sample(self, freq: float) -> float:
+        self.phase = (self.phase + freq / RATE) % 1.0
+        tri = 4.0 * abs(self.phase - 0.5) - 1.0
+        return round(tri * 7.5) / 7.5
+
+
+def frames(length: float) -> range:
+    return range(int(RATE * length))
+
+
+def decay(t: float, length: float, attack: float = 0.003) -> float:
+    """Fast attack, then a stepped linear fade like a volume envelope of 15 steps."""
     if t < attack:
         return t / attack
-    return math.exp(-5.0 * (t - attack) / length)
+    level = max(0.0, 1.0 - (t - attack) / max(1e-6, length - attack))
+    return math.ceil(level * 15) / 15
 
 
-def sweep(f0: float, f1: float, t: float, length: float) -> float:
-    """Phase of a sine sweeping exponentially from f0 to f1 over length seconds."""
-    k = math.log(f1 / f0) / length
-    return 2 * math.pi * f0 * (math.exp(k * t) - 1) / k
+def slide(f0: float, f1: float, t: float, length: float) -> float:
+    """Frequency sliding exponentially from f0 to f1."""
+    return f0 * (f1 / f0) ** min(1.0, t / length)
 
 
-def shot(rng: random.Random) -> list[float]:
-    length = 0.09
-    out = []
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        square = 1.0 if math.sin(sweep(1200, 260, t, length)) >= 0 else -1.0
-        noise = rng.uniform(-1, 1) * max(0.0, 1 - t / 0.02)
-        out.append((0.55 * square + 0.45 * noise) * envelope(t, length))
+def notes(t: float, steps: list[float], step_length: float) -> float:
+    """Frequency of an arpeggio: each note lasts step_length seconds; holds the last one."""
+    return steps[min(len(steps) - 1, int(t / step_length))]
+
+
+def mix(*tracks: list[float]) -> list[float]:
+    out = [0.0] * max(len(t) for t in tracks)
+    for track in tracks:
+        for i, s in enumerate(track):
+            out[i] += s
     return out
 
 
-def hit(rng: random.Random) -> list[float]:
+def silence(length: float) -> list[float]:
+    return [0.0] * int(RATE * length)
+
+
+# --- Sounds -----------------------------------------------------------------------
+
+def shot() -> list[float]:
     length = 0.08
-    out = []
-    smoothed = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        smoothed += 0.25 * (rng.uniform(-1, 1) - smoothed)
-        thump = math.sin(sweep(220, 90, t, length))
-        out.append((0.7 * thump + 0.6 * smoothed) * envelope(t, length, 0.002))
-    return out
+    p, n = Pulse(0.25), Noise()
+    return [(0.6 * p.sample(slide(1400, 300, t, length)) + 0.4 * n.sample(9000) * (t < 0.015)) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
 
 
-def death(rng: random.Random) -> list[float]:
+def hit() -> list[float]:
+    length = 0.07
+    n, p = Noise(), Pulse(0.5)
+    return [(0.7 * n.sample(slide(3000, 600, t, length)) + 0.3 * p.sample(slide(220, 90, t, length))) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
+
+
+def death() -> list[float]:
     length = 0.28
-    out = []
-    smoothed = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        phase = sweep(320, 55, t, length) / (2 * math.pi)
-        saw = 2 * (phase - math.floor(phase + 0.5))
-        smoothed += 0.12 * (rng.uniform(-1, 1) - smoothed)
-        out.append((0.5 * saw + 0.8 * smoothed) * envelope(t, length, 0.006))
-    return out
+    p, n = Pulse(0.125), Noise()
+    return [(0.55 * p.sample(slide(500, 60, t, length)) + 0.45 * n.sample(slide(4000, 500, t, length))) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
 
 
-def gate_open(rng: random.Random) -> list[float]:
-    length = 0.7
-    out = []
-    smoothed = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        # Chain rattle: noise bursts at a fast clicking rate that slows down.
-        click = 1.0 if math.sin(2 * math.pi * (38 - 20 * t / length) * t) > 0.7 else 0.0
-        smoothed += 0.35 * (rng.uniform(-1, 1) - smoothed)
-        rattle = smoothed * click * (1 - 0.5 * t / length)
-        # Low clunk when the bars hit the bottom.
-        tc = t - 0.55
-        clunk = math.sin(sweep(140, 60, tc, 0.15)) * envelope(tc, 0.15, 0.003) if tc >= 0 else 0.0
-        hum = 0.25 * math.sin(2 * math.pi * 90 * t) * min(1.0, t / 0.05) * (1 - t / length)
-        out.append(0.6 * rattle + 0.9 * clunk + hum)
-    return out
-
-
-def mission_done(rng: random.Random) -> list[float]:
-    # Rising major arpeggio in square waves, the last note held: reads as "goal reached" over the battle noise.
-    notes = [(523.25, 0.0), (659.25, 0.09), (783.99, 0.18), (1046.5, 0.27)]
-    length = 0.75
-    out = []
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        sample = 0.0
-        for freq, start in notes:
-            if t < start:
-                continue
-            tn = t - start
-            note_len = length - start if freq == notes[-1][0] else 0.16
-            if tn > note_len:
-                continue
-            square = 1.0 if math.sin(2 * math.pi * freq * tn) >= 0 else -1.0
-            sample += 0.35 * square * envelope(tn, note_len, 0.003)
-        out.append(sample + 0.02 * rng.uniform(-1, 1) * max(0.0, 1 - t / 0.05))
-    return out
-
-
-def runner_spawn(rng: random.Random) -> list[float]:
-    # Rough square shriek with vibrato and a breathy noise layer: higher and thinner than the walker's sounds.
-    length = 0.22
-    out = []
-    smoothed = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        vibrato = 1 + 0.04 * math.sin(2 * math.pi * 30 * t)
-        square = 1.0 if math.sin(sweep(520, 1100, t, length) * vibrato) >= 0 else -1.0
-        smoothed += 0.5 * (rng.uniform(-1, 1) - smoothed)
-        out.append((0.45 * square + 0.5 * smoothed) * envelope(t, length, 0.01))
-    return out
-
-
-def runner_approach(rng: random.Random) -> list[float]:
-    # Three quick breaths of filtered noise, each louder and higher, under a rising growl.
-    length = 0.42
-    out = []
-    smoothed = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        breath = (t * 7.5) % 1.0
-        gate = math.sin(math.pi * breath) ** 2
-        cutoff = 0.15 + 0.35 * t / length
-        smoothed += cutoff * (rng.uniform(-1, 1) - smoothed)
-        growl = math.sin(sweep(110, 190, t, length))
-        swell = 0.4 + 0.6 * t / length
-        fade = min(1.0, (length - t) / 0.03)
-        out.append((0.8 * smoothed * gate + 0.3 * growl) * swell * fade)
-    return out
-
-
-def boomer_spawn(rng: random.Random) -> list[float]:
-    # Bubbles: short low sine blips with a rising pitch each, over a slow wobbling drone.
-    length = 0.45
-    bubbles = [(0.0, 90), (0.08, 120), (0.15, 80), (0.24, 140), (0.31, 100)]
-    out = []
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        sample = 0.25 * math.sin(2 * math.pi * (55 + 8 * math.sin(2 * math.pi * 6 * t)) * t) * (1 - t / length)
-        for start, freq in bubbles:
-            tb = t - start
-            if 0 <= tb < 0.07:
-                sample += 0.6 * math.sin(sweep(freq, freq * 2.2, tb, 0.07)) * envelope(tb, 0.07, 0.003)
-        out.append(sample + 0.03 * rng.uniform(-1, 1))
-    return out
-
-
-def boomer_approach(rng: random.Random) -> list[float]:
-    # Alarm unlike any other enemy: square beeps alternating high and low, getting faster, over a fuse hiss.
-    length = 0.9
-    beeps = []
-    start, gap, high = 0.0, 0.2, True
-    while start < length - 0.05:
-        beeps.append((start, 1320.0 if high else 990.0))
-        start += gap
-        gap = max(0.07, gap * 0.78)
-        high = not high
-    out = []
-    smoothed = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        smoothed += 0.6 * (rng.uniform(-1, 1) - smoothed)
-        sample = 0.18 * smoothed * (0.5 + 0.5 * t / length)
-        for b, freq in beeps:
-            tb = t - b
-            if 0 <= tb < 0.06:
-                square = 1.0 if math.sin(2 * math.pi * freq * tb) >= 0 else -1.0
-                sample += 0.45 * square * min(1.0, (0.06 - tb) / 0.01)
-        out.append(sample * min(1.0, (length - t) / 0.02))
-    return out
-
-
-def explosion(rng: random.Random) -> list[float]:
-    # Low sine drop for the punch, a loud noise burst that darkens, and a long rumble.
-    length = 1.1
-    out = []
-    bright = dark = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        noise = rng.uniform(-1, 1)
-        bright += 0.5 * (noise - bright)
-        dark += 0.04 * (noise - dark)
-        cutoff_mix = max(0.0, 1 - t / 0.25)
-        boom = math.sin(sweep(120, 35, t, 0.5)) * envelope(t, 0.6, 0.002)
-        blast = (bright * cutoff_mix + 3.0 * dark * (1 - cutoff_mix)) * envelope(t, length, 0.002)
-        out.append(1.0 * boom + 0.7 * blast)
-    return out
-
-
-def perk_pickup(rng: random.Random) -> list[float]:
-    # Fast rising triangle sweep, then two bright bell tones a fifth apart with a short sparkle: clearly a reward,
-    # unlike the square-wave chime of a finished mission.
-    length = 0.4
-    out = []
-    phase = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        sample = 0.0
-        if t < 0.09:
-            freq = 600 + 1400 * t / 0.09
-            phase += 2 * math.pi * freq / RATE
-            tri = 2 / math.pi * math.asin(math.sin(phase))
-            sample += 0.4 * tri * min(1.0, (0.09 - t) / 0.02 + 0.3)
-        for start, freq in ((0.07, 1567.98), (0.13, 2349.32)):
-            tb = t - start
-            if tb >= 0:
-                bell = math.sin(2 * math.pi * freq * tb) + 0.3 * math.sin(2 * math.pi * freq * 2.76 * tb)
-                sample += 0.35 * bell * envelope(tb, length - start, 0.002)
-        sparkle = 0.05 * rng.uniform(-1, 1) * max(0.0, 1 - t / 0.15)
-        out.append(sample + sparkle)
-    return out
-
-
-def nuke(rng: random.Random) -> list[float]:
-    # A short charge whine sweeping up, then a white-noise crack and a sub-bass drop far below the boomer's
-    # explosion, with a long dark rumble: bigger than any blast in the level.
-    charge = 0.28
-    length = 2.2
-    out = []
-    bright = dark = 0.0
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        sample = 0.0
-        if t < charge:
-            whine = math.sin(sweep(220, 1800, t, charge)) * (t / charge) ** 2
-            sample += 0.35 * whine
-        tb = t - charge
-        if tb >= 0:
-            noise = rng.uniform(-1, 1)
-            bright += 0.6 * (noise - bright)
-            dark += 0.02 * (noise - dark)
-            crack = bright * max(0.0, 1 - tb / 0.12)
-            boom = math.sin(sweep(90, 22, tb, 1.2)) * envelope(tb, 1.4, 0.002)
-            rumble = 4.0 * dark * envelope(tb, length - charge, 0.01)
-            sample += 0.8 * crack + 1.0 * boom + 0.8 * rumble
-        out.append(sample)
-    return out
-
-
-def puzzle_solved(rng: random.Random) -> list[float]:
-    # Placeholder: a short noise click like a lock snapping open, then two soft sine notes a fourth apart with
-    # overtones; warmer and slower than the square-wave chime of an opened kill gate.
-    length = 0.7
-    out = []
-    for i in range(int(RATE * length)):
-        t = i / RATE
-        click = rng.uniform(-1, 1) * max(0.0, 1 - t / 0.015) * 0.8
-        sample = click
-        for start, freq in ((0.03, 523.25), (0.16, 698.46)):
-            tb = t - start
-            if tb >= 0:
-                tone = math.sin(2 * math.pi * freq * tb) + 0.25 * math.sin(2 * math.pi * freq * 2 * tb)
-                sample += 0.45 * tone * envelope(tb, length - start, 0.01)
-        out.append(sample)
-    return out
-
-
-def switch_on(rng: random.Random) -> list[float]:
-    # A low thud of the plate going down, then a short square blip an octave up: "got it".
+def player_hurt() -> list[float]:
     length = 0.25
+    p, q = Pulse(0.5), Pulse(0.25)
+    return [(0.5 * p.sample(notes(t, [330, 220], 0.09)) + 0.5 * q.sample(notes(t, [335, 222], 0.09))) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
+
+
+def dash() -> list[float]:
+    length = 0.16
+    n = Noise()
     out = []
-    for i in range(int(RATE * length)):
+    for i in frames(length):
         t = i / RATE
-        thud = math.sin(sweep(160, 70, t, 0.08)) * envelope(t, 0.08, 0.002) + 0.3 * rng.uniform(-1, 1) * max(0.0, 1 - t / 0.01)
-        tb = t - 0.05
-        blip = 0.0
-        if tb >= 0:
-            blip = (1.0 if math.sin(2 * math.pi * 1320 * tb) >= 0 else -1.0) * envelope(tb, 0.12, 0.002)
-        out.append(0.8 * thud + 0.35 * blip)
+        swell = min(1.0, t / 0.04) * (1.0 - t / length)
+        out.append(n.sample(slide(1500, 9000, t, length)) * swell)
     return out
 
 
-def switch_reset(rng: random.Random) -> list[float]:
-    # Three falling square pulses with a little grit: a clear "failed, start over" over the battle noise.
-    length = 0.75
+def ui_click() -> list[float]:
+    length = 0.04
+    p = Pulse(0.5)
+    return [p.sample(notes(t, [1760, 2640], 0.015)) * decay(t, length) for t in (i / RATE for i in frames(length))]
+
+
+def gate_open() -> list[float]:
+    length = 0.8
+    n, tri = Noise(short=True), Triangle()
     out = []
-    phase = 0.0
-    for i in range(int(RATE * length)):
+    for i in frames(length):
         t = i / RATE
-        pulse = int(t / 0.25)
-        tp = t - pulse * 0.25
-        freq = (440, 370, 294)[min(pulse, 2)] * (1 - 0.15 * tp / 0.25)
-        phase += 2 * math.pi * freq / RATE
-        square = 1.0 if math.sin(phase) >= 0 else -1.0
-        gate = 1.0 if tp < 0.19 else 0.0
-        out.append((0.5 * square + 0.05 * rng.uniform(-1, 1)) * gate * envelope(tp, 0.3, 0.004))
+        ratchet = 1.0 if (t * 22) % 1.0 < 0.35 else 0.15
+        body = 0.4 * n.sample(slide(1200, 3000, t, length)) * ratchet * (t < 0.65)
+        clunk = 0.8 * tri.sample(70) * decay(t - 0.65, 0.15) if t >= 0.65 else 0.0
+        out.append(body + clunk)
     return out
+
+
+def mission_done() -> list[float]:
+    length = 0.45
+    p, q = Pulse(0.25), Pulse(0.5)
+    return [(0.6 * p.sample(notes(t, [523, 659, 784, 1047], 0.08)) + 0.25 * q.sample(notes(t, [262, 330, 392, 523], 0.08)))
+            * decay(t, length, 0.002) for t in (i / RATE for i in frames(length))]
+
+
+def walker_spawn() -> list[float]:
+    length = 0.5
+    tri, n = Triangle(), Noise()
+    return [(0.7 * tri.sample(110 + 15 * math.sin(t * 30)) + 0.3 * n.sample(800)) * decay(t, length, 0.05)
+            for t in (i / RATE for i in frames(length))]
+
+
+def walker_approach() -> list[float]:
+    length = 0.6
+    p = Pulse(0.125)
+    return [p.sample(notes(t, [147, 131], 0.3) * (1 + 0.02 * math.sin(t * 40))) * decay(t, length, 0.06) * 0.8
+            for t in (i / RATE for i in frames(length))]
+
+
+def runner_spawn() -> list[float]:
+    length = 0.3
+    p, n = Pulse(0.125), Noise()
+    return [(0.5 * p.sample(slide(400, 1400, t, length)) + 0.5 * n.sample(slide(3000, 8000, t, length))) * decay(t, length, 0.02)
+            for t in (i / RATE for i in frames(length))]
+
+
+def runner_approach() -> list[float]:
+    length = 0.5
+    n = Noise()
+    out = []
+    for i in frames(length):
+        t = i / RATE
+        pant = 1.0 if (t * 8) % 1.0 < 0.45 else 0.0
+        out.append(n.sample(5000) * pant * (0.4 + 0.6 * t / length))
+    return out
+
+
+def brute_spawn() -> list[float]:
+    length = 0.7
+    tri, n = Triangle(), Noise()
+    return [(0.6 * tri.sample(slide(80, 55, t, length) * (1 + 0.05 * math.sin(t * 60))) + 0.4 * n.sample(300))
+            * decay(t, length, 0.04) for t in (i / RATE for i in frames(length))]
+
+
+def brute_approach() -> list[float]:
+    stomp_length = 0.18
+    tri, n = Triangle(), Noise()
+    stomp = [(0.7 * tri.sample(slide(90, 40, t, stomp_length)) + 0.3 * n.sample(400)) * decay(t, stomp_length)
+             for t in (i / RATE for i in frames(stomp_length))]
+    return stomp + silence(0.17) + stomp
+
+
+def boomer_spawn() -> list[float]:
+    length = 0.6
+    p, n = Pulse(0.5), Noise()
+    out = []
+    for i in frames(length):
+        t = i / RATE
+        bubble = 120 + 80 * ((t * 12) % 1.0)
+        out.append((0.6 * p.sample(bubble) + 0.2 * n.sample(600)) * decay(t, length, 0.03))
+    return out
+
+
+def boomer_approach() -> list[float]:
+    """The warning: a fast, high two-tone alarm no other enemy uses, getting quicker, over a fizzing fuse."""
+    length = 1.0
+    p, n = Pulse(0.25), Noise(short=True)
+    out = []
+    for i in frames(length):
+        t = i / RATE
+        rate = 6 + 10 * t / length
+        tone = 1320 if (t * rate) % 1.0 < 0.5 else 990
+        beep = 1.0 if (t * rate * 2) % 1.0 < 0.7 else 0.0
+        out.append(0.6 * p.sample(tone) * beep + 0.25 * n.sample(7000))
+    return out
+
+
+def explosion() -> list[float]:
+    length = 0.9
+    n, tri = Noise(), Triangle()
+    return [(0.75 * n.sample(slide(2500, 150, t, length)) + 0.35 * tri.sample(slide(90, 35, t, length))) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
+
+
+def perk_pickup() -> list[float]:
+    length = 0.32
+    p = Pulse(0.125)
+    return [p.sample(notes(t, [784, 988, 1175, 1568], 0.05)) * decay(t, length, 0.002)
+            for t in (i / RATE for i in frames(length))]
+
+
+def nuke() -> list[float]:
+    charge_length, boom_length = 0.5, 1.4
+    p, n, tri = Pulse(0.5), Noise(), Triangle()
+    charge = [0.5 * p.sample(slide(200, 1600, t, charge_length)) * (t / charge_length)
+              for t in (i / RATE for i in frames(charge_length))]
+    boom = [(0.7 * n.sample(slide(6000, 100, t, boom_length)) + 0.5 * tri.sample(slide(70, 30, t, boom_length)))
+            * decay(t, boom_length) for t in (i / RATE for i in frames(boom_length))]
+    return charge + boom
+
+
+def puzzle_solved() -> list[float]:
+    click_length, chord_length = 0.04, 0.5
+    n, a, b = Noise(short=True), Pulse(0.5), Triangle()
+    click = [n.sample(6000) * decay(t, click_length) for t in (i / RATE for i in frames(click_length))]
+    chord = [(0.45 * a.sample(notes(t, [392, 523], 0.12)) + 0.55 * b.sample(notes(t, [196, 262], 0.12)))
+             * decay(t, chord_length, 0.01) for t in (i / RATE for i in frames(chord_length))]
+    return click + chord
+
+
+def switch_on() -> list[float]:
+    click_length, blip_length = 0.05, 0.1
+    n, p = Noise(), Pulse(0.25)
+    click = [n.sample(2000) * decay(t, click_length) for t in (i / RATE for i in frames(click_length))]
+    blip = [p.sample(1046) * decay(t, blip_length) * 0.7 for t in (i / RATE for i in frames(blip_length))]
+    return click + blip
+
+
+def switch_reset() -> list[float]:
+    out = []
+    p = Pulse(0.5)
+    for k, freq in enumerate((330, 262, 196)):
+        length = 0.14
+        out += [p.sample(freq) * decay(t, length, 0.002) * 0.8 for t in (i / RATE for i in frames(length))]
+        out += silence(0.05)
+    return out
+
+
+SOUNDS = {
+    "Shot": shot, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
+    "GateOpen": gate_open, "MissionDone": mission_done,
+    "WalkerSpawn": walker_spawn, "WalkerApproach": walker_approach,
+    "RunnerSpawn": runner_spawn, "RunnerApproach": runner_approach,
+    "BruteSpawn": brute_spawn, "BruteApproach": brute_approach,
+    "BoomerSpawn": boomer_spawn, "BoomerApproach": boomer_approach,
+    "Explosion": explosion, "PerkPickup": perk_pickup, "Nuke": nuke,
+    "PuzzleSolved": puzzle_solved, "SwitchOn": switch_on, "SwitchReset": switch_reset,
+}
+
+
+def quantise(samples: list[float]) -> list[float]:
+    """Normalises to 90 % and snaps to the levels of a 4-bit DAC."""
+    peak = max(abs(s) for s in samples) or 1.0
+    half = (LEVELS - 1) / 2
+    return [round(0.9 * s / peak * half) / half for s in samples]
 
 
 def write(path: Path, samples: list[float]) -> None:
-    peak = max(abs(s) for s in samples) or 1.0
     with wave.open(str(path), "wb") as f:
         f.setnchannels(1)
         f.setsampwidth(2)
         f.setframerate(RATE)
-        f.writeframes(b"".join(struct.pack("<h", int(32767 * 0.9 * s / peak)) for s in samples))
+        f.writeframes(b"".join(struct.pack("<h", int(32767 * s)) for s in quantise(samples)))
 
 
 def main() -> None:
     SFX_DIR.mkdir(parents=True, exist_ok=True)
-    rng = random.Random(12)
-    for name, make in (("Shot", shot), ("Hit", hit), ("Death", death), ("GateOpen", gate_open),
-                       ("MissionDone", mission_done), ("RunnerSpawn", runner_spawn),
-                       ("RunnerApproach", runner_approach), ("BoomerSpawn", boomer_spawn),
-                       ("BoomerApproach", boomer_approach), ("Explosion", explosion),
-                       ("PerkPickup", perk_pickup), ("Nuke", nuke),
-                       ("PuzzleSolved", puzzle_solved), ("SwitchOn", switch_on), ("SwitchReset", switch_reset)):
+    random.seed(12)
+    for name, make in SOUNDS.items():
         path = SFX_DIR / f"{name}.wav"
-        write(path, make(rng))
+        write(path, make())
         print(f"Wrote {path.relative_to(ROOT)}")
 
 

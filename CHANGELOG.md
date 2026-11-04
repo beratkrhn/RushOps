@@ -31,6 +31,13 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
   - Explosionen mit orangem Licht, das mit dem Effekt verblasst.
   - Warmes Licht unter Perks.
   - Alle Effekte kommen aus Pools (`SpriteEffectPool`, vorher `ExplosionEffectPool`). Timings in `Data/Feel/EffectsConfig`, Logik in `EffectMath` mit EditMode-Tests. Neue Sprites `HitSpark_*`, `DeathSplat_*` und ein neues `MuzzleFlash`.
+- **Soundeffekte final und Audio-Mixer** (Issue #108, F-AUD-02 bis F-AUD-04, G9, G10):
+  - `Tools/gen_sfx.py` erzeugt alle Sounds neu im 8-Bit-Stil: Pulswellen, Dreieck, LFSR-Rauschen, Tonstufen und 4-Bit-Quantisierung.
+  - Neue Sounds: Spielerschaden, Dash, UI-Klick, Spawn und Annäherung für Walker und Brute.
+  - Das Boomer-Warnsignal ist ein schneller hoher Zweiton-Alarm über zischender Lunte, klar anders als die übrigen Gegner.
+  - Mixer `Audio/RushOps.mixer` mit Master, Musik und Effekte; die Lautstärken `MasterVolume`, `MusicVolume` und `EffectsVolume` sind freigegeben. `AudioVolumes` setzt sie getrennt (Startwerte in `Data/Audio/AudioConfig`, Umrechnung in `AudioVolumeMath`), als Vorbereitung für die Einstellungen.
+  - `SfxPlayer` spielt über 8 Stimmen in den Effekte-Kanal. Die Tonhöhen-Variation verbiegt damit keine laufenden Sounds mehr.
+  - Alle Buttons klicken (`UiClickSound`).
 - Menü „RushOps → Szenen → Alle erzeugen“ (`AllScenesBuilder.BuildAll`, auch für den Batchmode).
 
 ### Geändert

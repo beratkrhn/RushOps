@@ -22,6 +22,7 @@ namespace RushOps.Feel
         [SerializeField] private FeelConfig _config;
         [SerializeField] private PlayerHealth _player;
         [SerializeField] private PlayerWeapon _weapon;
+        [SerializeField] private PlayerDash _dash;
         [Tooltip("Pools of all enemy types in the level.")]
         [SerializeField] private EnemyPool[] _pools = System.Array.Empty<EnemyPool>();
         [SerializeField] private ExplosionSystem _explosions;
@@ -37,6 +38,10 @@ namespace RushOps.Feel
         [SerializeField] private AudioClip _hitClip;
         [SerializeField] private AudioClip _deathClip;
         [SerializeField] private AudioClip _perkPickupClip;
+        [Tooltip("Sound when the player loses a heart (issue #108).")]
+        [SerializeField] private AudioClip _playerHurtClip;
+        [Tooltip("Sound of the dash (issue #108).")]
+        [SerializeField] private AudioClip _dashClip;
 
         private int _hearts = -1;
         private int _deathSoundFrame = -1;
@@ -51,6 +56,11 @@ namespace RushOps.Feel
             if (_weapon != null)
             {
                 _weapon.Fired += OnFired;
+            }
+
+            if (_dash != null)
+            {
+                _dash.Dashed += OnDashed;
             }
 
             if (_explosions != null)
@@ -92,6 +102,11 @@ namespace RushOps.Feel
                 _weapon.Fired -= OnFired;
             }
 
+            if (_dash != null)
+            {
+                _dash.Dashed -= OnDashed;
+            }
+
             if (_explosions != null)
             {
                 _explosions.Exploded -= OnExploded;
@@ -121,9 +136,14 @@ namespace RushOps.Feel
 
         private void OnHealthChanged(int current, int max)
         {
-            if (_hearts >= 0 && current < _hearts && _camera != null && _config != null)
+            if (_hearts >= 0 && current < _hearts && _config != null)
             {
-                _camera.Shake(_config.ShakeStrength, _config.ShakeDuration, _config.ShakeFrequency);
+                if (_camera != null)
+                {
+                    _camera.Shake(_config.ShakeStrength, _config.ShakeDuration, _config.ShakeFrequency);
+                }
+
+                Play(_playerHurtClip, _config.PlayerHurtVolume);
             }
 
             _hearts = current;
@@ -132,6 +152,11 @@ namespace RushOps.Feel
         private void OnFired(Vector2 direction)
         {
             Play(_shotClip, _config != null ? _config.ShotVolume : 0f);
+        }
+
+        private void OnDashed(Vector2 direction)
+        {
+            Play(_dashClip, _config != null ? _config.DashVolume : 0f);
         }
 
         private void OnEnemySpawned(Enemy enemy)

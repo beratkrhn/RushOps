@@ -21,6 +21,7 @@ MonoBehaviour:
   _mass: 5
   _knockbackScale: 0.15
   _separationScale: 0.2
-  _spawnClip: {fileID: 0}
-  _approachClip: {fileID: 0}
+  _explosion: {fileID: 0}
+  _spawnClip: {fileID: 8300000, guid: e600e83ec35b74e5a80854f93f3f16c8, type: 3}
+  _approachClip: {fileID: 8300000, guid: 60db2d2413ed6470cad65e55851ac3fe, type: 3}
   _approachDistance: 4
