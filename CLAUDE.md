@@ -89,6 +89,18 @@ unity command                                                                   
 
 Bei `unity command` immer das Flag `--project-path .` mitgeben, wenn mehrere Editoren offen sein können. `editor.playmode set_run_in_background` nicht benutzen (ändert die PlayerSettings). Die Define-Symbole `ENABLE_RUNTIME_PIPELINE*` nie setzen; das Paket gehört nicht in Spiel-Builds.
 
+### Gerätebuild iOS (Issue #13)
+
+Getestet wird auf einem iPhone (kein Android-Gerät vorhanden).
+
+```bash
+Tools/ios-install.sh              # Xcode-Projekt exportieren (Batchmode), bauen, signieren, installieren, starten
+Tools/ios-install.sh --no-export  # nach „RushOps → Build → iOS-Xcode-Projekt (Development) bauen“ im offenen Editor
+```
+
+- Nur die Installation `6000.3.10f1-arm64` hat das iOS-Modul (die Unity-CLI meldet es fälschlich auch für `6000.3.10f1`). Das Skript sucht sie automatisch. Soll aus dem offenen Editor gebaut werden, muss das Projekt mit dieser Installation geöffnet sein.
+- Signiert wird automatisch mit dem Team `WAM6U438Y8`. Logs liegen unter `Logs/build-ios.log`, `Logs/xcodebuild-ios.log` und `Logs/devicectl-ios.log`.
+
 ### Rückfallweg: Unity direkt im Batchmode (macOS)
 
 Nur nötig, falls CLI oder Pipeline nicht funktionieren. Schlägt fehl, solange das Projekt im Editor geöffnet ist.
