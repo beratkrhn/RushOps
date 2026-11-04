@@ -16,7 +16,7 @@ namespace RushOps.Enemies
         [Tooltip("Hearts the player loses when touching this enemy.")]
         [SerializeField, Min(0)] private int _contactDamage = 1;
 
-        [Tooltip("Seconds of the death effect before the enemy returns to the pool.")]
+        [Tooltip("Seconds the body fades out after its death animation (or shrinks and fades without one) before the enemy returns to the pool.")]
         [SerializeField, Min(0f)] private float _deathDuration = 0.25f;
 
         [Tooltip("Score points for a kill (counted from v0.2.0).")]
@@ -58,7 +58,7 @@ namespace RushOps.Enemies
         /// <summary>Hearts the player loses when touching this enemy.</summary>
         public int ContactDamage => _contactDamage;
 
-        /// <summary>Seconds of the death effect before the enemy returns to the pool.</summary>
+        /// <summary>Seconds the body fades out after its death animation before the enemy returns to the pool.</summary>
         public float DeathDuration => _deathDuration;
 
         /// <summary>Score points for a kill.</summary>

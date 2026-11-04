@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Player_Idle
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
   _framesPerSecond: 8
+  _loops: 1
   _directions:
   - _frames:
     - {fileID: 21300000, guid: 47d9c1e90487b4b99bfe5c2fd08b99a1, type: 3}

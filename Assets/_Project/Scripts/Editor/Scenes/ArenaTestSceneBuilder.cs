@@ -471,7 +471,11 @@ namespace RushOps.Editor.Scenes
             DirectionalAnimationBuilder.BuildAll();
             var playerIdle = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.PlayerIdlePath);
             var walkerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerWalkPath);
+            var walkerHit = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerHitPath);
+            var walkerDeath = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.WalkerDeathPath);
             var runnerRun = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.RunnerRunPath);
+            var runnerHit = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.RunnerHitPath);
+            var runnerDeath = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.RunnerDeathPath);
             var bruteWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BruteWalkPath);
             var boomerWalk = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BoomerWalkPath);
 
@@ -489,18 +493,18 @@ namespace RushOps.Editor.Scenes
             Material flashMaterial = LoadOrCreateFlashMaterial();
             PhysicsMaterial2D enemyBody = LoadOrCreateEnemyBodyMaterial();
             Enemy walkerPrefab = CreateOrUpdateEnemyPrefab(
-                "Walker", WalkerPrefabPath, walkerWalk, LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig,
+                "Walker", WalkerPrefabPath, new EnemyAnimations(walkerWalk, walkerHit, walkerDeath), LoadOrCreateConfig<EnemyDefinition>(WalkerDefinitionPath), feelConfig,
                 flashMaterial, enemyBody, WalkerColliderRadius, PlayerColliderOffset);
             Enemy runnerPrefab = CreateOrUpdateEnemyPrefab(
-                "Runner", RunnerPrefabPath, runnerRun, LoadOrCreateRunner(), feelConfig, flashMaterial, enemyBody,
+                "Runner", RunnerPrefabPath, new EnemyAnimations(runnerRun, runnerHit, runnerDeath), LoadOrCreateRunner(), feelConfig, flashMaterial, enemyBody,
                 RunnerColliderRadius,
                 PlayerColliderOffset);
             Enemy brutePrefab = CreateOrUpdateEnemyPrefab(
-                "Brute", BrutePrefabPath, bruteWalk, LoadOrCreateBrute(), feelConfig, flashMaterial, enemyBody,
+                "Brute", BrutePrefabPath, new EnemyAnimations(bruteWalk, null, null), LoadOrCreateBrute(), feelConfig, flashMaterial, enemyBody,
                 BruteColliderRadius,
                 BruteColliderOffset);
             Enemy boomerPrefab = CreateOrUpdateEnemyPrefab(
-                "Boomer", BoomerPrefabPath, boomerWalk, LoadOrCreateBoomer(), feelConfig, flashMaterial, enemyBody,
+                "Boomer", BoomerPrefabPath, new EnemyAnimations(boomerWalk, null, null), LoadOrCreateBoomer(), feelConfig, flashMaterial, enemyBody,
                 BoomerColliderRadius,
                 BoomerColliderOffset);
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
@@ -886,12 +890,31 @@ namespace RushOps.Editor.Scenes
             return level;
         }
 
+        // Walk loop plus the optional one-shot hit and death animations of an enemy (issue #100).
+        private readonly struct EnemyAnimations
+        {
+            public readonly DirectionalAnimation Walk;
+            public readonly DirectionalAnimation Hit;
+            public readonly DirectionalAnimation Death;
+
+            public EnemyAnimations(DirectionalAnimation walk, DirectionalAnimation hit, DirectionalAnimation death)
+            {
+                Walk = walk;
+                Hit = hit;
+                Death = death;
+            }
+        }
+
         // Rebuilt on every run, so the prefab stays reproducible from code.
         private static Enemy CreateOrUpdateEnemyPrefab(
-            string name, string prefabPath, DirectionalAnimation walk, EnemyDefinition definition, FeelConfig feel,
+            string name, string prefabPath, EnemyAnimations animations, EnemyDefinition definition, FeelConfig feel,
             Material flashMaterial, PhysicsMaterial2D bodyMaterial, float colliderRadius, Vector2 colliderOffset)
         {
-            DirectionalSpriteAnimator view = CreateCharacter(name, null, Vector2Int.zero, walk, Direction8.S);
+            DirectionalSpriteAnimator view = CreateCharacter(name, null, Vector2Int.zero, animations.Walk, Direction8.S);
+            var serializedView = new SerializedObject(view);
+            serializedView.FindProperty("_hit").objectReferenceValue = animations.Hit;
+            serializedView.FindProperty("_death").objectReferenceValue = animations.Death;
+            serializedView.ApplyModifiedPropertiesWithoutUndo();
             GameObject go = view.gameObject;
             go.GetComponent<SpriteRenderer>().sharedMaterial = flashMaterial;
             go.transform.position = Vector3.zero;
@@ -921,6 +944,7 @@ namespace RushOps.Editor.Scenes
             serializedEnemy.FindProperty("_definition").objectReferenceValue = definition;
             serializedEnemy.FindProperty("_feel").objectReferenceValue = feel;
             serializedEnemy.FindProperty("_renderer").objectReferenceValue = go.GetComponent<SpriteRenderer>();
+            serializedEnemy.FindProperty("_view").objectReferenceValue = view;
             serializedEnemy.ApplyModifiedPropertiesWithoutUndo();
 
             EnsureFolder(Path.GetDirectoryName(prefabPath).Replace('\\', '/'));

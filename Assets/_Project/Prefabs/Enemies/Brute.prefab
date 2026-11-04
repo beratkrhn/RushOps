@@ -109,6 +109,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalSpriteAnimator
   _animation: {fileID: 11400000, guid: 8a3d7160b3ce54c5ea36697e45548cda, type: 2}
+  _hit: {fileID: 0}
+  _death: {fileID: 0}
   _direction: 6
 --- !u!50 &4745578282582325924
 Rigidbody2D:
@@ -201,3 +203,4 @@ MonoBehaviour:
   _definition: {fileID: 11400000, guid: f91660e0468c94e5c88467401a35625f, type: 2}
   _feel: {fileID: 11400000, guid: f065ac8c2f52144c28d2c95e91ead6c9, type: 2}
   _renderer: {fileID: 4459773367034727804}
+  _view: {fileID: 5887513947296334877}

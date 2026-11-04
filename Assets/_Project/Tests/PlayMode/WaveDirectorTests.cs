@@ -91,7 +91,7 @@ namespace RushOps.Tests.PlayMode
             Enemy victim = _pool.Active[0];
 
             ((IDamageable)victim).TakeHit(1000, Vector2.zero);
-            yield return new WaitForSeconds(victim.Definition.DeathDuration + 0.05f);
+            yield return new WaitForSeconds(victim.DeathTime + 0.05f);
             Assert.LessOrEqual(_director.AliveCount + _director.AnnouncedCount, _config.MaxActive);
             yield return WaitForFull();
 

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Runner_Hit
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 0
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: bca5650ddc18a49a39a6d53f671ab90f, type: 3}
+    - {fileID: 21300000, guid: 55078368db6794856835328cf300bbff, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 7685c90186e804e698cf1731681b5d7a, type: 3}
+    - {fileID: 21300000, guid: ff5cf6aa1daf54b1da53068f2115076c, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 8702b1c7fd1f74d4ead8f6c2f1d5029d, type: 3}
+    - {fileID: 21300000, guid: 6e3662d30021a403d8645d7989da5519, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 39f6726a360524469b1adbc95ccc6c15, type: 3}
+    - {fileID: 21300000, guid: f518da96bebe247c58712941e8febb55, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 66c0d55a16b674915a2136807de7864c, type: 3}
+    - {fileID: 21300000, guid: 591c5ddf149a44910be4080c3f2dc375, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: fc8a96dbfc0e04fbd9733fa156ae2e17, type: 3}
+    - {fileID: 21300000, guid: f3720ab397ce0424688692984da9fc93, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 33223485d46554a63bccb25433ef71b1, type: 3}
+    - {fileID: 21300000, guid: 95addee6055aa4d499f764e8c9bfce70, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 67f4dfe7eaf9c4791b51f67e26dd019b, type: 3}
+    - {fileID: 21300000, guid: 3715072c2390043248cc7627646dcdb8, type: 3}

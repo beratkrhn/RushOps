@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Brute_Walk
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
   _framesPerSecond: 8
+  _loops: 1
   _directions:
   - _frames:
     - {fileID: 21300000, guid: ad7d12a37eb934ffaaa28aea7fba6b9a, type: 3}
