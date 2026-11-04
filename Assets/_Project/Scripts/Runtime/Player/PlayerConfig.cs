@@ -24,7 +24,7 @@ namespace RushOps.Player
         [SerializeField, Min(0f)] private float _dashDistance = 3f;
 
         [Tooltip("How long the dash moves the player in seconds.")]
-        [SerializeField, Min(0.01f)] private float _dashDuration = 0.2f;
+        [SerializeField, Min(0.01f)] private float _dashDuration = 0.3f;
 
         [Tooltip("Invulnerability (i-frames) from the start of the dash in seconds; never shorter than the dash itself.")]
         [SerializeField, Min(0f)] private float _dashInvulnerability = 0.3f;
