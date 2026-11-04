@@ -4,7 +4,8 @@ namespace RushOps.Levels
 {
     /// <summary>
     /// Kills in the current level (F-LVL-03): every enemy death counts once, whatever killed it (shot,
-    /// explosion, nuke). Counted from level start for the whole level, not per zone.
+    /// explosion, nuke). Counted from level start for the whole level; a <see cref="KillGoal"/> can count from a
+    /// later point (e.g. entering a zone).
     /// </summary>
     public class KillCounter
     {

@@ -97,6 +97,23 @@ namespace RushOps.Editor.Scenes
         }
 
         /// <summary>
+        /// Lets the kill gate <paramref name="gate"/> count only the kills after the player entered
+        /// <paramref name="zone"/> (decision P1). Zones are created after their gates, so this is a separate step.
+        /// </summary>
+        public static void CountKillsFromZone(Gate gate, Zone zone)
+        {
+            var kills = gate.GetComponent<KillGateCondition>();
+            if (kills == null)
+            {
+                throw new System.ArgumentException($"{gate.name} is not a kill gate", nameof(gate));
+            }
+
+            var serialized = new SerializedObject(kills);
+            serialized.FindProperty("_countFromZone").objectReferenceValue = zone;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        /// <summary>
         /// The level exit centered at <paramref name="center"/>; reaching it finishes the level (issue #35). With
         /// <paramref name="lockZone"/> it opens only once that zone's waves are over and all enemies are dead.
         /// </summary>
