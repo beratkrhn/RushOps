@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Rost_Hit
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 0
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 61735b3d608b9490c950e967bf8c9c8c, type: 3}
+    - {fileID: 21300000, guid: ac74b97c89b454bb7a1968bc099e663a, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 598154b7a22344ce286c5f8aa68088ba, type: 3}
+    - {fileID: 21300000, guid: b73bff641a29f443a8b54f77be0412f7, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 2ff09a67582324d878a7595204f8189d, type: 3}
+    - {fileID: 21300000, guid: 425bd40a8206d4ba6afb861cf0033a4c, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 0f123614a22d042849cf719d232ab72d, type: 3}
+    - {fileID: 21300000, guid: 11fd20a3f16f14bceaa0b8f7c4a7cd58, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: c13ce9b785d7f49719d43be7615acf24, type: 3}
+    - {fileID: 21300000, guid: fbf103ee0b29f4a03902b197b2bd1403, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 06e6284170f7b44698f446458ae0e434, type: 3}
+    - {fileID: 21300000, guid: d055892c35fc14b70b10025d010f795c, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: e6e535037b69e4e0484672e851145300, type: 3}
+    - {fileID: 21300000, guid: 561ad8b3acd354bb191918cadaaf2490, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 490e8efd4772d4e8a9846f89419b925e, type: 3}
+    - {fileID: 21300000, guid: 154c23bffe8cc408d96f0e31315477fb, type: 3}

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Nachtwache_Hit
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 0
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 9a39b69bde877402db7999f169e029ae, type: 3}
+    - {fileID: 21300000, guid: 9c4189e56494d40fb9f577f1c84bf4c1, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 2c83d800433ef4e699e7b05858ebf5ee, type: 3}
+    - {fileID: 21300000, guid: bc90f77a5936542108a02368a77b6bca, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: af7e52811dcc944a6944d0376714b73e, type: 3}
+    - {fileID: 21300000, guid: 966ccb4d3f7e840fd9f21cba1b6c456f, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 61c8905879a47414394e1bad284483ec, type: 3}
+    - {fileID: 21300000, guid: 81aeee107d4a44d4d88f386bbca6b290, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 186cc247206bd4d748fc7aba31023faf, type: 3}
+    - {fileID: 21300000, guid: 1f0a34c0c9b214156ae238464b9ddce4, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: c37151a0469c647499fa4b3523574659, type: 3}
+    - {fileID: 21300000, guid: fcdba1e806f9b4141a300cd846419618, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 6cc246de2e50e4c08812d5de5cfdeccd, type: 3}
+    - {fileID: 21300000, guid: 2f0ba0e6ce7e5449cb118bc28072fc4f, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 353881d46b6394abdad43c0c368225bf, type: 3}
+    - {fileID: 21300000, guid: a830fe6539f3140b88decb4574603133, type: 3}

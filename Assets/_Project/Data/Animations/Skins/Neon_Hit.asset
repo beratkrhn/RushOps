@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Neon_Hit
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 0
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: bfff33c9c4ee64bb3842d8f015c070db, type: 3}
+    - {fileID: 21300000, guid: d411c55f329ac499e8a2434c94682c9f, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: b06508f1ca13e42568429ff9b17a774c, type: 3}
+    - {fileID: 21300000, guid: 93a023f89b6094991a0f282361dfe72d, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 25cbd6b3d042d44e2babf162de9c32af, type: 3}
+    - {fileID: 21300000, guid: 765e68aee7874497a94a3837ed2a4022, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: d3924d4cb20c24dc4b4b7c249fb9b7f5, type: 3}
+    - {fileID: 21300000, guid: 2108dcbf8c84c493eadd4b9d910f466b, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 082da45ffa0624f818ca5c7bd325591c, type: 3}
+    - {fileID: 21300000, guid: 74971866dd4914f0eab5cf8abeeea253, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 5cf6d0b12da554f4d86c91b098a6f4f3, type: 3}
+    - {fileID: 21300000, guid: ad4253e1c99ea4ebbbad054752661d22, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: f8c1273f4b82c44eda07e925bcc20bd0, type: 3}
+    - {fileID: 21300000, guid: 35c5ff6b63b4640478f7121536ed76fa, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: f5e10103e434e4cf1ab41ff053070982, type: 3}
+    - {fileID: 21300000, guid: 3b8c5cc1a55a74b12ba835b3a393e4b5, type: 3}

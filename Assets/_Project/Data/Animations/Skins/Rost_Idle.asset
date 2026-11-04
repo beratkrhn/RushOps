@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Rost_Idle
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 8
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 57f63dfba1a56416da6063025550d96b, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 6b612c1b681c1418e80edd3e5fc3dd35, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 4c04b9197239e42cfbf1b6b0af2f48e1, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 128816e74eb7c45549495fb9adaeb92a, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 3e7ae92057d0f4cab962564dc6088227, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: b94365890c0054ce89f65b637685a112, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: a506e5fa6d66c4be88ea997d245bba93, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: b4eea0b6457fa4cc3a239cda121632b1, type: 3}

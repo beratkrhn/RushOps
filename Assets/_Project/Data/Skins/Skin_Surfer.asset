@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
   _id: Surfer
   _displayName: Surfer
-  _idle: {fileID: 11400000, guid: b52b33a51b25a46f383eab6303ef49e9, type: 2}
-  _walk: {fileID: 11400000, guid: a1f374bfb509f4bdc9eeae95b3b09b8a, type: 2}
-  _hit: {fileID: 11400000, guid: 8496bf2b646834ef2b083df4ac81577f, type: 2}
-  _death: {fileID: 11400000, guid: 1454a472fcb304687a91190f2f86ee2f, type: 2}
+  _idle: {fileID: 11400000, guid: a1d25cfbae78a49439d6c813e95dfa9f, type: 2}
+  _walk: {fileID: 11400000, guid: 6286fc14d2257468f9325590f5562ddb, type: 2}
+  _hit: {fileID: 11400000, guid: 5c465b830d1644b8c9702f2dcbd66796, type: 2}
+  _death: {fileID: 11400000, guid: 3c0e018ac44624872bd7d07c435254ed, type: 2}
   _unlockKind: 1
   _levelId: Level_1-2
   _levelName: Level 1-2

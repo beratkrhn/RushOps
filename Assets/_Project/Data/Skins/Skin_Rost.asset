@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
   _id: Rost
   _displayName: Rost
-  _idle: {fileID: 11400000, guid: b52b33a51b25a46f383eab6303ef49e9, type: 2}
-  _walk: {fileID: 11400000, guid: a1f374bfb509f4bdc9eeae95b3b09b8a, type: 2}
-  _hit: {fileID: 11400000, guid: 8496bf2b646834ef2b083df4ac81577f, type: 2}
-  _death: {fileID: 11400000, guid: 1454a472fcb304687a91190f2f86ee2f, type: 2}
+  _idle: {fileID: 11400000, guid: abd43eb88f2d542e593a65c02ba8ed94, type: 2}
+  _walk: {fileID: 11400000, guid: 4a42de9fdedf0456f8e26616cfa669e9, type: 2}
+  _hit: {fileID: 11400000, guid: e8514921fa600496daa8a2d7c5aa421c, type: 2}
+  _death: {fileID: 11400000, guid: 55939853a1d6040d48f8e50155e8529a, type: 2}
   _unlockKind: 1
   _levelId: Level_2-3
   _levelName: Level 2-3
