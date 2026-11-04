@@ -1,7 +1,5 @@
 using RushOps.Characters;
 using RushOps.Editor.Art;
-using RushOps.Levels;
-using RushOps.Save;
 using RushOps.UI;
 using UnityEditor;
 using UnityEditor.Events;
@@ -24,7 +22,6 @@ namespace RushOps.Editor.Scenes
     public static class MainMenuSceneBuilder
     {
         private const string ScenePath = "Assets/_Project/Scenes/" + MainMenu.SceneName + ".unity";
-        private const string CampaignPath = "Assets/_Project/Data/Levels/Campaign.asset";
         private const string LogoFile = "Logo_12.png";
         private const float LogoY = 190f;
         private const float FigureY = 40f;
@@ -79,9 +76,7 @@ namespace RushOps.Editor.Scenes
             GameObject testButton = CreateTestMenuButton(safeArea, font, menu);
 
             var serialized = new SerializedObject(menu);
-            serialized.FindProperty("_campaign").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Campaign>(CampaignPath);
-            serialized.FindProperty("_save").objectReferenceValue =
-                ArenaTestSceneBuilder.LoadOrCreateConfig<SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
+            serialized.FindProperty("_storyScene").stringValue = IslandMap.SceneName;
             serialized.FindProperty("_testMenuScene").stringValue = TestMenuSceneBuilder.SceneName;
             serialized.FindProperty("_version").objectReferenceValue = version;
             serialized.FindProperty("_testMenuButton").objectReferenceValue = testButton;

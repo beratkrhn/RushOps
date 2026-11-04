@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b4961b60417543cc8dfa902d016265a, type: 3}
+  m_Name: IslandMapConfig
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.UI.IslandMapConfig
+  _swipeDistance: 0.06
+  _slideSharpness: 12
+  _islandSpacing: 640
+  _nodeOpen: {fileID: 21300000, guid: c60e5895c68334acb817c4526f41c437, type: 3}
+  _nodeDone: {fileID: 21300000, guid: a94a7673b96c148f9bf4db56864df5bb, type: 3}
+  _nodeLocked: {fileID: 21300000, guid: 4c193bed426484e6dba29a603fdca1a9, type: 3}
+  _nodeSoon: {fileID: 21300000, guid: 7effb91e5505843aa812fc9cf9afa416, type: 3}
+  _starFull: {fileID: 21300000, guid: 6add4ca0236684bdcb2606e51f456c89, type: 3}
+  _starEmpty: {fileID: 21300000, guid: 6bfb06caef6574551ba7a57c60880d24, type: 3}

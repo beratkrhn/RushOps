@@ -123,24 +123,37 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void TryGetLevelToPlay_IsTheNextOpenLevel_OrTheFirstWhenAllAreDone()
+        public void StateOf_ShowsSoonLockedOpenAndDone()
         {
-            var unlocks = new CampaignUnlocks(new[] { new[] { "1-1", null, null }, new[] { (string)null } });
-
-            Assert.IsTrue(unlocks.TryGetLevelToPlay(_progress, out int island, out int level));
-            Assert.AreEqual((0, 0), (island, level));
-
             Finish("1-1");
-            Assert.IsTrue(unlocks.TryGetLevelToPlay(_progress, out island, out level));
-            Assert.AreEqual((0, 0), (island, level));
+
+            Assert.AreEqual(LevelNodeState.Done, _unlocks.StateOf(0, 0, _progress));
+            Assert.AreEqual(LevelNodeState.Open, _unlocks.StateOf(0, 1, _progress));
+            Assert.AreEqual(LevelNodeState.Locked, _unlocks.StateOf(0, 2, _progress));
+            Assert.AreEqual(LevelNodeState.Locked, _unlocks.StateOf(1, 0, _progress));
+            Assert.AreEqual(LevelNodeState.Soon, _unlocks.StateOf(2, 1, _progress));
+            Assert.AreEqual(LevelNodeState.Soon, _unlocks.StateOf(7, 0, _progress));
         }
 
         [Test]
-        public void TryGetLevelToPlay_WithoutBuiltLevels_IsFalse()
+        public void StartIsland_IsWhereThePlayerContinues()
         {
-            var unlocks = new CampaignUnlocks(new[] { new[] { (string)null } });
+            Assert.AreEqual(0, _unlocks.StartIsland(_progress));
 
-            Assert.IsFalse(unlocks.TryGetLevelToPlay(_progress, out _, out _));
+            Finish("1-1", "1-2", "1-3");
+            Assert.AreEqual(1, _unlocks.StartIsland(_progress));
+
+            Finish("2-1", "2-2", "2-3", "3-1");
+            Assert.AreEqual(2, _unlocks.StartIsland(_progress), "all open levels done: highest open island");
+        }
+
+        [Test]
+        public void StartIsland_WhenOnlyBuiltLevelsAreDone_StaysOnTheirIsland()
+        {
+            var unlocks = new CampaignUnlocks(new[] { new[] { "1-1", null, null }, new[] { (string)null } });
+            Finish("1-1");
+
+            Assert.AreEqual(0, unlocks.StartIsland(_progress));
         }
 
         [Test]

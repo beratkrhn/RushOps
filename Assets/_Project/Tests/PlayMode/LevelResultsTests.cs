@@ -115,15 +115,15 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Continue_LoadsMainMenu()
+        public IEnumerator Continue_LoadsIslandMap()
         {
             _results.ShowDone();
             _results.Continue();
             yield return null;
             yield return null;
 
-            Assert.AreEqual("MainMenu", SceneManager.GetActiveScene().name);
-            Assert.IsNotNull(Object.FindFirstObjectByType<MainMenu>(), "main menu has no MainMenu");
+            Assert.AreEqual("IslandMap", SceneManager.GetActiveScene().name);
+            Assert.IsNotNull(Object.FindFirstObjectByType<IslandMap>(), "island map has no IslandMap");
             Assert.AreEqual(1f, Time.timeScale);
         }
 
