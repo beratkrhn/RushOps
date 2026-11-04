@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4937a1a41834b5fa902eb7c86d5f031, type: 3}
+  m_Name: NukeConfig
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Perks.NukeConfig
+  _flashAlpha: 0.9
+  _flashDuration: 0.5
+  _shakeStrength: 0.5
+  _shakeDuration: 0.6
+  _shakeFrequency: 30
+  _volume: 1
