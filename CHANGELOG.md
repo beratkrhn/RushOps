@@ -4,6 +4,110 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.3.0] – 2026-11-04
+
+### Hinzugefügt
+- **Rätsel-Grundsystem** (Issue #30, F-LVL-04, F-HUD-03): Basis `Puzzle` mit den Zuständen inaktiv, aktiv, gelöst (`PuzzleLogic`, EditMode-getestet). Ein Rätsel wird aktiv, sobald seine Zone aktiv wird. `PuzzleSolvedCondition` öffnet ein Tor, wenn alle seine Rätsel gelöst sind. Beim Lösen spielt ein Platzhalter-Sound (`PuzzleSolved.wav` aus `Tools/gen_sfx.py`, Lautstärke in `Data/Puzzles/PuzzleConfig`).
+- Der Missions-Tracker zeigt Rätsel an: Text, wahlweise mit Fortschrittsbalken darunter oder mit Countdown („Schalter: 7 s“). Ein Rätsel gibt das über `PuzzleDisplay` vor (Issue #30).
+- `DebugPuzzle` als Testrätsel: Es füllt seinen Balken in 20 s und ist dann gelöst, oder sofort über das Kontextmenü „Jetzt lösen“ (Issue #30).
+- **Zonen-Kontrolle (Hold the Line)** (Issue #31, F-RAE-01, F-RAE-02): Ein leuchtender Kreis am Boden (Ring und blaues 2D-Licht) muss 10 s *(Startwert)* besetzt werden. Der Fortschritt steigt nur, solange der Spieler im Kreis steht, und pausiert außerhalb, ohne zu sinken. Er ist am Kreis sichtbar (eine Scheibe wächst, das Licht wird heller) und als Balken im Missions-Tracker. Bei 100 % ist das Rätsel gelöst, und der Kreis färbt sich grün. Dauer, Radius, Text und Optik stehen in `Data/Puzzles/HoldZoneConfig`. Logik in `HoldProgress` mit EditMode-Tests.
+- `PuzzleBuilder` (Editor) setzt Rätsel in Level-Szenen; Ring- und Scheiben-Sprites aus `Tools/gen_pixelart.py` (Issue #31).
+- **Zeitkritische Schalter** (Issue #32, F-RAE-03 bis F-RAE-05): Bodenplatten, die nur der Spieler durch Darüberlaufen aktiviert. Gedrückte Platten leuchten grün. Die erste startet einen Countdown von 12 s *(Startwert)*, den der Missions-Tracker zeigt („Schalter 1/3: 9 s“). Läuft er ab, springen alle Platten zurück, blinken rot, und ein Summer ertönt. Alle rechtzeitig gedrückt: Rätsel gelöst. Werte in `Data/Puzzles/TimedSwitchConfig`, Logik in `SwitchSequence` mit EditMode-Tests, Sounds `SwitchOn.wav` und `SwitchReset.wav`.
+- Der Missions-Tracker zeigt auch Rätsel in Zonen ohne Rätsel- oder Kill-Tor (z. B. der letzten Zone) und bestätigt sie mit „Geschafft!“ (Issue #32).
+- `Arena_Zonen`: drei Schalter in Zone 3 (Issue #32).
+- **Objekt-Transport** (Issue #33, F-RAE-06 bis F-RAE-08): Eine Energiezelle wird durch Berührung aufgenommen und ist dann an der Figur zu sehen. Beim Tragen ist der Dash gesperrt, und der Dash-Button zeigt ein Schloss. Das Lauftempo sinkt um 20 % *(Startwert)*, Schießen bleibt möglich, und Schaden lässt die Zelle nicht fallen. Die Abgabe am Generator geschieht durch Berührung; danach läuft er sichtbar. Die Anzahl benötigter Zellen ist pro Rätsel einstellbar (Standard 1). Der Tracker zeigt „Energiezelle zum Generator bringen“, bei mehreren Zellen „Energiezellen 1/3“ mit Balken. Werte in `Data/Puzzles/CarryConfig`, Logik in `CarrySlot` und `TransportGoal` mit EditMode-Tests.
+- `PlayerMovement.LoadMultiplier`: Tempo-Faktor durch Tragen, unabhängig vom Perk-Multiplikator, damit Speed-Boost und Tragen sich verrechnen (Issue #33).
+- `Arena_Zonen`: Energiezelle und Generator in Zone 3; der Tracker zeigt nach „Geschafft!“ das nächste Rätsel derselben Zone (Issue #33).
+- **Gegnerdruck während Rätseln** (Issue #34, Lastenheft 2.6): Mit `PuzzlePressure` lässt sich pro Rätsel eine eigene `WaveDefinition` festlegen, die die Zone verwendet, solange das Rätsel aktiv ist. Nach dem Lösen kehrt die Zone zu ihren normalen Wellen zurück oder beendet sie (`AfterPuzzle`). `WaveDirector.UseWaves`/`StopWaves` tauschen die Wellen einer laufenden Zone; Gegner melden ihren Tod immer der Sequenz, die sie angefordert hat.
+- `Arena_Zonen`: Während der Haltezone schickt Zone 2 kleinere Wellen in schnellerem Takt (`Data/Waves/Arena_Zonen_Zone2_Hold`), danach wieder die normalen (Issue #34).
+- **Levelziel und Ergebnisbildschirme** (Issue #35, F-LVL-05, F-SCO-03, F-SPF-03): `LevelDefinition` (Name, Szene, Score-Schwellen für 2 und 3 Sterne; das Erreichen des Ziels gibt immer 1 Stern) unter `Data/Levels/`. Ein `LevelExit` hinter dem letzten Tor beendet das Level. „Level geschafft!“ zeigt Score, Kills, Zeit, 1–3 Sterne sowie „Nochmal“ und „Weiter“. „Gescheitert“ erscheint bei 0 Herzen nach dem Todesmoment mit Score und „Neustart“. Während der Bildschirme ist das Spiel eingefroren (`PauseController.Freeze`), auch das Zurückkehren aus dem Hintergrund setzt es nicht fort. Sterne-Berechnung in `StarRating` mit EditMode-Tests.
+- Szene `TestMenu` (`RushOps → Szenen → TestMenu erzeugen`): listet alle Level aus `Data/Levels/`; „Weiter“ führt bis v0.5.0 hierher (Issue #35).
+- `Arena_Zonen`: Ausgang am Nordende von Zone 3 (Issue #35).
+- **Prototyp Level 1-1** (Issue #36, F-LVL-06): Szene `Level_1-1` (24×118 Kacheln, `RushOps → Szenen → Level_1-1 erzeugen`) mit fünf Zonen von Süden nach Norden. Zone 1 „Ankunft“ (nur Walker, Kill-Gate nach 15 Kills), Zone 2 „Halten“ (Zonen-Kontrolle unter eigenen, schnelleren Wellen, danach Ruhe; Runner kommen dazu), Zone 3 „Schalter“ (drei zeitkritische Schalter in zwei Gassen; Boomer kommen dazu), Zone 4 „Generator“ (zwei Energiezellen zum Generator; Brutes kommen dazu), Zone 5 „Ausgang“ (letzter Ansturm aller Typen vor dem Ausgang). Wellen unter `Data/Waves/Level_1-1_*`, Sterne-Schwellen 2000/4000 *(Startwerte, Spieldauer und Balancing werden im Spieltest #37 abgenommen)*.
+- `LevelLayoutCheck`: Der Level-Builder prüft vor dem Speichern die Richtlinien aus `docs/level-design.md` (Durchlässe mindestens 2 Kacheln für alle Ziele, Spawnpunkte mit 1 Kachel Abstand zu Wänden und in ihrer Zone, mindestens ein Teil jedes Rätsels in Sichtlinie vom Zoneneingang); EditMode-Tests für die Prüfungen und für Level 1-1 (Issue #36).
+- iOS-Build (Issue #13): `RushOps → Build → iOS-Xcode-Projekt (Development/Release) bauen` exportiert ein Xcode-Projekt nach `Builds/iOS/`, automatische Signierung mit dem Entwickler-Team. `Tools/ios-install.sh` exportiert das Projekt mit der Unity-Installation, die das iOS-Modul hat, baut und signiert es per `xcodebuild` und installiert und startet es per `devicectl` auf dem angeschlossenen iPhone. Erster Gerätebuild auf einem iPhone 16 Pro installiert und gestartet. Builds starten mit dem `TestMenu`, damit auf dem Gerät jedes Level wählbar ist.
+- `FrameRateSetup` setzt die Zielbildrate vor der ersten Szene auf 60 FPS (NF-01). iOS lief vorher mit 30 FPS (Spieltest v0.3.0).
+- Gesperrter Ausgang: Ein `LevelExit` mit Zone öffnet erst, wenn deren Wellen vorbei und alle Gegner besiegt sind (`ExitLock`). Bis dahin ist er abgedunkelt. Der Missions-Tracker zeigt in dieser Zone „Alle Gegner besiegen“ und danach „Zum Ausgang!“ mit Signalton. In Level 1-1 aktiv (Spieltest v0.3.0, Design-Fragen P2/P3).
+- Ergebnisbildschirm zeigt die Punkte für den nächsten Stern, z. B. „2 Sterne ab 1500 Punkten“.
+- Spieltest v0.3.0 auf dem iPhone 16 Pro protokolliert (`docs/testprotokolle/`), Design-Fragen v0.4.0 bis v0.6.0 beantwortet (`docs/backlog/design-fragen.md`).
+- Testprotokoll-Vorlagen `docs/testprotokolle/v0.2.0.md` und `v0.3.0.md` für die Spieltests #29 und #37 sowie `docs/backlog/design-fragen.md` mit offenen Design-Fragen für v0.4.0 bis v0.6.0 (Entwurf für #37).
+
+### Geändert
+- Nach dem Spieltest v0.3.0:
+  - Sticks 30 % kleiner (96 → 67). Ein schwebender Stick hält denselben Randabstand wie in Ruhe, damit die volle Auslenkung vor dem Bildschirmrand erreicht wird.
+  - Perk-Drop-Chance 8 % → 12 % (Lastenheft F-PRK-02).
+  - Schalter-Text „Alle Schalter betreten“, Schalter leuchten.
+  - Sterne-Schwellen von Level 1-1 auf 1500/3000.
+- Tore und Ausgang werden für alle Zonen-Level über `LevelPieceBuilder` erzeugt; `Arena_Zonen` nutzt ihn ebenfalls, die Szene bleibt unverändert (Issue #36).
+- `Arena_Zonen`: Das zweite Tor ist jetzt ein Rätsel-Tor; es öffnet sich, wenn die Haltezone in Zone 2 gehalten wurde (vorher `DebugGateCondition`, Issues #30, #31).
+- Der Text des Missions-Trackers bricht nach 160 Einheiten um, damit lange Aufgaben nicht in Score und Multiplikator ragen (Issue #33).
+- Nach dem Tod lädt das Level nicht mehr automatisch neu; stattdessen erscheint „Gescheitert“ mit „Neustart“. `LevelRestarter` übergibt dafür an ein `IDeathHandler` (Issue #35).
+
+## [0.2.0] – 2026-11-04
+
+### Hinzugefügt
+- Zonen und Tore: `Zone` wird aktiv, sobald der Spieler sie betritt (Event `Zone.Activated`), und abgeschlossen, wenn ihr Ausgangstor aufgeht (`Zone.Completed`); `Gate` blockiert Spieler, Gegner und Schüsse und öffnet sich, sobald seine `IGateCondition` erfüllt ist: Gitter wackelt und versinkt, Platzhalter-Sound `GateOpen.wav`, das Flow-Field gibt die Zellen wieder frei (`FlowFieldNavigator.SetBlocked`). Reine Logik in `ZoneLogic`/`GateLogic`/`GateMath` mit EditMode-Tests (Issue #17).
+- `GateConfig` (`Data/Levels/GateConfig.asset`): Öffnungsdauer 0,6 s, davon 0,15 s Wackeln mit 0,04 Einheiten, Lautstärke 1 *(Startwerte)* (Issue #17).
+- `DebugGateCondition`: Testbedingung, erfüllt einige Sekunden nach Aktivierung einer Zone oder sofort per Kontextmenü (Issue #17).
+- Testlevel `Arena_Zonen` (24×84 Kacheln, drei Zonen von Süden nach Norden, zwei Tore mit Debug-Bedingung nach 5 s), per `RushOps → Szenen → Arena_Zonen erzeugen` reproduzierbar; Spawnpunkte vorerst nur in Zone 1 (Issue #17).
+- Wellen pro Zone: `WaveDefinition` (ScriptableObject) mit Wellen aus Gegnertyp und Anzahl, Spawn-Intervall, Pause zwischen Wellen und Verhalten nach der letzten Welle (alle wiederholen, letzte wiederholen, enden); eine Welle gilt als geschafft, wenn alle ihre Gegner tot sind. Jede `Zone` hat eigene Spawnpunkte und Wellen, die starten, sobald sie aktiv wird, und stoppen, sobald ihr Tor offen ist (Issue #18).
+- `WaveDirector` hält das globale Limit von 10 Gegnern (Bosse ausgenommen, neues Feld `EnemyDefinition.IsBoss`); überzählige Spawns warten in einer Warteschlange; Spawnpunkte im Sichtbereich oder nahe am Spieler werden weiter übersprungen. Reine Logik in `WaveSequence` und `SpawnQueue` mit EditMode-Tests (Issue #18).
+- Wellen *(Startwerte)* unter `Data/Waves/`: `Arena_Test` 12/16/20 Walker, Intervall 0,6 s, Pause 3 s, wiederholt; `Arena_Zonen` Zone 1 4/6/8 (1,0 s, 4 s), Zone 2 6/10/12 (0,8 s, 3 s), beide wiederholen die letzte Welle, Zone 3 8/12/16 (0,6 s, 3 s) endet (Issue #18).
+- Kill-Gates: `KillCounter` zählt jeden Gegnertod im Level ab Levelstart, egal wodurch (gespeist von `LevelKills` über `Enemy.Died`); `KillGateCondition` öffnet ein Tor nach einer einstellbaren Kill-Zahl (global, nicht pro Zone). Reine Logik in `KillCounter`/`KillGoal` mit EditMode-Tests (Issue #19).
+- Missions-Tracker oben rechts: „Tor gesperrt: 4/10 Kills“ für das Ausgangstor der aktuellen Zone, beim Öffnen „Tor offen!“ mit Platzhalter-Sound `MissionDone.wav` (zusätzlich zum Tor-Sound), danach ausgeblendet; Anzeigedauer 2,5 s und Lautstärke 1 in `HudConfig` *(Startwerte)* (Issue #19).
+- Runner: schneller, schwacher Gegner mit eigener `EnemyDefinition` (`Data/Enemies/Runner.asset`: Gesundheit 1, Tempo 4,0, Schaden 1 Herz, 15 Punkte *(Startwerte)*), eigenem Prefab und eigenem Pool; folgt dem Flow-Field wie der Walker (Issue #20).
+- Runner-Grafik per `Tools/gen_pixelart.py`: 64×64, 8 Richtungen × 4 Sprint-Frames, kleiner und weit vorgebeugt, blasse Haut und rotes Hemd statt grüner Haut und braunem Hemd (Issue #20).
+- Spawn- und Annäherungs-Sound pro Gegnertyp: neue Felder `SpawnClip`, `ApproachClip` und `ApproachDistance` (4 Kacheln *(Startwert)*) in `EnemyDefinition`; der Annäherungs-Sound kommt einmal pro Leben (`ApproachTrigger`, mit EditMode-Tests); Lautstärken in `FeelConfig`. Platzhalter `RunnerSpawn.wav` und `RunnerApproach.wav` per `Tools/gen_sfx.py` (Issue #20).
+- Brute: langsamer, zäher Gegner mit eigener `EnemyDefinition` (`Data/Enemies/Brute.asset`: Gesundheit 20, Tempo 1,2, Schaden 2 Herzen, 50 Punkte *(Startwerte)*), eigenem Prefab und Pool; größerer Körper (Radius 0,45 statt 0,28), der als Hitbox dient und andere Gegner abschirmt (Issue #21).
+- Neue Felder in `EnemyDefinition`: `Mass` (Brute 5, Spieler 10, übrige Gegner 1), `KnockbackScale` (Brute 0,15) und `SeparationScale` (Brute 0,2) *(Startwerte)*. Der Brute schiebt kleinere Zombies beim Laufen zur Seite, statt ihnen auszuweichen oder an ihnen hängen zu bleiben, und wird von Treffern kaum zurückgestoßen (Issue #21).
+- Physik-Material `Data/Physics/EnemyBody.physicsMaterial2D` ohne Reibung für alle Gegner: Gegner gleiten aneinander und an Wänden ab, statt durch Haftreibung aneinander zu kleben (Issue #21).
+- Brute-Grafik per `Tools/gen_pixelart.py`: 96×96, 8 Richtungen × 4 Lauf-Frames, breit und gebeugt mit nackten Armen, dunkler Weste und kleinem Kopf (Issue #21).
+- Level-Design-Richtlinie `docs/level-design.md`: Gänge und Tore mindestens 2 Kacheln breit, Körpergrößen der Figuren, kein Gegnerradius ab 0,5 (Issue #21).
+- Boomer: explodierender Zombie mit eigener `EnemyDefinition` (`Data/Enemies/Boomer.asset`: Gesundheit 4, Tempo 2, 20 Punkte, kein eigener Kontaktschaden *(Startwerte)*), eigenem Prefab und Pool. Explodiert bei Tod oder sobald er den Spieler berührt (Issue #22).
+- `ExplosionDefinition` (`Data/Enemies/BoomerExplosion.asset`): Radius 2,5 Kacheln, 2 Herzen Schaden am Spieler, 5 Schaden an Zombies, Kettenverzögerung 0,12 s, Screenshake 0,3 für 0,35 s *(Startwerte)*, Sound und Effekt-Frames; `EnemyDefinition.Explosion` verweist darauf (Issue #22).
+- `ExplosionSystem`: Flächenschaden trifft Spieler (über `PlayerHealth.TakeDamage`, also mit i-Frames und Treffer-Unverwundbarkeit) und alle anderen Zombies im Radius; davon getötete Zombies zählen für Kill-Gates; Boomer in Reichweite gehen nach kurzer Verzögerung als sichtbare Kettenreaktion hoch. Reine Logik in `ExplosionTargeting` (Zielauswahl) und `ExplosionQueue` mit EditMode-Tests (Issue #22).
+- Explosionseffekt (6 Frames, 160×160, zeigt den Schadensradius) aus einem Object Pool, mit Screenshake und Explosions-Sound über `GameFeel` (Issue #22).
+- Boomer-Grafik per `Tools/gen_pixelart.py`: 64×64, 8 Richtungen × 4 Frames, aufgeblähter Bauch, der pulsiert, mit leuchtenden Beulen (Issue #22).
+- Platzhalter-Sounds per `Tools/gen_sfx.py`: `BoomerSpawn` (Blubbern), `BoomerApproach` als eigenes Warnsignal (schneller werdende Zweiton-Piepser über Zündschnur-Zischen, Annäherung ab 5 Kacheln) und `Explosion` (Issue #22, F-AUD-03).
+- Perk-Drops: Jeder getötete Zombie lässt mit **8 %** Wahrscheinlichkeit einen Perk fallen, welcher, entscheidet ein gewichteter Pool (Speed-Boost 25, Medkit 20, Doppelschaden 20, Schnellfeuer 15, Schutzschild 10, Insta-Kill 7, Nuke 3) *(Startwerte)*. Die Wirkungen folgen mit Issue #24 ff. (Issue #23, F-PRK-01, F-PRK-02).
+- `PerkDefinition` (ScriptableObject: ID, Name, Icon, Typ sofort/temporär, Dauer, Gewicht) für alle sieben Perks unter `Data/Perks/` und `LootConfig` (`Data/Perks/LootConfig.asset`: Drop-Chance, Perk-Liste, Liegedauer 10 s, Blinken in den letzten 3 s, Schweben und Leuchten) (Issue #23).
+- `PerkPool` als reine C#-Klasse mit Drop-Chance und gewichteter Auswahl über eine injizierbare Zufallsquelle (`IRandomSource`), `PickupLifetime` für Despawn und Blinken; EditMode-Tests für Drop-Chance, Gewichtsverteilung und Timer (Issue #23).
+- Perk-Pickups aus einem Object Pool: erscheinen an der Todesposition, auf Wand- oder Torkacheln stattdessen auf der nächsten begehbaren Kachel (`FlowField.TryFindNearestWalkable`); das Icon schwebt über einem pulsierenden Lichtschein, wird bei Berührung durch den Spieler aufgesammelt (Sound über `GameFeel`), blinkt in den letzten 3 s und verschwindet nach 10 s (Issue #23, F-PRK-01, F-PRK-03).
+- Perk-Icons (7 Stück, 24×24) und Lichtschein per `Tools/gen_pixelart.py`, Sound `PerkPickup` per `Tools/gen_sfx.py` (Issue #23).
+- Perk-Effekte: Aufgesammelte Perks wirken jetzt. **Speed-Boost** erhöht das Lauftempo 15 s lang um ×1,5, **Medkit** gibt sofort +2 Herzen (nicht über das Maximum) *(Startwerte)*. Verschiedene Perks laufen parallel; wird derselbe Perk erneut aufgesammelt, beginnt seine Dauer von vorn (Issue #24, F-PRK-04).
+- `ActivePerks` als reine C#-Klasse für die laufenden Perk-Timer (Ablauf, Auffrischen, paralleles Wirken, Multiplikator je Effekt) mit EditMode-Tests; `PlayerPerks` am Spieler wendet die Perks an. `PerkDefinition` hat dafür zwei neue Felder: Effekt (`PerkEffect`) und Stärke (Issue #24).
+- HUD: Unter den Herzen zeigt je ein Slot einen laufenden Perk mit Icon und einem Ring, der mit der Restzeit kleiner wird (`ActivePerksView`). Die Slot-Sprites erzeugt `Tools/gen_pixelart.py` (Issue #24, F-HUD-02).
+- Offensive Perks wirken jetzt: **Doppelschaden** verdoppelt den Waffenschaden, **Schnellfeuer** verdoppelt die Feuerrate, **Insta-Kill** lässt jeden Treffer töten, jeweils 10 s *(Startwerte)*. Insta-Kill wirkt nicht auf Bosse, Doppelschaden schon (Issue #25, F-PRK-04, F-BOS-02). Die Perks lassen sich frei kombinieren.
+- `WeaponMath` (Schuss- und Trefferschaden, Feuerrate, Projektil-Optik) und `ShotModifiers` als reine Logik mit EditMode-Tests; `PlayerWeapon.Modifiers` wird von `PlayerPerks` gesetzt. `IDamageable.TakeHit` kennt dafür einen tödlichen Treffer (Issue #25).
+- Projektile zeigen aktive Perks: rot und dicker bei Doppelschaden, hell mit langer Spur bei Insta-Kill. Die Sprites erzeugt `Tools/gen_pixelart.py` (Issue #25).
+- **Schutzschild** wirkt jetzt: 8 s *(Startwert)* kein Schaden, auch nicht durch Explosionen. Eine Blase um die Figur zeigt den Schild und flackert in den letzten 2 s. Gegner, die den Schild berühren, werden leicht zurückgestoßen (Issue #26, F-PRK-04). Flackerzeit und Rückstoß stehen in `Data/Perks/ShieldConfig`.
+- `PlayerShield` am Spieler, `ShieldMath` als reine Logik mit EditMode-Tests, `ActivePerks.RemainingOf`. `PlayerHealth` beachtet ein `IDamageBlocker`, Gegner lassen sich über `IKnockbackable` wegstoßen (Issue #26).
+- **Nuke** wirkt jetzt: Beim Aufsammeln sterben alle Gegner im Kamerabereich, außer Bosse. Gegner außerhalb des Bildschirms und die Spawn-Warteschlange bleiben unberührt. Nuke-Kills zählen für Kill-Gates (Issue #27, F-PRK-04, F-LVL-03, F-BOS-02). Dazu kommen ein weißer Bildschirmblitz, ein starker Screenshake und ein eigener Sound (`Nuke.wav` aus `Tools/gen_sfx.py`); die Stärken stehen in `Data/Perks/NukeConfig`.
+- `NukeSystem`, `NukeTargeting` (reine Logik mit EditMode-Tests), `ScreenFlash` im HUD und `FeelMath.FlashFade` (Issue #27).
+- **Score und Kombo**: Jeder Kill gibt die Punkte seines Gegnertyps (`EnemyDefinition.Points`), auch Explosions- und Nuke-Kills. Kills innerhalb von 2 s nach dem letzten halten die Kombo; alle 5 Kombo-Kills steigt der Multiplikator um 1, höchstens auf ×5. Ein erlittener Treffer oder das Ablaufen des Fensters setzt ihn auf ×1 zurück (Issue #28, F-SCO-01, F-SCO-02). Die Werte stehen in `Data/Score/ScoreConfig`.
+- HUD oben mittig: Score mit dem Multiplikator darunter; steigt der Multiplikator, leuchtet er kurz gelb auf und springt größer (F-HUD-04). Dauer, Farbe und Größe in `HudConfig`.
+- `ScoreKeeper` als reine Logik mit EditMode-Tests, `LevelScore` als Adapter, `ScoreView` und `ScoreText` (Issue #28).
+
+### Geändert
+- Der Arena-Builder baut Szenen aus einem `ArenaLayout`, damit weitere Testlevel ihn mitnutzen; mehrere Szenen lassen sich nacheinander im selben Editor-Durchlauf bauen (Issue #17).
+- `Arena_Zonen`: Debug-Tore öffnen sich erst 20 s nach Aktivierung der Zone davor, damit Zeit für ein paar Wellen bleibt (Issue #18).
+- `Arena_Zonen`: Tor 1 ist ein Kill-Gate mit 10 Kills *(Startwert)*, Tor 2 bleibt ein Debug-Tor (Issue #19).
+- Pro Gegnertyp ein `EnemyPool`; Zielhilfe (`AimAssist`) und Treffer-Feedback (`GameFeel`) nehmen jetzt mehrere Pools (Issue #20).
+- Gegner nutzen kontinuierliche Kollisionserkennung, damit auch schnelle Gegner nicht durch Wandecken rutschen (Issue #20).
+- Wellen *(Startwerte)* mit Runnern: `Arena_Test` 12 Walker / 12 Walker + 4 Runner / 14 Walker + 6 Runner; `Arena_Zonen` Zone 2 6 / 8 + 2 / 9 + 3, Zone 3 6 + 2 / 8 + 4 / 10 + 6; Zone 1 bleibt nur mit Walkern (Issue #20).
+- Wellen *(Startwerte)* mit Brutes: `Arena_Test` 1 Brute in Welle 3, `Arena_Zonen` Zone 3 je 1 bzw. 2 Brutes in Welle 2 und 3 (Issue #21).
+- Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
+- Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
+- Der FPS-Zähler sitzt jetzt unten mittig, weil Score und Multiplikator oben mittig stehen (Issue #28).
+
+### Entfernt
+- `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
+
+### Behoben
+- PlayMode-Test `SecondZone_AfterGateOpened_SpawnsOnlyFromItsOwnPoints` schlug zufällig fehl, wenn ein Spawnpunkt zweimal gewählt wurde (`IsSubsetOf` zählt Wiederholungen) (Issue #20).
+
+## [0.1.0] – 2026-11-04
+
 ### Hinzugefügt
 - Projekt-Grundgerüst: Lastenheft v0.2, `CLAUDE.md`, ADRs 0001–0005, Issue- und PR-Vorlagen, Backlog für v0.1.0.
 - Git LFS für Grafik-, Audio- und Schriftdateien.
@@ -58,79 +162,8 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Build: `RushOps → Build → Android-APK (Development|Release) bauen` (auch per `-executeMethod`) wendet die Player-Einstellungen aus Code an und baut nach `Builds/Android/` (Issue #13).
 - FPS-Anzeige oben mittig, nur in Development-Builds und im Editor (Issue #13).
 - Vorlage für das Testprotokoll `docs/testprotokolle/v0.1.0.md` (Issue #13).
-- Zonen und Tore: `Zone` wird aktiv, sobald der Spieler sie betritt (Event `Zone.Activated`), und abgeschlossen, wenn ihr Ausgangstor aufgeht (`Zone.Completed`); `Gate` blockiert Spieler, Gegner und Schüsse und öffnet sich, sobald seine `IGateCondition` erfüllt ist: Gitter wackelt und versinkt, Platzhalter-Sound `GateOpen.wav`, das Flow-Field gibt die Zellen wieder frei (`FlowFieldNavigator.SetBlocked`). Reine Logik in `ZoneLogic`/`GateLogic`/`GateMath` mit EditMode-Tests (Issue #17).
-- `GateConfig` (`Data/Levels/GateConfig.asset`): Öffnungsdauer 0,6 s, davon 0,15 s Wackeln mit 0,04 Einheiten, Lautstärke 1 *(Startwerte)* (Issue #17).
-- `DebugGateCondition`: Testbedingung, erfüllt einige Sekunden nach Aktivierung einer Zone oder sofort per Kontextmenü (Issue #17).
-- Testlevel `Arena_Zonen` (24×84 Kacheln, drei Zonen von Süden nach Norden, zwei Tore mit Debug-Bedingung nach 5 s), per `RushOps → Szenen → Arena_Zonen erzeugen` reproduzierbar; Spawnpunkte vorerst nur in Zone 1 (Issue #17).
-- Wellen pro Zone: `WaveDefinition` (ScriptableObject) mit Wellen aus Gegnertyp und Anzahl, Spawn-Intervall, Pause zwischen Wellen und Verhalten nach der letzten Welle (alle wiederholen, letzte wiederholen, enden); eine Welle gilt als geschafft, wenn alle ihre Gegner tot sind. Jede `Zone` hat eigene Spawnpunkte und Wellen, die starten, sobald sie aktiv wird, und stoppen, sobald ihr Tor offen ist (Issue #18).
-- `WaveDirector` hält das globale Limit von 10 Gegnern (Bosse ausgenommen, neues Feld `EnemyDefinition.IsBoss`); überzählige Spawns warten in einer Warteschlange; Spawnpunkte im Sichtbereich oder nahe am Spieler werden weiter übersprungen. Reine Logik in `WaveSequence` und `SpawnQueue` mit EditMode-Tests (Issue #18).
-- Wellen *(Startwerte)* unter `Data/Waves/`: `Arena_Test` 12/16/20 Walker, Intervall 0,6 s, Pause 3 s, wiederholt; `Arena_Zonen` Zone 1 4/6/8 (1,0 s, 4 s), Zone 2 6/10/12 (0,8 s, 3 s), beide wiederholen die letzte Welle, Zone 3 8/12/16 (0,6 s, 3 s) endet (Issue #18).
-- Kill-Gates: `KillCounter` zählt jeden Gegnertod im Level ab Levelstart, egal wodurch (gespeist von `LevelKills` über `Enemy.Died`); `KillGateCondition` öffnet ein Tor nach einer einstellbaren Kill-Zahl (global, nicht pro Zone). Reine Logik in `KillCounter`/`KillGoal` mit EditMode-Tests (Issue #19).
-- Missions-Tracker oben rechts: „Tor gesperrt: 4/10 Kills“ für das Ausgangstor der aktuellen Zone, beim Öffnen „Tor offen!“ mit Platzhalter-Sound `MissionDone.wav` (zusätzlich zum Tor-Sound), danach ausgeblendet; Anzeigedauer 2,5 s und Lautstärke 1 in `HudConfig` *(Startwerte)* (Issue #19).
-- Runner: schneller, schwacher Gegner mit eigener `EnemyDefinition` (`Data/Enemies/Runner.asset`: Gesundheit 1, Tempo 4,0, Schaden 1 Herz, 15 Punkte *(Startwerte)*), eigenem Prefab und eigenem Pool; folgt dem Flow-Field wie der Walker (Issue #20).
-- Runner-Grafik per `Tools/gen_pixelart.py`: 64×64, 8 Richtungen × 4 Sprint-Frames, kleiner und weit vorgebeugt, blasse Haut und rotes Hemd statt grüner Haut und braunem Hemd (Issue #20).
-- Spawn- und Annäherungs-Sound pro Gegnertyp: neue Felder `SpawnClip`, `ApproachClip` und `ApproachDistance` (4 Kacheln *(Startwert)*) in `EnemyDefinition`; der Annäherungs-Sound kommt einmal pro Leben (`ApproachTrigger`, mit EditMode-Tests); Lautstärken in `FeelConfig`. Platzhalter `RunnerSpawn.wav` und `RunnerApproach.wav` per `Tools/gen_sfx.py` (Issue #20).
-- Brute: langsamer, zäher Gegner mit eigener `EnemyDefinition` (`Data/Enemies/Brute.asset`: Gesundheit 20, Tempo 1,2, Schaden 2 Herzen, 50 Punkte *(Startwerte)*), eigenem Prefab und Pool; größerer Körper (Radius 0,45 statt 0,28), der als Hitbox dient und andere Gegner abschirmt (Issue #21).
-- Neue Felder in `EnemyDefinition`: `Mass` (Brute 5, Spieler 10, übrige Gegner 1), `KnockbackScale` (Brute 0,15) und `SeparationScale` (Brute 0,2) *(Startwerte)*. Der Brute schiebt kleinere Zombies beim Laufen zur Seite, statt ihnen auszuweichen oder an ihnen hängen zu bleiben, und wird von Treffern kaum zurückgestoßen (Issue #21).
-- Physik-Material `Data/Physics/EnemyBody.physicsMaterial2D` ohne Reibung für alle Gegner: Gegner gleiten aneinander und an Wänden ab, statt durch Haftreibung aneinander zu kleben (Issue #21).
-- Brute-Grafik per `Tools/gen_pixelart.py`: 96×96, 8 Richtungen × 4 Lauf-Frames, breit und gebeugt mit nackten Armen, dunkler Weste und kleinem Kopf (Issue #21).
-- Level-Design-Richtlinie `docs/level-design.md`: Gänge und Tore mindestens 2 Kacheln breit, Körpergrößen der Figuren, kein Gegnerradius ab 0,5 (Issue #21).
-- Boomer: explodierender Zombie mit eigener `EnemyDefinition` (`Data/Enemies/Boomer.asset`: Gesundheit 4, Tempo 2, 20 Punkte, kein eigener Kontaktschaden *(Startwerte)*), eigenem Prefab und Pool. Explodiert bei Tod oder sobald er den Spieler berührt (Issue #22).
-- `ExplosionDefinition` (`Data/Enemies/BoomerExplosion.asset`): Radius 2,5 Kacheln, 2 Herzen Schaden am Spieler, 5 Schaden an Zombies, Kettenverzögerung 0,12 s, Screenshake 0,3 für 0,35 s *(Startwerte)*, Sound und Effekt-Frames; `EnemyDefinition.Explosion` verweist darauf (Issue #22).
-- `ExplosionSystem`: Flächenschaden trifft Spieler (über `PlayerHealth.TakeDamage`, also mit i-Frames und Treffer-Unverwundbarkeit) und alle anderen Zombies im Radius; davon getötete Zombies zählen für Kill-Gates; Boomer in Reichweite gehen nach kurzer Verzögerung als sichtbare Kettenreaktion hoch. Reine Logik in `ExplosionTargeting` (Zielauswahl) und `ExplosionQueue` mit EditMode-Tests (Issue #22).
-- Explosionseffekt (6 Frames, 160×160, zeigt den Schadensradius) aus einem Object Pool, mit Screenshake und Explosions-Sound über `GameFeel` (Issue #22).
-- Boomer-Grafik per `Tools/gen_pixelart.py`: 64×64, 8 Richtungen × 4 Frames, aufgeblähter Bauch, der pulsiert, mit leuchtenden Beulen (Issue #22).
-- Platzhalter-Sounds per `Tools/gen_sfx.py`: `BoomerSpawn` (Blubbern), `BoomerApproach` als eigenes Warnsignal (schneller werdende Zweiton-Piepser über Zündschnur-Zischen, Annäherung ab 5 Kacheln) und `Explosion` (Issue #22, F-AUD-03).
-- Perk-Drops: Jeder getötete Zombie lässt mit **8 %** Wahrscheinlichkeit einen Perk fallen, welcher, entscheidet ein gewichteter Pool (Speed-Boost 25, Medkit 20, Doppelschaden 20, Schnellfeuer 15, Schutzschild 10, Insta-Kill 7, Nuke 3) *(Startwerte)*. Die Wirkungen folgen mit Issue #24 ff. (Issue #23, F-PRK-01, F-PRK-02).
-- `PerkDefinition` (ScriptableObject: ID, Name, Icon, Typ sofort/temporär, Dauer, Gewicht) für alle sieben Perks unter `Data/Perks/` und `LootConfig` (`Data/Perks/LootConfig.asset`: Drop-Chance, Perk-Liste, Liegedauer 10 s, Blinken in den letzten 3 s, Schweben und Leuchten) (Issue #23).
-- `PerkPool` als reine C#-Klasse mit Drop-Chance und gewichteter Auswahl über eine injizierbare Zufallsquelle (`IRandomSource`), `PickupLifetime` für Despawn und Blinken; EditMode-Tests für Drop-Chance, Gewichtsverteilung und Timer (Issue #23).
-- Perk-Pickups aus einem Object Pool: erscheinen an der Todesposition, auf Wand- oder Torkacheln stattdessen auf der nächsten begehbaren Kachel (`FlowField.TryFindNearestWalkable`); das Icon schwebt über einem pulsierenden Lichtschein, wird bei Berührung durch den Spieler aufgesammelt (Sound über `GameFeel`), blinkt in den letzten 3 s und verschwindet nach 10 s (Issue #23, F-PRK-01, F-PRK-03).
-- Perk-Icons (7 Stück, 24×24) und Lichtschein per `Tools/gen_pixelart.py`, Sound `PerkPickup` per `Tools/gen_sfx.py` (Issue #23).
-- Perk-Effekte: Aufgesammelte Perks wirken jetzt. **Speed-Boost** erhöht das Lauftempo 15 s lang um ×1,5, **Medkit** gibt sofort +2 Herzen (nicht über das Maximum) *(Startwerte)*. Verschiedene Perks laufen parallel; wird derselbe Perk erneut aufgesammelt, beginnt seine Dauer von vorn (Issue #24, F-PRK-04).
-- `ActivePerks` als reine C#-Klasse für die laufenden Perk-Timer (Ablauf, Auffrischen, paralleles Wirken, Multiplikator je Effekt) mit EditMode-Tests; `PlayerPerks` am Spieler wendet die Perks an. `PerkDefinition` hat dafür zwei neue Felder: Effekt (`PerkEffect`) und Stärke (Issue #24).
-- HUD: Unter den Herzen zeigt je ein Slot einen laufenden Perk mit Icon und einem Ring, der mit der Restzeit kleiner wird (`ActivePerksView`). Die Slot-Sprites erzeugt `Tools/gen_pixelart.py` (Issue #24, F-HUD-02).
-- Offensive Perks wirken jetzt: **Doppelschaden** verdoppelt den Waffenschaden, **Schnellfeuer** verdoppelt die Feuerrate, **Insta-Kill** lässt jeden Treffer töten, jeweils 10 s *(Startwerte)*. Insta-Kill wirkt nicht auf Bosse, Doppelschaden schon (Issue #25, F-PRK-04, F-BOS-02). Die Perks lassen sich frei kombinieren.
-- `WeaponMath` (Schuss- und Trefferschaden, Feuerrate, Projektil-Optik) und `ShotModifiers` als reine Logik mit EditMode-Tests; `PlayerWeapon.Modifiers` wird von `PlayerPerks` gesetzt. `IDamageable.TakeHit` kennt dafür einen tödlichen Treffer (Issue #25).
-- Projektile zeigen aktive Perks: rot und dicker bei Doppelschaden, hell mit langer Spur bei Insta-Kill. Die Sprites erzeugt `Tools/gen_pixelart.py` (Issue #25).
-- **Schutzschild** wirkt jetzt: 8 s *(Startwert)* kein Schaden, auch nicht durch Explosionen. Eine Blase um die Figur zeigt den Schild und flackert in den letzten 2 s. Gegner, die den Schild berühren, werden leicht zurückgestoßen (Issue #26, F-PRK-04). Flackerzeit und Rückstoß stehen in `Data/Perks/ShieldConfig`.
-- `PlayerShield` am Spieler, `ShieldMath` als reine Logik mit EditMode-Tests, `ActivePerks.RemainingOf`. `PlayerHealth` beachtet ein `IDamageBlocker`, Gegner lassen sich über `IKnockbackable` wegstoßen (Issue #26).
-- **Nuke** wirkt jetzt: Beim Aufsammeln sterben alle Gegner im Kamerabereich, außer Bosse. Gegner außerhalb des Bildschirms und die Spawn-Warteschlange bleiben unberührt. Nuke-Kills zählen für Kill-Gates (Issue #27, F-PRK-04, F-LVL-03, F-BOS-02). Dazu kommen ein weißer Bildschirmblitz, ein starker Screenshake und ein eigener Sound (`Nuke.wav` aus `Tools/gen_sfx.py`); die Stärken stehen in `Data/Perks/NukeConfig`.
-- `NukeSystem`, `NukeTargeting` (reine Logik mit EditMode-Tests), `ScreenFlash` im HUD und `FeelMath.FlashFade` (Issue #27).
-- **Score und Kombo**: Jeder Kill gibt die Punkte seines Gegnertyps (`EnemyDefinition.Points`), auch Explosions- und Nuke-Kills. Kills innerhalb von 2 s nach dem letzten halten die Kombo; alle 5 Kombo-Kills steigt der Multiplikator um 1, höchstens auf ×5. Ein erlittener Treffer oder das Ablaufen des Fensters setzt ihn auf ×1 zurück (Issue #28, F-SCO-01, F-SCO-02). Die Werte stehen in `Data/Score/ScoreConfig`.
-- HUD oben mittig: Score mit dem Multiplikator darunter; steigt der Multiplikator, leuchtet er kurz gelb auf und springt größer (F-HUD-04). Dauer, Farbe und Größe in `HudConfig`.
-- `ScoreKeeper` als reine Logik mit EditMode-Tests, `LevelScore` als Adapter, `ScoreView` und `ScoreText` (Issue #28).
-- **Rätsel-Grundsystem** (Issue #30, F-LVL-04, F-HUD-03): Basis `Puzzle` mit den Zuständen inaktiv, aktiv, gelöst (`PuzzleLogic`, EditMode-getestet). Ein Rätsel wird aktiv, sobald seine Zone aktiv wird. `PuzzleSolvedCondition` öffnet ein Tor, wenn alle seine Rätsel gelöst sind. Beim Lösen spielt ein Platzhalter-Sound (`PuzzleSolved.wav` aus `Tools/gen_sfx.py`, Lautstärke in `Data/Puzzles/PuzzleConfig`).
-- Der Missions-Tracker zeigt Rätsel an: Text, wahlweise mit Fortschrittsbalken darunter oder mit Countdown („Schalter: 7 s“). Ein Rätsel gibt das über `PuzzleDisplay` vor (Issue #30).
-- `DebugPuzzle` als Testrätsel: Es füllt seinen Balken in 20 s und ist dann gelöst, oder sofort über das Kontextmenü „Jetzt lösen“ (Issue #30).
-- **Zonen-Kontrolle (Hold the Line)** (Issue #31, F-RAE-01, F-RAE-02): Ein leuchtender Kreis am Boden (Ring und blaues 2D-Licht) muss 10 s *(Startwert)* besetzt werden. Der Fortschritt steigt nur, solange der Spieler im Kreis steht, und pausiert außerhalb, ohne zu sinken. Er ist am Kreis sichtbar (eine Scheibe wächst, das Licht wird heller) und als Balken im Missions-Tracker. Bei 100 % ist das Rätsel gelöst, und der Kreis färbt sich grün. Dauer, Radius, Text und Optik stehen in `Data/Puzzles/HoldZoneConfig`. Logik in `HoldProgress` mit EditMode-Tests.
-- `PuzzleBuilder` (Editor) setzt Rätsel in Level-Szenen; Ring- und Scheiben-Sprites aus `Tools/gen_pixelart.py` (Issue #31).
-- **Zeitkritische Schalter** (Issue #32, F-RAE-03 bis F-RAE-05): Bodenplatten, die nur der Spieler durch Darüberlaufen aktiviert. Gedrückte Platten leuchten grün. Die erste startet einen Countdown von 12 s *(Startwert)*, den der Missions-Tracker zeigt („Schalter 1/3: 9 s“). Läuft er ab, springen alle Platten zurück, blinken rot, und ein Summer ertönt. Alle rechtzeitig gedrückt: Rätsel gelöst. Werte in `Data/Puzzles/TimedSwitchConfig`, Logik in `SwitchSequence` mit EditMode-Tests, Sounds `SwitchOn.wav` und `SwitchReset.wav`.
-- Der Missions-Tracker zeigt auch Rätsel in Zonen ohne Rätsel- oder Kill-Tor (z. B. der letzten Zone) und bestätigt sie mit „Geschafft!“ (Issue #32).
-- `Arena_Zonen`: drei Schalter in Zone 3 (Issue #32).
-- **Objekt-Transport** (Issue #33, F-RAE-06 bis F-RAE-08): Eine Energiezelle wird durch Berührung aufgenommen und ist dann an der Figur zu sehen. Beim Tragen ist der Dash gesperrt, und der Dash-Button zeigt ein Schloss. Das Lauftempo sinkt um 20 % *(Startwert)*, Schießen bleibt möglich, und Schaden lässt die Zelle nicht fallen. Die Abgabe am Generator geschieht durch Berührung; danach läuft er sichtbar. Die Anzahl benötigter Zellen ist pro Rätsel einstellbar (Standard 1). Der Tracker zeigt „Energiezelle zum Generator bringen“, bei mehreren Zellen „Energiezellen 1/3“ mit Balken. Werte in `Data/Puzzles/CarryConfig`, Logik in `CarrySlot` und `TransportGoal` mit EditMode-Tests.
-- `PlayerMovement.LoadMultiplier`: Tempo-Faktor durch Tragen, unabhängig vom Perk-Multiplikator, damit Speed-Boost und Tragen sich verrechnen (Issue #33).
-- `Arena_Zonen`: Energiezelle und Generator in Zone 3; der Tracker zeigt nach „Geschafft!“ das nächste Rätsel derselben Zone (Issue #33).
-- **Gegnerdruck während Rätseln** (Issue #34, Lastenheft 2.6): Mit `PuzzlePressure` lässt sich pro Rätsel eine eigene `WaveDefinition` festlegen, die die Zone verwendet, solange das Rätsel aktiv ist. Nach dem Lösen kehrt die Zone zu ihren normalen Wellen zurück oder beendet sie (`AfterPuzzle`). `WaveDirector.UseWaves`/`StopWaves` tauschen die Wellen einer laufenden Zone; Gegner melden ihren Tod immer der Sequenz, die sie angefordert hat.
-- `Arena_Zonen`: Während der Haltezone schickt Zone 2 kleinere Wellen in schnellerem Takt (`Data/Waves/Arena_Zonen_Zone2_Hold`), danach wieder die normalen (Issue #34).
-- **Levelziel und Ergebnisbildschirme** (Issue #35, F-LVL-05, F-SCO-03, F-SPF-03): `LevelDefinition` (Name, Szene, Score-Schwellen für 2 und 3 Sterne; das Erreichen des Ziels gibt immer 1 Stern) unter `Data/Levels/`. Ein `LevelExit` hinter dem letzten Tor beendet das Level. „Level geschafft!“ zeigt Score, Kills, Zeit, 1–3 Sterne sowie „Nochmal“ und „Weiter“. „Gescheitert“ erscheint bei 0 Herzen nach dem Todesmoment mit Score und „Neustart“. Während der Bildschirme ist das Spiel eingefroren (`PauseController.Freeze`), auch das Zurückkehren aus dem Hintergrund setzt es nicht fort. Sterne-Berechnung in `StarRating` mit EditMode-Tests.
-- Szene `TestMenu` (`RushOps → Szenen → TestMenu erzeugen`): listet alle Level aus `Data/Levels/`; „Weiter“ führt bis v0.5.0 hierher (Issue #35).
-- `Arena_Zonen`: Ausgang am Nordende von Zone 3 (Issue #35).
-- **Prototyp Level 1-1** (Issue #36, F-LVL-06): Szene `Level_1-1` (24×118 Kacheln, `RushOps → Szenen → Level_1-1 erzeugen`) mit fünf Zonen von Süden nach Norden. Zone 1 „Ankunft“ (nur Walker, Kill-Gate nach 15 Kills), Zone 2 „Halten“ (Zonen-Kontrolle unter eigenen, schnelleren Wellen, danach Ruhe; Runner kommen dazu), Zone 3 „Schalter“ (drei zeitkritische Schalter in zwei Gassen; Boomer kommen dazu), Zone 4 „Generator“ (zwei Energiezellen zum Generator; Brutes kommen dazu), Zone 5 „Ausgang“ (letzter Ansturm aller Typen vor dem Ausgang). Wellen unter `Data/Waves/Level_1-1_*`, Sterne-Schwellen 2000/4000 *(Startwerte, Spieldauer und Balancing werden im Spieltest #37 abgenommen)*.
-- `LevelLayoutCheck`: Der Level-Builder prüft vor dem Speichern die Richtlinien aus `docs/level-design.md` (Durchlässe mindestens 2 Kacheln für alle Ziele, Spawnpunkte mit 1 Kachel Abstand zu Wänden und in ihrer Zone, mindestens ein Teil jedes Rätsels in Sichtlinie vom Zoneneingang); EditMode-Tests für die Prüfungen und für Level 1-1 (Issue #36).
-- iOS-Build (Issue #13): `RushOps → Build → iOS-Xcode-Projekt (Development/Release) bauen` exportiert ein Xcode-Projekt nach `Builds/iOS/`, automatische Signierung mit dem Entwickler-Team. `Tools/ios-install.sh` exportiert das Projekt mit der Unity-Installation, die das iOS-Modul hat, baut und signiert es per `xcodebuild` und installiert und startet es per `devicectl` auf dem angeschlossenen iPhone. Erster Gerätebuild auf einem iPhone 16 Pro installiert und gestartet. Builds starten mit dem `TestMenu`, damit auf dem Gerät jedes Level wählbar ist.
-- `FrameRateSetup` setzt die Zielbildrate vor der ersten Szene auf 60 FPS (NF-01). iOS lief vorher mit 30 FPS (Spieltest v0.3.0).
-- Gesperrter Ausgang: Ein `LevelExit` mit Zone öffnet erst, wenn deren Wellen vorbei und alle Gegner besiegt sind (`ExitLock`). Bis dahin ist er abgedunkelt. Der Missions-Tracker zeigt in dieser Zone „Alle Gegner besiegen“ und danach „Zum Ausgang!“ mit Signalton. In Level 1-1 aktiv (Spieltest v0.3.0, Design-Fragen P2/P3).
-- Ergebnisbildschirm zeigt die Punkte für den nächsten Stern, z. B. „2 Sterne ab 1500 Punkten“.
-- Spieltest v0.3.0 auf dem iPhone 16 Pro protokolliert (`docs/testprotokolle/`), Design-Fragen v0.4.0 bis v0.6.0 beantwortet (`docs/backlog/design-fragen.md`).
-- Testprotokoll-Vorlagen `docs/testprotokolle/v0.2.0.md` und `v0.3.0.md` für die Spieltests #29 und #37 sowie `docs/backlog/design-fragen.md` mit offenen Design-Fragen für v0.4.0 bis v0.6.0 (Entwurf für #37).
 
 ### Geändert
-- Nach dem Spieltest v0.3.0:
-  - Sticks 30 % kleiner (96 → 67). Ein schwebender Stick hält denselben Randabstand wie in Ruhe, damit die volle Auslenkung vor dem Bildschirmrand erreicht wird.
-  - Perk-Drop-Chance 8 % → 12 % (Lastenheft F-PRK-02).
-  - Schalter-Text „Alle Schalter betreten“, Schalter leuchten.
-  - Sterne-Schwellen von Level 1-1 auf 1500/3000.
-- Tore und Ausgang werden für alle Zonen-Level über `LevelPieceBuilder` erzeugt; `Arena_Zonen` nutzt ihn ebenfalls, die Szene bleibt unverändert (Issue #36).
 - Bildschirmausrichtung fest auf Hochformat.
 - `bundleVersion` auf 0.1.0, Firmenname gesetzt.
 - `SampleScene` von `Assets/Scenes/` nach `Assets/_Project/Scenes/` verschoben (Issue #1).
@@ -149,28 +182,11 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Kein Dash, solange die Spielzeit stillsteht (Pause) (Issue #11).
 - Gegner werden mit dem eigenen Sprite-Shader unbeleuchtet gezeichnet; bei nur globalem Licht sieht das gleich aus (Issue #12).
 - Bundle-ID `com.beratkrhn.rushops` (iOS und Android), Mindestversionen Android 8.0 (API 26) und iOS 15, Android mit IL2CPP und ARM64, keine Autorotation; Lastenheft v0.4 (Issue #13).
-- Der Arena-Builder baut Szenen aus einem `ArenaLayout`, damit weitere Testlevel ihn mitnutzen; mehrere Szenen lassen sich nacheinander im selben Editor-Durchlauf bauen (Issue #17).
-- `Arena_Zonen`: Debug-Tore öffnen sich erst 20 s nach Aktivierung der Zone davor, damit Zeit für ein paar Wellen bleibt (Issue #18).
-- `Arena_Zonen`: Tor 1 ist ein Kill-Gate mit 10 Kills *(Startwert)*, Tor 2 bleibt ein Debug-Tor (Issue #19).
-- Pro Gegnertyp ein `EnemyPool`; Zielhilfe (`AimAssist`) und Treffer-Feedback (`GameFeel`) nehmen jetzt mehrere Pools (Issue #20).
-- Gegner nutzen kontinuierliche Kollisionserkennung, damit auch schnelle Gegner nicht durch Wandecken rutschen (Issue #20).
-- Wellen *(Startwerte)* mit Runnern: `Arena_Test` 12 Walker / 12 Walker + 4 Runner / 14 Walker + 6 Runner; `Arena_Zonen` Zone 2 6 / 8 + 2 / 9 + 3, Zone 3 6 + 2 / 8 + 4 / 10 + 6; Zone 1 bleibt nur mit Walkern (Issue #20).
-- Wellen *(Startwerte)* mit Brutes: `Arena_Test` 1 Brute in Welle 3, `Arena_Zonen` Zone 3 je 1 bzw. 2 Brutes in Welle 2 und 3 (Issue #21).
-- Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
-- Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
-- Der FPS-Zähler sitzt jetzt unten mittig, weil Score und Multiplikator oben mittig stehen (Issue #28).
-- `Arena_Zonen`: Das zweite Tor ist jetzt ein Rätsel-Tor; es öffnet sich, wenn die Haltezone in Zone 2 gehalten wurde (vorher `DebugGateCondition`, Issues #30, #31).
-- Der Text des Missions-Trackers bricht nach 160 Einheiten um, damit lange Aufgaben nicht in Score und Multiplikator ragen (Issue #33).
-- Nach dem Tod lädt das Level nicht mehr automatisch neu; stattdessen erscheint „Gescheitert“ mit „Neustart“. `LevelRestarter` übergibt dafür an ein `IDeathHandler` (Issue #35).
 
 ### Entfernt
-- `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
 - Platzhalter-Tiles und Debug-Ziel aus Issue #2 samt `Tools/gen_placeholder_arena.py` (Issue #3).
 - 16-px-Spieler, Top-down-Walker und einteiliges Wand-Tile aus Issue #3 (Issue #58).
 - Temporärer `DebugTargetMover` (Issue #4).
 - `CLAUDE.md`: Prüfen per `Tools/unity-check.sh` statt Batchmode; Unity darf dabei offen bleiben (Issue #62).
 - Walker-Vorschaureihe in `Arena_Test` und `EnemyContactDamage`; ersetzt durch echte Walker (Issue #9).
 - Temporärer `DebugEnemySpawner`; ersetzt durch Spawnpunkte (Issue #10).
-
-### Behoben
-- PlayMode-Test `SecondZone_AfterGateOpened_SpawnsOnlyFromItsOwnPoints` schlug zufällig fehl, wenn ein Spawnpunkt zweimal gewählt wurde (`IsSubsetOf` zählt Wiederholungen) (Issue #20).
