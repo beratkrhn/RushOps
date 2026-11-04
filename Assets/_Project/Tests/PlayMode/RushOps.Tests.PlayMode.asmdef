@@ -5,6 +5,8 @@
         "RushOps.Runtime",
         "Unity.InputSystem",
         "UnityEngine.UI",
+        "Unity.RenderPipelines.Universal.2D.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],

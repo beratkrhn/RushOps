@@ -241,7 +241,7 @@ namespace RushOps.Tests.PlayMode
         public IEnumerator Blast_ShakesCameraAndShowsEffect()
         {
             var camera = Object.FindFirstObjectByType<CameraFollow>();
-            var effects = Object.FindFirstObjectByType<ExplosionEffectPool>();
+            var effects = GameObject.Find("ExplosionEffectPool")?.GetComponent<SpriteEffectPool>();
             Assert.IsNotNull(effects, "Arena_Test has no ExplosionEffectPool");
             Enemy boomer = Place(_boomers, BlastSpot);
 

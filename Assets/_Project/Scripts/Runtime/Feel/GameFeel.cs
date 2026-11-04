@@ -25,7 +25,7 @@ namespace RushOps.Feel
         [Tooltip("Pools of all enemy types in the level.")]
         [SerializeField] private EnemyPool[] _pools = System.Array.Empty<EnemyPool>();
         [SerializeField] private ExplosionSystem _explosions;
-        [SerializeField] private ExplosionEffectPool _explosionEffects;
+        [SerializeField] private SpriteEffectPool _explosionEffects;
         [SerializeField] private PerkPickupPool _perks;
         [SerializeField] private NukeSystem _nuke;
         [SerializeField] private ScreenFlash _flash;
