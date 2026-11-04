@@ -17,7 +17,7 @@ MonoBehaviour:
   _deceleration: 50
   _aimDeadzone: 0.3
   _dashDistance: 3
-  _dashDuration: 0.2
+  _dashDuration: 0.3
   _dashInvulnerability: 0.3
   _dashCooldown: 1
   _maxHearts: 5

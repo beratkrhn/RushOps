@@ -22,6 +22,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Purzelbaum beim Dash** (Issue #142): Die Figur rollt beim Dash einmal vornüber (6 Frames: Hocke, dann eingerollt um 360° gedreht; zum Betrachter hin und von ihm weg kippt sie über Kopf). Die Rolle geht immer in Dash-Richtung, auch wenn gleichzeitig woanders hin gezielt wird, und dauert genau `PlayerConfig.DashDuration`. Treffer unterbrechen sie nicht, der Tod schon. Erzeugt von `Tools/gen_pixelart.py` (`Player_Dash_*`), für alle Skins von `Tools/gen_skins.py`. Vorschau in `docs/art/animations/Player.gif` (dort verlangsamt).
 - `docs/backlog/v0.5.0.md`: Stories für v0.5.0 (#122 bis #131).
 
+### Geändert
+- Der Dash dauert 0,3 s statt 0,2 s (`PlayerConfig.DashDuration`), bei gleicher Strecke von 3 Kacheln. Der Purzelbaum ist dadurch besser zu sehen. Die i-Frames bleiben bei 0,3 s (F-STE-04) und decken den ganzen Dash ab.
+
 ## [0.4.0] – 2026-11-04
 
 ### Hinzugefügt
