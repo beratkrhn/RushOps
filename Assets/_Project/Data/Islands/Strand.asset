@@ -1,0 +1,37 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0edb591f223ac4f3bb4314e263491952, type: 3}
+  m_Name: Strand
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.IslandTheme
+  _displayName: Strand
+  _floor:
+  - {fileID: 21300000, guid: 6b4758709a361437aad8162e31283724, type: 3}
+  - {fileID: 21300000, guid: 7e3b8148ba8ac47bc9dd72766a7ef884, type: 3}
+  - {fileID: 21300000, guid: 8caf08342a8c44403bb0d8c247bc917f, type: 3}
+  _plainFloorShare: 0.7
+  _wallTop: {fileID: 21300000, guid: a8ff9f67c4481460b83c372eebf38f45, type: 3}
+  _wallFront: {fileID: 21300000, guid: b3afbfc39ea5d412c9782538508446dc, type: 3}
+  _obstacleTop: {fileID: 21300000, guid: 98776b9018525410b85d36a3031c83b1, type: 3}
+  _obstacleFront: {fileID: 21300000, guid: efaee920ab3bc47df82b7224d3c2e7c7, type: 3}
+  _decorations:
+  - {fileID: 21300000, guid: 0c23a90f7ccd041a48b97badbcc75ba3, type: 3}
+  - {fileID: 21300000, guid: d1e862c2546484bfd912d9ee0aad0b31, type: 3}
+  - {fileID: 21300000, guid: f6f6328bd999c46e1b760b8fe2286486, type: 3}
+  - {fileID: 21300000, guid: beec7f82ac5f04b9a92d04c048e8ae47, type: 3}
+  - {fileID: 21300000, guid: a6bbe9d4bfc4b435eb8ca16d91903ca9, type: 3}
+  _decorationDensity: 0.05
+  _gateFrames:
+  - {fileID: 21300000, guid: 3a5fd7d7c967b4cbda231a5281648e0e, type: 3}
+  - {fileID: 21300000, guid: 4f961b71dd15c4af0bfde1b68d04533a, type: 3}
+  - {fileID: 21300000, guid: 6d64024ee60f64505b760fdba7785efe, type: 3}
+  - {fileID: 21300000, guid: a7bb8dc1311654649bd7bdb6a369e791, type: 3}
+  - {fileID: 21300000, guid: eaf0c0f4b38ec41d8ae982427865c379, type: 3}

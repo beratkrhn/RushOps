@@ -43,10 +43,6 @@ namespace RushOps.Editor.Scenes
     public static class ArenaTestSceneBuilder
     {
         private const string ScenePath = "Assets/_Project/Scenes/Arena_Test.unity";
-        private const string TilesDir = "Assets/_Project/Art/Tiles";
-        private const int FloorVariantCount = 3;
-        private const string WallTopName = TilesDir + "/Wall_Top";
-        private const string WallFrontName = TilesDir + "/Wall_Front";
         private const string CameraConfigPath = "Assets/_Project/Data/Camera/CameraConfig.asset";
         private const string PlayerConfigPath = "Assets/_Project/Data/Player/PlayerConfig.asset";
         private const string InputActionsPath = "Assets/InputSystem_Actions.inputactions";
@@ -147,7 +143,9 @@ namespace RushOps.Editor.Scenes
         internal const int ReferenceWidth = 360;
         internal const int ReferenceHeight = 640;
         // Walls and characters share one sorting order, so the renderer sorts them by Y (ADR 0006).
-        private const int FloorSortingOrder = 0;
+        private const int FloorSortingOrder = -1;
+        // Flat floor decorations of an island theme, above the floor and below floor marks (issue #104).
+        private const int DecorSortingOrder = 0;
         // Flat marks on the floor, e.g. spawn markers: above the floor, below everything standing on it.
         internal const int FloorMarkSortingOrder = 1;
         internal const int ActorSortingOrder = 2;
@@ -169,8 +167,6 @@ namespace RushOps.Editor.Scenes
         // Figures are pivoted at their feet on a 64x64 canvas, so its center lies one unit up.
         private static readonly Vector3 ShieldBarrierOffset = new Vector3(0f, 1f, 0f);
         private const float ShieldBarrierAlpha = 0.85f;
-        // Out of 10 floor cells, how many use the plain variant 0; the rest split between the others.
-        private const int PlainFloorWeight = 7;
         // Spawn points along the arena edges and in the corners, inside the outer wall ring and clear of obstacles.
         private static readonly Vector2Int[] SpawnCells =
         {
@@ -442,20 +438,13 @@ namespace RushOps.Editor.Scenes
         /// </summary>
         internal static void BuildScene(
             string scenePath, ArenaLayout layout, bool firstInBuild, System.Action<ArenaScene> extend, string displayName,
-            Vector2Int? starScores = null)
+            Vector2Int? starScores = null, string themePath = IslandThemes.DefaultPath)
         {
             // Create the scene first: NewScene unloads assets loaded before it, which would drop the references below.
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-            var floorTiles = new Tile[FloorVariantCount];
-            for (int i = 0; i < FloorVariantCount; i++)
-            {
-                string basePath = $"{TilesDir}/Floor_{i}";
-                floorTiles[i] = CreateOrUpdateTile(basePath + ".asset", basePath + ".png", Tile.ColliderType.None);
-            }
-
-            Tile wallTop = CreateOrUpdateTile(WallTopName + ".asset", WallTopName + ".png", Tile.ColliderType.Grid);
-            Tile wallFront = CreateOrUpdateTile(WallFrontName + ".asset", WallFrontName + ".png", Tile.ColliderType.Grid);
+            IslandTheme theme = IslandThemes.LoadOrCreate(themePath);
+            ThemeTiles tiles = CreateThemeTiles(theme);
             CameraConfig cameraConfig = LoadOrCreateConfig<CameraConfig>(CameraConfigPath);
             PlayerConfig playerConfig = LoadOrCreateConfig<PlayerConfig>(PlayerConfigPath);
             WeaponConfig weaponConfig = LoadOrCreateConfig<WeaponConfig>(WeaponConfigPath);
@@ -485,7 +474,7 @@ namespace RushOps.Editor.Scenes
             var boomerDeath = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.BoomerDeathPath);
 
             CreateGlobalLight();
-            Tilemap walls = CreateArena(layout, floorTiles, wallTop, wallFront);
+            Tilemap walls = CreateArena(layout, tiles);
             ProjectilePool pool = CreateProjectilePool(bulletPrefab);
             Transform target = CreatePlayer(layout.StartCell, playerIdle, playerConfig, weaponConfig, pool, actions);
             CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
@@ -542,12 +531,57 @@ namespace RushOps.Editor.Scenes
             NukeSystem nuke = CreateNukeSystem(target.GetComponent<PlayerPerks>(), cameraFollow, enemyPools);
             SfxPlayer sfx = CreateGameFeel(
                 feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, nuke, flash);
-            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results));
+            extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
 
             EditorSceneManager.SaveScene(scene, scenePath);
             AddToBuildSettings(scenePath, firstInBuild);
             AssetDatabase.SaveAssets();
             Debug.Log($"[ArenaTestSceneBuilder] Saved {scenePath}");
+        }
+
+        // Tile assets of an island theme (issue #104), stored next to their sprites.
+        private sealed class ThemeTiles
+        {
+            public Tile[] Floor;
+            public float PlainFloorShare;
+            public Tile WallTop;
+            public Tile WallFront;
+            public Tile ObstacleTop;
+            public Tile ObstacleFront;
+            public Tile[] Decorations;
+            public float DecorationDensity;
+        }
+
+        private static ThemeTiles CreateThemeTiles(IslandTheme theme)
+        {
+            var tiles = new ThemeTiles
+            {
+                Floor = new Tile[theme.Floor.Length],
+                PlainFloorShare = theme.PlainFloorShare,
+                WallTop = TileFor(theme.WallTop, Tile.ColliderType.Grid),
+                WallFront = TileFor(theme.WallFront, Tile.ColliderType.Grid),
+                ObstacleTop = TileFor(theme.ObstacleTop, Tile.ColliderType.Grid),
+                ObstacleFront = TileFor(theme.ObstacleFront, Tile.ColliderType.Grid),
+                Decorations = new Tile[theme.Decorations.Length],
+                DecorationDensity = theme.DecorationDensity,
+            };
+            for (int i = 0; i < tiles.Floor.Length; i++)
+            {
+                tiles.Floor[i] = TileFor(theme.Floor[i], Tile.ColliderType.None);
+            }
+
+            for (int i = 0; i < tiles.Decorations.Length; i++)
+            {
+                tiles.Decorations[i] = TileFor(theme.Decorations[i], Tile.ColliderType.None);
+            }
+
+            return tiles;
+        }
+
+        private static Tile TileFor(Sprite sprite, Tile.ColliderType colliderType)
+        {
+            string texturePath = AssetDatabase.GetAssetPath(sprite);
+            return CreateOrUpdateTile(Path.ChangeExtension(texturePath, ".asset"), texturePath, colliderType);
         }
 
         private static Tile CreateOrUpdateTile(string tilePath, string texturePath, Tile.ColliderType colliderType)
@@ -656,7 +690,7 @@ namespace RushOps.Editor.Scenes
             light.intensity = 1f;
         }
 
-        private static Tilemap CreateArena(ArenaLayout layout, Tile[] floorTiles, Tile wallTop, Tile wallFront)
+        private static Tilemap CreateArena(ArenaLayout layout, ThemeTiles tiles)
         {
             var grid = new GameObject("Grid", typeof(Grid));
 
@@ -665,7 +699,25 @@ namespace RushOps.Editor.Scenes
             {
                 for (int y = 0; y < layout.Height; y++)
                 {
-                    floor.SetTile(new Vector3Int(x, y, 0), floorTiles[FloorVariant(x, y)]);
+                    int variant = IslandThemeMath.FloorVariant(x, y, tiles.Floor.Length, tiles.PlainFloorShare);
+                    floor.SetTile(new Vector3Int(x, y, 0), tiles.Floor[variant]);
+                }
+            }
+
+            // Flat decorations without collision on free floor, never on the start cell (issue #104).
+            if (tiles.Decorations.Length > 0)
+            {
+                Tilemap decor = CreateTilemap(grid.transform, "Decor", DecorSortingOrder);
+                for (int x = 0; x < layout.Width; x++)
+                {
+                    for (int y = 0; y < layout.Height; y++)
+                    {
+                        int kind = IslandThemeMath.Decoration(x, y, tiles.Decorations.Length, tiles.DecorationDensity);
+                        if (kind >= 0 && !layout.IsWall(x, y) && new Vector2Int(x, y) != layout.StartCell)
+                        {
+                            decor.SetTile(new Vector3Int(x, y, 0), tiles.Decorations[kind]);
+                        }
+                    }
                 }
             }
 
@@ -678,8 +730,12 @@ namespace RushOps.Editor.Scenes
                 {
                     if (layout.IsWall(x, y))
                     {
-                        // The front face shows only where no wall continues to the south.
-                        walls.SetTile(new Vector3Int(x, y, 0), layout.IsWall(x, y - 1) ? wallTop : wallFront);
+                        // The front face shows only where no wall continues to the south; inner walls are obstacles.
+                        bool front = !layout.IsWall(x, y - 1);
+                        Tile tile = layout.IsOuterWall(x, y)
+                            ? (front ? tiles.WallFront : tiles.WallTop)
+                            : (front ? tiles.ObstacleFront : tiles.ObstacleTop);
+                        walls.SetTile(new Vector3Int(x, y, 0), tile);
                     }
                 }
             }
@@ -697,16 +753,6 @@ namespace RushOps.Editor.Scenes
         }
 
         // Deterministic per cell, so rebuilding the scene yields the same floor.
-        private static int FloorVariant(int x, int y)
-        {
-            uint hash = unchecked((uint)(x * 73856093) ^ (uint)(y * 19349663));
-            hash ^= hash >> 13;
-            hash = unchecked(hash * 0x5bd1e995u);
-            hash ^= hash >> 15;
-            int roll = (int)(hash % 10u);
-            return roll < PlainFloorWeight ? 0 : 1 + roll % (FloorVariantCount - 1);
-        }
-
         private static Tilemap CreateTilemap(Transform parent, string name, int sortingOrder)
         {
             var go = new GameObject(name, typeof(Tilemap), typeof(TilemapRenderer));

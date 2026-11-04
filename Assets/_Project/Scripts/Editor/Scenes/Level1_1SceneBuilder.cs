@@ -101,7 +101,8 @@ namespace RushOps.Editor.Scenes
                 throw new System.InvalidOperationException("Level_1-1 breaks the level design rules:\n" + string.Join("\n", problems));
             }
 
-            ArenaTestSceneBuilder.BuildScene(ScenePath, Layout, false, AddZones, DisplayName, StarScores);
+            ArenaTestSceneBuilder.BuildScene(
+                ScenePath, Layout, false, AddZones, DisplayName, StarScores, IslandThemes.StrandPath);
         }
 
         /// <summary>

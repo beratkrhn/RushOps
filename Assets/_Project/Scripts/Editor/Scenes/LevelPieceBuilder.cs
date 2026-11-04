@@ -28,7 +28,8 @@ namespace RushOps.Editor.Scenes
             string name, Transform parent, Vector2 center, int width, ArenaScene arena, int killGateKills)
         {
             var config = ArenaTestSceneBuilder.LoadOrCreateConfig<GateConfig>(GateConfigPath);
-            var barSprite = AssetDatabase.LoadAssetAtPath<Sprite>(GateSpritePath);
+            Sprite[] frames = arena.Theme != null ? arena.Theme.GateFrames : null;
+            var barSprite = frames != null && frames.Length > 0 ? frames[0] : AssetDatabase.LoadAssetAtPath<Sprite>(GateSpritePath);
             if (barSprite == null)
             {
                 throw new System.InvalidOperationException($"Gate sprite not found at {GateSpritePath}; run Tools/gen_pixelart.py");
@@ -77,6 +78,13 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_navigator").objectReferenceValue = arena.Navigator;
             serialized.FindProperty("_sfx").objectReferenceValue = arena.Sfx;
             serialized.FindProperty("_openClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("GateOpen.wav");
+            SerializedProperty openFrames = serialized.FindProperty("_openFrames");
+            openFrames.arraySize = frames != null ? frames.Length : 0;
+            for (int i = 0; i < openFrames.arraySize; i++)
+            {
+                openFrames.GetArrayElementAtIndex(i).objectReferenceValue = frames[i];
+            }
+
             SerializedProperty barsProperty = serialized.FindProperty("_bars");
             barsProperty.arraySize = bars.Length;
             for (int i = 0; i < bars.Length; i++)

@@ -55,6 +55,11 @@ Output (under Assets/_Project/Art/):
   Tiles/Floor_0..2.png                     32x32 floor variants
   Tiles/Wall_Top.png                       32x32 wall seen from above
   Tiles/Wall_Front.png                     32x32 wall top plus front face
+  Tiles/<Island>/Floor_0..2.png            island floor variants (issue #104: Strand)
+  Tiles/<Island>/Wall_Top.png, Wall_Front.png        outer wall of the island
+  Tiles/<Island>/Obstacle_Top.png, Obstacle_Front.png inner walls (obstacles)
+  Tiles/<Island>/Decor_<N>.png             32x32 flat decorations without collision
+  Tiles/<Island>/Gate_<F>.png              32x32 gate cell, frame 0 closed .. last frame open
 
 Usage:
   python3 Tools/gen_pixelart.py [--preview PATH] [--animations DIR]
@@ -1450,6 +1455,255 @@ def gate_bars() -> Canvas:
     return c
 
 
+# --- Island 1: beach (issue #104) ------------------------------------------------
+# Dark, desaturated sand and rock so the bright characters stand out (G1); the palm-green hedge on the cliffs and
+# the shells give the island its colour. Every tile wraps at its edges so it tiles in all directions.
+GATE_FRAMES = 5
+
+
+def wrap_set(c: Canvas, x: int, y: int, color: str) -> None:
+    c.set(x % c.width, y % c.height, color)
+
+
+def sand(variant: int) -> Canvas:
+    """Beach sand. Variant 0 plain, 1 with wind ripples, 2 with pebbles and a shell fragment."""
+    c = Canvas(TILE, TILE, fill="brown_1")
+    rng = random.Random(4100 + variant)
+    for _ in range(36):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "brown_0")
+    for _ in range(22):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "skin_0")
+    for _ in range(4):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "clay")
+    if variant == 1:
+        for row, y0 in enumerate((7, 17, 27)):
+            for x in range(TILE):
+                y = y0 + round(1.5 * math.sin((x + row * 9) / TILE * 2 * math.pi * 2))
+                wrap_set(c, x, y, "brown_0")
+                wrap_set(c, x, y - 1, "skin_0")
+    elif variant == 2:
+        for x, y in ((8, 9), (22, 21), (25, 7)):
+            c.rect(x, y, x + 1, y + 1, "slate_2")
+            c.set(x, y, "slate_3")
+        for x, y in ((14, 18), (15, 18), (16, 19), (14, 19)):
+            c.set(x, y, "peach")
+        c.set(15, 19, "cream")
+    return c
+
+
+def cliff_top_face(c: Canvas, y0: int, y1: int) -> None:
+    """Dense palm hedge on top of the cliff, seen from above."""
+    c.rect(0, y0, TILE - 1, y1, "green_0")
+    rng = random.Random(4200)
+    for _ in range(40):
+        x, y = rng.randrange(TILE), rng.randrange(TILE)
+        if y0 <= y <= y1:
+            wrap_set(c, x, y, "green_1")
+            if y + 1 <= y1:
+                wrap_set(c, x + 1, y + 1, "green_1")
+    for _ in range(18):
+        x, y = rng.randrange(TILE), rng.randrange(TILE)
+        if y0 <= y <= y1:
+            wrap_set(c, x, y, "night")
+
+
+def cliff_top() -> Canvas:
+    c = Canvas(TILE, TILE)
+    cliff_top_face(c, 0, TILE - 1)
+    return c
+
+
+def cliff_front() -> Canvas:
+    """Cliff with nothing to the south: hedge on top, a dark rock face with layers below."""
+    c = Canvas(TILE, TILE)
+    top = 10
+    cliff_top_face(c, 0, top - 1)
+    # Leaves hanging over the edge.
+    for x in range(0, TILE, 3):
+        c.set(x, top, "green_0")
+        c.set(x + 1, top, "green_1" if x % 2 else "green_0")
+    c.rect(0, top + 1, TILE - 1, TILE - 1, "slate_1")
+    rng = random.Random(4300)
+    for y in range(top + 4, TILE - 2, 5):
+        for x in range(TILE):
+            if rng.random() < 0.85:
+                c.set(x, y, "slate_0")
+            if rng.random() < 0.3:
+                c.set(x, y - 1, "slate_2")
+    for _ in range(10):
+        c.set(rng.randrange(TILE), rng.randrange(top + 2, TILE - 2), "brown_0")
+    c.rect(0, TILE - 2, TILE - 1, TILE - 1, "night")
+    return c
+
+
+def crate_top_face(c: Canvas, y0: int, y1: int) -> None:
+    """Lid of a wooden crate seen from above: planks with dark seams and a dark rim."""
+    c.rect(0, y0, TILE - 1, y1, "brown_1")
+    for x in range(0, TILE, 8):
+        c.rect(x, y0, x, y1, "brown_0")
+    for x in range(3, TILE, 8):
+        c.rect(x, y0 + 1, x, y1 - 1, "clay")
+    c.rect(0, y0, TILE - 1, y0, "brown_0")
+    c.rect(0, y0, 0, y1, "brown_0")
+    c.rect(TILE - 1, y0, TILE - 1, y1, "brown_0")
+    for x, y in ((2, y0 + 2), (TILE - 3, y0 + 2), (2, y1 - 1), (TILE - 3, y1 - 1)):
+        c.set(x, y, "slate_3")
+
+
+def crate_top() -> Canvas:
+    c = Canvas(TILE, TILE)
+    crate_top_face(c, 0, TILE - 1)
+    c.rect(0, TILE - 1, TILE - 1, TILE - 1, "brown_0")
+    return c
+
+
+def crate_front() -> Canvas:
+    """Crate with nothing to the south: lid above, the front with a cross brace below."""
+    c = Canvas(TILE, TILE)
+    top = 12
+    crate_top_face(c, 0, top - 1)
+    c.rect(0, top, TILE - 1, TILE - 1, "brown_0")
+    c.rect(2, top + 1, TILE - 3, TILE - 3, "brown_1")
+    for i in range(TILE - 4):
+        y = top + 1 + round(i * (TILE - 4 - top) / (TILE - 5))
+        c.set(2 + i, y, "brown_0")
+        c.set(TILE - 3 - i, y, "brown_0")
+    c.rect(2, top + 1, TILE - 3, top + 1, "clay")
+    c.rect(0, TILE - 2, TILE - 1, TILE - 1, "night")
+    return c
+
+
+def beach_decoration(kind: int) -> Canvas:
+    """Flat things on the sand, without collision: 0 shell, 1 starfish, 2 seaweed, 3 pebbles, 4 driftwood."""
+    c = Canvas(TILE, TILE)
+    if kind == 0:
+        c.ellipse(16.0, 17.0, 4.0, 3.0, "peach")
+        for x in (13, 15, 17, 19):
+            c.rect(x, 15, x, 19, "cream")
+        c.rect(15, 20, 17, 20, "clay")
+    elif kind == 1:
+        for a in range(5):
+            ang = math.radians(90 + a * 72)
+            for r in range(5):
+                x = 16 + round(math.cos(ang) * r)
+                y = 16 - round(math.sin(ang) * r * 0.7)
+                c.set(x, y, "apricot")
+                if r < 3:
+                    c.set(x + 1, y, "apricot")
+        c.set(16, 16, "clay")
+        c.set(16, 13, "peach")
+    elif kind == 2:
+        for i, (x, y) in enumerate(((10, 18), (13, 16), (16, 18), (19, 15), (22, 18))):
+            for k in range(5):
+                c.set(x + (k % 2), y - k + 2, "green_0" if k % 2 else "green_1")
+        c.rect(10, 20, 23, 20, "green_0")
+    elif kind == 3:
+        for x, y, r in ((12, 16, 2.0), (18, 18, 2.5), (21, 14, 1.5)):
+            c.ellipse(x, y, r, r * 0.7, "slate_2")
+            c.set(int(x) - 1, int(y) - 1, "slate_4")
+    elif kind == 4:
+        c.rect(9, 17, 23, 18, "brown_1")
+        c.rect(9, 18, 23, 18, "brown_0")
+        c.rect(19, 15, 21, 16, "brown_1")
+        c.set(12, 17, "skin_0")
+        c.set(18, 17, "skin_0")
+    c.outline("outline")
+    return c
+
+
+BEACH_DECORATIONS = 5
+# Folders under Tiles/ with an island tileset.
+ISLAND_TILESETS = ["Strand"]
+
+
+def palisade(frame: int) -> Canvas:
+    """One cell of the beach gate: sharpened logs lashed with rope. Opening (frames 1..GATE_FRAMES-1), the logs sink
+    into the sand, throwing up little puffs, until only a low mound is left."""
+    c = Canvas(TILE, TILE)
+    ground = TILE - 3
+    sink = round(frame / (GATE_FRAMES - 1) * 26)
+    for i, x0 in enumerate(range(0, TILE, 8)):
+        top = 2 + (i % 2) * 2 + sink
+        for y in range(top, ground + 1):
+            for x in range(x0 + 1, x0 + 7):
+                if y < top + 3:
+                    # Pointed tip.
+                    if abs(x - (x0 + 3.5)) > (y - top + 0.5) * 1.2:
+                        continue
+                color = "brown_1"
+                if x == x0 + 1:
+                    color = "clay"
+                elif x >= x0 + 5:
+                    color = "brown_0"
+                c.set(x, y, color)
+        # Rope band.
+        rope = 12 + sink
+        if rope < ground:
+            c.rect(x0 + 1, rope, x0 + 6, rope + 1, "peach")
+            c.set(x0 + 3, rope + 1, "cream")
+    # Sand at the foot; puffs while sinking.
+    c.rect(0, ground, TILE - 1, TILE - 1, "skin_0")
+    c.rect(0, TILE - 1, TILE - 1, TILE - 1, "brown_0")
+    if 0 < frame < GATE_FRAMES - 1:
+        rng = random.Random(4400 + frame)
+        for _ in range(10):
+            x, y = rng.randrange(TILE), rng.randrange(ground - 5, ground)
+            c.set(x, y, "skin_0")
+    if frame == GATE_FRAMES - 1:
+        c.rect(0, ground - 2, TILE - 1, ground - 1, "skin_0")
+        for x in range(2, TILE, 8):
+            c.rect(x, ground - 3, x + 3, ground - 2, "brown_1")
+    c.outline("outline")
+    return c
+
+
+def island_files(files: dict[str, Image.Image]) -> None:
+    """Tiles and gate frames of the islands (issues #104 to #106), under Tiles/<Island>/."""
+    for variant in range(3):
+        files[f"Tiles/Strand/Floor_{variant}.png"] = sand(variant).to_image()
+    files["Tiles/Strand/Wall_Top.png"] = cliff_top().to_image()
+    files["Tiles/Strand/Wall_Front.png"] = cliff_front().to_image()
+    files["Tiles/Strand/Obstacle_Top.png"] = crate_top().to_image()
+    files["Tiles/Strand/Obstacle_Front.png"] = crate_front().to_image()
+    for kind in range(BEACH_DECORATIONS):
+        files[f"Tiles/Strand/Decor_{kind}.png"] = beach_decoration(kind).to_image()
+    for frame in range(GATE_FRAMES):
+        files[f"Tiles/Strand/Gate_{frame}.png"] = palisade(frame).to_image()
+
+
+def island_preview(files: dict[str, Image.Image], island: str, path: Path, scale: int = 3) -> None:
+    """A small arena in the island's tiles with an obstacle, decorations, the gate frames and a few characters."""
+    cols, rows = 11, 11
+    sheet = Image.new("RGBA", (cols * TILE, rows * TILE), (0, 0, 0, 255))
+    def wall(x, y):
+        return x in (0, cols - 1) or y in (0, rows - 1)
+    def obstacle(x, y):
+        return 3 <= x <= 5 and 3 <= y <= 4
+    for y in range(rows):
+        for x in range(cols):
+            # Image y grows downwards; the cell to the south is y + 1.
+            if wall(x, y):
+                name = "Wall_Top" if wall(x, y + 1) or y == rows - 1 else "Wall_Front"
+            elif obstacle(x, y):
+                name = "Obstacle_Top" if obstacle(x, y + 1) else "Obstacle_Front"
+            else:
+                name = f"Floor_{[0, 0, 0, 1, 2][(x * 7 + y * 3) % 5]}"
+            sheet.paste(files[f"Tiles/{island}/{name}.png"], (x * TILE, y * TILE))
+    decor = [k for k in files if k.startswith(f"Tiles/{island}/Decor_")]
+    for i, key in enumerate(sorted(decor)):
+        sheet.alpha_composite(files[key], ((2 + i * 2) * TILE, 8 * TILE))
+    for frame in range(GATE_FRAMES):
+        sheet.alpha_composite(files[f"Tiles/{island}/Gate_{frame}.png"], ((1 + frame * 2) * TILE, 6 * TILE))
+    for i, (key, x) in enumerate((("Walker_Walk_SE_0", 7), ("Runner_Run_SW_1", 8), ("Boomer_Walk_S_0", 9))):
+        img = files[f"Sprites/Enemies/{key}.png"]
+        sheet.alpha_composite(img, (x * TILE + TILE // 2 - img.width // 2, 4 * TILE - img.height + FOOT_MARGIN))
+    player = ART_DIR / "Sprites/Player/Player_Idle_S.png"
+    if player.exists():
+        img = Image.open(player).convert("RGBA")
+        sheet.alpha_composite(img, (2 * TILE + TILE // 2 - 32, 3 * TILE - 64 + FOOT_MARGIN))
+    sheet.resize((sheet.width * scale, sheet.height * scale), Image.NEAREST).save(path)
+
+
 # --- Output ------------------------------------------------------------------
 
 def palette_image() -> Image.Image:
@@ -1532,6 +1786,7 @@ def outputs() -> dict[str, Image.Image]:
         files[f"Sprites/Effects/Explosion_{frame}.png"] = explosion_frame(frame).to_image()
     for variant in range(3):
         files[f"Tiles/Floor_{variant}.png"] = floor(variant).to_image()
+    island_files(files)
     return files
 
 
@@ -1637,6 +1892,7 @@ def animation_preview(files: dict[str, Image.Image], name: str, out_dir: Path, s
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--preview", type=Path, help="write an upscaled contact sheet to this path")
+    parser.add_argument("--islands", type=Path, help="write one upscaled preview per island tileset to this folder")
     parser.add_argument("--animations", type=Path, help="write upscaled animation previews (GIF + sheet) to this folder")
     args = parser.parse_args()
 
@@ -1661,6 +1917,12 @@ def main() -> None:
     if args.preview:
         preview(files, args.preview)
         print(f"Wrote preview {args.preview}")
+
+    if args.islands:
+        args.islands.mkdir(parents=True, exist_ok=True)
+        for island in ISLAND_TILESETS:
+            island_preview(files, island, args.islands / f"{island}.png")
+            print(f"Wrote island preview {args.islands / island}.png")
 
     if args.animations:
         for name in ANIMATION_PREVIEWS:
