@@ -1,5 +1,6 @@
 using RushOps.Enemies;
 using RushOps.Levels;
+using RushOps.Puzzles;
 using UnityEditor;
 using UnityEngine;
 
@@ -8,8 +9,8 @@ namespace RushOps.Editor.Scenes
     /// <summary>
     /// Builds the <c>Arena_Zonen</c> test level (issues #17, #18, #19): the arena of <see cref="ArenaTestSceneBuilder"/>
     /// in a tall layout with three zones stacked from south to north, separated by two gates. Each zone has its own
-    /// spawn points and waves. The first gate is a kill gate; the second opens by a <see cref="DebugGateCondition"/>
-    /// some seconds after the zone in front of it became active.
+    /// spawn points and waves. The first gate is a kill gate; the second is a puzzle gate whose <see cref="DebugPuzzle"/>
+    /// in zone 2 solves itself some seconds after the zone became active (issue #30).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.ArenaZonenSceneBuilder.Build</c>
     /// </summary>
     public static class ArenaZonenSceneBuilder
@@ -23,8 +24,9 @@ namespace RushOps.Editor.Scenes
         private static readonly int[] DividerRows = { 27, 55 };
         private const int GateX = 10;
         private const int GateWidth = 4;
-        // Debug gates open this many seconds after the zone in front of them became active, leaving time for some waves.
-        private const float DebugGateDelay = 20f;
+        // The debug puzzle is solved this many seconds after its zone became active, leaving time for some waves.
+        private const float DebugPuzzleDuration = 20f;
+        private const string PuzzleConfigPath = "Assets/_Project/Data/Puzzles/PuzzleConfig.asset";
         private const string WavesDir = "Assets/_Project/Data/Waves";
         // Kills since level start that open the first gate.
         private const int KillGateKills = 10;
@@ -96,11 +98,13 @@ namespace RushOps.Editor.Scenes
                 var area = new RectInt(1, bottom, Width - 2, top - bottom);
                 Zone zone = ArenaTestSceneBuilder.CreateZone(arena, $"Zone_{i + 1}", zonesRoot, area, ZoneSpawnCells[i], waves[i], exit);
                 zones[i] = zone;
-                if (exit != null && exit.GetComponent<DebugGateCondition>() != null)
+                if (exit != null && exit.GetComponent<PuzzleSolvedCondition>() != null)
                 {
-                    var condition = new SerializedObject(exit.GetComponent<DebugGateCondition>());
-                    condition.FindProperty("_zone").objectReferenceValue = zone;
-                    condition.FindProperty("_delay").floatValue = DebugGateDelay;
+                    DebugPuzzle puzzle = CreateDebugPuzzle($"Puzzle_{zone.name}", zone, arena);
+                    var condition = new SerializedObject(exit.GetComponent<PuzzleSolvedCondition>());
+                    SerializedProperty puzzles = condition.FindProperty("_puzzles");
+                    puzzles.arraySize = 1;
+                    puzzles.GetArrayElementAtIndex(0).objectReferenceValue = puzzle;
                     condition.ApplyModifiedPropertiesWithoutUndo();
                 }
 
@@ -108,6 +112,22 @@ namespace RushOps.Editor.Scenes
             }
 
             ArenaTestSceneBuilder.AssignZones(arena, zones);
+        }
+
+        private static DebugPuzzle CreateDebugPuzzle(string name, Zone zone, ArenaScene arena)
+        {
+            var go = new GameObject(name);
+            go.transform.position = zone.transform.position;
+            var puzzle = go.AddComponent<DebugPuzzle>();
+            var serialized = new SerializedObject(puzzle);
+            serialized.FindProperty("_zone").objectReferenceValue = zone;
+            serialized.FindProperty("_config").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<PuzzleConfig>(PuzzleConfigPath);
+            serialized.FindProperty("_sfx").objectReferenceValue = arena.Sfx;
+            serialized.FindProperty("_solvedClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("PuzzleSolved.wav");
+            serialized.FindProperty("_duration").floatValue = DebugPuzzleDuration;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return puzzle;
         }
 
         // Waves grow from zone to zone; the first two repeat their last wave until the gate opens, the last one ends.
@@ -176,7 +196,8 @@ namespace RushOps.Editor.Scenes
             }
             else
             {
-                condition = go.AddComponent<DebugGateCondition>();
+                // Its puzzle is set once the zones exist (AddZones).
+                condition = go.AddComponent<PuzzleSolvedCondition>();
             }
 
             var gate = go.AddComponent<Gate>();

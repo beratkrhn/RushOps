@@ -1,6 +1,6 @@
 namespace RushOps.UI
 {
-    /// <summary>Texts of the mission tracker (F-HUD-03).</summary>
+    /// <summary>Texts of the mission tracker (F-HUD-03), including puzzles (issue #30).</summary>
     public static class MissionText
     {
         /// <summary>Shown for a moment once the tracked gate opens.</summary>
@@ -10,6 +10,23 @@ namespace RushOps.UI
         public static string KillGate(int kills, int required)
         {
             return $"Tor gesperrt: {kills}/{required} Kills";
+        }
+
+        /// <summary>
+        /// Text of a puzzle: its own text, for a countdown followed by the whole seconds left rounded up, e.g.
+        /// „Schalter: 7 s“.
+        /// </summary>
+        public static string Puzzle(RushOps.Puzzles.PuzzleDisplay display)
+        {
+            return display.Kind == RushOps.Puzzles.PuzzleDisplayKind.Countdown
+                ? $"{display.Text}: {CountdownSeconds(display.Value)} s"
+                : display.Text;
+        }
+
+        /// <summary>Whole seconds shown for <paramref name="secondsLeft"/>: rounded up, so 0 shows only when the time is up.</summary>
+        public static int CountdownSeconds(float secondsLeft)
+        {
+            return secondsLeft > 0f ? (int)System.Math.Ceiling(secondsLeft - 1e-4f) : 0;
         }
     }
 }

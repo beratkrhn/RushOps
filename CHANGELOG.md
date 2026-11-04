@@ -99,6 +99,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Score und Kombo**: Jeder Kill gibt die Punkte seines Gegnertyps (`EnemyDefinition.Points`), auch Explosions- und Nuke-Kills. Kills innerhalb von 2 s nach dem letzten halten die Kombo; alle 5 Kombo-Kills steigt der Multiplikator um 1, höchstens auf ×5. Ein erlittener Treffer oder das Ablaufen des Fensters setzt ihn auf ×1 zurück (Issue #28, F-SCO-01, F-SCO-02). Die Werte stehen in `Data/Score/ScoreConfig`.
 - HUD oben mittig: Score mit dem Multiplikator darunter; steigt der Multiplikator, leuchtet er kurz gelb auf und springt größer (F-HUD-04). Dauer, Farbe und Größe in `HudConfig`.
 - `ScoreKeeper` als reine Logik mit EditMode-Tests, `LevelScore` als Adapter, `ScoreView` und `ScoreText` (Issue #28).
+- **Rätsel-Grundsystem** (Issue #30, F-LVL-04, F-HUD-03): Basis `Puzzle` mit den Zuständen inaktiv, aktiv, gelöst (`PuzzleLogic`, EditMode-getestet). Ein Rätsel wird aktiv, sobald seine Zone aktiv wird. `PuzzleSolvedCondition` öffnet ein Tor, wenn alle seine Rätsel gelöst sind. Beim Lösen spielt ein Platzhalter-Sound (`PuzzleSolved.wav` aus `Tools/gen_sfx.py`, Lautstärke in `Data/Puzzles/PuzzleConfig`).
+- Der Missions-Tracker zeigt Rätsel an: Text, wahlweise mit Fortschrittsbalken darunter oder mit Countdown („Schalter: 7 s“). Ein Rätsel gibt das über `PuzzleDisplay` vor (Issue #30).
+- `DebugPuzzle` als Testrätsel: Es füllt seinen Balken in 20 s und ist dann gelöst, oder sofort über das Kontextmenü „Jetzt lösen“ (Issue #30).
 
 ### Geändert
 - Bildschirmausrichtung fest auf Hochformat.
@@ -129,6 +132,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - Wellen *(Startwerte)* mit Boomern: `Arena_Test` 2 bzw. 3 in Welle 2 und 3, `Arena_Zonen` Zone 2 1 in Welle 3, Zone 3 2 bzw. 3 in Welle 2 und 3 (Issue #22).
 - Sterben mehrere Gegner im selben Frame (Nuke, Explosionsketten), spielt der Todessound nur einmal (Issue #27).
 - Der FPS-Zähler sitzt jetzt unten mittig, weil Score und Multiplikator oben mittig stehen (Issue #28).
+- `Arena_Zonen`: Das zweite Tor ist jetzt ein Rätsel-Tor mit `DebugPuzzle` in Zone 2 statt der `DebugGateCondition` (Issue #30).
 
 ### Entfernt
 - `EnemySpawner` aus v0.1.0 und `SpawnerConfig.SpawnInterval`; ersetzt durch `WaveDirector` und das Spawn-Intervall pro `WaveDefinition` (Issue #18).
