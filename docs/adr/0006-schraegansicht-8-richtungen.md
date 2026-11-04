@@ -44,3 +44,14 @@ Unverändert aus ADR 0002 gelten: Import mit Filter Mode Point, ohne Kompression
 - Figuren und Wände müssen nach Y sortiert werden; Kollider sitzen an den Füßen, nicht in der Bildmitte.
 - Licht und Schatten kommen von oben vorn; Figuren dürfen eine eingebaute Lichtrichtung haben.
 - Bereits erzeugte 16-px-Grafiken aus Issue #3 werden ersetzt.
+
+## Nachtrag: Palettengruppen (Issue #99, 04.11.2026)
+
+Die Palette bleibt bei 32 Farben. Statt pro Insel eine eigene Teilpalette anzulegen, sind die Farben in Gruppen eingeteilt (`PALETTE_GROUPS` in `Tools/gen_pixelart.py`, Übersicht in [`docs/art/palette.md`](../art/palette.md)):
+
+- **Basis:** Umrisse, dunkler Boden, UI und Signalfarben (Perks, Schaden, gelöst, Licht).
+- **Figuren:** Spieler aus dem Character-Tool und die vier Gegnertypen, hell und gesättigt.
+- **Inseln:** je 6 bis 8 Akzentfarben für Strand, düstere Stadt und Vulkan; Überschneidungen sind erlaubt.
+
+Der Generator bricht ab, wenn eine Farbe in keiner Gruppe steht, eine Insel weniger als 6 oder mehr als 8 Akzente hat oder die Palette über 32 Farben wächst. Grund: Die Spielerfigur aus dem Character-Tool belegt bereits 8 Farben, eine eigene Teilpalette je Insel würde die 32 sprengen.
+

@@ -102,6 +102,62 @@ PALETTE = {
     "cream": (255, 236, 214),
 }
 
+# Palette groups (issue #99, design decisions G1 and G3): bright, saturated colors for characters, perks and
+# puzzle objects in front of dark, desaturated surroundings. Every island takes 6 to 8 accent colors from the one
+# palette; islands may share colors. check_palette_groups() enforces these rules.
+PALETTE_GROUPS = {
+    # On every island: outlines, dark ground and UI, plus the signal colors of perks, damage, solved puzzles and light.
+    "Basis": ["outline", "night", "slate_0", "slate_1", "slate_2", "slate_3", "slate_4", "slate_5", "white",
+              "glow", "yellow", "red_1", "green_2", "blue_2"],
+    # Characters: the player from the character tool and the four enemy types.
+    "Figuren": ["navy_0", "navy_1", "dusk", "mauve", "clay", "apricot", "peach", "cream", "green_0", "green_1",
+                "green_2", "skin_0", "skin_1", "red_0", "red_1", "orange", "brown_0", "brown_1", "slate_4",
+                "slate_5", "white", "yellow"],
+    # Island 1: sand, sea and palms.
+    "Strand": ["peach", "cream", "apricot", "clay", "blue_0", "blue_1", "blue_2", "green_1"],
+    # Island 2: asphalt, concrete and cold neon.
+    "Düstere Stadt": ["navy_0", "navy_1", "dusk", "slate_1", "slate_2", "slate_3", "mauve", "blue_2"],
+    # Island 3: basalt, embers and lava.
+    "Vulkan": ["outline", "night", "brown_0", "brown_1", "red_0", "red_1", "orange", "yellow"],
+}
+ISLAND_GROUPS = ["Strand", "Düstere Stadt", "Vulkan"]
+MAX_PALETTE_COLORS = 32
+
+
+def check_palette_groups() -> None:
+    """Raises if the palette or its groups break the rules of issue #99."""
+    if len(PALETTE) > MAX_PALETTE_COLORS:
+        raise ValueError(f"palette has {len(PALETTE)} colors, at most {MAX_PALETTE_COLORS} are allowed")
+    used = set()
+    for group, keys in PALETTE_GROUPS.items():
+        unknown = [k for k in keys if k not in PALETTE]
+        if unknown:
+            raise ValueError(f"palette group {group}: unknown colors {unknown}")
+        used.update(keys)
+    for island in ISLAND_GROUPS:
+        if not 6 <= len(PALETTE_GROUPS[island]) <= 8:
+            raise ValueError(f"island {island} needs 6 to 8 accent colors, has {len(PALETTE_GROUPS[island])}")
+    unused = [k for k in PALETTE if k not in used]
+    if unused:
+        raise ValueError(f"palette colors in no group: {unused}")
+
+
+def palette_sheet(scale: int = 16) -> Image.Image:
+    """One row of swatches per palette group, for docs/art/palette.png."""
+    width = max(len(keys) for keys in PALETTE_GROUPS.values())
+    rows = len(PALETTE_GROUPS)
+    gap = scale // 4
+    img = Image.new("RGBA", (width * (scale + gap) + gap, rows * (scale + gap) + gap), PALETTE["night"] + (255,))
+    for row, keys in enumerate(PALETTE_GROUPS.values()):
+        for col, key in enumerate(keys):
+            x0 = gap + col * (scale + gap)
+            y0 = gap + row * (scale + gap)
+            for x in range(x0, x0 + scale):
+                for y in range(y0, y0 + scale):
+                    img.putpixel((x, y), PALETTE[key] + (255,))
+    return img
+
+
 TILE = 32
 CHARACTER = 64
 # The brute is drawn on a larger canvas (ADR 0006).
@@ -1240,6 +1296,7 @@ def main() -> None:
     parser.add_argument("--preview", type=Path, help="write an upscaled contact sheet to this path")
     args = parser.parse_args()
 
+    check_palette_groups()
     files = outputs()
     for rel, img in files.items():
         assert_in_palette(img, rel)
@@ -1247,6 +1304,11 @@ def main() -> None:
         out.parent.mkdir(parents=True, exist_ok=True)
         img.save(out)
         print(f"Wrote {out.relative_to(ROOT)}")
+
+    sheet_path = ROOT / "docs/art/palette.png"
+    sheet_path.parent.mkdir(parents=True, exist_ok=True)
+    palette_sheet().save(sheet_path)
+    print(f"Wrote {sheet_path.relative_to(ROOT)}")
 
     metrics_path = ART_DIR / "Fonts/PixelFont.json"
     metrics_path.write_text(json.dumps(font_atlas()[1], indent=1) + "\n")

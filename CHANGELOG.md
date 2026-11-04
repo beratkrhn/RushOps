@@ -4,6 +4,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Finale Palette** (Issue #99, F-GFX-01): Die 32 Farben sind in Gruppen eingeteilt: Basis, Figuren und je 8 Akzentfarben für Strand, düstere Stadt und Vulkan (`PALETTE_GROUPS` in `Tools/gen_pixelart.py`). Der Generator prüft die Gruppenregeln und schreibt die Übersicht `docs/art/palette.png`/`palette.md`. ADR 0006 ergänzt. Bestehende Sprites bleiben unverändert gültig.
+
 ## [0.3.0] – 2026-11-04
 
 ### Hinzugefügt
