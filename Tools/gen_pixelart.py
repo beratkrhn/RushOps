@@ -57,6 +57,7 @@ Output (under Assets/_Project/Art/):
   Sprites/UI/Dash_Cooldown.png             24x24 disc covering the button during the cooldown
   Sprites/UI/Perk_Slot.png                 28x28 HUD slot of an active perk: dark disc with an empty ring (issue #24)
   Sprites/UI/Perk_Timer.png                28x28 ring over the slot, filled radially with the remaining time (issue #24)
+  Sprites/UI/Logo_<F>.png                  RUSHOPS logo, 13 frames: letters slam in, then a light sweep (issue #124)
   Tiles/Floor_0..2.png                     32x32 floor variants
   Tiles/Wall_Top.png                       32x32 wall seen from above
   Tiles/Wall_Front.png                     32x32 wall top plus front face
@@ -72,7 +73,8 @@ Usage:
 --preview writes an upscaled contact sheet (characters on the floor next to
 walls) for a visual check before committing. It is not part of the project.
 --animations writes one upscaled GIF per enemy (all 8 directions playing walk,
-hit and death) plus a sprite sheet, for the product owner to sign off.
+hit and death) plus a sprite sheet, for the product owner to sign off; also
+Logo.gif with the start animation (issue #124).
 """
 import argparse
 import json
@@ -1318,6 +1320,128 @@ def dash_locked() -> Canvas:
     return c
 
 
+# --- Logo (issue #124) -------------------------------------------------------------
+# "RUSH" in the 5x7 pixel font blown up 5x with a fiery ramp, "OPS" below it 4x in pale grey between two tracer
+# bars. Each letter keeps its pixel cells, so the frames can show, flash and light them one by one.
+
+LOGO_RUSH_SCALE = 5
+LOGO_OPS_SCALE = 4
+LOGO_LETTER_GAP = 3
+LOGO_LINE_GAP = 6
+LOGO_MARGIN = 2
+LOGO_SHADOW = 2
+LOGO_BAR_GAP = 4
+# Color per glyph row (0 = top) and the hard drop shadow.
+LOGO_RUSH_RAMP = ["yellow", "yellow", "orange", "orange", "orange", "red_1", "red_1"]
+LOGO_OPS_RAMP = ["white", "white", "slate_5", "slate_5", "slate_5", "slate_4", "slate_4"]
+LOGO_RUSH_SHADOW = "red_0"
+LOGO_OPS_SHADOW = "navy_0"
+# Frames: one per RUSH letter, one for OPS, one settled, six of the light sweep, one final.
+LOGO_SWEEP_FRAMES = 6
+LOGO_FRAMES = 4 + 1 + 1 + LOGO_SWEEP_FRAMES + 1
+
+
+def glyph_cells(ch: str, scale: int, ox: int, oy: int) -> list[tuple[int, int, int]]:
+    """Pixels of a font glyph blown up by scale, as (x, y, glyph row)."""
+    cells = []
+    for gy, row in enumerate(pixel_font.GLYPHS[ch]):
+        for gx, v in enumerate(row):
+            if v == "#":
+                for dy in range(scale):
+                    for dx in range(scale):
+                        cells.append((ox + gx * scale + dx, oy + gy * scale + dy, gy))
+    return cells
+
+
+def word_width(word: str, scale: int) -> int:
+    return sum(len(pixel_font.GLYPHS[ch][0]) * scale for ch in word) + LOGO_LETTER_GAP * (len(word) - 1)
+
+
+def logo_parts() -> tuple[int, int, list[dict]]:
+    """Canvas size and the parts of the logo in the order they appear: four RUSH letters, then OPS with its bars."""
+    rush_w = word_width("RUSH", LOGO_RUSH_SCALE)
+    ops_w = word_width("OPS", LOGO_OPS_SCALE)
+    rush_h = 7 * LOGO_RUSH_SCALE
+    ops_h = 7 * LOGO_OPS_SCALE
+    width = rush_w + 2 * LOGO_MARGIN + LOGO_SHADOW
+    height = rush_h + LOGO_LINE_GAP + ops_h + 2 * LOGO_MARGIN + LOGO_SHADOW
+    parts = []
+    x = LOGO_MARGIN
+    for ch in "RUSH":
+        parts.append({"cells": glyph_cells(ch, LOGO_RUSH_SCALE, x, LOGO_MARGIN), "ramp": LOGO_RUSH_RAMP,
+                      "shadow": LOGO_RUSH_SHADOW, "group": len(parts)})
+        x += len(pixel_font.GLYPHS[ch][0]) * LOGO_RUSH_SCALE + LOGO_LETTER_GAP
+
+    oy = LOGO_MARGIN + rush_h + LOGO_LINE_GAP
+    ox = LOGO_MARGIN + (rush_w - ops_w) // 2
+    for ch in "OPS":
+        parts.append({"cells": glyph_cells(ch, LOGO_OPS_SCALE, ox, oy), "ramp": LOGO_OPS_RAMP,
+                      "shadow": LOGO_OPS_SHADOW, "group": 4})
+        ox += len(pixel_font.GLYPHS[ch][0]) * LOGO_OPS_SCALE + LOGO_LETTER_GAP
+
+    # Tracer bars left and right of OPS, three rows thick, in the RUSH ramp (rows 1, 3, 5 of it).
+    mid = oy + ops_h // 2
+    left_end = LOGO_MARGIN + (rush_w - ops_w) // 2 - LOGO_BAR_GAP
+    right_start = LOGO_MARGIN + (rush_w + ops_w) // 2 + LOGO_BAR_GAP
+    bar = []
+    for i, row in enumerate((1, 3, 5)):
+        y = mid - 1 + i
+        for bx in range(LOGO_MARGIN + i, left_end):
+            bar.append((bx, y, row))
+        for bx in range(right_start, LOGO_MARGIN + rush_w - i):
+            bar.append((bx, y, row))
+    parts.append({"cells": bar, "ramp": LOGO_RUSH_RAMP, "shadow": LOGO_RUSH_SHADOW, "group": 4})
+    return width, height, parts
+
+
+def logo_frame(frame: int) -> Canvas:
+    """Frame 0..3: the RUSH letters slam in one by one, the newest flashing white; 4: OPS and the bars flash in;
+    5: all settled; 6..11: a diagonal light sweeps from left to right; 12: the final logo."""
+    width, height, parts = logo_parts()
+    c = Canvas(width, height)
+    visible_groups = frame + 1 if frame < 4 else 5
+    flashing = frame if frame <= 4 else -1
+    shown = [p for p in parts if p["group"] < visible_groups]
+
+    for part in shown:
+        for x, y, _ in part["cells"]:
+            c.set(x + LOGO_SHADOW, y + LOGO_SHADOW, part["shadow"])
+
+    sweep = frame - 6
+    band = -12 + sweep * (width + 24) / (LOGO_SWEEP_FRAMES - 1) if 0 <= sweep < LOGO_SWEEP_FRAMES else None
+    for part in shown:
+        filled = {(x, y) for x, y, _ in part["cells"]}
+        for x, y, row in part["cells"]:
+            if part["group"] == flashing:
+                color = "white"
+            elif band is not None and abs(x - band + (y - height / 2) * 0.6) < 2.5:
+                color = "glow"
+            elif (x, y - 1) not in filled:
+                color = "glow" if part["ramp"] is LOGO_RUSH_RAMP else "white"
+            else:
+                color = part["ramp"][row]
+            c.set(x, y, color)
+    c.outline()
+    return c
+
+
+def logo_preview(files: dict[str, Image.Image], out_dir: Path, scale: int = 4) -> None:
+    """Writes Logo.gif: the start animation at 14 fps, holding the last frame, on the dark menu background."""
+    background = PALETTE["night"] + (255,)
+    frames, durations = [], []
+    for f in range(LOGO_FRAMES):
+        logo = files[f"Sprites/UI/Logo_{f}.png"]
+        img = Image.new("RGBA", (logo.width + 16, logo.height + 16), background)
+        img.alpha_composite(logo, (8, 8))
+        frames.append(img.resize((img.width * scale, img.height * scale), Image.NEAREST).convert("RGB"))
+        durations.append(round(1000 / 14))
+    durations[-1] = 1500
+    out_dir.mkdir(parents=True, exist_ok=True)
+    frames[0].save(out_dir / "Logo.gif", save_all=True, append_images=frames[1:], duration=durations, loop=0,
+                   disposal=1)
+    frames[-1].save(out_dir / "Logo.png")
+
+
 def star(full: bool) -> Canvas:
     """Five-pointed star for the result screen: gold with a light upper half when earned, a dark hollow when not."""
     c = Canvas(16, 16)
@@ -2291,6 +2415,7 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/Generator_On.png": generator(True).to_image(),
         "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),
         "Sprites/UI/Star_Full.png": star(True).to_image(),
+        **{f"Sprites/UI/Logo_{f}.png": logo_frame(f).to_image() for f in range(LOGO_FRAMES)},
         "Sprites/Level/Exit_Pad.png": exit_pad(True).to_image(),
         "Sprites/Level/Exit_Pad_Locked.png": exit_pad(False).to_image(),
         "Sprites/UI/Star_Empty.png": star(False).to_image(),
@@ -2477,6 +2602,8 @@ def main() -> None:
         for name in ANIMATION_PREVIEWS:
             animation_preview(files, name, args.animations)
             print(f"Wrote animation preview {args.animations / name}.gif")
+        logo_preview(files, args.animations)
+        print(f"Wrote logo preview {args.animations / 'Logo.gif'}")
 
 
 if __name__ == "__main__":

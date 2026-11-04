@@ -122,7 +122,7 @@ namespace RushOps.Editor.Build
             Debug.Log($"[BuildPipelineMenu] Built {path} ({summary.totalSize / (1024 * 1024)} MB in {summary.totalTime:mm\\:ss})");
         }
 
-        // The test menu starts the build, so every level can be picked on the device until the main menu exists.
+        // The start scene with the logo comes first (issue #124); the test menu stays in the build for developers.
         private static string[] EnabledScenes()
         {
             var scenes = new System.Collections.Generic.List<string>();
@@ -133,7 +133,7 @@ namespace RushOps.Editor.Build
                     continue;
                 }
 
-                if (Path.GetFileNameWithoutExtension(scene.path) == Scenes.TestMenuSceneBuilder.SceneName)
+                if (Path.GetFileNameWithoutExtension(scene.path) == Scenes.BootSceneBuilder.SceneName)
                 {
                     scenes.Insert(0, scene.path);
                 }

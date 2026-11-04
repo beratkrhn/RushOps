@@ -10,6 +10,7 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - `Campaign`-Asset (`Data/Levels/Campaign.asset`): drei Inseln (Strand, düstere Stadt, Vulkan) mit je drei Plätzen, bisher nur Level 1-1. Die Freischaltregeln (`CampaignUnlocks`): nächstes Level, sobald das vorige geschafft ist, nächste Insel, sobald alle Level der vorigen geschafft sind.
 - `ScoreKeeper.BestMultiplier`: höchster Multiplikator im Level.
 - PlayMode-Tests speichern nur im Speicher (`SaveGameIsolation`) und verändern den eigenen Spielstand im Editor nicht.
+- **App-Start und Logo-Animation** (Issue #124, F-UI-01, NF-05): Neue Startszene `Boot`, die erste im Build. Das RUSHOPS-Logo (13 Frames aus `Tools/gen_pixelart.py`, Vorschau `docs/art/animations/Logo.gif`): Die Buchstaben von „RUSH“ schlagen einzeln weiß auf, dann „OPS“ mit Leuchtspur-Balken, danach läuft ein Lichtstreifen darüber. Das Logo hält kurz und blendet nach Schwarz ab, insgesamt höchstens 3 s; Tippen springt zum Abblenden. Werte in `Data/UI/IntroConfig.asset`. Während des Logos wird der Spielstand geladen. Danach geht es vorerst ins Testmenü, ab #125 ins Hauptmenü.
 - `docs/backlog/v0.5.0.md`: Stories für v0.5.0 (#122 bis #131).
 
 ## [0.4.0] – 2026-11-04
