@@ -4,14 +4,19 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+## [0.6.0] – 2026-11-04
+
 ### Hinzugefügt
 - **Kill-Gates ab Zone zählen** (Issue #147, F-LVL-03, Entscheidung P1): `KillGateCondition` hat das Feld „Count From Zone“. Ist eine Zone eingetragen, zählen nur Kills nach dem Betreten dieser Zone; Nuke- und Explosions-Kills zählen weiter mit, der Missions-Tracker zeigt die Kills ab Betreten. Ohne Zone bleibt es beim globalen Zählen ab Levelstart (Level 1-1 unverändert). Für Level-Builder gibt es `LevelPieceBuilder.CountKillsFromZone`.
 - **Level-Baukasten** (Issue #148, ADR 0010): Level werden als `LevelBlueprint` beschrieben (Wände, Trennwände mit Toren, Zonen, Wellen, Rätsel, Ausgang) und von `LevelBlueprintBuilder` geprüft, gebaut und in die `Campaign` eingetragen. Level 1-1 ist darauf umgestellt und kommt unverändert heraus. Tore können senkrecht in seitlichen Abzweigungen stehen (L3) und an Kills und Rätseln zugleich hängen (`GateConditionGroup`, L2); der Missions-Tracker zeigt dann beide Zeilen untereinander.
 - **Schwierigkeit pro Insel** (Entscheidung C3): ScriptableObject `LevelDifficulty` mit Wellendichte, Faktor auf Schalter-Zeitlimits und Zusatz-Haltezeit; Insel 1 neutral, Insel 2 Wellen 20 % dichter und +3 s Haltezeit, Insel 3 zusätzlich Schalter −20 %.
 - **Levelname auf der Inselkarte** (C11): unter den Sternen steht der Kurzname aus der `LevelDefinition`; Level 1-1 heißt „Strandbad“.
-- **Level 1-2 „Strandpromenade“** (Issue #149): fünf Zonen, alle Gegnertypen von Anfang an gemischt mit Schwerpunkt pro Zone (C4). Zone halten gleich am Start, vier Zeitschalter auf zwei Ebenen (Trennwand mit Durchgängen an beiden Enden), Kill-Gate „Strandbar“ (18 Kills ab Betreten der Zone, P1), Generator mit zwei Energiezellen hinter der Seebrücke, Schlussansturm vor dem Ausgang. Sterne ab 1800/3600 Punkten; steht auf der Karte und schaltet den Skin „Surfer“ frei.
+- **Level 1-2 „Strandpromenade“** (Issue #149): fünf Zonen, alle Gegnertypen von Anfang an gemischt mit Schwerpunkt pro Zone (C4). Zone halten gleich am Start, vier Zeitschalter auf zwei Ebenen (Trennwand mit Durchgängen an beiden Enden), Kill-Gate „Strandbar“ (18 Kills ab Betreten der Zone, P1), Generator mit zwei Energiezellen hinter der Seebrücke, Schlussansturm vor dem Ausgang. Sterne ab 1450/2000 Punkten; steht auf der Karte und schaltet den Skin „Surfer“ frei.
 - **Boss-Grundlage** (Issue #150, F-BOS-01, F-BOS-02, F-HUD-05, F-LVL-05): `BossDefinition` (Leben, Tempo, Kontaktschaden, 1000 Punkte, Perk-Schwellen), `Boss` läuft ohne Flow-Field direkt auf den Spieler zu (L5), ist immun gegen Nuke und Insta-Kill, nimmt Doppelschaden und zählt nicht zur Höchstzahl. `BossFight`: Betreten der Arena schließt die Tür hinter dem Spieler (C6), zeigt die Lebensleiste mit Namen oben über die Breite, wirft bei 66 % und 33 % Leben je einen Perk ohne Nuke und Insta-Kill (C9); der Sieg gibt die Punkte ohne Multiplikator und zeigt „Level geschafft!“. Boss-Arena als Baustein im Level-Baukasten (`LevelBoss`, Prüfung: Arena ohne Hindernisse, Platz hinter dem Tor). Testszene „Boss-Test“ im Testmenü mit Platzhalter-Boss (großer Brute).
 - **Boss Koloss und Level 1-3 „Leuchtturm“** (Issue #151, Lastenheft 2.4): Koloss als riesiger Brute per Skript (`Tools/gen_pixelart.py`, 128×128, 8 Richtungen; Laufen, Aufladen, Ansturm, Benommen, Treffer, Tod). Ablauf als reine Zustandslogik (`ColossusLogic`): verfolgen, 1 s sichtbar aufladen mit roter Linie am Boden in Ansturm-Richtung (L7), geradeaus stürmen bis zur Wand, 1,5 s benommen (C7); der Ansturm kostet wie jeder Kontakt 1 Herz. Werte in `Data/Bosses/Koloss.asset` (`ColossusDefinition`, 250 Leben für etwa 60 s, C5). Level 1-3: Kill-Gate „Steg“, drei Zeitschalter „Klippe“, dann die Arena; Sieg schaltet Insel 2 frei und gibt „Sandsturm“.
+
+### Geändert
+- **Sterne-Schwellen nach dem Spieltest gesenkt** (Issue #152): der Score lag am Gerät immer 300 bis 400 Punkte unter zwei Sternen. Level 1-1 jetzt 1150/1600 (vorher 1500/3000), 1-2 1450/2000 (vorher 1800/3600), 1-3 1150/1400 (vorher 1500/2200).
 
 ## [0.5.0] – 2026-11-04
 

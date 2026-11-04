@@ -14,5 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: Leuchtturm
   _sceneName: Level_1-3
-  _twoStarScore: 1500
-  _threeStarScore: 2200
+  _twoStarScore: 1150
+  _threeStarScore: 1400

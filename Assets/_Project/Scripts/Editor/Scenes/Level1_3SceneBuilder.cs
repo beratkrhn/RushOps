@@ -72,7 +72,7 @@ namespace RushOps.Editor.Scenes
                 Island = 0,
                 Slot = 2,
                 ThemePath = IslandThemes.StrandPath,
-                StarScores = new Vector2Int(1500, 2200),
+                StarScores = new Vector2Int(1150, 1400),
                 DifficultyPath = LevelDifficulties.Island1Path,
             };
             level.Walls.AddRange(Obstacles);
