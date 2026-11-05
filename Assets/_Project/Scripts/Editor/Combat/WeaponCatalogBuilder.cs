@@ -17,6 +17,7 @@ namespace RushOps.Editor.Combat
         public const string AssaultRiflePath = WeaponsDir + "/AssaultRifle.asset";
         public const string ShotgunPath = WeaponsDir + "/Shotgun.asset";
         public const string DualPistolsPath = WeaponsDir + "/DualPistols.asset";
+        public const string CatalogPath = WeaponsDir + "/WeaponCatalog.asset";
 
         private const string WeaponsDir = "Assets/_Project/Data/Weapons";
         private const string UiDir = "Assets/_Project/Art/Sprites/UI";
@@ -25,10 +26,14 @@ namespace RushOps.Editor.Combat
 
         private readonly struct Spec
         {
-            public Spec(string path, string name, float fireRate, int damage, int projectiles, float fan, float spread,
-                float range, float speed, bool alternate, string icon, string bullet, string sound)
+            public Spec(string path, string id, string name, string unlockLevel, string unlockHint, float fireRate,
+                int damage, int projectiles, float fan, float spread, float range, float speed, bool alternate,
+                string icon, string bullet, string sound)
             {
                 Path = path;
+                Id = id;
+                UnlockLevel = unlockLevel;
+                UnlockHint = unlockHint;
                 Name = name;
                 FireRate = fireRate;
                 Damage = damage;
@@ -44,6 +49,9 @@ namespace RushOps.Editor.Combat
             }
 
             public string Path { get; }
+            public string Id { get; }
+            public string UnlockLevel { get; }
+            public string UnlockHint { get; }
             public string Name { get; }
             public float FireRate { get; }
             public int Damage { get; }
@@ -58,25 +66,26 @@ namespace RushOps.Editor.Combat
             public string Sound { get; }
         }
 
-        // Start values (W2, W7): about 60 damage per second each.
+        // Start values (W2, W7): about 60 damage per second each. Order of the selection: start weapon, then in the
+        // order of the bosses that unlock them (W4: Koloss, Brutmutter, Mega-Boomer).
         private static readonly Spec[] Specs =
         {
-            new Spec(PistolPath, "Pistole", 6f, 10, 1, 0f, 0f, 10f, 14f, false, "Weapon_Pistol.png", null, "Shot.wav"),
-            // Faster than the pistol, a little spread, a bit further.
-            new Spec(AssaultRiflePath, "Sturmgewehr", 8.5f, 7, 1, 0f, 4f, 11f, 16f, false,
-                "Weapon_AssaultRifle.png", "Bullet_Rifle.png", "ShotRifle.wav"),
+            new Spec(PistolPath, "Pistol", "Pistole", "", "", 6f, 10, 1, 0f, 0f, 10f, 14f, false, "Weapon_Pistol.png", null, "Shot.wav"),
             // Slow, five pellets in a fan, short range.
-            new Spec(ShotgunPath, "Schrotflinte", 1.2f, 10, 5, 30f, 2f, 5f, 13f, false,
-                "Weapon_Shotgun.png", "Bullet_Pellet.png", "ShotShotgun.wav"),
+            new Spec(ShotgunPath, "Shotgun", "Schrotflinte", "Level_1-3", "Besiege den Koloss", 1.2f, 10, 5, 30f, 2f, 5f,
+                13f, false, "Weapon_Shotgun.png", "Bullet_Pellet.png", "ShotShotgun.wav"),
+            // Faster than the pistol, a little spread, a bit further.
+            new Spec(AssaultRiflePath, "AssaultRifle", "Sturmgewehr", "Level_2-3", "Besiege die Brutmutter", 8.5f, 7, 1, 0f,
+                4f, 11f, 16f, false, "Weapon_AssaultRifle.png", "Bullet_Rifle.png", "ShotRifle.wav"),
             // Very fast, little damage, left and right in turn.
-            new Spec(DualPistolsPath, "Dual-Pistolen", 10f, 6, 1, 0f, 1f, 9f, 15f, true,
-                "Weapon_DualPistols.png", "Bullet_Dual.png", "ShotDual.wav"),
+            new Spec(DualPistolsPath, "DualPistols", "Dual-Pistolen", "Level_3-3", "Besiege den Mega-Boomer", 10f, 6, 1, 0f,
+                1f, 9f, 15f, true, "Weapon_DualPistols.png", "Bullet_Dual.png", "ShotDual.wav"),
         };
 
         [MenuItem("RushOps/Daten/Waffen erzeugen")]
         public static void Build()
         {
-            All();
+            Catalog();
         }
 
         /// <summary>The weapon asset at <paramref name="path"/>, created or updated first.</summary>
@@ -95,7 +104,7 @@ namespace RushOps.Editor.Combat
             throw new System.ArgumentException($"No weapon at {path}");
         }
 
-        /// <summary>Creates or updates all weapons; returns them in the order pistol, rifle, shotgun, dual pistols.</summary>
+        /// <summary>Creates or updates all weapons; returns them in the order of the selection, start weapon first.</summary>
         public static WeaponDefinition[] All()
         {
             var weapons = new WeaponDefinition[Specs.Length];
@@ -106,6 +115,25 @@ namespace RushOps.Editor.Combat
 
             AssetDatabase.SaveAssets();
             return weapons;
+        }
+
+        /// <summary>The catalog of all weapons (issue #176), created or updated with <see cref="All"/>.</summary>
+        public static WeaponCatalog Catalog()
+        {
+            WeaponDefinition[] weapons = All();
+            var catalog = ArenaTestSceneBuilder.LoadOrCreateConfig<WeaponCatalog>(CatalogPath);
+            var serialized = new SerializedObject(catalog);
+            SerializedProperty list = serialized.FindProperty("_weapons");
+            list.arraySize = weapons.Length;
+            for (int i = 0; i < weapons.Length; i++)
+            {
+                list.GetArrayElementAtIndex(i).objectReferenceValue = weapons[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(catalog);
+            AssetDatabase.SaveAssets();
+            return catalog;
         }
 
         private static WeaponDefinition CreateOrUpdate(Spec spec)
@@ -126,6 +154,10 @@ namespace RushOps.Editor.Combat
                 serialized.FindProperty("_alternateMuzzles").boolValue = spec.Alternate;
             }
 
+            // Id and unlock are part of the design (W4), not tuning: always as specified.
+            serialized.FindProperty("_id").stringValue = spec.Id;
+            serialized.FindProperty("_unlockLevel").stringValue = spec.UnlockLevel;
+            serialized.FindProperty("_unlockHint").stringValue = spec.UnlockHint;
             serialized.FindProperty("_icon").objectReferenceValue = LoadSprite($"{UiDir}/{spec.Icon}");
             serialized.FindProperty("_wallSprite").objectReferenceValue = LoadSprite($"{LevelDir}/Wall{spec.Icon}");
             serialized.FindProperty("_projectileSprite").objectReferenceValue =

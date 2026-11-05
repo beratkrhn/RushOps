@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fdf9f9d1df343199fe415f6afe9fcf2, type: 3}
   m_Name: AssaultRifle
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Combat.WeaponDefinition
+  _id: AssaultRifle
+  _unlockLevel: Level_2-3
+  _unlockHint: Besiege die Brutmutter
   _displayName: Sturmgewehr
   _fireRate: 8.5
   _damage: 7

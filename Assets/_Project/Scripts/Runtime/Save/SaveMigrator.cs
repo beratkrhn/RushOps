@@ -38,7 +38,7 @@ namespace RushOps.Save
         }
 
         /// <summary>The migrator of this build: <see cref="SaveData.CurrentVersion"/> and its steps.</summary>
-        public static SaveMigrator Default => new SaveMigrator(SaveData.CurrentVersion);
+        public static SaveMigrator Default => new SaveMigrator(SaveData.CurrentVersion, new SaveMigrationV1ToV2());
 
         /// <summary>Version this build writes.</summary>
         public int CurrentVersion { get; }

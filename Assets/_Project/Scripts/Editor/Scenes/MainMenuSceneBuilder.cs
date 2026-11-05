@@ -16,7 +16,8 @@ namespace RushOps.Editor.Scenes
     /// Builds the <c>MainMenu</c> scene (issue #125, F-UI-02): logo, the player in the standard skin and the buttons
     /// „Story Mode“, „Spielerauswahl“ and „Einstellungen“ inside the safe area; the version and, in development
     /// builds, a button to the test menu at the bottom. „Spielerauswahl“ opens the skin carousel (#130,
-    /// <see cref="SkinSelectionBuilder"/>), „Einstellungen“ the settings screen (#126, <see cref="SettingsScreenBuilder"/>).
+    /// <see cref="SkinSelectionBuilder"/>), „Waffenwahl“ the weapon carousel (#176, <see cref="WeaponSelectionBuilder"/>),
+    /// „Einstellungen“ the settings screen (#126, <see cref="SettingsScreenBuilder"/>).
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.MainMenuSceneBuilder.Build</c>
     /// </summary>
     public static class MainMenuSceneBuilder
@@ -64,12 +65,14 @@ namespace RushOps.Editor.Scenes
             var menu = root.AddComponent<MainMenu>();
             var settings = root.AddComponent<SettingsMenu>();
             var skins = root.AddComponent<SkinCarousel>();
+            var weapons = root.AddComponent<WeaponCarousel>();
             CreateSprite("Logo", safeArea, ArenaTestSceneBuilder.LoadUiSprite(LogoFile), new Vector2(0f, LogoY));
             MenuFigure figure = CreateFigure(safeArea);
 
             CreateButton("StoryButton", safeArea, font, "Story Mode", 0, true, true, menu.StartStory);
             CreateButton("SkinsButton", safeArea, font, "Spielerauswahl", 1, false, true, skins.Open);
-            CreateButton("SettingsButton", safeArea, font, "Einstellungen", 2, false, true, settings.Open);
+            CreateButton("WeaponsButton", safeArea, font, "Waffenwahl", 2, false, true, weapons.Open);
+            CreateButton("SettingsButton", safeArea, font, "Einstellungen", 3, false, true, settings.Open);
 
             Text version = ArenaTestSceneBuilder.CreateText(
                 "Version", safeArea, font, "v0.0.0", 1, new Vector2(140f, FooterY));
@@ -86,6 +89,7 @@ namespace RushOps.Editor.Scenes
             var audio = new GameObject("Audio");
             ArenaTestSceneBuilder.CreateAudio(audio);
             SkinSelectionBuilder.Create(safeArea, font, skins, figure);
+            WeaponSelectionBuilder.Create(safeArea, font, weapons);
             SettingsScreenBuilder.Create(safeArea, font, settings, audio.GetComponent<RushOps.Audio.AudioVolumes>());
             ArenaTestSceneBuilder.AddClickSounds(audio.GetComponent<RushOps.Audio.UiClickSound>());
 

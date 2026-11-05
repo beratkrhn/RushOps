@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using RushOps.Combat;
 using RushOps.Levels;
 using RushOps.Scoring;
 using RushOps.Skins;
@@ -23,12 +24,18 @@ namespace RushOps.Save
         [SerializeField] private LevelKills _kills;
         [Tooltip("Skins unlocked after the level and on death (issue #128).")]
         [SerializeField] private SkinCatalog _skins;
+        [Tooltip("Weapons unlocked by beating a boss (issue #176).")]
+        [SerializeField] private WeaponCatalog _weapons;
 
         private readonly LevelStatsTracker _stats = new LevelStatsTracker();
         private readonly List<SkinDefinition> _newSkins = new List<SkinDefinition>();
+        private readonly List<WeaponDefinition> _newWeapons = new List<WeaponDefinition>();
 
         /// <summary>Raised before saving when skins were unlocked, with the new skins in catalog order.</summary>
         public event Action<IReadOnlyList<SkinDefinition>> SkinsUnlocked;
+
+        /// <summary>Raised after „Level geschafft!“ with the weapons the level unlocked (issue #176).</summary>
+        public event Action<IReadOnlyList<WeaponDefinition>> WeaponsUnlocked;
 
         private void OnEnable()
         {
@@ -65,6 +72,7 @@ namespace RushOps.Save
             data.Stats.LevelsCompleted++;
             CommitStats(data);
             UnlockSkins(data);
+            UnlockWeapons(data);
             _save.Save();
         }
 
@@ -110,6 +118,15 @@ namespace RushOps.Save
             if (_skins != null && _skins.UnlockNew(data, _newSkins) > 0)
             {
                 SkinsUnlocked?.Invoke(_newSkins);
+            }
+        }
+
+        private void UnlockWeapons(SaveData data)
+        {
+            _newWeapons.Clear();
+            if (_weapons != null && _weapons.UnlockNew(data, _newWeapons) > 0)
+            {
+                WeaponsUnlocked?.Invoke(_newWeapons);
             }
         }
 
