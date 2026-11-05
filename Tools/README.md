@@ -17,5 +17,6 @@ Nach dem Erzeugen setzt Unity die Importeinstellungen automatisch (`PixelArtImpo
 |---|---|
 | `unity-check.sh` | Kompilieren (Warnungen = Fehler), EditMode- und PlayMode-Tests (ADR 0007) |
 | `unity-perf.sh` | Leistungsmessung im Editor (Issue #189): Stress-Szene, je ein Level pro Insel, Hauptmenü; gibt die Tabelle für `docs/testprotokolle/performance.md` aus. Unity muss geschlossen sein |
+| `store-screenshots.sh` | Store-Screenshots (Issue #192): fünf Szenen in 1320×2868 nach `docs/store/screenshots/`. Unity muss geschlossen sein; im offenen Editor „RushOps → Store → Screenshots aufnehmen“ |
 | `ios-install.sh` | Development-Build auf das iPhone (Issue #13) |
 | `next-issue.sh` | Nächstes Issue nach der Regel in `CLAUDE.md` |
