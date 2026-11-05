@@ -55,6 +55,26 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Level2_1_FollowsLevelDesignRules()
+        {
+            CollectionAssert.IsEmpty(Level2_1SceneBuilder.Validate());
+        }
+
+        [Test]
+        public void Level2_1_HasSixZones_ASideBranch_AndAGateWithTwoPuzzles()
+        {
+            LevelBlueprint level = Level2_1SceneBuilder.Blueprint;
+
+            Assert.AreEqual(6, level.Zones.Count, "decision C2: six zones on island 2");
+            Assert.That(level.Gates, Has.Some.Matches<LevelGate>(g => g.Vertical), "decision L3: side branch");
+            Assert.That(level.Gates, Has.Some.Matches<LevelGate>(g => g.Puzzles.Count >= 2), "decisions L1, L2");
+            Assert.AreEqual(LevelDifficulties.Island2Path, level.DifficultyPath, "decision C3");
+            Assert.AreEqual(IslandThemes.StadtPath, level.ThemePath);
+            Assert.AreEqual(1, level.Island);
+            Assert.AreEqual(0, level.Slot);
+        }
+
+        [Test]
         public void BossTest_FollowsLevelDesignRules()
         {
             CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(BossTestSceneBuilder.Blueprint));

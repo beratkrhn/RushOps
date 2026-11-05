@@ -4,6 +4,12 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 
 ## [Unreleased]
 
+### Hinzugefügt
+- **Level 2-1 „Hinterhöfe“** (Issue #153): erstes Level der düsteren Stadt mit sechs Zonen (C2) und Stellschrauben von Insel 2 (Wellen 20 % dichter, Haltezeit +3 s, C3; `Data/Levels/Difficulty_Insel2.asset`). Der Weg biegt nach Zone 2 seitlich in den „Garagenhof“ und „Müllplatz“ ab und kommt danach zurück (L3, erste senkrechte Tore). Kill-Gate „Hinterhof“ (12 Kills ab Levelstart), drei Zeitschalter in der „Gasse“, im Garagenhof hängt das Tor an Zone halten **und** drei Zeitschaltern zugleich (L1, L2), Generator mit zwei Energiezellen am Müllplatz, Kill-Gate „Hinterhaus“ (20 Kills ab Betreten, P1), Schlussansturm in der „Durchfahrt“. Sterne ab 1700/2400 Punkten; steht auf der Karte und schaltet den Skin „Nachtwache“ frei.
+
+### Geändert
+- **Missions-Tracker bei zwei Rätseln an einem Tor**: ein laufender Schalter-Countdown hat Vorrang vor dem anderen Rätsel (`PuzzleFocus`, F-RAE-04); vorher war nur das erste ungelöste Rätsel zu sehen.
+
 ## [0.6.0] – 2026-11-04
 
 ### Hinzugefügt
