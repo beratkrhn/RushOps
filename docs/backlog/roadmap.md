@@ -64,16 +64,21 @@ Pfützen, teilt sich bei halber Gesundheit in zwei Boomer.
 
 ## v1.0.0 – Release
 
+In Stories zerlegt: [`v1.0.0.md`](v1.0.0.md) (#189 bis #196), Entscheidungen R1 bis R11 in [`design-fragen.md`](design-fragen.md#v100--release). Die Epics #52 bis #54 sind damit erledigt. Erscheint nur im App Store für das iPhone (R2, R10); die Spieltests von v0.7.0, v0.8.0 und v1.1.0 gehen im Gesamtspieltest von v1.0.0 auf (R9).
+
 ### Performance und Gerätetests (#52)
-Profiling auf schwächeren Geräten, Testmatrix iOS und Android, Akkuverbrauch, Speicher.
+Profiling im Editor mit Stresslevel und Frame-Budget, Messung auf dem iPhone, Akkuverbrauch, Speicher.
 
 ### Store-Vorbereitung (#53)
-Bundle-ID, App-Icons, Screenshots, Store-Texte, Datenschutzerklärung, Altersfreigabe, Mindestversionen von iOS und Android.
+App-Icon, Screenshots, Store-Texte, Datenschutzerklärung, Altersfreigabe.
 
 ### Release 1.0.0 (#54)
-Finale Builds, Einreichung in App Store und Google Play, Tag `v1.0.0`.
+Release-Build, TestFlight, Gesamtspieltest, Einreichung im App Store, Tag `v1.0.0`.
 
 ## Nach v1.0.0
+
+### Musik (#42)
+Ein Menütrack und je ein loopbarer Action-Track pro Insel, per Skript erzeugt (G11, G12). Nach 1.0 verschoben (R1), noch `needs-design`.
 
 ### Waffensystem (#171)
 In Stories zerlegt: [`v1.1.0.md`](v1.1.0.md). Entscheidungen W1 bis W10 in [`design-fragen.md`](design-fragen.md#waffen).
