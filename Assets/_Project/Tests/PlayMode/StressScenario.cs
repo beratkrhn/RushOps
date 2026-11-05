@@ -63,17 +63,41 @@ namespace RushOps.Tests.PlayMode
         /// <summary>Puts the player into the arena of <see cref="StressScene"/>, which starts the fight.</summary>
         public IEnumerator EnterStressArena()
         {
-            var body = _player.GetComponent<Rigidbody2D>();
-            body.position = StressArenaPoint;
-            _player.position = StressArenaPoint;
+            Teleport(StressArenaPoint);
             yield return null;
             yield return null;
             Assert.IsNotNull(Fight, "the stress scene has no boss fight");
             Assert.IsTrue(Fight.IsRunning, "the fight did not start in the arena");
         }
 
-        /// <summary>Call once per frame: refills the hearts and aims at the boss, or straight up without one.</summary>
-        public void Tick()
+        /// <summary>Moves the player to <paramref name="position"/> (world units).</summary>
+        public void Teleport(Vector2 position)
+        {
+            var body = _player.GetComponent<Rigidbody2D>();
+            body.position = position;
+            _player.position = position;
+        }
+
+        /// <summary>Gives the player <paramref name="perkId"/> as if he had picked it up.</summary>
+        public void ApplyPerk(string perkId)
+        {
+            foreach (RushOps.Perks.PerkDefinition perk in Resources.FindObjectsOfTypeAll<RushOps.Perks.PerkDefinition>())
+            {
+                if (perk.Id == perkId)
+                {
+                    _player.GetComponent<RushOps.Perks.PlayerPerks>().Apply(perk);
+                    return;
+                }
+            }
+
+            Assert.Fail($"perk {perkId} is not loaded");
+        }
+
+        /// <summary>
+        /// Call once per frame: refills the hearts and aims at the boss, or straight up without one. With
+        /// <paramref name="fire"/> false the player lowers the gun.
+        /// </summary>
+        public void Tick(bool fire = true)
         {
             if (_health == null)
             {
@@ -81,6 +105,12 @@ namespace RushOps.Tests.PlayMode
             }
 
             _health.Heal(_health.Max);
+            if (!fire)
+            {
+                _aim.AimInput = Vector2.zero;
+                return;
+            }
+
             Vector2 aim = Vector2.up;
             if (Fight != null && Fight.IsRunning)
             {
