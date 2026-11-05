@@ -45,6 +45,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Scores for two and three stars of a new level definition.</summary>
         public Vector2Int StarScores { get; set; } = new Vector2Int(1500, 3000);
 
+        /// <summary>Extra line on „Level geschafft!“, e.g. after the last boss (decision C12); null = none.</summary>
+        public string CompletionMessage { get; set; }
+
         /// <summary>Difficulty asset path; null uses the values of the waves and puzzle configs unchanged.</summary>
         public string DifficultyPath { get; set; }
 

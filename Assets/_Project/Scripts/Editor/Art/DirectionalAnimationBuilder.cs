@@ -87,6 +87,14 @@ namespace RushOps.Editor.Art
 
         public const string BrutmutterDeathPath = AnimationsDir + "/Brutmutter_Death.asset";
 
+        public const string MegaBoomerWalkPath = AnimationsDir + "/MegaBoomer_Walk.asset";
+
+        public const string MegaBoomerSplitPath = AnimationsDir + "/MegaBoomer_Split.asset";
+
+        public const string MegaBoomerHitPath = AnimationsDir + "/MegaBoomer_Hit.asset";
+
+        public const string MegaBoomerDeathPath = AnimationsDir + "/MegaBoomer_Death.asset";
+
         private const string AnimationsDir = "Assets/_Project/Data/Animations";
 
         // Start values for new hit and death assets; tuned values in existing assets are kept.
@@ -97,6 +105,9 @@ namespace RushOps.Editor.Art
         // Four frames over a birth of about 0.6 s (issue #155).
         private const float BrutmutterBirthFramesPerSecond = 7f;
         private const float BrutmutterWalkFramesPerSecond = 6f;
+        // Four frames over a split of about 0.7 s (issue #159).
+        private const float MegaBoomerSplitFramesPerSecond = 6f;
+        private const float MegaBoomerWalkFramesPerSecond = 6f;
         private const float PlayerWalkFramesPerSecond = 10f;
         // Only the order of the frames matters: the animator stretches the somersault to the dash time.
         private const float PlayerDashFramesPerSecond = 30f;
@@ -133,6 +144,10 @@ namespace RushOps.Editor.Art
             CreateOrUpdate(BrutmutterBirthPath, SpritesDir + "/Enemies", "Brutmutter_Birth", true, BrutmutterBirthFramesPerSecond);
             CreateOrUpdate(BrutmutterHitPath, SpritesDir + "/Enemies", "Brutmutter_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(BrutmutterDeathPath, SpritesDir + "/Enemies", "Brutmutter_Death", false, DeathFramesPerSecond);
+            CreateOrUpdate(MegaBoomerWalkPath, SpritesDir + "/Enemies", "MegaBoomer_Walk", true, MegaBoomerWalkFramesPerSecond);
+            CreateOrUpdate(MegaBoomerSplitPath, SpritesDir + "/Enemies", "MegaBoomer_Split", false, MegaBoomerSplitFramesPerSecond);
+            CreateOrUpdate(MegaBoomerHitPath, SpritesDir + "/Enemies", "MegaBoomer_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(MegaBoomerDeathPath, SpritesDir + "/Enemies", "MegaBoomer_Death", false, DeathFramesPerSecond);
             AssetDatabase.SaveAssets();
         }
 

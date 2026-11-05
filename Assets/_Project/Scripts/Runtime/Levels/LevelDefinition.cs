@@ -21,6 +21,9 @@ namespace RushOps.Levels
         [Tooltip("Score needed for three stars.")]
         [SerializeField, Min(0)] private int _threeStarScore = 2500;
 
+        [Tooltip("Extra line on „Level geschafft!“, e.g. „Alle Inseln geschafft!“ after the last boss (C12); empty = none.")]
+        [SerializeField] private string _completionMessage = "";
+
         /// <summary>Name shown to the player.</summary>
         public string DisplayName => _displayName;
 
@@ -32,6 +35,9 @@ namespace RushOps.Levels
 
         /// <summary>Score needed for three stars.</summary>
         public int ThreeStarScore => _threeStarScore;
+
+        /// <summary>Extra line on the done screen; empty if none.</summary>
+        public string CompletionMessage => _completionMessage ?? string.Empty;
 
         /// <summary>Stars for finishing this level with <paramref name="score"/>, 1 to 3.</summary>
         public int StarsFor(int score)

@@ -31,6 +31,8 @@ namespace RushOps.UI
         [SerializeField] private Text _doneTime;
         [Tooltip("Shows the score needed for the next star.")]
         [SerializeField] private Text _doneNextStar;
+        [Tooltip("Extra line of the level, e.g. „Alle Inseln geschafft!“ (C12); hidden if the level has none.")]
+        [SerializeField] private Text _doneMessage;
         [SerializeField] private Image[] _stars = System.Array.Empty<Image>();
         [SerializeField] private Sprite _starFull;
         [SerializeField] private Sprite _starEmpty;
@@ -54,6 +56,9 @@ namespace RushOps.UI
         /// <summary>Stars shown on the done screen; 0 before.</summary>
         public int StarsShown { get; private set; }
 
+        /// <summary>Extra line shown on the done screen; empty if none.</summary>
+        public string MessageShown => _doneMessage != null && _doneMessage.gameObject.activeSelf ? _doneMessage.text : string.Empty;
+
         /// <summary>The level this scene plays.</summary>
         public LevelDefinition Level => _level;
 
@@ -73,6 +78,13 @@ namespace RushOps.UI
             SetText(_doneNextStar, _level != null
                 ? ResultText.NextStar(StarsShown, _level.TwoStarScore, _level.ThreeStarScore)
                 : string.Empty);
+            string message = _level != null ? _level.CompletionMessage : string.Empty;
+            SetText(_doneMessage, message);
+            if (_doneMessage != null)
+            {
+                _doneMessage.gameObject.SetActive(!string.IsNullOrEmpty(message));
+            }
+
             for (int i = 0; i < _stars.Length; i++)
             {
                 if (_stars[i] != null)

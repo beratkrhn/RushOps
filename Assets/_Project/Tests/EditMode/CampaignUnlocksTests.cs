@@ -181,6 +181,10 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual("Aschefeld", campaign.LevelAt(2, 0).DisplayName);
             Assert.AreEqual("Level_3-2", campaign.LevelAt(2, 1).SceneName);
             Assert.AreEqual("Lavastrom", campaign.LevelAt(2, 1).DisplayName);
+            Assert.AreEqual("Level_3-3", campaign.LevelAt(2, 2).SceneName);
+            Assert.AreEqual("Krater", campaign.LevelAt(2, 2).DisplayName);
+            Assert.AreEqual("Alle Inseln geschafft!", campaign.LevelAt(2, 2).CompletionMessage, "decision C12");
+            Assert.AreEqual(string.Empty, campaign.LevelAt(1, 2).CompletionMessage);
             Assert.IsTrue(campaign.Unlocks.IsLevelUnlocked(0, 0, new ProgressData()));
         }
     }

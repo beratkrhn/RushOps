@@ -98,7 +98,7 @@ Jede Insel endet mit einem Boss im dritten Level. Bosse folgen ebenfalls dem Kon
 |---|---|---|
 | 1 | **Koloss** | Riesiger Brute. Lädt sich sichtbar auf und stürmt dann geradeaus durch den Raum. Lehrt das Timing des Dash. |
 | 2 | **Brutmutter** | Langsam, spawnt laufend Runner. Der Spieler muss Spawns kontrollieren und gleichzeitig Schaden machen. |
-| 3 | **Mega-Boomer** | Hinterlässt explosive Pfützen. Teilt sich bei halber Gesundheit in zwei kleinere Boomer. |
+| 3 | **Mega-Boomer** | Hinterlässt Pfützen, die 1 s aufglühen und danach bei Kontakt 1 Herz kosten; nach 6 s sind sie weg, sie explodieren nicht (C9b). Teilt sich bei halber Gesundheit in zwei kleine Bosse mit je der halben Restgesundheit; eine gemeinsame Lebensleiste, beide müssen fallen (C9a). |
 
 | ID | Anforderung | Prio |
 |---|---|---|

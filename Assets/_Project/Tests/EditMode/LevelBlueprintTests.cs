@@ -150,6 +150,21 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Level3_3_FollowsLevelDesignRules_WithMegaBoomerAfterTwoZones()
+        {
+            CollectionAssert.IsEmpty(Level3_3SceneBuilder.Validate());
+            LevelBlueprint level = Level3_3SceneBuilder.Blueprint;
+            Assert.AreEqual(3, level.Zones.Count, "decision C6: two short zones, then the arena");
+            Assert.AreEqual(typeof(RushOps.Bosses.MegaBoomerDefinition), level.Boss.DefinitionType);
+            Assert.IsNotNull(level.Boss.Connect, "the halves must join the fight");
+            Assert.AreEqual("Alle Inseln geschafft!", level.CompletionMessage, "decision C12");
+            Assert.AreEqual(LevelDifficulties.Island3Path, level.DifficultyPath, "decision C3");
+            Assert.AreEqual(IslandThemes.VulkanPath, level.ThemePath);
+            Assert.AreEqual(2, level.Island);
+            Assert.AreEqual(2, level.Slot);
+        }
+
+        [Test]
         public void BossTest_FollowsLevelDesignRules()
         {
             CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(BossTestSceneBuilder.Blueprint));

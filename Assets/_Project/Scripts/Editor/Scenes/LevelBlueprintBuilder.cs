@@ -30,6 +30,7 @@ namespace RushOps.Editor.Scenes
             ArenaTestSceneBuilder.BuildScene(
                 blueprint.ScenePath, blueprint.Layout, false, arena => AddObjects(blueprint, arena), blueprint.DisplayName,
                 blueprint.StarScores, blueprint.ThemePath);
+            SetCompletionMessage(blueprint);
             AddToCampaign(blueprint);
         }
 
@@ -404,6 +405,21 @@ namespace RushOps.Editor.Scenes
             return waves != null
                 ? ArenaTestSceneBuilder.LoadOrCreateWaves(waves.Path, w => waves.Configure(w, enemies))
                 : null;
+        }
+
+        private static void SetCompletionMessage(LevelBlueprint blueprint)
+        {
+            var level = AssetDatabase.LoadAssetAtPath<LevelDefinition>($"{LevelsDir}/{blueprint.SceneName}.asset");
+            if (level == null)
+            {
+                return;
+            }
+
+            var serialized = new SerializedObject(level);
+            serialized.FindProperty("_completionMessage").stringValue = blueprint.CompletionMessage ?? string.Empty;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(level);
+            AssetDatabase.SaveAssets();
         }
 
         // Puts the level definition into its slot of the campaign, so the island map shows it (F-UI-06).
