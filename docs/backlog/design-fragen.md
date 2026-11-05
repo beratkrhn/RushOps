@@ -68,6 +68,20 @@ Beantwortet; „V“ heißt „Vorschlag übernommen“. Umgesetzt in [`v0.6.0.m
 | C11 | 3 bis 11 | Haben Level einen Namen auf der Karte (z. B. „1-2 Strandpromenade“) oder nur die Nummer? | Nummer und kurzer Name; Namen schlage ich mit den Leveln vor |V|
 | C12 | 11 | Was passiert nach dem Sieg über den Mega-Boomer (Ende der Kampagne)? | „Alle Inseln geschafft!“ auf dem Ergebnisbildschirm, danach Karte; kein Abspann in v0.6.0 |V|
 
+## Waffen
+
+Fragen zum Epic #171 (Lastenheft F-SPF-05, Abschnitt 8). Heute gibt es eine Waffe mit 6 Schuss/s und Schaden 1. Bosse und Sterne-Schwellen sind darauf abgestimmt.
+
+| # | Epic | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|---|
+| W1 | #171 | Kommen weitere Waffen vor oder nach 1.0? | Nach 1.0 als v1.1.0; die Kampagne ist mit einer Waffe fertig abgestimmt, neue Waffen würden Bosse und Sterne verschieben | |
+| W2 | #171 | Welche Waffen gibt es? | Drei neue zur Startwaffe: Sturmgewehr (schneller, etwas Streuung), Schrotflinte (langsam, 5 Kugeln im Fächer, kurze Reichweite), Dual-Pistolen (abwechselnd links und rechts, sehr schnell, wenig Schaden) | |
+| W3 | #171 | Wodurch unterscheiden sich die Waffen? | Nur Feuerrate, Schaden, Streuung, Kugeln pro Schuss, Reichweite und Klang; kein Nachladen, keine Munition (passt zum Auto-Feuer, F-STE-02) | |
+| W4 | #171 | Wie werden Waffen freigeschaltet? | Je eine Waffe durch den Sieg über einen Boss (Koloss, Brutmutter, Mega-Boomer) | |
+| W5 | #171 | Wie wählt man die Waffe? | Vor dem Level im Menü, ähnlich dem Skin-Karussell; die Wahl wird gespeichert. Kein Wechsel im Level | |
+| W6 | #171 | Gibt es Waffen auch als Pickup im Level (zeitlich begrenzt, wie ein Perk)? | Nein; Perks bleiben der einzige Pickup | |
+| W7 | #171 | Werden Bosse und Sterne-Schwellen pro Waffe abgestimmt? | Nein; alle Waffen haben etwa denselben Schaden pro Sekunde wie die Startwaffe (etwa 6) und unterscheiden sich im Spielgefühl, nicht in der Stärke | |
+
 ## Aus Level 1-1 (vor dem Spieltest)
 
 | # | Frage | Vorschlag | Entscheidung |

@@ -72,3 +72,9 @@ Bundle-ID, App-Icons, Screenshots, Store-Texte, Datenschutzerklärung, Altersfre
 
 ### Release 1.0.0 (#54)
 Finale Builds, Einreichung in App Store und Google Play, Tag `v1.0.0`.
+
+## Nach v1.0.0
+
+### Waffensystem (#171)
+Weitere Waffentypen (z. B. Sturmgewehr, MP, Dual-Pistolen), freigeschaltet über den Level-Fortschritt, jeweils mit eigenem Schussgeräusch (Lastenheft F-SPF-05, Abschnitt 8).
+*Offen:* Fragen W1 bis W7 in [`design-fragen.md`](design-fragen.md#waffen). Die Einordnung nach v1.0.0 ist ein Vorschlag (W1).
