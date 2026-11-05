@@ -112,6 +112,44 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Level3_1_FollowsLevelDesignRules()
+        {
+            CollectionAssert.IsEmpty(Level3_1SceneBuilder.Validate());
+        }
+
+        [Test]
+        public void Level3_1_HasSixZones_AndAGateWithTwoPuzzles_OnIsland3()
+        {
+            LevelBlueprint level = Level3_1SceneBuilder.Blueprint;
+
+            Assert.AreEqual(6, level.Zones.Count, "decision C2: six zones");
+            Assert.That(level.Gates, Has.Some.Matches<LevelGate>(g => g.Puzzles.Count >= 2), "two puzzles at one gate");
+            Assert.AreEqual(LevelDifficulties.Island3Path, level.DifficultyPath, "decision C3");
+            Assert.AreEqual(IslandThemes.VulkanPath, level.ThemePath);
+            Assert.AreEqual(2, level.Island);
+            Assert.AreEqual(0, level.Slot);
+        }
+
+        [Test]
+        public void Level3_2_FollowsLevelDesignRules()
+        {
+            CollectionAssert.IsEmpty(Level3_2SceneBuilder.Validate());
+        }
+
+        [Test]
+        public void Level3_2_HasSixZones_AndTwoGatesWithTwoPuzzles_OnIsland3()
+        {
+            LevelBlueprint level = Level3_2SceneBuilder.Blueprint;
+
+            Assert.AreEqual(6, level.Zones.Count, "decision C2: six zones");
+            Assert.AreEqual(2, level.Gates.FindAll(g => g.Puzzles.Count >= 2).Count);
+            Assert.AreEqual(LevelDifficulties.Island3Path, level.DifficultyPath, "decision C3");
+            Assert.AreEqual(IslandThemes.VulkanPath, level.ThemePath);
+            Assert.AreEqual(2, level.Island);
+            Assert.AreEqual(1, level.Slot);
+        }
+
+        [Test]
         public void BossTest_FollowsLevelDesignRules()
         {
             CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(BossTestSceneBuilder.Blueprint));
