@@ -268,7 +268,7 @@ Alle Werte sind *Startwerte*.
 
 ## 8. Spätere Erweiterungen
 
-- **Waffensystem**: weitere Waffentypen (z. B. Sturmgewehr, MP, Dual-Pistolen), freigeschaltet über den Level-Fortschritt, jeweils mit eigenem Schussgeräusch.
+- **Waffensystem** (v1.1.0, Entscheidungen W1 bis W10): Sturmgewehr, Schrotflinte und Dual-Pistolen zur Startwaffe, jeweils mit eigenem Schussgeräusch. Je eine Waffe wird durch einen Bosssieg freigeschaltet und vor dem Level gewählt. Im Level hängen Waffen an festen Stellen an der Wand und können aufgehoben werden (zwei Slots, Tausch-Button). Kein Nachladen, keine Munition; alle Waffen haben etwa denselben Schaden pro Sekunde.
 - **Skins mit Modifikatoren** (z. B. Tempo, Feuerrate).
 - Weitere Inseln und Gegnertypen.
 - Vibration (Haptik) bei Treffern und Explosionen.
