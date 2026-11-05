@@ -32,7 +32,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Projectiles/Bullet_DoubleDamage.png 16x16, red and thicker, during double damage (issue #25)
   Sprites/Projectiles/Bullet_InstaKill.png 16x16, pale and longer, during insta-kill (issue #25)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X) from the centre (issue #107)
-  Sprites/Weapons/Pistol.png               16x16, the player's pistol pointing right (+X), grip at the centre
+  Sprites/Player/Player_Idle_<DIR>.png     64x64, the imported figure (Tools/characters/Player) with the pistol in hand
+  Sprites/Player/Player_Muzzles.json       muzzle of that pistol per direction, in units from the feet
   Sprites/Effects/HitSpark_<F>.png         16x16, 3 frames of sparks flying towards +X (issue #107)
   Sprites/Effects/DeathSplat_<F>.png       32x32, 4 frames of blood flying apart when an enemy dies (issue #107)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
@@ -1091,13 +1092,129 @@ def player_roll_frames(idle: Canvas, direction: int) -> list[Canvas]:
     return frames
 
 
+# --- The player's pistol, drawn into the idle poses ---------------------------------
+# The imported figure (Tools/characters/Player) is the source; armed() puts the pistol into the hand on the facing
+# side, pointing in the facing direction, so every derived frame and skin holds it. Keys: o outline, l/m slide,
+# n muzzle, G grip anchor, b/B grip. The grip stays under the fingers (hand pixels win over grip pixels).
+PLAYER_SOURCE_DIR = ROOT / "Tools/characters/Player"
+PLAYER_MUZZLES_PATH = ART_DIR / "Sprites/Player/Player_Muzzles.json"
+PISTOL_KEYS = {"o": "outline", "l": "slate_5", "m": "slate_3", "n": "night", "G": "brown_1", "b": "brown_1",
+               "B": "brown_0"}
+PISTOL_GRIP_KEYS = {"G", "b", "B"}
+HAND_COLOURS = {"clay", "apricot"}
+PISTOL_E = [
+    "oooooooooooo",
+    "olllllllllmo",
+    "ommmmmmmmmmn",
+    "ooGbmooooooo",
+    ".obBo.......",
+    ".oooo.......",
+]
+PISTOL_NE = [
+    ".....oooo",
+    "....ollmn",
+    "...ollmoo",
+    "..ollmo..",
+    ".oGlmo...",
+    "obBoo....",
+    "ooo......",
+]
+PISTOL_SE = [
+    "oooo.....",
+    "oGllo....",
+    "obollmo..",
+    "oBooollmo",
+    "ooo..olmn",
+    "......ooo",
+]
+PISTOL_N = [
+    ".oo.",
+    "onmo",
+    "olmo",
+    "olmo",
+    "olmo",
+    "oGbo",
+    "oBbo",
+    "oooo",
+]
+PISTOL_S = [
+    "oooo",
+    "oGbo",
+    "oBbo",
+    "olmo",
+    "olmo",
+    "onno",
+    ".oo.",
+]
+
+
+def mirrored(pattern: list[str]) -> list[str]:
+    return [row[::-1] for row in pattern]
+
+
+# Pattern and the canvas cell of the grip anchor G per direction: the hand on the facing side.
+PISTOL_POSES = {
+    "E": (PISTOL_E, (31, 37)),
+    "NE": (PISTOL_NE, (42, 36)),
+    "N": (PISTOL_N, (43, 36)),
+    "NW": (mirrored(PISTOL_NE), (21, 36)),
+    "W": (mirrored(PISTOL_E), (32, 37)),
+    "SW": (mirrored(PISTOL_SE), (22, 36)),
+    "S": (PISTOL_S, (43, 39)),
+    "SE": (PISTOL_SE, (41, 36)),
+}
+
+
+def find_key(pattern: list[str], key: str) -> tuple[int, int]:
+    for y, row in enumerate(pattern):
+        x = row.find(key)
+        if x >= 0:
+            return x, y
+    raise ValueError(f"{key} missing in pistol pattern")
+
+
+def armed(idle: Canvas, direction: str) -> tuple[Canvas, tuple[int, int]]:
+    """The idle pose with the pistol in the hand, and the canvas cell of the muzzle."""
+    pattern, (ax, ay) = PISTOL_POSES[direction]
+    gx, gy = find_key(pattern, "G")
+    ox, oy = ax - gx, ay - gy
+    out = Canvas(idle.width, idle.height)
+    out.px = [row[:] for row in idle.px]
+    for y, row in enumerate(pattern):
+        for x, key in enumerate(row):
+            if key == ".":
+                continue
+            under = idle.get(ox + x, oy + y)
+            if under in HAND_COLOURS and (key in PISTOL_GRIP_KEYS or key == "o"):
+                continue
+            out.set(ox + x, oy + y, PISTOL_KEYS[key])
+    mx, my = find_key(pattern, "n")
+    return out, (ox + mx, oy + my)
+
+
+def player_source(direction: str) -> Canvas:
+    return canvas_from_image(Image.open(PLAYER_SOURCE_DIR / f"Player_Idle_{direction}.png").convert("RGBA"))
+
+
+def write_player_muzzles() -> None:
+    """Muzzle of the pistol per direction in units from the feet (sprite pivot bottom centre, 32 PPU), in the
+    order of DIRECTIONS; PlayerWeapon starts the shots there."""
+    muzzles = []
+    for name in DIRECTIONS:
+        _, (mx, my) = armed(player_source(name), name)
+        muzzles.append({"direction": name, "x": (mx + 0.5 - CHARACTER / 2) / TILE,
+                        "y": (CHARACTER - (my + 0.5)) / TILE})
+    PLAYER_MUZZLES_PATH.write_text(json.dumps({"muzzles": muzzles}, indent=2) + "\n")
+    print(f"Wrote {PLAYER_MUZZLES_PATH.relative_to(ROOT)}")
+
+
 def player_files(files: dict[str, Image.Image]) -> None:
-    """Walk, hit and death frames for all 8 directions, if the idle poses are imported."""
+    """Idle (with the pistol), walk, hit, death and dash frames for all 8 directions, if the figure is imported."""
     for d, name in enumerate(DIRECTIONS):
-        path = ART_DIR / f"Sprites/Player/Player_Idle_{name}.png"
-        if not path.exists():
+        if not (PLAYER_SOURCE_DIR / f"Player_Idle_{name}.png").exists():
             return
-        idle = canvas_from_image(Image.open(path).convert("RGBA"))
+        idle, _ = armed(player_source(name), name)
+        files[f"Sprites/Player/Player_Idle_{name}.png"] = idle.to_image()
         for frame in range(PLAYER_WALK_FRAMES):
             files[f"Sprites/Player/Player_Walk_{name}_{frame}.png"] = player_walk(idle, frame).to_image()
         for frame in range(PLAYER_HIT_FRAMES):
@@ -1158,25 +1275,6 @@ def muzzle_flash() -> Canvas:
     c.ellipse(9.5, 8.0, 2.4, 2.0, "yellow")
     c.ellipse(9.0, 7.5, 1.3, 1.0, "glow")
     c.set(9, 7, "white")
-    return c
-
-
-def pistol() -> Canvas:
-    """The player's pistol pointing right (+X). The grip sits at the canvas centre, where the hand holds it; the
-    muzzle is 6 px in front of it (0.19 units), where PlayerWeapon starts the shots."""
-    c = Canvas(16, 16)
-    # Slide with a lit top edge and a dark muzzle.
-    c.rect(5, 5, 13, 7, "slate_2")
-    c.rect(6, 5, 12, 5, "slate_4")
-    c.set(13, 6, "night")
-    # Frame and trigger guard under the slide.
-    c.rect(6, 8, 10, 8, "slate_1")
-    c.set(10, 9, "slate_1")
-    c.set(9, 10, "slate_1")
-    # Grip.
-    c.rect(6, 8, 8, 11, "brown_1")
-    c.rect(6, 10, 6, 11, "brown_0")
-    c.outline()
     return c
 
 
@@ -2875,7 +2973,6 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Projectiles/Bullet_DoubleDamage.png": bullet_double_damage().to_image(),
         "Sprites/Projectiles/Bullet_InstaKill.png": bullet_insta_kill().to_image(),
         "Sprites/Effects/MuzzleFlash.png": muzzle_flash().to_image(),
-        "Sprites/Weapons/Pistol.png": pistol().to_image(),
         **{f"Sprites/Effects/HitSpark_{f}.png": hit_spark(f).to_image() for f in range(HIT_SPARK_FRAMES)},
         **{f"Sprites/Effects/DeathSplat_{f}.png": death_splat(f).to_image() for f in range(DEATH_SPLAT_FRAMES)},
         "Tiles/Wall_Top.png": wall_top().to_image(),
@@ -2996,7 +3093,6 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
     put(files["Sprites/Enemies/Walker_Walk_SW_0.png"], 3, 3)
     sheet.alpha_composite(files["Sprites/Effects/MuzzleFlash.png"], (6 * TILE, 3 * TILE + 8))
     sheet.alpha_composite(files["Sprites/Projectiles/Bullet.png"], (6 * TILE + 20, 3 * TILE + 8))
-    sheet.alpha_composite(files["Sprites/Weapons/Pistol.png"], (6 * TILE + 8, 4 * TILE + 8))
     sheet.alpha_composite(files["Sprites/Projectiles/Bullet_DoubleDamage.png"], (7 * TILE + 4, 3 * TILE + 8))
     sheet.alpha_composite(files["Sprites/Projectiles/Bullet_InstaKill.png"], (7 * TILE + 20, 3 * TILE + 8))
     for i, perk in enumerate(PERK_IDS):
@@ -3082,6 +3178,8 @@ def main() -> None:
         out.parent.mkdir(parents=True, exist_ok=True)
         img.save(out)
         print(f"Wrote {out.relative_to(ROOT)}")
+    if (PLAYER_SOURCE_DIR / "Player_Idle_S.png").exists():
+        write_player_muzzles()
 
     sheet_path = ROOT / "docs/art/palette.png"
     sheet_path.parent.mkdir(parents=True, exist_ok=True)

@@ -18,11 +18,11 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void Catalog_HasStandardNineLevelAndThreeMilestoneSkins()
+        public void Catalog_HasStandardThreeIslandAndThreeMilestoneSkins()
         {
             IReadOnlyList<SkinDefinition> skins = Load().Skins;
 
-            Assert.AreEqual(13, skins.Count);
+            Assert.AreEqual(7, skins.Count);
             Assert.AreEqual(SkinUnlockKind.Default, skins[0].UnlockKind, "the default skin comes first");
             int levels = 0;
             int milestones = 0;
@@ -42,12 +42,12 @@ namespace RushOps.Tests.EditMode
                 milestones += skin.UnlockKind == SkinUnlockKind.Milestone ? 1 : 0;
             }
 
-            Assert.AreEqual(9, levels);
+            Assert.AreEqual(3, levels, "one skin per island");
             Assert.AreEqual(3, milestones);
         }
 
         [Test]
-        public void LevelSkins_CoverEveryLevelOfTheThreeIslands()
+        public void LevelSkins_AreUnlockedByTheLastLevelOfEachIsland()
         {
             var levels = new HashSet<string>();
             foreach (SkinDefinition skin in Load().Skins)
@@ -59,13 +59,7 @@ namespace RushOps.Tests.EditMode
                 }
             }
 
-            for (int island = 1; island <= 3; island++)
-            {
-                for (int level = 1; level <= 3; level++)
-                {
-                    CollectionAssert.Contains(levels, $"Level_{island}-{level}");
-                }
-            }
+            CollectionAssert.AreEquivalent(new[] { "Level_1-3", "Level_2-3", "Level_3-3" }, levels);
         }
 
         [Test]

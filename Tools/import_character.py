@@ -9,6 +9,8 @@ no semi-transparent pixels, only palette colors (see gen_pixelart.PALETTE).
 Usage:
   python3 Tools/import_character.py <export-folder> <Name> [--dest Sprites/Player]
 
+The player (Name "Player") goes to Tools/characters/Player instead; run gen_pixelart.py afterwards.
+
 Example:
   python3 Tools/import_character.py Muslim_with_Thobe-Idle Player
 """
@@ -21,7 +23,7 @@ from pathlib import Path
 from PIL import Image
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from gen_pixelart import ART_DIR, CHARACTER, PALETTE, ROOT, assert_in_palette  # noqa: E402
+from gen_pixelart import ART_DIR, CHARACTER, PALETTE, PLAYER_SOURCE_DIR, ROOT, assert_in_palette  # noqa: E402
 
 DIRECTION_CODES = {
     "east": "E",
@@ -63,7 +65,8 @@ def main() -> None:
     args = parser.parse_args()
 
     metadata = json.loads((args.export / "metadata.json").read_text())
-    dest = ART_DIR / args.dest
+    # The player figure is a source: gen_pixelart.py puts the pistol into its hand and writes the game sprites.
+    dest = PLAYER_SOURCE_DIR if args.name == "Player" else ART_DIR / args.dest
     dest.mkdir(parents=True, exist_ok=True)
 
     for state in metadata["states"]:

@@ -152,26 +152,22 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Gun_TurnsWithAim_ShotsLeaveItsMuzzle_AndGoesBehindTheBodyWhenAimingUp()
+        public IEnumerator Muzzle_IsAtThePistolInTheHand_OnTheFacingSide()
         {
-            var gun = _weapon.GetComponentInChildren<PlayerGun>();
-            Assert.IsNotNull(gun, "the player holds no gun");
-            Assert.IsNotNull(_weapon.GetComponent<UnityEngine.Rendering.SortingGroup>(), "body and gun sort together");
-            int body = _weapon.GetComponent<SpriteRenderer>().sortingOrder;
+            _aim.AimInput = Vector2.right;
+            yield return null;
+            yield return null;
+            Vector2 right = _weapon.MuzzlePosition(Vector2.right) - (Vector2)_weapon.transform.position;
 
             _aim.AimInput = Vector2.left;
             yield return null;
             yield return null;
-            Assert.AreEqual(180f, Mathf.DeltaAngle(0f, gun.transform.eulerAngles.z), 1f, "points left");
-            Assert.IsTrue(gun.Renderer.flipY, "stays upright when pointing left");
-            Assert.Greater(gun.Renderer.sortingOrder, body, "in front of the body");
-            Vector2 muzzle = _weapon.MuzzlePosition(Vector2.left);
-            Assert.Less(muzzle.x, gun.transform.position.x, "the muzzle is in front of the grip");
+            Vector2 left = _weapon.MuzzlePosition(Vector2.left) - (Vector2)_weapon.transform.position;
 
-            _aim.AimInput = Vector2.up;
-            yield return null;
-            yield return null;
-            Assert.Less(gun.Renderer.sortingOrder, body, "behind the body when aiming away from the camera");
+            Assert.Greater(right.x, 0.15f, "in front of the body when facing right");
+            Assert.Less(left.x, -0.15f, "in front of the body when facing left");
+            Assert.That(right.y, Is.InRange(0.5f, 1.2f), "at hand height");
+            Assert.That(left.y, Is.InRange(0.5f, 1.2f), "at hand height");
         }
     }
 }

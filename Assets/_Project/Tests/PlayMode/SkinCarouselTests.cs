@@ -51,12 +51,12 @@ namespace RushOps.Tests.PlayMode
 
             Assert.IsTrue(_carousel.IsOpen);
             Assert.AreEqual(0, _carousel.Index, "a new game starts at the standard skin");
-            Assert.AreEqual(13, GameObject.Find("Strip").transform.childCount - 1, "one figure per skin besides the template");
+            Assert.AreEqual(7, GameObject.Find("Strip").transform.childCount - 1, "one figure per skin besides the template");
             Assert.AreEqual("Standard", Label("Name").text);
             Assert.AreEqual(SkinHint.Chosen, Button("SelectButton").GetComponentInChildren<Text>().text);
             Assert.IsFalse(Button("SelectButton").interactable);
             Assert.IsFalse(Button("PreviousButton").interactable);
-            Assert.AreEqual("1 / 13", Label("Counter").text);
+            Assert.AreEqual("1 / 7", Label("Counter").text);
         }
 
         [UnityTest]
@@ -67,7 +67,7 @@ namespace RushOps.Tests.PlayMode
             yield return Load();
             _carousel.Open();
 
-            _carousel.Show(11);
+            _carousel.Show(5);
             yield return null;
 
             Assert.AreEqual("Zombiejaeger", _carousel.Shown.Id);
@@ -79,7 +79,7 @@ namespace RushOps.Tests.PlayMode
 
             _carousel.Show(1);
             yield return null;
-            Assert.AreEqual("Schaffe Level 1-1", Label("Hint").text);
+            Assert.AreEqual("Schaffe Level 1-3", Label("Hint").text);
 
             _carousel.Select();
             Assert.IsTrue(string.IsNullOrEmpty(_save.Data.Skins.Current), "a locked skin was chosen");
@@ -89,20 +89,19 @@ namespace RushOps.Tests.PlayMode
         public IEnumerator ChoosingAnUnlockedSkin_SavesItAndDressesTheMenuFigure()
         {
             _save = SaveGameIsolation.Reset();
-            _save.Data.Skins.Unlocked.Add("Surfer");
+            _save.Data.Skins.Unlocked.Add("Sandsturm");
             yield return Load();
             _carousel.Open();
             _carousel.Next();
-            _carousel.Next();
             yield return null;
-            Assert.AreEqual("Surfer", _carousel.Shown.Id);
+            Assert.AreEqual("Sandsturm", _carousel.Shown.Id);
             Assert.IsTrue(Button("SelectButton").interactable);
 
             Button("SelectButton").onClick.Invoke();
             yield return null;
 
-            Assert.AreEqual("Surfer", _save.Data.Skins.Current);
-            Assert.AreEqual("Surfer", new SaveGameStore(SaveGameIsolation.Files, "playmode-tests").Load().Skins.Current);
+            Assert.AreEqual("Sandsturm", _save.Data.Skins.Current);
+            Assert.AreEqual("Sandsturm", new SaveGameStore(SaveGameIsolation.Files, "playmode-tests").Load().Skins.Current);
             Assert.AreEqual(SkinHint.Chosen, Button("SelectButton").GetComponentInChildren<Text>().text);
             var menuFigure = GameObject.Find("Player").GetComponent<MenuFigure>();
             Assert.AreSame(_carousel.Shown.Idle, menuFigure.Animation);
@@ -136,9 +135,9 @@ namespace RushOps.Tests.PlayMode
             _carousel.Previous();
             Assert.AreEqual(0, _carousel.Index);
             _carousel.Show(99);
-            Assert.AreEqual(12, _carousel.Index);
+            Assert.AreEqual(6, _carousel.Index);
             _carousel.Next();
-            Assert.AreEqual(12, _carousel.Index);
+            Assert.AreEqual(6, _carousel.Index);
             yield return null;
             Assert.IsFalse(Button("NextButton").interactable);
         }
