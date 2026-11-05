@@ -33,3 +33,9 @@ Gespeichert werden nur Meta-Fortschritt und Einstellungen (Lastenheft Kapitel 4)
 - Migrationsschritte (`ISaveMigration`) arbeiten auf dem JSON-Text, eine Stufe pro Version; `SaveMigrator` prüft die Kette. Neue Felder mit passendem Standardwert brauchen keine neue Version.
 - `SaveGameService` (ScriptableObject `Data/Save/SaveGameService.asset`) ist der Zugang für alle Szenen: Er lädt beim ersten Zugriff und hält den Spielstand, bis die App endet. Szenen referenzieren das Asset statt einen Manager zu suchen.
 - Freigeschaltete Inseln und Level (F-DAT-04) werden nicht eigens gespeichert, sondern aus den geschafften Leveln und der Reihenfolge im `Campaign`-Asset abgeleitet (`CampaignUnlocks`, Issue #123). So können Spielstand und Freischaltung nicht auseinanderlaufen, und ein neu eingefügtes Level ist sofort richtig eingeordnet. Die Level-ID im Spielstand ist der Szenenname.
+
+## Version 2 (Issue #176, 05.11.2026)
+
+- Neuer Block `Weapons` (`WeaponsData`): gewählte Waffe (`Current`, leer = Startwaffe) und freigeschaltete Waffen (`Unlocked`, Waffen-IDs).
+- Erster Migrationsschritt `SaveMigrationV1ToV2`: Er legt den Block leer an und lässt alles andere unverändert.
+- Welche Waffe welcher Bosssieg freischaltet, steht nicht im Spielstand, sondern in der `WeaponDefinition` (`UnlockLevel`). Bosse, die vor dem Update besiegt wurden, schalten ihre Waffe beim nächsten Prüfen frei (Öffnen der Waffenwahl, Levelende). Die Migration muss die Zuordnung deshalb nicht kennen.

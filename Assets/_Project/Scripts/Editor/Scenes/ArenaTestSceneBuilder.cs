@@ -158,6 +158,8 @@ namespace RushOps.Editor.Scenes
         // „Neuer Skin“ line below the buttons and the figure in the new skin below it (issue #128).
         private const float NewSkinY = -165f;
         private const float NewSkinFigureOffset = -62f;
+        // Right of the skin figure, inside the 360 px wide screen (issue #176).
+        private const float NewWeaponX = 112f;
         private const string LevelsDataDir = "Assets/_Project/Data/Levels";
         internal const string WallsLayer = "Walls";
         private const string PlayerLayer = "Player";
@@ -521,11 +523,15 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_score").objectReferenceValue = score;
             serialized.FindProperty("_kills").objectReferenceValue = kills;
             serialized.FindProperty("_skins").objectReferenceValue = SkinCatalogBuilder.Build();
+            serialized.FindProperty("_weapons").objectReferenceValue = RushOps.Editor.Combat.WeaponCatalogBuilder.Catalog();
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             var view = new SerializedObject(results.GetComponent<UnlockedSkinView>());
             view.FindProperty("_recorder").objectReferenceValue = recorder;
             view.ApplyModifiedPropertiesWithoutUndo();
+            var weaponView = new SerializedObject(results.GetComponent<UnlockedWeaponView>());
+            weaponView.FindProperty("_recorder").objectReferenceValue = recorder;
+            weaponView.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static LevelKills CreateLevelKills(EnemyPool[] pools)
@@ -955,6 +961,10 @@ namespace RushOps.Editor.Scenes
                 muzzleList.GetArrayElementAtIndex(i).vector2Value = muzzles[i];
             }
             serializedWeapon.ApplyModifiedPropertiesWithoutUndo();
+            var selected = new SerializedObject(go.AddComponent<SelectedWeapon>());
+            selected.FindProperty("_save").objectReferenceValue = LoadOrCreateConfig<SaveGameService>(SaveGameServicePath);
+            selected.FindProperty("_catalog").objectReferenceValue = RushOps.Editor.Combat.WeaponCatalogBuilder.Catalog();
+            selected.ApplyModifiedPropertiesWithoutUndo();
 
             go.AddComponent<AimAssist>();
             var aimInput = go.AddComponent<PlayerAimInput>();
@@ -1935,6 +1945,7 @@ namespace RushOps.Editor.Scenes
             CreateMenuButton("RetryButton", done, font, "Nochmal", new Vector2(0f, -85f), results.Retry);
             CreateMenuButton("ContinueButton", done, font, "Weiter", new Vector2(0f, -85f - MenuButtonSize.y - 12f), results.Continue);
             CreateUnlockedSkin(parent, done, font);
+            CreateUnlockedWeapon(parent, done, font);
 
             RectTransform failed = CreateDimPanel("FailedPanel", parent);
             CreateText("Title", failed, font, ResultText.Failed, TitlePixelScale, new Vector2(0f, 60f));
@@ -1958,6 +1969,28 @@ namespace RushOps.Editor.Scenes
             done.gameObject.SetActive(false);
             failed.gameObject.SetActive(false);
             return results;
+        }
+
+        // „Neue Waffe“ right of the new skin's figure (issue #176); a boss victory can unlock both at once.
+        private static void CreateUnlockedWeapon(RectTransform parent, RectTransform done, Font font)
+        {
+            var center = new Vector2(0.5f, 0.5f);
+            RectTransform root = CreateUiRect("NewWeapon", done, center, center);
+            root.sizeDelta = Vector2.zero;
+            root.anchoredPosition = new Vector2(NewWeaponX, NewSkinY + NewSkinFigureOffset);
+            Text title = CreateText("Title", root, font, "Neue Waffe:", 1, new Vector2(0f, 26f));
+            title.color = PaletteYellow;
+            Text name = CreateText("Name", root, font, "Pistole", 1, new Vector2(0f, 14f));
+            Image icon = CreateUiImage("Icon", root, "Weapon_Pistol.png", center);
+            icon.rectTransform.sizeDelta = icon.sprite.rect.size * HudPixelScale;
+            icon.rectTransform.anchoredPosition = new Vector2(0f, -10f);
+
+            var view = new SerializedObject(parent.gameObject.AddComponent<UnlockedWeaponView>());
+            view.FindProperty("_root").objectReferenceValue = root.gameObject;
+            view.FindProperty("_name").objectReferenceValue = name;
+            view.FindProperty("_icon").objectReferenceValue = icon;
+            view.ApplyModifiedPropertiesWithoutUndo();
+            root.gameObject.SetActive(false);
         }
 
         // „Neuer Skin“ below the buttons of „Level geschafft!“ (issue #128); the recorder is set in CreateProgressRecorder.

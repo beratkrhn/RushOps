@@ -102,6 +102,29 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Catalog_StartsWithThePistol_AndEachBossUnlocksOneWeapon()
+        {
+            var catalog = AssetDatabase.LoadAssetAtPath<WeaponCatalog>("Assets/_Project/Data/Weapons/WeaponCatalog.asset");
+            Assert.IsNotNull(catalog, "missing weapon catalog");
+            Assert.AreEqual(4, catalog.Weapons.Count);
+            Assert.AreSame(LoadConfig().StartWeapon, catalog.Weapons[0]);
+            Assert.AreEqual(string.Empty, catalog.Weapons[0].UnlockLevel);
+
+            // W4 as proposed: Koloss gives the shotgun, Brutmutter the assault rifle, Mega-Boomer the dual pistols.
+            Assert.AreEqual("Level_1-3", Load("Shotgun.asset").UnlockLevel);
+            Assert.AreEqual("Besiege den Koloss", Load("Shotgun.asset").UnlockHint);
+            Assert.AreEqual("Level_2-3", Load("AssaultRifle.asset").UnlockLevel);
+            Assert.AreEqual("Besiege die Brutmutter", Load("AssaultRifle.asset").UnlockHint);
+            Assert.AreEqual("Level_3-3", Load("DualPistols.asset").UnlockLevel);
+            Assert.AreEqual("Besiege den Mega-Boomer", Load("DualPistols.asset").UnlockHint);
+            var ids = new System.Collections.Generic.HashSet<string>();
+            foreach (WeaponDefinition weapon in catalog.Weapons)
+            {
+                Assert.IsTrue(ids.Add(weapon.Id), $"{weapon.name}: id {weapon.Id} twice");
+            }
+        }
+
+        [Test]
         public void AllWeapons_DealAboutTheDamagePerSecondOfTheStartWeapon()
         {
             float reference = LoadConfig().StartWeapon.DamagePerSecond;

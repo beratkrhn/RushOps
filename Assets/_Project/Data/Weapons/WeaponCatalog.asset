@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b6ff302fe3b834f3099ed77e08cd6dd9, type: 3}
+  m_Name: WeaponCatalog
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Combat.WeaponCatalog
+  _weapons:
+  - {fileID: 11400000, guid: baa9f7c5be844d7d85a10599493019dd, type: 2}
+  - {fileID: 11400000, guid: 7f84b7bbd0ecc424393ae7c0f07922b1, type: 2}
+  - {fileID: 11400000, guid: 5fac9c0fa3a21464980cbf3dd5d5c92d, type: 2}
+  - {fileID: 11400000, guid: 1eb2936e780f54a34a097c4dab00b226, type: 2}

@@ -12,6 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0fdf9f9d1df343199fe415f6afe9fcf2, type: 3}
   m_Name: Pistol
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Combat.WeaponDefinition
+  _id: Pistol
+  _unlockLevel: 
+  _unlockHint: 
   _displayName: Pistole
   _fireRate: 6
   _damage: 10

@@ -10,6 +10,15 @@ namespace RushOps.Combat
     [CreateAssetMenu(fileName = "Weapon", menuName = "RushOps/Weapon Definition")]
     public class WeaponDefinition : ScriptableObject
     {
+        [Tooltip("Stable id in the save game; never change it once released.")]
+        [SerializeField] private string _id = "Pistol";
+
+        [Tooltip("Scene of the boss level whose victory unlocks it (W4); empty = available from the start.")]
+        [SerializeField] private string _unlockLevel = "";
+
+        [Tooltip("Shown on a locked weapon in the selection (W5), e.g. „Besiege den Koloss“.")]
+        [SerializeField] private string _unlockHint = "";
+
         [Tooltip("Name shown in menus and on the HUD.")]
         [SerializeField] private string _displayName = "Pistole";
 
@@ -51,6 +60,15 @@ namespace RushOps.Combat
 
         [Tooltip("Distance in units of each muzzle from the aim line when alternating.")]
         [SerializeField, Min(0f)] private float _muzzleSeparation = 0.18f;
+
+        /// <summary>Stable id in the save game.</summary>
+        public string Id => string.IsNullOrEmpty(_id) ? name : _id;
+
+        /// <summary>Scene of the level that unlocks it; empty if available from the start.</summary>
+        public string UnlockLevel => _unlockLevel ?? string.Empty;
+
+        /// <summary>Hint on a locked weapon.</summary>
+        public string UnlockHint => _unlockHint ?? string.Empty;
 
         /// <summary>Name shown in menus and on the HUD.</summary>
         public string DisplayName => _displayName;
