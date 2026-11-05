@@ -53,6 +53,7 @@ namespace RushOps.Tests.EditMode
 
         [TestCase("Sprites/Projectiles/Bullet.png", 16, 16)]
         [TestCase("Sprites/Effects/MuzzleFlash.png", 16, 16)]
+        [TestCase("Sprites/Weapons/Pistol.png", 16, 16)]
         [TestCase("Tiles/Floor_0.png", 32, 32)]
         [TestCase("Tiles/Floor_1.png", 32, 32)]
         [TestCase("Tiles/Floor_2.png", 32, 32)]

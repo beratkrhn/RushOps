@@ -2,6 +2,7 @@ using System.Collections;
 using NUnit.Framework;
 using RushOps.Characters;
 using RushOps.Combat;
+using RushOps.Enemies;
 using RushOps.Player;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -128,6 +129,49 @@ namespace RushOps.Tests.PlayMode
             Projectile second = _pool.Launch(new Vector2(20.5f, 31f), Vector2.up, 50f, 1f, _walls);
 
             Assert.AreSame(first, second);
+        }
+
+        [UnityTest]
+        public IEnumerator Projectile_AtHeadHeight_HitsWalkerBody()
+        {
+            Object.FindFirstObjectByType<WaveDirector>().enabled = false;
+            Enemy walker = EnemyPools.Of(EnemyPools.Walker).Spawn(new Vector2(20.5f, 33.5f));
+            walker.GetComponent<Rigidbody2D>().constraints = RigidbodyConstraints2D.FreezeAll;
+            yield return new WaitForFixedUpdate();
+            int before = walker.CurrentHealth;
+
+            // Well above the feet collider (radius 0.28), at the height of the head.
+            Vector2 origin = (Vector2)walker.transform.position + new Vector2(-4f, 1.3f);
+            Projectile projectile = _pool.Launch(
+                origin, Vector2.right, 30f, 8f, LayerMask.GetMask("Walls", "Enemies", "EnemyHurtbox"), 1);
+            yield return new WaitForSeconds(0.4f);
+
+            Assert.IsFalse(projectile.gameObject.activeSelf, "the shot flew through the walker's body");
+            Assert.Less(walker.CurrentHealth, before, "the body hit did no damage");
+            Assert.Less(projectile.transform.position.x, walker.transform.position.x, "stopped at the body's edge");
+        }
+
+        [UnityTest]
+        public IEnumerator Gun_TurnsWithAim_ShotsLeaveItsMuzzle_AndGoesBehindTheBodyWhenAimingUp()
+        {
+            var gun = _weapon.GetComponentInChildren<PlayerGun>();
+            Assert.IsNotNull(gun, "the player holds no gun");
+            Assert.IsNotNull(_weapon.GetComponent<UnityEngine.Rendering.SortingGroup>(), "body and gun sort together");
+            int body = _weapon.GetComponent<SpriteRenderer>().sortingOrder;
+
+            _aim.AimInput = Vector2.left;
+            yield return null;
+            yield return null;
+            Assert.AreEqual(180f, Mathf.DeltaAngle(0f, gun.transform.eulerAngles.z), 1f, "points left");
+            Assert.IsTrue(gun.Renderer.flipY, "stays upright when pointing left");
+            Assert.Greater(gun.Renderer.sortingOrder, body, "in front of the body");
+            Vector2 muzzle = _weapon.MuzzlePosition(Vector2.left);
+            Assert.Less(muzzle.x, gun.transform.position.x, "the muzzle is in front of the grip");
+
+            _aim.AimInput = Vector2.up;
+            yield return null;
+            yield return null;
+            Assert.Less(gun.Renderer.sortingOrder, body, "behind the body when aiming away from the camera");
         }
     }
 }

@@ -89,6 +89,7 @@ namespace RushOps.Editor.Scenes
             var collider = go.AddComponent<CircleCollider2D>();
             collider.radius = colliderRadius;
             collider.offset = colliderOffset;
+            BoxCollider2D hurtbox = EnemyHurtboxBuilder.Add(go, walk);
 
             var boss = go.AddComponent<T>();
             var serialized = new SerializedObject(boss);
@@ -97,6 +98,7 @@ namespace RushOps.Editor.Scenes
                 ArenaTestSceneBuilder.LoadOrCreateConfig<FeelConfig>(ArenaTestSceneBuilder.FeelConfigPath);
             serialized.FindProperty("_renderer").objectReferenceValue = go.GetComponent<SpriteRenderer>();
             serialized.FindProperty("_view").objectReferenceValue = view;
+            serialized.FindProperty("_hurtbox").objectReferenceValue = hurtbox;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return boss;
         }

@@ -18,11 +18,14 @@ namespace RushOps.Player
         [Tooltip("Layers that stop projectiles, e.g. walls and enemies; enemies take damage.")]
         [SerializeField] private LayerMask _obstacles;
 
-        [Tooltip("Height of the gun above the feet (transform pivot) in units.")]
+        [Tooltip("Height of the gun above the feet (transform pivot) in units: the height of the hand.")]
         [SerializeField] private float _muzzleHeight = 0.6f;
 
-        [Tooltip("Distance of the muzzle from the body centre along the aim direction in units.")]
-        [SerializeField] private float _muzzleDistance = 0.4f;
+        [Tooltip("Distance of the gun's grip from the body centre along the aim direction in units.")]
+        [SerializeField] private float _gripDistance = 0.2f;
+
+        [Tooltip("Distance from the grip to the muzzle in units; matches the gun sprite (Tools/gen_pixelart.py).")]
+        [SerializeField] private float _barrelLength = 0.19f;
 
         private readonly FireRateTimer _timer = new FireRateTimer();
         private PlayerAim _aim;
@@ -55,7 +58,14 @@ namespace RushOps.Player
         /// <summary>Point where projectiles start when firing towards <paramref name="direction"/>.</summary>
         public Vector2 MuzzlePosition(Vector2 direction)
         {
-            return (Vector2)transform.position + Vector2.up * _muzzleHeight + direction * _muzzleDistance;
+            return (Vector2)transform.position
+                + PlayerGunMath.Muzzle(direction, _muzzleHeight, _gripDistance, _barrelLength);
+        }
+
+        /// <summary>How the gun in the hand is placed when facing <paramref name="direction"/> (relative to the feet).</summary>
+        public GunPose GunPoseFor(Vector2 direction)
+        {
+            return PlayerGunMath.Pose(direction, _muzzleHeight, _gripDistance);
         }
 
         private void Awake()

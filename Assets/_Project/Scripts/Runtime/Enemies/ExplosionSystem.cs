@@ -101,7 +101,7 @@ namespace RushOps.Enemies
             ExplosionDefinition explosion = enemy.Definition != null ? enemy.Definition.Explosion : null;
             if (explosion != null)
             {
-                _queue.Schedule(enemy.AimPoint, explosion, _dealingDamage ? explosion.ChainDelay : 0f);
+                _queue.Schedule(enemy.ExplosionPoint, explosion, _dealingDamage ? explosion.ChainDelay : 0f);
             }
         }
 

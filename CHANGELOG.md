@@ -11,7 +11,10 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Level 3-1 „Aschefeld“** (Issue #157): erstes Level der Vulkaninsel mit sechs Zonen (C2), Vulkan-Tileset und den Stellschrauben von Insel 3 (Schalter-Zeitlimits −20 %, Wellen 20 % dichter, Haltezeit +3 s, `Data/Levels/Difficulty_Insel3.asset`, C3) sowie mehr Runnern und Boombern in den Wellen. Am Tor der dritten Zone hängen Haltezone und Schalter zusammen (L2). Erscheint auf der Karte als „Aschefeld“. Erzeugt von `Level3_1SceneBuilder` (Menü „RushOps → Szenen → Level_3-1 erzeugen“).
 - **Level 3-2 „Lavastrom“** (Issue #158): das schwerste reguläre Level mit sechs Zonen; die Tore wechseln zwischen Ost und West, zwei Tore kombinieren zwei Rätsel (Haltezone + Schalter, Haltezone + Generator), ein Tor verlangt Generator und Kills ab Zoneneintritt. Erscheint auf der Karte als „Lavastrom“. Erzeugt von `Level3_2SceneBuilder`.
 
+- **Pistole in der Hand**: Der Spieler hält eine Pistole (`Art/Sprites/Weapons/Pistol.png`, per `Tools/gen_pixelart.py`), die sich mit der Blickrichtung dreht, nach links aufrecht bleibt, beim Zielen nach oben hinter den Körper wandert und beim Dash und Tod verschwindet (`PlayerGun`, Logik in `PlayerGunMath`). Schüsse und Mündungsfeuer starten an ihrer Mündung. Gilt für alle Skins, weil die Waffe ein eigenes Sprite ist.
+
 ### Geändert
+- **Treffer am ganzen Körper**: Gegner und Bosse haben eine Hurtbox über den ganzen sichtbaren Körper (Vereinigung aller Lauf-Frames in 8 Richtungen, Ebene `EnemyHurtbox`, kollidiert mit nichts). Vorher trafen Schüsse nur den kleinen Fuß-Kollider. Die Zielhilfe zielt auf die Körpermitte; Bewegung, Pfadsuche, Kontaktschaden und Explosionen nutzen weiter den Fuß-Kollider.
 - **Missions-Tracker bei zwei Rätseln an einem Tor**: ein laufender Schalter-Countdown hat Vorrang vor dem anderen Rätsel (`PuzzleFocus`, F-RAE-04); vorher war nur das erste ungelöste Rätsel zu sehen.
 
 ## [0.6.0] – 2026-11-04

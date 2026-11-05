@@ -32,6 +32,7 @@ Output (under Assets/_Project/Art/):
   Sprites/Projectiles/Bullet_DoubleDamage.png 16x16, red and thicker, during double damage (issue #25)
   Sprites/Projectiles/Bullet_InstaKill.png 16x16, pale and longer, during insta-kill (issue #25)
   Sprites/Effects/MuzzleFlash.png          16x16, pointing right (+X) from the centre (issue #107)
+  Sprites/Weapons/Pistol.png               16x16, the player's pistol pointing right (+X), grip at the centre
   Sprites/Effects/HitSpark_<F>.png         16x16, 3 frames of sparks flying towards +X (issue #107)
   Sprites/Effects/DeathSplat_<F>.png       32x32, 4 frames of blood flying apart when an enemy dies (issue #107)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
@@ -1157,6 +1158,25 @@ def muzzle_flash() -> Canvas:
     c.ellipse(9.5, 8.0, 2.4, 2.0, "yellow")
     c.ellipse(9.0, 7.5, 1.3, 1.0, "glow")
     c.set(9, 7, "white")
+    return c
+
+
+def pistol() -> Canvas:
+    """The player's pistol pointing right (+X). The grip sits at the canvas centre, where the hand holds it; the
+    muzzle is 6 px in front of it (0.19 units), where PlayerWeapon starts the shots."""
+    c = Canvas(16, 16)
+    # Slide with a lit top edge and a dark muzzle.
+    c.rect(5, 5, 13, 7, "slate_2")
+    c.rect(6, 5, 12, 5, "slate_4")
+    c.set(13, 6, "night")
+    # Frame and trigger guard under the slide.
+    c.rect(6, 8, 10, 8, "slate_1")
+    c.set(10, 9, "slate_1")
+    c.set(9, 10, "slate_1")
+    # Grip.
+    c.rect(6, 8, 8, 11, "brown_1")
+    c.rect(6, 10, 6, 11, "brown_0")
+    c.outline()
     return c
 
 
@@ -2855,6 +2875,7 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Projectiles/Bullet_DoubleDamage.png": bullet_double_damage().to_image(),
         "Sprites/Projectiles/Bullet_InstaKill.png": bullet_insta_kill().to_image(),
         "Sprites/Effects/MuzzleFlash.png": muzzle_flash().to_image(),
+        "Sprites/Weapons/Pistol.png": pistol().to_image(),
         **{f"Sprites/Effects/HitSpark_{f}.png": hit_spark(f).to_image() for f in range(HIT_SPARK_FRAMES)},
         **{f"Sprites/Effects/DeathSplat_{f}.png": death_splat(f).to_image() for f in range(DEATH_SPLAT_FRAMES)},
         "Tiles/Wall_Top.png": wall_top().to_image(),
@@ -2975,6 +2996,7 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
     put(files["Sprites/Enemies/Walker_Walk_SW_0.png"], 3, 3)
     sheet.alpha_composite(files["Sprites/Effects/MuzzleFlash.png"], (6 * TILE, 3 * TILE + 8))
     sheet.alpha_composite(files["Sprites/Projectiles/Bullet.png"], (6 * TILE + 20, 3 * TILE + 8))
+    sheet.alpha_composite(files["Sprites/Weapons/Pistol.png"], (6 * TILE + 8, 4 * TILE + 8))
     sheet.alpha_composite(files["Sprites/Projectiles/Bullet_DoubleDamage.png"], (7 * TILE + 4, 3 * TILE + 8))
     sheet.alpha_composite(files["Sprites/Projectiles/Bullet_InstaKill.png"], (7 * TILE + 20, 3 * TILE + 8))
     for i, perk in enumerate(PERK_IDS):
