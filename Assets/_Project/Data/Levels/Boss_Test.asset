@@ -16,3 +16,4 @@ MonoBehaviour:
   _sceneName: Boss_Test
   _twoStarScore: 1100
   _threeStarScore: 1300
+  _completionMessage: 

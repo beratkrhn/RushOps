@@ -33,6 +33,12 @@ namespace RushOps.UI
         [Tooltip("Gap between the right stick's base and the dash button above it in reference units.")]
         [SerializeField, Min(0f)] private float _dashButtonGap = 16f;
 
+        [Tooltip("Side length of the weapon swap button beside the dash button (issue #175).")]
+        [SerializeField, Min(16f)] private float _swapButtonSize = 44f;
+
+        [Tooltip("Gap between the swap button and the dash button.")]
+        [SerializeField, Min(0f)] private float _swapButtonGap = 10f;
+
         /// <summary>Floating or fixed sticks.</summary>
         public StickMode Mode => _mode;
 
@@ -59,5 +65,11 @@ namespace RushOps.UI
 
         /// <summary>Gap between the right stick's base and the dash button.</summary>
         public float DashButtonGap => _dashButtonGap;
+
+        /// <summary>Side length of the weapon swap button.</summary>
+        public float SwapButtonSize => _swapButtonSize;
+
+        /// <summary>Gap between the swap button and the dash button.</summary>
+        public float SwapButtonGap => _swapButtonGap;
     }
 }

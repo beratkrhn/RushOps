@@ -133,5 +133,14 @@ namespace RushOps.Tests.EditMode
             // Base top at 120, plus gap 16, plus half the button 36.
             Assert.AreEqual(new Vector2(108f, 172f), position);
         }
+
+        [Test]
+        public void SwapButtonPosition_SitsLeftOfTheDashButton_BottomsAligned()
+        {
+            Vector2 position = VirtualStickMath.SwapButtonPosition(new Vector2(108f, 172f), 72f, 44f, 10f);
+
+            // Dash spans x 72..144 and y 136..208; the swap button ends 10 left of it and shares its bottom.
+            Assert.AreEqual(new Vector2(40f, 158f), position);
+        }
     }
 }

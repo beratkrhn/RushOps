@@ -16,3 +16,4 @@ MonoBehaviour:
   _sceneName: Arena_Zonen
   _twoStarScore: 1000
   _threeStarScore: 2500
+  _completionMessage: 

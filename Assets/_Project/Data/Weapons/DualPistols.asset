@@ -22,6 +22,7 @@ MonoBehaviour:
   _projectileSpeed: 15
   _shotSound: {fileID: 8300000, guid: 0b247180d074449d5aa8ecac5852609b, type: 3}
   _icon: {fileID: 21300000, guid: 9f89b7833f8d9496fb49b2a35d53f964, type: 3}
+  _wallSprite: {fileID: 21300000, guid: c1f64479ae3c54601b8624831887d9bb, type: 3}
   _projectileSprite: {fileID: 21300000, guid: 1f34712a4f6e846bab134d50c54e4aa1, type: 3}
   _alternateMuzzles: 1
   _muzzleSeparation: 0.18

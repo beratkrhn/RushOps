@@ -129,6 +129,8 @@ namespace RushOps.Editor.Scenes
         internal const int TitlePixelScale = 3;
         // Debug weapon button of the test arena (issue #174), above the FPS counter.
         private const float WeaponSwitchHeight = 24f;
+        // Weapon icon on the swap button (issue #175), in reference units.
+        private const float SwapIconWidth = 34f;
         private const float WeaponSwitchOffset = 22f;
         private const float HudMargin = 8f;
         private const float HeartSpacing = 2f;
@@ -240,6 +242,27 @@ namespace RushOps.Editor.Scenes
             Zone zone = CreateZone(arena, "Zone", null, area, SpawnCells, waves, null);
             AssignZones(arena, new[] { zone });
             CreateWeaponSwitch(arena);
+            CreateTestWallWeapon(arena);
+        }
+
+        /// <summary>Wall cell of the test arena's wall weapon: the south face of the block north of the start.</summary>
+        internal static readonly Vector2Int TestWallWeaponCell = new Vector2Int(20, 20);
+
+        // One wall weapon to try picking up and swapping (issue #175).
+        private static void CreateTestWallWeapon(ArenaScene arena)
+        {
+            var spec = new LevelWallWeapon(TestWallWeaponCell, RushOps.Editor.Combat.WeaponCatalogBuilder.ShotgunPath);
+            var problems = new List<string>();
+            LevelBlueprintBuilder.ValidateWallWeapon(problems, Layout,
+                LevelLayoutCheck.ReachableSquares(Layout, Layout.StartCell, LevelLayoutCheck.MinPassage),
+                LevelLayoutCheck.MinPassage, spec);
+            if (problems.Count > 0)
+            {
+                throw new System.InvalidOperationException(string.Join("\n", problems));
+            }
+
+            RushOps.Editor.Combat.WallWeaponBuilder.Create(arena, spec.Cell,
+                RushOps.Editor.Combat.WeaponCatalogBuilder.Get(spec.WeaponPath), new GameObject("WallWeapons").transform);
         }
 
         // Debug button above the FPS counter (issue #174): cycles through all weapons to judge their feel.
@@ -572,11 +595,13 @@ namespace RushOps.Editor.Scenes
             Tilemap walls = CreateArena(layout, tiles);
             ProjectilePool pool = CreateProjectilePool(bulletPrefab);
             Transform target = CreatePlayer(layout.StartCell, playerIdle, playerConfig, weaponConfig, pool, actions);
-            CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>());
+            CreateTouchControls(LoadOrCreateConfig<TouchControlsConfig>(TouchControlsConfigPath), target.GetComponent<PlayerDash>(),
+                target.GetComponent<PlayerWeapon>());
             PauseController pause = CreateHud(
                 LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), target.GetComponent<PlayerPerks>(),
                 PixelFontBuilder.Build(), out MissionTracker tracker, out ScreenFlash flash, out ScoreView scoreView,
                 out LevelResults results);
+            CreateActiveWeaponIcon((RectTransform)tracker.transform.parent, target.GetComponent<PlayerWeapon>());
             LevelRestarter restarter = CreateLevelRestarter(target.GetComponent<PlayerHealth>(), results);
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
             Material flashMaterial = LoadOrCreateFlashMaterial();
@@ -1535,7 +1560,7 @@ namespace RushOps.Editor.Scenes
             return material;
         }
 
-        private static void CreateTouchControls(TouchControlsConfig config, PlayerDash dash)
+        private static void CreateTouchControls(TouchControlsConfig config, PlayerDash dash, PlayerWeapon weapon)
         {
             var eventSystem = new GameObject("EventSystem", typeof(EventSystem));
             ForgetCachedDefaultUiActions();
@@ -1560,6 +1585,7 @@ namespace RushOps.Editor.Scenes
             VirtualStick aimStick = CreateStick(
                 "RightStick", safeArea, StickSide.Right, AimStickControl, config, new Vector2(0.5f, 0f), new Vector2(1f, 1f));
             CreateDashButton(aimStick, dash);
+            CreateSwapButton(aimStick, weapon);
 
             var visibility = root.AddComponent<TouchControlsVisibility>();
             var serialized = new SerializedObject(visibility);
@@ -2093,6 +2119,44 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_stick").objectReferenceValue = stick;
             serialized.FindProperty("_cooldownOverlay").objectReferenceValue = overlay;
             serialized.FindProperty("_lockedIcon").objectReferenceValue = locked;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Beside the dash button, also a child of the right stick's zone (issue #175, W10); hidden with one weapon.
+        private static void CreateSwapButton(VirtualStick stick, PlayerWeapon weapon)
+        {
+            Image plate = CreateUiImage("SwapButton", (RectTransform)stick.transform, "Swap_Button.png", Vector2.zero);
+            plate.raycastTarget = true;
+            var button = plate.gameObject.AddComponent<Button>();
+            button.targetGraphic = plate;
+            Image icon = CreateUiImage("Icon", plate.rectTransform, "Weapon_Pistol.png", new Vector2(0.5f, 0.5f));
+            icon.rectTransform.sizeDelta = new Vector2(SwapIconWidth, SwapIconWidth * 0.5f);
+            icon.preserveAspect = true;
+            plate.enabled = false;
+            icon.enabled = false;
+
+            var view = plate.gameObject.AddComponent<WeaponSwapButton>();
+            UnityEventTools.AddPersistentListener(button.onClick, view.Swap);
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_weapon").objectReferenceValue = weapon;
+            serialized.FindProperty("_stick").objectReferenceValue = stick;
+            serialized.FindProperty("_background").objectReferenceValue = plate;
+            serialized.FindProperty("_icon").objectReferenceValue = icon;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Icon of the active weapon below the pause button (issue #175).
+        private static void CreateActiveWeaponIcon(RectTransform hud, PlayerWeapon weapon)
+        {
+            var topRight = new Vector2(1f, 1f);
+            Image icon = CreateUiImage("ActiveWeapon", hud, "Weapon_Pistol.png", topRight);
+            icon.rectTransform.pivot = topRight;
+            icon.rectTransform.sizeDelta = icon.sprite.rect.size * HudPixelScale;
+            icon.rectTransform.anchoredPosition = new Vector2(-HudMargin, -HudMargin - PauseButtonSize);
+            var view = icon.gameObject.AddComponent<ActiveWeaponIcon>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_weapon").objectReferenceValue = weapon;
+            serialized.FindProperty("_icon").objectReferenceValue = icon;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 

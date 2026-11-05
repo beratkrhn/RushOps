@@ -21,6 +21,26 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void WallWeapon_OnAWallWithFloorInFront_IsValid()
+        {
+            LevelBlueprint level = SideBranch();
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(10, 15), "Assets/_Project/Data/Weapons/Shotgun.asset"));
+
+            CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(level));
+        }
+
+        [TestCase(5, 5, "does not hang on a wall")]
+        [TestCase(10, 0, "no open floor in front")]
+        [TestCase(14, 3, "no open floor in front")]
+        public void WallWeapon_WithoutWallOrFloorInFront_IsReported(int x, int y, string problem)
+        {
+            LevelBlueprint level = SideBranch();
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(x, y), "Assets/_Project/Data/Weapons/Shotgun.asset"));
+
+            StringAssert.Contains(problem, string.Join("\n", LevelBlueprintBuilder.Validate(level)));
+        }
+
+        [Test]
         public void Level1_1_FollowsLevelDesignRules()
         {
             CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(Level1_1SceneBuilder.Blueprint));

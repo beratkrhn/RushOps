@@ -66,6 +66,15 @@ namespace RushOps.UI
             return stickHome + new Vector2(0f, stickRadius + gap + buttonSize * 0.5f);
         }
 
+        /// <summary>
+        /// Center of the weapon swap button (issue #175, W10): left of the dash button at <paramref name="dashCenter"/>,
+        /// <paramref name="gap"/> between their edges, bottoms aligned.
+        /// </summary>
+        public static Vector2 SwapButtonPosition(Vector2 dashCenter, float dashSize, float swapSize, float gap)
+        {
+            return dashCenter + new Vector2(-(dashSize + swapSize) * 0.5f - gap, (swapSize - dashSize) * 0.5f);
+        }
+
         private static float ClampAxis(float value, float length, float radius)
         {
             if (length <= 2f * radius)
