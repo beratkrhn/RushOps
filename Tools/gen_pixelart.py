@@ -23,6 +23,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Koloss_<STATE>_<DIR>_<F>.png 128x128, Koloss boss: Walk 4, Windup 2, Charge 4, Stun 2, Hit 2, Death 5 (issue #151)
   Sprites/Effects/Koloss_ChargeLine.png    32x8, floor mark of the Koloss charge, stretched (issue #151)
   Sprites/Enemies/Brutmutter_<STATE>_<DIR>_<F>.png 96x96, Brutmutter boss: Walk 4, Birth 4, Hit 2, Death 5 (issue #155)
+  Sprites/UI/Weapon_<NAME>.png              32x16 weapon icons: Pistol, AssaultRifle, Shotgun, DualPistols (issue #174)
+  Sprites/Projectiles/Bullet_<Rifle|Pellet|Dual>.png 16x16 bullet look per weapon (issue #174)
   Sprites/Enemies/MegaBoomer_<STATE>_<DIR>_<F>.png 128x128, Mega-Boomer boss: Walk 4, Split 4, Hit 2, Death 5 (issue #159)
   Sprites/Effects/Puddle_<Warm|Active>_<F>.png 48x24, Mega-Boomer puddle: 2 frames warm-up glow, 2 frames harmful (issue #159)
   Sprites/Enemies/Boomer_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames, pulsing belly (issue #22)
@@ -1454,6 +1456,125 @@ def bullet_insta_kill() -> Canvas:
     c.rect(8, 7, 12, 8, "white")
     c.set(13, 7, "white")
     c.set(13, 8, "slate_5")
+    c.outline()
+    return c
+
+
+def bullet_rifle() -> Canvas:
+    """Assault rifle (issue #174): a thin, long tracer."""
+    c = Canvas(16, 16)
+    c.rect(1, 8, 4, 8, "orange")
+    c.rect(5, 8, 10, 8, "yellow")
+    c.rect(11, 8, 13, 8, "glow")
+    c.set(12, 7, "yellow")
+    return c
+
+
+def bullet_pellet() -> Canvas:
+    """Shotgun (issue #174): a small round pellet with a short glow."""
+    c = Canvas(16, 16)
+    c.set(5, 8, "orange")
+    c.rect(7, 7, 8, 8, "yellow")
+    c.rect(9, 7, 10, 9, "glow")
+    c.set(9, 6, "yellow")
+    c.set(8, 9, "orange")
+    return c
+
+
+def bullet_dual() -> Canvas:
+    """Dual pistols (issue #174): short and cool blue, so the fast stream reads apart from the pistol."""
+    c = Canvas(16, 16)
+    c.rect(5, 7, 7, 8, "blue_1")
+    c.rect(8, 7, 10, 8, "blue_2")
+    c.set(11, 7, "white")
+    c.set(11, 8, "blue_2")
+    return c
+
+
+# Weapon icons (issue #174), 32x16, muzzle to the right: '#' metal, '+' light edge, 'w' wood or grip, 'o' dark detail.
+WEAPON_ICONS = {
+    "Pistol": [
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "...........+++++++++++++........",
+        "...........###########o##.......",
+        "...........##############.......",
+        "...........###oo#######.........",
+        "...........##wwo.###............",
+        "............wwwo................",
+        "............wwww................",
+        "...........wwww.................",
+        "...........www..................",
+        "................................",
+        "................................",
+        "................................",
+    ],
+    "AssaultRifle": [
+        "................................",
+        "................................",
+        "................................",
+        "...............+................",
+        "......+++++++++#++++++++........",
+        "..ww..####################++++..",
+        ".wwwww#####################o###.",
+        ".wwwww###oo##########...........",
+        ".wwww.##..ooo..www..............",
+        ".www......ooo..www..............",
+        "..........ooo..ww...............",
+        "...........oo...................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+    ],
+    "Shotgun": [
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "...........+++++++++++++++++++..",
+        "..www.....###################o..",
+        ".wwwwww...###################o..",
+        ".wwwwwwwww####wwwwwww...........",
+        ".wwwww...o#...wwwwwww...........",
+        ".wwww....oo.....................",
+        "..ww............................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+        "................................",
+    ],
+    "DualPistols": [
+        "................................",
+        "...+++++++++....................",
+        "...########o#...................",
+        "...#########....................",
+        "...###oo##......................",
+        "....wwwo........................",
+        "....www.........................",
+        "...www..........+++++++++.......",
+        "................########o#......",
+        "................#########.......",
+        "................###oo##.........",
+        ".................wwwo...........",
+        ".................www............",
+        "................www.............",
+        "................................",
+        "................................",
+    ],
+}
+WEAPON_ICON_COLORS = {"#": "slate_3", "+": "slate_5", "w": "brown_1", "o": "slate_1"}
+
+
+def weapon_icon(name: str) -> Canvas:
+    c = Canvas(32, 16)
+    for y, row in enumerate(WEAPON_ICONS[name]):
+        for x, key in enumerate(row):
+            if key in WEAPON_ICON_COLORS:
+                c.set(x, y, WEAPON_ICON_COLORS[key])
     c.outline()
     return c
 
@@ -3184,6 +3305,10 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/Generator_Off.png": generator(False).to_image(),
         "Sprites/Level/Generator_On.png": generator(True).to_image(),
         "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),
+        **{f"Sprites/UI/Weapon_{name}.png": weapon_icon(name).to_image() for name in WEAPON_ICONS},
+        "Sprites/Projectiles/Bullet_Rifle.png": bullet_rifle().to_image(),
+        "Sprites/Projectiles/Bullet_Pellet.png": bullet_pellet().to_image(),
+        "Sprites/Projectiles/Bullet_Dual.png": bullet_dual().to_image(),
         "Sprites/UI/Star_Full.png": star(True).to_image(),
         **{f"Sprites/UI/Logo_{f}.png": logo_frame(f).to_image() for f in range(LOGO_FRAMES)},
         "Sprites/UI/Button.png": menu_button("Button").to_image(),

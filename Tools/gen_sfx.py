@@ -7,6 +7,9 @@ A fixed seed keeps the files reproducible; only the standard library is used.
 
 Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   Shot.wav            short pulse "pew" falling in pitch, with a noise click
+  ShotRifle.wav       assault rifle: shorter, sharper, with a metallic crack (issue #174)
+  ShotShotgun.wav     shotgun: deep noise boom with a falling thump (issue #174)
+  ShotDual.wav        dual pistols: light high tick (issue #174)
   Hit.wav             dull noise thump on an enemy
   Death.wav           falling pulse slide with crunchy noise
   PlayerHurt.wav      harsh two-step down buzz when the player loses a heart
@@ -128,6 +131,30 @@ def shot() -> list[float]:
     length = 0.08
     p, n = Pulse(0.25), Noise()
     return [(0.6 * p.sample(slide(1400, 300, t, length)) + 0.4 * n.sample(9000) * (t < 0.015)) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
+
+
+def shot_rifle() -> list[float]:
+    """Assault rifle (issue #174): shorter and sharper than the pistol, a hard noise crack on top."""
+    length = 0.06
+    p, n = Pulse(0.125), Noise(short=True)
+    return [(0.5 * p.sample(slide(1900, 500, t, length)) + 0.5 * n.sample(12000) * (t < 0.02)) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
+
+
+def shot_shotgun() -> list[float]:
+    """Shotgun (issue #174): a deep boom, mostly noise, with a low thump falling under it."""
+    length = 0.24
+    p, n = Pulse(0.5), Noise()
+    return [(0.45 * p.sample(slide(220, 55, t, length)) + 0.7 * n.sample(slide(6000, 900, t, length)))
+            * decay(t, length, 0.002) for t in (i / RATE for i in frames(length))]
+
+
+def shot_dual() -> list[float]:
+    """Dual pistols (issue #174): a light, high tick, so the fast stream does not tire the ear."""
+    length = 0.045
+    p = Pulse(0.25)
+    return [0.8 * p.sample(slide(2400, 900, t, length)) * decay(t, length)
             for t in (i / RATE for i in frames(length))]
 
 
@@ -313,7 +340,7 @@ def switch_reset() -> list[float]:
 
 
 SOUNDS = {
-    "Shot": shot, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
+    "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
     "GateOpen": gate_open, "MissionDone": mission_done,
     "WalkerSpawn": walker_spawn, "WalkerApproach": walker_approach,
     "RunnerSpawn": runner_spawn, "RunnerApproach": runner_approach,
