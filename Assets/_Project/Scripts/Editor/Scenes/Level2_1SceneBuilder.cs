@@ -180,6 +180,11 @@ namespace RushOps.Editor.Scenes
             level.Gates[muell].Puzzles.Add(transport);
             level.Gates[hinterhaus].Kills = HinterhausKills;
             level.Gates[hinterhaus].CountKillsFromZone = 4;
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Garagenhof, the eastern side branch: reward for the detour.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(33, 36), Combat.WeaponCatalogBuilder.AssaultRiflePath));
+            // Zone 5 Hinterhaus.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(13, 82), Combat.WeaponCatalogBuilder.ShotgunPath));
             return level;
         }
 

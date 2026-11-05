@@ -112,6 +112,9 @@ namespace RushOps.Editor.Scenes
                 Create = MegaBoomerBuilder.Create,
                 Connect = MegaBoomerBuilder.Connect,
             };
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Zone 2 Kraterrand before the arena, on the west rock.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(8, 30), Combat.WeaponCatalogBuilder.DualPistolsPath));
             return level;
         }
     }

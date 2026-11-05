@@ -135,6 +135,9 @@ namespace RushOps.Editor.Scenes
             level.Gates[gates[2]].Kills = StrandbarKills;
             level.Gates[gates[2]].CountKillsFromZone = 2;
             level.Gates[gates[3]].Puzzles.Add(transport);
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Zone 3 Strandbar: on the bar counter.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(12, 62), Combat.WeaponCatalogBuilder.ShotgunPath));
             return level;
         }
 

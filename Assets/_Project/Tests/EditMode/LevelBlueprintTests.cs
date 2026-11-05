@@ -40,6 +40,56 @@ namespace RushOps.Tests.EditMode
             StringAssert.Contains(problem, string.Join("\n", LevelBlueprintBuilder.Validate(level)));
         }
 
+        private static readonly LevelBlueprint[][] Islands =
+        {
+            new[] { Level1_1SceneBuilder.Blueprint, Level1_2SceneBuilder.Blueprint, Level1_3SceneBuilder.Blueprint },
+            new[] { Level2_1SceneBuilder.Blueprint, Level2_2SceneBuilder.Blueprint, Level2_3SceneBuilder.Blueprint },
+            new[] { Level3_1SceneBuilder.Blueprint, Level3_2SceneBuilder.Blueprint, Level3_3SceneBuilder.Blueprint },
+        };
+
+        [Test]
+        public void EveryLevel_HasWallWeapons_RegularOneOrTwo_BossLevelsOneBeforeTheArena()
+        {
+            foreach (LevelBlueprint[] island in Islands)
+            {
+                foreach (LevelBlueprint level in island)
+                {
+                    CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(level), level.SceneName);
+                    if (level.Boss == null)
+                    {
+                        Assert.That(level.WallWeapons.Count, Is.InRange(1, 2), $"{level.SceneName}: issue #177");
+                        continue;
+                    }
+
+                    Assert.AreEqual(1, level.WallWeapons.Count, $"{level.SceneName}: one wall weapon");
+                    int zone = level.Zones.FindIndex(z => z.ExitGate == level.Boss.EntryGate);
+                    Assert.IsTrue(level.Zones[zone].Area.Contains(level.WallWeapons[0].PickupCell),
+                        $"{level.SceneName}: the wall weapon hangs in the zone before the arena");
+                }
+            }
+        }
+
+        [Test]
+        public void EveryIsland_ShowsTheWeaponItsBossUnlocks_BeforeTheBoss()
+        {
+            for (int i = 0; i < Islands.Length; i++)
+            {
+                string boss = Islands[i][2].SceneName;
+                bool found = false;
+                for (int l = 0; l < 2; l++)
+                {
+                    foreach (LevelWallWeapon wallWeapon in Islands[i][l].WallWeapons)
+                    {
+                        var weapon = UnityEditor.AssetDatabase.LoadAssetAtPath<RushOps.Combat.WeaponDefinition>(wallWeapon.WeaponPath);
+                        Assert.IsNotNull(weapon, wallWeapon.WeaponPath);
+                        found |= weapon.UnlockLevel == boss;
+                    }
+                }
+
+                Assert.IsTrue(found, $"island {i + 1}: the weapon of {boss} hangs in none of its regular levels");
+            }
+        }
+
         [Test]
         public void Level1_1_FollowsLevelDesignRules()
         {

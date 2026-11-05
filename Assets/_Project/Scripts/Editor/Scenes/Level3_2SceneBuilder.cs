@@ -143,6 +143,9 @@ namespace RushOps.Editor.Scenes
             level.Gates[gates[3]].Puzzles.Add(bruecke);
             level.Gates[gates[4]].Puzzles.Add(kammerHold);
             level.Gates[gates[4]].Puzzles.Add(kammer);
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Zone 3 Schmelzkessel: on the ridge between generator and cells.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(16, 56), Combat.WeaponCatalogBuilder.DualPistolsPath));
             return level;
         }
 
