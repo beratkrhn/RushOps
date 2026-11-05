@@ -17,7 +17,7 @@ namespace RushOps.Combat
         [SerializeField, Min(0f)] private float _fireRate = 6f;
 
         [Tooltip("Damage per projectile hit.")]
-        [SerializeField, Min(0)] private int _damage = 1;
+        [SerializeField, Min(0)] private int _damage = 10;
 
         [Tooltip("Projectiles fired with every shot, e.g. 5 for a shotgun.")]
         [SerializeField, Min(1)] private int _projectilesPerShot = 1;
@@ -39,6 +39,15 @@ namespace RushOps.Combat
 
         [Tooltip("Icon for the HUD, the swap button and the weapon selection.")]
         [SerializeField] private Sprite _icon;
+
+        [Tooltip("Normal look of its projectiles; empty keeps the bullet of the projectile prefab. Perk looks win.")]
+        [SerializeField] private Sprite _projectileSprite;
+
+        [Tooltip("Fires from two muzzles in turn, left and right of the aim (dual pistols, W2).")]
+        [SerializeField] private bool _alternateMuzzles;
+
+        [Tooltip("Distance in units of each muzzle from the aim line when alternating.")]
+        [SerializeField, Min(0f)] private float _muzzleSeparation = 0.18f;
 
         /// <summary>Name shown in menus and on the HUD.</summary>
         public string DisplayName => _displayName;
@@ -69,6 +78,15 @@ namespace RushOps.Combat
 
         /// <summary>Icon for the HUD, the swap button and the weapon selection.</summary>
         public Sprite Icon => _icon;
+
+        /// <summary>Normal look of its projectiles; null keeps the prefab's bullet.</summary>
+        public Sprite ProjectileSprite => _projectileSprite;
+
+        /// <summary>True if shots alternate between a left and a right muzzle.</summary>
+        public bool AlternateMuzzles => _alternateMuzzles;
+
+        /// <summary>Distance of each muzzle from the aim line when alternating.</summary>
+        public float MuzzleSeparation => _muzzleSeparation;
 
         /// <summary>Damage per second without modifiers (W7).</summary>
         public float DamagePerSecond => WeaponMath.DamagePerSecond(_fireRate, _damage, ProjectilesPerShot);

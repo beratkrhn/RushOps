@@ -22,6 +22,7 @@ namespace RushOps.Combat
         [SerializeField] private Sprite _instaKillSprite;
 
         private Sprite _normalSprite;
+        private Sprite _weaponSprite;
         private Vector2 _direction;
         private float _speed;
         private float _remainingRange;
@@ -51,10 +52,12 @@ namespace RushOps.Combat
         /// <paramref name="hitLayers"/> (walls, enemies) and deals <paramref name="damage"/> to an <see cref="IDamageable"/> it hits;
         /// a <paramref name="lethal"/> hit kills it unless it is a boss. <paramref name="look"/> picks the sprite.
         /// <paramref name="expire"/> is called once when the projectile hits something or runs out of range.
+        /// <paramref name="normalSprite"/> is the weapon's own bullet (issue #174); null keeps the prefab's.
         /// </summary>
         public void Launch(Vector2 origin, Vector2 direction, float speed, float range, LayerMask hitLayers, int damage,
-            bool lethal, ShotLook look, Action<Projectile> expire)
+            bool lethal, ShotLook look, Action<Projectile> expire, Sprite normalSprite = null)
         {
+            _weaponSprite = normalSprite;
             _direction = direction.normalized;
             _speed = speed;
             _remainingRange = range;
@@ -142,7 +145,7 @@ namespace RushOps.Combat
                 ShotLook.InstaKill => _instaKillSprite,
                 _ => null,
             };
-            _renderer.sprite = sprite != null ? sprite : _normalSprite;
+            _renderer.sprite = sprite != null ? sprite : _weaponSprite != null ? _weaponSprite : _normalSprite;
         }
 
         private void Expire()

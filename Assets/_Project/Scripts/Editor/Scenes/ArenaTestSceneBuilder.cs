@@ -127,6 +127,9 @@ namespace RushOps.Editor.Scenes
         // HUD art is drawn at whole multiples of its pixel size (reference units at 360x640).
         internal const int HudPixelScale = 2;
         internal const int TitlePixelScale = 3;
+        // Debug weapon button of the test arena (issue #174), above the FPS counter.
+        private const float WeaponSwitchHeight = 24f;
+        private const float WeaponSwitchOffset = 22f;
         private const float HudMargin = 8f;
         private const float HeartSpacing = 2f;
         private const float PerkRowGap = 4f;
@@ -236,6 +239,36 @@ namespace RushOps.Editor.Scenes
             var area = new RectInt(1, 1, Layout.Width - 2, Layout.Height - 2);
             Zone zone = CreateZone(arena, "Zone", null, area, SpawnCells, waves, null);
             AssignZones(arena, new[] { zone });
+            CreateWeaponSwitch(arena);
+        }
+
+        // Debug button above the FPS counter (issue #174): cycles through all weapons to judge their feel.
+        private static void CreateWeaponSwitch(ArenaScene arena)
+        {
+            RushOps.Combat.WeaponDefinition[] weapons = RushOps.Editor.Combat.WeaponCatalogBuilder.All();
+            var hud = (RectTransform)arena.Tracker.transform.parent;
+            var bottom = new Vector2(0.5f, 0f);
+            RectTransform rect = CreateUiRect("DebugWeaponSwitch", hud, bottom, bottom);
+            rect.pivot = bottom;
+            rect.sizeDelta = new Vector2(MenuButtonSize.x, WeaponSwitchHeight);
+            rect.anchoredPosition = new Vector2(0f, HudMargin + WeaponSwitchOffset);
+            var image = rect.gameObject.AddComponent<Image>();
+            Color back = PaletteSlate2;
+            back.a = 0.7f;
+            image.color = back;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            Text label = CreateText("Label", rect, PixelFontBuilder.Build(), "Waffe: Pistole", HudPixelScale, Vector2.zero);
+            label.rectTransform.sizeDelta = new Vector2(MenuButtonSize.x, WeaponSwitchHeight) / HudPixelScale;
+
+            var weaponSwitch = rect.gameObject.AddComponent<DebugWeaponSwitch>();
+            UnityEventTools.AddPersistentListener(button.onClick, weaponSwitch.Next);
+            UnityEventTools.AddPersistentListener(button.onClick, arena.Sfx.GetComponent<UiClickSound>().Play);
+            var serialized = new SerializedObject(weaponSwitch);
+            serialized.FindProperty("_weapon").objectReferenceValue = arena.Player.GetComponent<PlayerWeapon>();
+            SetArray(serialized.FindProperty("_weapons"), weapons);
+            serialized.FindProperty("_label").objectReferenceValue = label;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         /// <summary>
@@ -274,7 +307,7 @@ namespace RushOps.Editor.Scenes
 
             runner = LoadOrCreateConfig<EnemyDefinition>(RunnerDefinitionPath);
             var serialized = new SerializedObject(runner);
-            serialized.FindProperty("_health").intValue = 1;
+            serialized.FindProperty("_health").intValue = 10;
             serialized.FindProperty("_moveSpeed").floatValue = 4f;
             serialized.FindProperty("_contactDamage").intValue = 1;
             serialized.FindProperty("_points").intValue = 15;
@@ -301,7 +334,7 @@ namespace RushOps.Editor.Scenes
 
             brute = LoadOrCreateConfig<EnemyDefinition>(BruteDefinitionPath);
             var serialized = new SerializedObject(brute);
-            serialized.FindProperty("_health").intValue = 20;
+            serialized.FindProperty("_health").intValue = 200;
             serialized.FindProperty("_moveSpeed").floatValue = 1.2f;
             serialized.FindProperty("_contactDamage").intValue = 2;
             serialized.FindProperty("_deathDuration").floatValue = 0.4f;
@@ -329,7 +362,7 @@ namespace RushOps.Editor.Scenes
 
             boomer = LoadOrCreateConfig<EnemyDefinition>(BoomerDefinitionPath);
             var serialized = new SerializedObject(boomer);
-            serialized.FindProperty("_health").intValue = 4;
+            serialized.FindProperty("_health").intValue = 40;
             serialized.FindProperty("_moveSpeed").floatValue = 2f;
             serialized.FindProperty("_contactDamage").intValue = 0;
             serialized.FindProperty("_deathDuration").floatValue = 0.12f;

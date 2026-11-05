@@ -36,6 +36,10 @@ namespace RushOps.Player
         private AimAssist _assist;
         private DirectionalSpriteAnimator _view;
         private ShotModifiers _modifiers = ShotModifiers.None;
+        private int _shotCount;
+
+        /// <summary>Shots fired so far; alternating weapons pick their muzzle from it.</summary>
+        public int ShotCount => _shotCount;
 
         /// <summary>Raised once per shot with its direction, e.g. for the shot sound.</summary>
         public event Action<Vector2> Fired;
@@ -131,14 +135,18 @@ namespace RushOps.Player
             int projectiles = weapon.ProjectilesPerShot;
             for (int i = 0; i < shots; i++)
             {
+                Vector2 muzzle = weapon.AlternateMuzzles
+                    ? origin + WeaponMath.AlternateMuzzleOffset(direction, _shotCount, weapon.MuzzleSeparation)
+                    : origin;
+                _shotCount++;
                 for (int p = 0; p < projectiles; p++)
                 {
                     // Only roll when needed, so weapons without spread fire exactly along the aim.
                     float random = weapon.Spread > 0f ? _random.Value() : 0.5f;
                     Vector2 projectileDirection = WeaponMath.ProjectileDirection(
                         direction, p, projectiles, weapon.FanAngle, weapon.Spread, random);
-                    _pool.Launch(origin, projectileDirection, weapon.ProjectileSpeed, weapon.Range, _obstacles, damage,
-                        _modifiers.InstaKill, look);
+                    _pool.Launch(muzzle, projectileDirection, weapon.ProjectileSpeed, weapon.Range, _obstacles, damage,
+                        _modifiers.InstaKill, look, weapon.ProjectileSprite);
                 }
 
                 Fired?.Invoke(direction);

@@ -113,5 +113,26 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(12f, weapon.DamagePerSecond, Tolerance);
             Object.DestroyImmediate(weapon);
         }
+    
+
+        [Test]
+        public void AlternateMuzzles_GoLeftThenRight_OfTheAim()
+        {
+            Vector2 first = WeaponMath.AlternateMuzzleOffset(Vector2.right, 0, 0.2f);
+            Vector2 second = WeaponMath.AlternateMuzzleOffset(Vector2.right, 1, 0.2f);
+            Vector2 third = WeaponMath.AlternateMuzzleOffset(Vector2.right, 2, 0.2f);
+
+            Assert.AreEqual(0.2f, first.y, 1e-5f, "left of an aim to the right is up");
+            Assert.AreEqual(-0.2f, second.y, 1e-5f);
+            Assert.AreEqual(first, third);
+            Assert.AreEqual(0f, first.x, 1e-5f, "sideways only");
+        }
+
+        [Test]
+        public void AlternateMuzzles_WithoutAimOrSeparation_StayInPlace()
+        {
+            Assert.AreEqual(Vector2.zero, WeaponMath.AlternateMuzzleOffset(Vector2.zero, 0, 0.2f));
+            Assert.AreEqual(Vector2.zero, WeaponMath.AlternateMuzzleOffset(Vector2.up, 1, 0f));
+        }
     }
 }

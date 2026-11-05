@@ -103,6 +103,55 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator DebugSwitch_CyclesThroughAllFourWeapons()
+        {
+            var weaponSwitch = Object.FindFirstObjectByType<RushOps.UI.DebugWeaponSwitch>();
+            Assert.IsNotNull(weaponSwitch, "issue #174: the test arena has a weapon switch");
+            Assert.AreEqual(4, weaponSwitch.Weapons.Length);
+            yield return null;
+
+            var names = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < weaponSwitch.Weapons.Length; i++)
+            {
+                weaponSwitch.Next();
+                names.Add(_weapon.ActiveWeapon.DisplayName);
+            }
+
+            CollectionAssert.AreEquivalent(new[] { "Pistole", "Sturmgewehr", "Schrotflinte", "Dual-Pistolen" }, names);
+            Assert.AreEqual("Pistole", _weapon.ActiveWeapon.DisplayName, "the list wraps round");
+        }
+
+        [UnityTest]
+        public IEnumerator DualPistols_FireLeftAndRightInTurn_WithTheirOwnBullet()
+        {
+            Object.FindFirstObjectByType<WaveDirector>().enabled = false;
+            var start = new Vector2(20.5f, 31f);
+            _weapon.GetComponent<Rigidbody2D>().position = start;
+            _weapon.transform.position = start;
+            yield return new WaitForFixedUpdate();
+            var weaponSwitch = Object.FindFirstObjectByType<RushOps.UI.DebugWeaponSwitch>();
+            WeaponDefinition dual = System.Array.Find(weaponSwitch.Weapons, w => w.AlternateMuzzles);
+            _weapon.Slots.Reset(dual);
+
+            _aim.AimInput = Vector2.up;
+            yield return new WaitForSeconds(0.35f);
+            _aim.AimInput = Vector2.zero;
+
+            Projectile[] flying = _pool.GetComponentsInChildren<Projectile>(false);
+            Assert.GreaterOrEqual(flying.Length, 2, "dual pistols fire fast");
+            float minX = float.MaxValue, maxX = float.MinValue;
+            foreach (Projectile projectile in flying)
+            {
+                Assert.AreSame(dual.ProjectileSprite, projectile.Sprite, "own bullet look");
+                minX = Mathf.Min(minX, projectile.transform.position.x);
+                maxX = Mathf.Max(maxX, projectile.transform.position.x);
+            }
+
+            // The muzzles sit 2 x separation apart; spread adds a little on top.
+            Assert.Greater(maxX - minX, dual.MuzzleSeparation * 1.5f, "shots come from two muzzles side by side");
+        }
+
+        [UnityTest]
         public IEnumerator Aim_WhileMovingOtherWay_FacesAimDirection()
         {
             var view = _weapon.GetComponent<DirectionalSpriteAnimator>();
