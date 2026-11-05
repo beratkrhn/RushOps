@@ -92,3 +92,21 @@ Fragen zum Epic #171 (Lastenheft F-SPF-05, Abschnitt 8). Heute gibt es eine Waff
 | P1 | Kill-Gates zählen global ab Levelstart (F-LVL-03). Ein zweites Kill-Gate später im Level ist deshalb oft schon offen, bevor der Spieler ankommt. Sollen Kill-Gates optional ab Betreten ihrer Zone zählen? | Option „ab Zone zählen“ für spätere Level; Lastenheft F-LVL-03 entsprechend anpassen |Dein Vorschlag|
 | P2 | Die letzte Zone von Level 1-1 hat kein Tor; man kann am letzten Ansturm vorbei zum Ausgang laufen. Soll der Ausgang erst nach den Wellen der letzten Zone aufgehen? | Nach dem Spieltest entscheiden |Nach letzter Welle|
 | P3 | Der Missions-Tracker zeigt in der letzten Zone nichts an. Soll dort „Zum Ausgang!“ stehen? | Ja |Ja|
+
+## v1.0.0 – Release
+
+Fragen zu den Epics #42, #52, #53 und #54, entschieden am 05.11.2026. Schon vorher entschieden: Bundle-ID `com.beratkrhn.rushops`, Mindestversion iOS 15 (Issue #13), keine Käufe, keine Werbung, keine Online-Funktionen (Lastenheft Abschnitt 7).
+
+| # | Epic | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|---|
+| R1 | #42 | Kommt Musik in 1.0 (G11 hatte sie zurückgestellt)? | Nach 1.0 verschieben; F-AUD-01 ist „Soll“ | V |
+| R2 | #53 | In welchen Stores erscheint 1.0? | Erst iOS, Android später | Nur iOS; Android wird nicht veröffentlicht |
+| R3 | #53 | Preis? | Kostenlos, ohne Käufe und Werbung | V |
+| R4 | #53 | Wo liegt die Datenschutzerklärung? | GitHub Pages (Repo ist öffentlich) | V |
+| R5 | #54 | Ist das Apple Developer Program vorhanden? | | Ja |
+| R6 | #53 | Sprache des Store-Eintrags? | Nur Deutsch, passend zum Spiel | V |
+| R7 | #53 | Motiv des App-Icons? | Spielerfigur mit Pistole, dahinter eine Zombie-Silhouette auf dunklem Grund, per Skript | V |
+| R8 | #52 | Testgerät für NF-01? | | iPhone 14 oder neuer. Weil es keine Mittelklasse-Referenz ist, kommen Profiling im Editor, ein festes Frame-Budget und ein Stresslevel dazu |
+| R9 | alle | Wann wird am Gerät gespielt und abgenommen? | | Einmal ganz am Ende. Die Spieltest-Issues #156, #160 und #178 sind gelöscht und gehen im Gesamtspieltest von v1.0.0 auf |
+| R10 | #53 | Nur iPhone oder auch iPad? | Nur iPhone; auf dem iPad bleibt es über den Kompatibilitätsmodus installierbar | V |
+| R11 | #54 | Was wird aus v0.7.0, v0.8.0 und v1.1.0, die nie einzeln veröffentlicht wurden? | Milestones schließen; ihre Inhalte (Insel 2 und 3, Waffen) erscheinen mit 1.0.0, Tags gibt es erst ab `v1.0.0` | V |

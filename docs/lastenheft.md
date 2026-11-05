@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 0.7 |
-| **Stand** | 30.10.2026 |
+| **Version** | 0.8 |
+| **Stand** | 05.11.2026 |
 | **Status** | Entwurf, nicht final |
 | **Autor** | Berat Karahan |
 
@@ -21,7 +21,7 @@ RushOps ist ein Offline-Singleplayer-Spiel: ein 2D-Top-down-Shooter mit Twin-Sti
 
 | ID | Anforderung | Prio |
 |---|---|---|
-| F-PLT-01 | Zielplattformen sind iOS und Android. | Muss |
+| F-PLT-01 | Zielplattform ist iOS auf dem iPhone. Android und iPad werden nicht veröffentlicht (Design-Fragen R2, R10). | Muss |
 | F-PLT-02 | Das Spiel läuft ausschließlich im **Hochformat**. Querformat wird nicht unterstützt. | Muss |
 | F-PLT-03 | Das Spiel ist vollständig offline spielbar. Es gibt keine Server, Konten oder Cloud-Anbindung. | Muss |
 | F-PLT-04 | Die Spielsprache ist **Deutsch**. | Muss |
@@ -259,6 +259,8 @@ Alle Werte sind *Startwerte*.
 ## 7. Abgrenzung (nicht Teil von Version 1.0)
 
 - Querformat
+- Android und iPad (Design-Fragen R2, R10)
+- Musik (Design-Frage R1)
 - Online-Funktionen, Bestenlisten, Cloud-Speicherstände
 - In-App-Käufe und Werbung
 - Mehrspielermodus
@@ -277,8 +279,9 @@ Alle Werte sind *Startwerte*.
 
 - Bundle-ID für iOS und Android: `com.beratkrhn.rushops` (30.10.2026, Issue #13)
 - Mindestversionen: Android 8.0 (API 26), iOS 15 (30.10.2026, Issue #13)
+- Veröffentlicht wird nur im App Store für das iPhone, kostenlos, Store-Eintrag auf Deutsch (05.11.2026, Design-Fragen R2, R3, R6, R10)
 
-- Musik: vorerst keine; falls später, per Skript erzeugt (04.11.2026, Design-Frage G11)
+- Musik: vorerst keine; falls später, per Skript erzeugt (04.11.2026, Design-Frage G11); nicht in 1.0 (05.11.2026, R1)
 - Inselthemen: Strand, düstere Stadt, Vulkan (04.11.2026, Design-Frage G6)
 
 ### Offene Punkte
@@ -298,3 +301,4 @@ Alle Werte sind *Startwerte*.
 | 0.5 | 04.11.2026 | F-PRK-02: Drop-Chance 12 % statt 8 % (Spieltest v0.3.0). Offene Punkte entschieden: Musik vorerst nicht, Inselthemen festgelegt. |
 | 0.6 | 04.11.2026 | F-UI-04: keine Stick-Einstellungen im Menü (Design-Frage M3). |
 | 0.7 | 04.11.2026 | F-LVL-03: Kill-Gates können ab Betreten ihrer Zone zählen (Design-Frage P1, Issue #147). |
+| 0.8 | 05.11.2026 | F-PLT-01: nur iOS auf dem iPhone; Android, iPad und Musik nicht in 1.0 (Design-Fragen R1, R2, R10). |
