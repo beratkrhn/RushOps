@@ -23,14 +23,15 @@ rows = {os.path.basename(p)[:-5]: json.load(open(p)) for p in glob.glob("Logs/pe
 if not rows:
     print("Keine Messwerte unter Logs/perf/")
     raise SystemExit(0)
-print("| Szene | Gegner | Spiel-CPU Ø / 1 % (ms) | Skripte Ø (ms) | Physik Ø (ms) | GC pro Frame (B) | Frames mit GC | Texturen (MB) |")
-print("|---|---|---|---|---|---|---|---|")
+print("| Szene | Gegner | Spiel-CPU Ø / 1 % (ms) | Skripte Ø (ms) | Physik Ø (ms) | GC pro Frame (B) | Frames mit GC | Texturen (MB) | Draw Calls Ø / max | SetPass Ø |")
+print("|---|---|---|---|---|---|---|---|---|---|")
 for name in order + sorted(set(rows) - set(order)):
     d = rows.get(name)
     if not d:
         continue
     print(f"| {name} | {d['enemiesAlive']} | {d['gameMeanMs']:.2f} / {d['gameWorstPercentMs']:.2f} | "
           f"{d['scriptsMeanMs']:.2f} | {d['physicsMeanMs']:.2f} | {d['gcBytesPerFrame']:.0f} | "
-          f"{d['framesWithGc']} von {d['frames']} | {d['peakTextureMemoryMb']:.0f} |")
+          f"{d['framesWithGc']} von {d['frames']} | {d['peakTextureMemoryMb']:.0f} | "
+          f"{d.get('drawCallsPerFrame', 0):.0f} / {d.get('drawCallsWorst', 0)} | {d.get('setPassCallsPerFrame', 0):.0f} |")
 PY
 exit $rc
