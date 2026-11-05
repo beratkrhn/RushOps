@@ -177,7 +177,7 @@ Alle Werte sind *Startwerte*.
 | ID | Anforderung | Prio |
 |---|---|---|
 | F-SKN-01 | Es gibt keine In-App-Käufe und keine Premium-Währung. | Muss |
-| F-SKN-02 | Jedes abgeschlossene Level schaltet einen fest definierten Skin frei. | Muss |
+| F-SKN-02 | Jede abgeschlossene Insel (ihr letztes Level) schaltet einen fest definierten Skin frei. | Muss |
 | F-SKN-03 | Zusätzliche Skins werden über spielübergreifende Meilensteine freigeschaltet (z. B. 100 Kills insgesamt). | Muss |
 | F-SKN-04 | Skins sind in Version 1.0 **rein kosmetisch**. | Muss |
 

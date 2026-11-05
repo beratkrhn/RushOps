@@ -21,7 +21,7 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from gen_pixelart import (  # noqa: E402
     ART_DIR, DIRECTIONS, PALETTE, PLAYER_HIT_FRAMES, PLAYER_WALK_FRAMES, ROOT, Canvas, assert_in_palette,
-    canvas_from_image, player_death_frames, player_hit, player_roll_frames, player_walk,
+    armed, player_death_frames, player_hit, player_roll_frames, player_source, player_walk,
 )
 
 SKINS_DIR = ART_DIR / "Sprites/Player/Skins"
@@ -43,19 +43,14 @@ ROLES = {
     "apricot": "accent_1",
 }
 
-# Same ids and order as SkinCatalogBuilder (Unity). Level skins follow their island's accent colours.
+# Same ids and order as SkinCatalogBuilder (Unity). One skin per island, unlocked by its last level; it follows the
+# island's accent colours.
 SKINS = {
     # Strand
-    "Rettungsschwimmer": dict(dark="red_0", mid="red_1", cloak="red_1", light="orange", accent_0="orange", accent_1="yellow"),
-    "Surfer": dict(dark="blue_0", mid="blue_1", cloak="blue_1", light="blue_2", accent_0="clay", accent_1="apricot"),
     "Sandsturm": dict(dark="brown_0", mid="brown_1", cloak="clay", light="apricot", accent_0="skin_0", accent_1="peach"),
     # Düstere Stadt
-    "Nachtwache": dict(dark="night", mid="slate_0", cloak="slate_1", light="slate_2", accent_0="blue_1", accent_1="blue_2"),
-    "Neon": dict(dark="night", mid="dusk", cloak="mauve", light="peach", accent_0="blue_1", accent_1="blue_2"),
     "Rost": dict(dark="slate_0", mid="brown_0", cloak="brown_1", light="clay", accent_0="orange", accent_1="apricot"),
     # Vulkan
-    "Glut": dict(dark="night", mid="red_0", cloak="red_0", light="red_1", accent_0="orange", accent_1="yellow"),
-    "Asche": dict(dark="slate_1", mid="slate_2", cloak="slate_3", light="slate_4", accent_0="red_0", accent_1="orange"),
     "Obsidian": dict(dark="outline", mid="night", cloak="slate_0", light="slate_2", accent_0="red_0", accent_1="red_1"),
     # Meilensteine
     "Veteran": dict(dark="green_0", mid="brown_0", cloak="green_1", light="green_2", accent_0="clay", accent_1="apricot"),
@@ -101,8 +96,7 @@ def skin_frames(skin: str) -> dict[str, Image.Image]:
             raise ValueError(f"{skin}: {role} uses {colours[role]}, which is not in the palette")
     files = {}
     for d, name in enumerate(DIRECTIONS):
-        source = ART_DIR / f"Sprites/Player/Player_Idle_{name}.png"
-        idle = recolour(canvas_from_image(Image.open(source).convert("RGBA")), colours)
+        idle = recolour(armed(player_source(name), name)[0], colours)
         files[f"{skin}_Idle_{name}.png"] = idle.to_image()
         for frame in range(PLAYER_WALK_FRAMES):
             files[f"{skin}_Walk_{name}_{frame}.png"] = player_walk(idle, frame).to_image()

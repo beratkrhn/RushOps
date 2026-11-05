@@ -52,14 +52,8 @@ namespace RushOps.Editor.Skins
         private static readonly Spec[] Specs =
         {
             new Spec(DefaultSkinId, "Standard", SkinUnlockKind.Default),
-            new Spec("Rettungsschwimmer", "Rettungsschwimmer", SkinUnlockKind.LevelCompleted, "1-1"),
-            new Spec("Surfer", "Surfer", SkinUnlockKind.LevelCompleted, "1-2"),
             new Spec("Sandsturm", "Sandsturm", SkinUnlockKind.LevelCompleted, "1-3"),
-            new Spec("Nachtwache", "Nachtwache", SkinUnlockKind.LevelCompleted, "2-1"),
-            new Spec("Neon", "Neon", SkinUnlockKind.LevelCompleted, "2-2"),
             new Spec("Rost", "Rost", SkinUnlockKind.LevelCompleted, "2-3"),
-            new Spec("Glut", "Glut", SkinUnlockKind.LevelCompleted, "3-1"),
-            new Spec("Asche", "Asche", SkinUnlockKind.LevelCompleted, "3-2"),
             new Spec("Obsidian", "Obsidian", SkinUnlockKind.LevelCompleted, "3-3"),
             new Spec("Veteran", "Veteran", SkinUnlockKind.Milestone, "", SkinMilestone.TotalKills, 100),
             new Spec("Zombiejaeger", "Zombiejäger", SkinUnlockKind.Milestone, "", SkinMilestone.TotalKills, 1000),

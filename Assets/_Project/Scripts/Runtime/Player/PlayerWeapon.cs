@@ -1,4 +1,5 @@
 using System;
+using RushOps.Characters;
 using RushOps.Combat;
 using UnityEngine;
 
@@ -18,18 +19,18 @@ namespace RushOps.Player
         [Tooltip("Layers that stop projectiles, e.g. walls and enemies; enemies take damage.")]
         [SerializeField] private LayerMask _obstacles;
 
-        [Tooltip("Height of the gun above the feet (transform pivot) in units: the height of the hand.")]
-        [SerializeField] private float _muzzleHeight = 0.6f;
+        [Tooltip("Muzzle of the pistol in the hand per direction (E, NE, N, NW, W, SW, S, SE), in units from the feet; "
+            + "from Art/Sprites/Player/Player_Muzzles.json (Tools/gen_pixelart.py).")]
+        [SerializeField] private Vector2[] _muzzles = new Vector2[Direction8Math.Count];
 
-        [Tooltip("Distance of the gun's grip from the body centre along the aim direction in units.")]
-        [SerializeField] private float _gripDistance = 0.2f;
-
-        [Tooltip("Distance from the grip to the muzzle in units; matches the gun sprite (Tools/gen_pixelart.py).")]
-        [SerializeField] private float _barrelLength = 0.19f;
+        // Without a muzzle table: hand height in front of the body.
+        private const float FallbackMuzzleHeight = 0.6f;
+        private const float FallbackMuzzleDistance = 0.4f;
 
         private readonly FireRateTimer _timer = new FireRateTimer();
         private PlayerAim _aim;
         private AimAssist _assist;
+        private DirectionalSpriteAnimator _view;
         private ShotModifiers _modifiers = ShotModifiers.None;
 
         /// <summary>Raised once per shot with its direction, e.g. for the shot sound.</summary>
@@ -55,23 +56,23 @@ namespace RushOps.Player
         /// <summary>Damage per hit with the current <see cref="Modifiers"/>; 0 without config.</summary>
         public int Damage => _config != null ? WeaponMath.ShotDamage(_config.Damage, _modifiers.DamageMultiplier) : 0;
 
-        /// <summary>Point where projectiles start when firing towards <paramref name="direction"/>.</summary>
+        /// <summary>
+        /// Point where projectiles start when firing towards <paramref name="direction"/>: the muzzle of the pistol in
+        /// the sprite the player shows (zero uses the current facing).
+        /// </summary>
         public Vector2 MuzzlePosition(Vector2 direction)
         {
-            return (Vector2)transform.position
-                + PlayerGunMath.Muzzle(direction, _muzzleHeight, _gripDistance, _barrelLength);
-        }
-
-        /// <summary>How the gun in the hand is placed when facing <paramref name="direction"/> (relative to the feet).</summary>
-        public GunPose GunPoseFor(Vector2 direction)
-        {
-            return PlayerGunMath.Pose(direction, _muzzleHeight, _gripDistance);
+            Direction8 shown = _view != null ? _view.Direction : Direction8.S;
+            Direction8 facing = _view != null ? shown : Direction8Math.FromVector(direction, shown);
+            Vector2 fallback = Vector2.up * FallbackMuzzleHeight + direction.normalized * FallbackMuzzleDistance;
+            return (Vector2)transform.position + MuzzleMath.Offset(_muzzles, facing, fallback);
         }
 
         private void Awake()
         {
             _aim = GetComponent<PlayerAim>();
             _assist = GetComponent<AimAssist>();
+            _view = GetComponent<DirectionalSpriteAnimator>();
         }
 
         private void Update()

@@ -39,10 +39,11 @@ namespace RushOps.Tests.PlayMode
         [UnityTest]
         public IEnumerator EnemySlightlyOffAim_ShotGoesToEnemy()
         {
-            Enemy walker = SpawnStill(new Vector2(0.6f, 4f));
-            Vector2 expected = (walker.AimPoint - _weapon.MuzzlePosition(Vector2.up)).normalized;
+            // Slightly right of the muzzle, which sits in the right hand when facing up.
+            Enemy walker = SpawnStill(new Vector2(1f, 4f));
 
             yield return FireUp();
+            Vector2 expected = (walker.AimPoint - _weapon.MuzzlePosition(Vector2.up)).normalized;
 
             Assert.Greater(_lastShot.x, 0.05f, "corrected towards the enemy");
             Assert.AreEqual(expected.x, _lastShot.x, 0.05f);

@@ -127,6 +127,7 @@ Die Details stehen in ADR 0006 (ersetzt Teile von ADR 0002). Kurzfassung:
 - Schrägansicht mit **8 Richtungs-Sprites** (`E`, `NE`, `N`, `NW`, `W`, `SW`, `S`, `SE`); Figuren werden nicht rotiert. Figuren-Leinwand 64×64, Pivot unten Mitte, Sortierung nach Y. Projektile und Effekte rotieren frei.
 - Assets werden per Skript in `Tools/` erzeugt, damit sie reproduzierbar sind. Erzeugte PNGs vor dem Commit hochskaliert ansehen.
 - Ausnahme: vom Menschen gelieferte Figuren (Export aus seinem Character-Tool) werden mit `Tools/import_character.py` übernommen, nicht neu gezeichnet.
+- Die Spielerfigur liegt roh unter `Tools/characters/Player/`; `gen_pixelart.py` zeichnet ihr die Pistole in die Hand und leitet daraus alle Spieler-Frames, die Skins und die Mündungspunkte (`Player_Muzzles.json`) ab.
 
 ## Git-Workflow
 
