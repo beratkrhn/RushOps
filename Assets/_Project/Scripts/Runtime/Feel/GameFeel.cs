@@ -151,7 +151,10 @@ namespace RushOps.Feel
 
         private void OnFired(Vector2 direction)
         {
-            Play(_shotClip, _config != null ? _config.ShotVolume : 0f);
+            // Every weapon may bring its own sound (issue #173); the default sound covers the rest.
+            WeaponDefinition weapon = _weapon != null ? _weapon.ActiveWeapon : null;
+            AudioClip clip = weapon != null && weapon.ShotSound != null ? weapon.ShotSound : _shotClip;
+            Play(clip, _config != null ? _config.ShotVolume : 0f);
         }
 
         private void OnDashed(Vector2 direction)

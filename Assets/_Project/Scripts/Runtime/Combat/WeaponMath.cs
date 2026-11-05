@@ -29,6 +29,60 @@ namespace RushOps.Combat
         }
 
         /// <summary>
+        /// Damage per second without modifiers (W7): <paramref name="fireRate"/> shots per second, each with
+        /// <paramref name="projectilesPerShot"/> projectiles doing <paramref name="damage"/> if all of them hit.
+        /// </summary>
+        public static float DamagePerSecond(float fireRate, int damage, int projectilesPerShot)
+        {
+            return Mathf.Max(0f, fireRate) * Mathf.Max(0, damage) * Mathf.Max(0, projectilesPerShot);
+        }
+
+        /// <summary>
+        /// Direction of projectile <paramref name="index"/> of a shot with <paramref name="count"/> projectiles along
+        /// <paramref name="aim"/>: the projectiles are spread evenly over <paramref name="fanAngle"/> degrees, centred on
+        /// the aim, then each turns by up to <paramref name="spread"/> degrees to either side.
+        /// <paramref name="random"/> in [0, 1) picks the deviation; 0.5 means none. The result is normalized.
+        /// </summary>
+        public static Vector2 ProjectileDirection(Vector2 aim, int index, int count, float fanAngle, float spread, float random)
+        {
+            if (aim == Vector2.zero)
+            {
+                return Vector2.zero;
+            }
+
+            float angle = 0f;
+            if (count > 1 && fanAngle > 0f)
+            {
+                angle = -fanAngle * 0.5f + fanAngle * Mathf.Clamp(index, 0, count - 1) / (count - 1);
+            }
+
+            if (spread > 0f)
+            {
+                angle += (Mathf.Clamp01(random) * 2f - 1f) * spread;
+            }
+
+            Vector2 direction = aim.normalized;
+            if (angle == 0f)
+            {
+                return direction;
+            }
+
+            float radians = angle * Mathf.Deg2Rad;
+            float cos = Mathf.Cos(radians);
+            float sin = Mathf.Sin(radians);
+            return new Vector2(direction.x * cos - direction.y * sin, direction.x * sin + direction.y * cos);
+        }
+
+        /// <summary>
+        /// Range of the aim assist for a weapon with <paramref name="weaponRange"/>: <paramref name="factor"/> of it, so
+        /// the assist only aims at enemies the projectiles can reach.
+        /// </summary>
+        public static float AimAssistRange(float weaponRange, float factor)
+        {
+            return Mathf.Max(0f, weaponRange) * Mathf.Clamp01(factor);
+        }
+
+        /// <summary>
         /// Damage a hit does to a target with <paramref name="currentHealth"/> points left. A <paramref name="lethal"/>
         /// hit (insta-kill) takes all of it, unless the target is a boss; bosses take the normal damage.
         /// </summary>

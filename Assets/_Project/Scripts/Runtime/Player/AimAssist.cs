@@ -7,7 +7,7 @@ namespace RushOps.Player
 {
     /// <summary>
     /// Aim assist (F-STE-06): corrects the shot direction towards the nearest living enemy that is close to the
-    /// aim direction and in range, with angle and range from <see cref="WeaponConfig"/>.
+    /// aim direction and in range: angle from <see cref="WeaponConfig"/>, range a share of the active weapon's range.
     /// <see cref="PlayerWeapon"/> asks it for every shot; the rules live in <see cref="AimAssistMath"/>.
     /// </summary>
     public class AimAssist : MonoBehaviour
@@ -44,16 +44,21 @@ namespace RushOps.Player
             set => _pools = value ?? System.Array.Empty<EnemyPool>();
         }
 
-        /// <summary>Shot direction for a shot from <paramref name="origin"/> along <paramref name="aim"/>.</summary>
-        public Vector2 Adjust(Vector2 origin, Vector2 aim, WeaponConfig config)
+        /// <summary>
+        /// Shot direction for a shot from <paramref name="origin"/> along <paramref name="aim"/> with a weapon of
+        /// <paramref name="weaponRange"/>.
+        /// </summary>
+        public Vector2 Adjust(Vector2 origin, Vector2 aim, float weaponRange)
         {
+            WeaponConfig config = _weapon != null ? _weapon.Config : null;
             if (_pools.Length == 0 || config == null || !Enabled)
             {
                 return aim;
             }
 
             int count = CollectTargets();
-            return AimAssistMath.Adjust(origin, aim, _targets, count, config.AimAssistAngle, config.AimAssistRange);
+            float range = WeaponMath.AimAssistRange(weaponRange, config.AimAssistRangeFactor);
+            return AimAssistMath.Adjust(origin, aim, _targets, count, config.AimAssistAngle, range);
         }
 
         private void Awake()
