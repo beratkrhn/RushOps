@@ -25,6 +25,6 @@ MonoBehaviour:
     - {fileID: 11400000, guid: aa5dd02e656d74915940d9e4d6fff458, type: 2}
   - _displayName: Vulkan
     _levels:
-    - {fileID: 0}
-    - {fileID: 0}
+    - {fileID: 11400000, guid: e5ffdf8fbe59848189e37baba02cd3d5, type: 2}
+    - {fileID: 11400000, guid: db5bd572ecc5a42a7abc8cd09cd50385, type: 2}
     - {fileID: 0}
