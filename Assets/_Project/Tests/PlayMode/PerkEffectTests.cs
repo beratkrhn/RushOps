@@ -193,13 +193,13 @@ namespace RushOps.Tests.PlayMode
         {
             yield return FireOneShot();
             Sprite normal = _shot.Sprite;
-            Assert.AreEqual(_weapon.Config.Damage, _shot.Damage);
+            Assert.AreEqual(_weapon.ActiveWeapon.Damage, _shot.Damage);
 
             _perks.Apply(Perk("double_damage"));
             yield return FireOneShot();
 
             Assert.AreNotSame(normal, _shot.Sprite, "double damage must change the projectile look");
-            Assert.AreEqual(_weapon.Config.Damage * 2, _shot.Damage);
+            Assert.AreEqual(_weapon.ActiveWeapon.Damage * 2, _shot.Damage);
             Assert.IsFalse(_shot.Lethal);
         }
 
@@ -219,6 +219,23 @@ namespace RushOps.Tests.PlayMode
             yield return FireOneShot();
             Assert.IsFalse(_shot.Lethal);
             Assert.AreSame(normal, _shot.Sprite);
+        }
+
+        [UnityTest]
+        public IEnumerator OffensivePerks_WorkOnPickedUpWeapon()
+        {
+            var weapon = ScriptableObject.CreateInstance<WeaponDefinition>();
+            JsonUtility.FromJsonOverwrite("{\"_damage\":3}", weapon);
+            Assert.IsTrue(_weapon.Slots.PickUp(weapon));
+
+            _perks.Apply(Perk("double_damage"));
+            yield return FireOneShot();
+            Assert.AreEqual(6, _shot.Damage, "double damage on the picked-up weapon");
+
+            _perks.Apply(Perk("insta_kill"));
+            yield return FireOneShot();
+            Assert.IsTrue(_shot.Lethal, "insta-kill on the picked-up weapon");
+            Object.Destroy(weapon);
         }
 
         [UnityTest]

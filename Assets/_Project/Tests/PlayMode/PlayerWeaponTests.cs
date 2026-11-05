@@ -29,6 +29,7 @@ namespace RushOps.Tests.PlayMode
             _weapon = Object.FindFirstObjectByType<PlayerWeapon>();
             Assert.IsNotNull(_weapon, "Arena_Test has no PlayerWeapon");
             Assert.IsNotNull(_weapon.Config, "PlayerWeapon has no WeaponConfig");
+            Assert.IsNotNull(_weapon.ActiveWeapon, "WeaponConfig has no start weapon");
             _aim = _weapon.GetComponent<PlayerAim>();
             _movement = _weapon.GetComponent<PlayerMovement>();
             _pool = Object.FindFirstObjectByType<ProjectilePool>();
@@ -65,10 +66,40 @@ namespace RushOps.Tests.PlayMode
             yield return new WaitForSeconds(0.5f);
 
             _aim.AimInput = Vector2.zero;
-            float lifetime = _weapon.Config.MaxRange / _weapon.Config.ProjectileSpeed;
+            float lifetime = _weapon.ActiveWeapon.Range / _weapon.ActiveWeapon.ProjectileSpeed;
             yield return new WaitForSeconds(lifetime + 0.2f);
 
             Assert.AreEqual(0, _pool.CountActive);
+        }
+
+        [UnityTest]
+        public IEnumerator PickedUpWeapon_FiresAllProjectilesOfAShot_AndSwapGoesBack()
+        {
+            // Column x = 20.5 is free between y 30 and 46; no enemies in the way.
+            Object.FindFirstObjectByType<WaveDirector>().enabled = false;
+            var start = new Vector2(20.5f, 31f);
+            _weapon.GetComponent<Rigidbody2D>().position = start;
+            _weapon.transform.position = start;
+            yield return new WaitForFixedUpdate();
+            var shotgun = ScriptableObject.CreateInstance<WeaponDefinition>();
+            JsonUtility.FromJsonOverwrite(
+                "{\"_fireRate\":0.5,\"_projectilesPerShot\":3,\"_fanAngle\":20,\"_range\":4,\"_projectileSpeed\":8}", shotgun);
+            Assert.IsTrue(_weapon.Slots.PickUp(shotgun));
+            Assert.AreSame(shotgun, _weapon.ActiveWeapon);
+
+            _aim.AimInput = Vector2.up;
+            yield return new WaitForSeconds(0.2f);
+            _aim.AimInput = Vector2.zero;
+            Assert.AreEqual(3, _pool.CountActive, "one shot of three projectiles");
+
+            yield return new WaitForSeconds(2.1f);
+            Assert.IsTrue(_weapon.Slots.Swap());
+            Assert.AreSame(_weapon.Config.StartWeapon, _weapon.ActiveWeapon);
+            _aim.AimInput = Vector2.up;
+            yield return null;
+            _aim.AimInput = Vector2.zero;
+            Assert.AreEqual(1, _pool.CountActive, "the start weapon fires one projectile per shot");
+            Object.Destroy(shotgun);
         }
 
         [UnityTest]
