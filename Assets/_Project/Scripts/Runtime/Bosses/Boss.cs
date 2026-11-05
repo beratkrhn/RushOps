@@ -22,6 +22,10 @@ namespace RushOps.Bosses
         [SerializeField] private SpriteRenderer _renderer;
         [Tooltip("Plays walk, hit and death animations; optional.")]
         [SerializeField] private DirectionalSpriteAnimator _view;
+
+        [Tooltip("Trigger over the whole visible body that projectiles hit; the feet collider stays for movement.")]
+        [SerializeField] private Collider2D _hurtbox;
+
         [Tooltip("Stops this close to the target's feet instead of pushing into it.")]
         [SerializeField, Min(0f)] private float _stopDistance = 0.5f;
 
@@ -65,7 +69,8 @@ namespace RushOps.Bosses
         public Transform Target => _target;
 
         /// <summary>Center of the body, where shots should go; the transform sits at the feet.</summary>
-        public Vector2 AimPoint => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
+        public Vector2 AimPoint => _hurtbox != null ? (Vector2)_hurtbox.bounds.center
+            : _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
 
         /// <summary>Physics body; behaviours set its velocity.</summary>
         protected Rigidbody2D Body => _body;

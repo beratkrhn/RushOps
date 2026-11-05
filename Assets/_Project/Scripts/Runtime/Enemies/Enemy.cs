@@ -28,6 +28,9 @@ namespace RushOps.Enemies
         [Tooltip("Plays the hit and death animations; optional.")]
         [SerializeField] private DirectionalSpriteAnimator _view;
 
+        [Tooltip("Trigger over the whole visible body that projectiles hit; the feet collider stays for movement.")]
+        [SerializeField] private Collider2D _hurtbox;
+
         private static readonly int FlashAmountId = Shader.PropertyToID("_FlashAmount");
 
         private Health _health;
@@ -64,14 +67,15 @@ namespace RushOps.Enemies
         public bool IsDead => _health != null && _health.IsDead;
 
         /// <summary>Center of the body, where shots should go; the transform sits at the feet.</summary>
-        public Vector2 AimPoint => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
+        public Vector2 AimPoint => _hurtbox != null ? (Vector2)_hurtbox.bounds.center
+            : _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
 
         /// <summary>Seconds from the killing hit until the enemy returns to its pool: death animation plus fade.</summary>
         public float DeathTime => EnemyDeathMath.TotalDuration(
             _view != null ? _view.DeathDuration : 0f, _definition != null ? _definition.DeathDuration : 0f);
 
         /// <inheritdoc />
-        public Vector2 ExplosionPoint => AimPoint;
+        public Vector2 ExplosionPoint => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
 
         /// <inheritdoc />
         public bool CanBeHitByExplosion => _health != null && !_health.IsDead && isActiveAndEnabled;

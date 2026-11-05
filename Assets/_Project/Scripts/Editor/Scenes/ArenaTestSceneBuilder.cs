@@ -57,6 +57,7 @@ namespace RushOps.Editor.Scenes
         private const string AimPressActionPath = "Player/AimPress";
         private const string DashActionPath = "Player/Dash";
         internal const string WeaponConfigPath = "Assets/_Project/Data/Weapons/WeaponConfig.asset";
+        private const string PistolSpritePath = "Assets/_Project/Art/Sprites/Weapons/Pistol.png";
         private const string BulletSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet.png";
         private const string BulletDoubleDamageSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet_DoubleDamage.png";
         private const string BulletInstaKillSpritePath = "Assets/_Project/Art/Sprites/Projectiles/Bullet_InstaKill.png";
@@ -705,7 +706,7 @@ namespace RushOps.Editor.Scenes
         }
 
         // Adds the layer in the first free user slot if the Tag Manager lacks it, so the scene builds on a fresh checkout.
-        private static int EnsureLayer(string name)
+        internal static int EnsureLayer(string name)
         {
             int layer = LayerMask.NameToLayer(name);
             if (layer >= 0)
@@ -886,7 +887,8 @@ namespace RushOps.Editor.Scenes
             var serializedWeapon = new SerializedObject(weapon);
             serializedWeapon.FindProperty("_config").objectReferenceValue = weaponConfig;
             serializedWeapon.FindProperty("_pool").objectReferenceValue = pool;
-            serializedWeapon.FindProperty("_obstacles").intValue = (1 << RequireLayer(WallsLayer)) | (1 << EnsureLayer(EnemiesLayer));
+            serializedWeapon.FindProperty("_obstacles").intValue = (1 << RequireLayer(WallsLayer))
+                | (1 << EnsureLayer(EnemiesLayer)) | (1 << EnemyHurtboxBuilder.EnsureLayer());
             serializedWeapon.ApplyModifiedPropertiesWithoutUndo();
 
             go.AddComponent<AimAssist>();
@@ -926,8 +928,35 @@ namespace RushOps.Editor.Scenes
             go.AddComponent<PlayerPerks>();
             CreateShield(go);
             CreateCarrier(go);
+            CreateGun(go, aim, weapon, dash, health);
 
             return go.transform;
+        }
+
+        // The pistol in the player's hand: turns with the facing direction, the shots leave its muzzle. A sorting
+        // group keeps body and gun together in the Y sorting, so the gun can switch between in front of and behind
+        // the body.
+        private static void CreateGun(GameObject player, PlayerAim aim, PlayerWeapon weapon, PlayerDash dash, PlayerHealth health)
+        {
+            var group = player.AddComponent<UnityEngine.Rendering.SortingGroup>();
+            group.sortingOrder = ActorSortingOrder;
+
+            var gunGo = new GameObject("Gun");
+            gunGo.transform.SetParent(player.transform, false);
+            var renderer = gunGo.AddComponent<SpriteRenderer>();
+            renderer.sprite = RequireSprite(PistolSpritePath);
+            renderer.sortingOrder = ActorSortingOrder + 1;
+
+            var gun = gunGo.AddComponent<PlayerGun>();
+            var serialized = new SerializedObject(gun);
+            serialized.FindProperty("_aim").objectReferenceValue = aim;
+            serialized.FindProperty("_weapon").objectReferenceValue = weapon;
+            serialized.FindProperty("_dash").objectReferenceValue = dash;
+            serialized.FindProperty("_health").objectReferenceValue = health;
+            serialized.FindProperty("_renderer").objectReferenceValue = renderer;
+            serialized.FindProperty("_frontOrder").intValue = ActorSortingOrder + 1;
+            serialized.FindProperty("_behindOrder").intValue = ActorSortingOrder - 1;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // Object transport (issue #33): a hold point in front of the figure's right hand.
@@ -1080,6 +1109,7 @@ namespace RushOps.Editor.Scenes
             collider.radius = colliderRadius;
             collider.offset = colliderOffset;
             collider.sharedMaterial = bodyMaterial;
+            BoxCollider2D hurtbox = EnemyHurtboxBuilder.Add(go, animations.Walk);
 
             var movement = go.AddComponent<EnemyMovement>();
             var serializedMovement = new SerializedObject(movement);
@@ -1092,6 +1122,7 @@ namespace RushOps.Editor.Scenes
             serializedEnemy.FindProperty("_feel").objectReferenceValue = feel;
             serializedEnemy.FindProperty("_renderer").objectReferenceValue = go.GetComponent<SpriteRenderer>();
             serializedEnemy.FindProperty("_view").objectReferenceValue = view;
+            serializedEnemy.FindProperty("_hurtbox").objectReferenceValue = hurtbox;
             serializedEnemy.ApplyModifiedPropertiesWithoutUndo();
 
             EnsureFolder(Path.GetDirectoryName(prefabPath).Replace('\\', '/'));
