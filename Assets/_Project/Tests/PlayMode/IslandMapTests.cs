@@ -56,7 +56,8 @@ namespace RushOps.Tests.PlayMode
             Assert.AreEqual("Strandpromenade", Node(0, 1).NameShown);
             Assert.AreEqual("Leuchtturm", Node(0, 2).NameShown);
             Assert.AreEqual("Hinterhöfe", Node(1, 0).NameShown, "decision C11");
-            Assert.AreEqual(string.Empty, Node(1, 1).NameShown, "level 2-2 is not built yet");
+            Assert.AreEqual("U-Bahn", Node(1, 1).NameShown);
+            Assert.AreEqual(string.Empty, Node(1, 2).NameShown, "level 2-3 is not built yet");
             Assert.IsFalse(Cover(0).activeSelf);
             Assert.IsTrue(Cover(1).activeSelf, "island 2 not locked");
             Assert.IsTrue(Cover(2).activeSelf, "island 3 not locked");
