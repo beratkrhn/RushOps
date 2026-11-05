@@ -1,0 +1,39 @@
+# Publishes site/ (privacy policy and support page for the App Store, issue #193, decision R4) to GitHub Pages.
+# Started by hand until the placeholders in site/ are filled in and Pages is switched on
+# (Settings → Pages → Source: GitHub Actions); then a push to site/ on main can trigger it too.
+name: Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Refuse placeholders
+        run: |
+          if grep -rn '\[[A-Z][^]]*\]' site/*.html; then
+            echo "site/ still has placeholders like [E-Mail-Adresse]; fill them in first." >&2
+            exit 1
+          fi
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
