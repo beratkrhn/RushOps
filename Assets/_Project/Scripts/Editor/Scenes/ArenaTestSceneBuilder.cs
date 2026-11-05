@@ -1869,6 +1869,10 @@ namespace RushOps.Editor.Scenes
             Text kills = CreateText("Kills", done, font, ResultText.Kills(0), HudPixelScale, new Vector2(0f, 0f));
             Text time = CreateText("Time", done, font, ResultText.Time(0f), HudPixelScale, new Vector2(0f, -25f));
             Text nextStar = CreateText("NextStar", done, font, string.Empty, HudPixelScale, new Vector2(0f, -50f));
+            // Between title and stars (C12); LevelResults hides it for levels without a message.
+            Text message = CreateText("Message", done, font, string.Empty, HudPixelScale, new Vector2(0f, 102f));
+            message.color = PaletteYellow;
+            message.gameObject.SetActive(false);
             CreateMenuButton("RetryButton", done, font, "Nochmal", new Vector2(0f, -85f), results.Retry);
             CreateMenuButton("ContinueButton", done, font, "Weiter", new Vector2(0f, -85f - MenuButtonSize.y - 12f), results.Continue);
             CreateUnlockedSkin(parent, done, font);
@@ -1884,6 +1888,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_doneKills").objectReferenceValue = kills;
             serialized.FindProperty("_doneTime").objectReferenceValue = time;
             serialized.FindProperty("_doneNextStar").objectReferenceValue = nextStar;
+            serialized.FindProperty("_doneMessage").objectReferenceValue = message;
             SetArray(serialized.FindProperty("_stars"), stars);
             serialized.FindProperty("_starFull").objectReferenceValue = LoadUiSprite("Star_Full.png");
             serialized.FindProperty("_starEmpty").objectReferenceValue = empty;

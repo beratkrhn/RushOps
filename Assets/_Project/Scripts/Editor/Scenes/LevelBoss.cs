@@ -43,5 +43,8 @@ namespace RushOps.Editor.Scenes
         /// set their own builder.
         /// </summary>
         public System.Func<ArenaScene, BossDefinition, Vector2, Boss> Create { get; set; }
+
+        /// <summary>Wires the boss to its fight once both exist, e.g. so split-off bodies can join it; optional.</summary>
+        public System.Action<Boss, BossFight> Connect { get; set; }
     }
 }

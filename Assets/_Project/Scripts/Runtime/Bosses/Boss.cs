@@ -62,6 +62,12 @@ namespace RushOps.Bosses
         /// <summary>True between <see cref="Activate"/> and death.</summary>
         public bool IsActive { get; private set; }
 
+        /// <summary>True once the body left the fight without dying, e.g. the Mega-Boomer after it split.</summary>
+        public bool IsRemoved { get; private set; }
+
+        /// <summary>True while the body counts for the fight: neither dead nor removed.</summary>
+        public bool IsInFight => !IsDead && !IsRemoved;
+
         /// <summary>True while the white hit flash shows.</summary>
         public bool IsFlashing => _sinceHit >= 0f;
 
@@ -106,7 +112,7 @@ namespace RushOps.Bosses
         /// <inheritdoc />
         public bool TakeHit(int damage, Vector2 direction, bool lethal = false)
         {
-            if (!IsActive || IsDead)
+            if (!IsActive || !IsInFight)
             {
                 return false;
             }
@@ -146,6 +152,19 @@ namespace RushOps.Bosses
         protected virtual void TickBehaviour(float deltaTime)
         {
             Chase(_definition != null ? _definition.MoveSpeed : 0f);
+        }
+
+        /// <summary>
+        /// Takes the body out of the fight without a death: it stops, disappears and raises no <see cref="Died"/>. Bodies
+        /// that took over from it must already have joined the <see cref="BossFight"/>.
+        /// </summary>
+        protected void Remove()
+        {
+            IsActive = false;
+            IsRemoved = true;
+            _body.linearVelocity = Vector2.zero;
+            _body.simulated = false;
+            gameObject.SetActive(false);
         }
 
         /// <summary>Walks straight at the target at <paramref name="speed"/>, facing the way it goes.</summary>

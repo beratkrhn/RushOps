@@ -59,7 +59,7 @@ namespace RushOps.Bosses
                 int sum = 0;
                 foreach (Boss body in _all)
                 {
-                    sum += body != null && !body.IsDead ? body.CurrentHealth : 0;
+                    sum += body != null && body.IsInFight ? body.CurrentHealth : 0;
                 }
 
                 return sum;
@@ -228,7 +228,7 @@ namespace RushOps.Bosses
 
             foreach (Boss other in _all)
             {
-                if (other != null && !other.IsDead)
+                if (other != null && other.IsInFight)
                 {
                     return;
                 }

@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e1c6469150bd4d82b5a991a5dde572d, type: 3}
+  m_Name: MegaBoomer
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Bosses.MegaBoomerDefinition
+  _displayName: Mega-Boomer
+  _health: 360
+  _moveSpeed: 1.1
+  _contactDamage: 1
+  _points: 1000
+  _perkThresholds:
+  - 0.66
+  - 0.33
+  _deathDuration: 0.6
+  _victoryDelay: 1.5
+  _mass: 200
+  _puddleInterval: 2.5
+  _puddleWarmUp: 1
+  _puddleLifetime: 6
+  _puddleDamage: 1
+  _splitHealthShare: 0.5
+  _splitTime: 0.7
+  _halfScale: 0.65
+  _halfSpeedFactor: 1.3
+  _halfOffset: 1

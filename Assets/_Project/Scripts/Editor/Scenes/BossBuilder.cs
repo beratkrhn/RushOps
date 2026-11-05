@@ -57,6 +57,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_loot").objectReferenceValue =
                 dropper != null ? new SerializedObject(dropper).FindProperty("_config").objectReferenceValue : null;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            spec.Connect?.Invoke(boss, fight);
             return fight;
         }
 

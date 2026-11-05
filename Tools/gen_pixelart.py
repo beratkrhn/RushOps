@@ -23,6 +23,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Koloss_<STATE>_<DIR>_<F>.png 128x128, Koloss boss: Walk 4, Windup 2, Charge 4, Stun 2, Hit 2, Death 5 (issue #151)
   Sprites/Effects/Koloss_ChargeLine.png    32x8, floor mark of the Koloss charge, stretched (issue #151)
   Sprites/Enemies/Brutmutter_<STATE>_<DIR>_<F>.png 96x96, Brutmutter boss: Walk 4, Birth 4, Hit 2, Death 5 (issue #155)
+  Sprites/Enemies/MegaBoomer_<STATE>_<DIR>_<F>.png 128x128, Mega-Boomer boss: Walk 4, Split 4, Hit 2, Death 5 (issue #159)
+  Sprites/Effects/Puddle_<Warm|Active>_<F>.png 48x24, Mega-Boomer puddle: 2 frames warm-up glow, 2 frames harmful (issue #159)
   Sprites/Enemies/Boomer_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames, pulsing belly (issue #22)
   Sprites/Enemies/Boomer_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames (issue #101)
   Sprites/Enemies/Boomer_Swell_<DIR>_<F>.png 64x64, 8 directions x 4 frames, inflated and glowing near the player (issue #101)
@@ -817,6 +819,201 @@ def brood_hit(direction: int, frame: int) -> Canvas:
 def brood_death(direction: int, frame: int) -> Canvas:
     """She topples onto her egg sac, which bursts into a pool."""
     return brood_frame(direction, 0, BROOD_DEATH_POSES[frame], eyes=frame == 0, stain=BROOD_DEATH_STAIN[frame])
+
+
+# --- Mega-Boomer (issue #159) ----------------------------------------------------------
+# The boomer's body at twice the size on the 128 px canvas (decision C10), with more and bigger boils and a seam of
+# light down its belly. Modes: "walk" (4 frames, a heavy waddle, the belly pulses and drips) and "split" (4 frames:
+# it swells, the seam tears open glowing, the body pulls apart into two lumps that stand side by side). The two
+# halves in the game are the same sprites drawn smaller. Death: it swells, bursts and leaves a big sticky pool.
+MEGA_SCALE = 2.0
+MEGA_DEATH_FRAMES = 5
+# Split: extra belly radius, how far the seam glows (0..1) and how far the halves stand apart (pixels, each side).
+MEGA_SPLIT = [(3.0, 0.3, 0.0), (5.0, 1.0, 0.0), (1.0, 1.0, 9.0), (-4.0, 0.0, 17.0)]
+MEGA_BOILS = [(0.8, -4.0, 24.0), (0.75, 4.5, 19.0), (0.6, 0.5, 14.5), (0.55, -7.0, 17.0), (0.5, 8.0, 25.0),
+              (0.7, -1.5, 28.0), (0.45, 9.5, 16.0)]
+
+
+def mega_body(m: Model, frame: int, pose_swell: float, side: float = 0.0, k: float = MEGA_SCALE,
+              walking: bool = True) -> tuple:
+    """Adds one boomer body at scale k, offset sideways by side; returns (belly, belly_r, head, pulse)."""
+    phase = frame / 4 * 2 * math.pi
+    stride = (3.0 * math.sin(phase) if walking else 0.0) * k
+    sway = (1.2 * math.sin(phase) if walking else 0.0) * k
+    pulse = math.sin(phase) if walking else 0.0
+    belly_r = (12.0 + 2.0 * pulse) * k + pose_swell
+    hip_z = 12.0 * k
+    for leg, step in ((-5.0 * k, stride), (5.0 * k, -stride)):
+        m.capsule((0, side + leg, hip_z), (step, side + leg * 1.1, 4 * k), 3.4 * k, "rags")
+        m.sphere(step + 1.0 * k, side + leg * 1.1, 2.5 * k, 3.0 * k, "shoe")
+    belly = ((2.0 + 0.6 * pulse) * k, side + sway * 0.5, (21.0 + 0.5 * pulse) * k)
+    m.sphere(*belly, belly_r, "bloat")
+    m.sphere(0.0, side + sway, 32.0 * k, 7.5 * k, "bloat")
+    for arm in (-1, 1):
+        shoulder = (0.5 * k, side + arm * 8.0 * k + sway, 33.0 * k)
+        hand = ((4.0 - arm * stride / k * 0.4) * k, side + arm * (belly_r + 1.5 * k) + sway, 22.0 * k)
+        m.capsule(shoulder, hand, 2.5 * k, "bloat")
+    head = (2.0 * k, side + sway, 40.0 * k)
+    m.sphere(*head, 5.5 * k, "bloat")
+    return belly, belly_r, head, pulse
+
+
+def mega_details(c: Canvas, m: Model, belly: tuple, belly_r: float, head: tuple, pulse: float, k: float,
+                 hot: bool, eyes: bool, seam: float = 0.0) -> None:
+    """Boils, the glowing seam and the eyes of one body."""
+    glow = "glow" if hot or pulse > 0.5 else "yellow"
+    rim = "yellow" if hot else "orange"
+    skin = RAMP["bloat"]
+
+    def on_skin(x: int, y: int, color: str) -> None:
+        if c.get(x, y) in skin:
+            c.set(x, y, color)
+
+    for f, s, z in MEGA_BOILS:
+        x, y, north = m.project(belly[0] + f * belly_r, belly[1] + s * k, z * k)
+        if north > belly_r * 0.25 or c.get(int(x), int(y)) not in skin:
+            continue
+        for dx in range(-2, 4):
+            for dy in range(-2, 4):
+                if abs(dx - 0.5) + abs(dy - 0.5) <= 3.0:
+                    on_skin(int(x) + dx, int(y) + dy, rim)
+        for dx, dy in ((0, 0), (1, 0), (0, 1), (1, 1)):
+            c.set(int(x) + dx, int(y) + dy, glow)
+    # Seam of light down the front of the belly: where it will tear when it splits.
+    if seam > 0:
+        steps = int(belly_r * 1.6 * seam)
+        for i in range(steps):
+            z = belly[2] + belly_r * 0.75 - i * 0.6
+            x, y, north = m.project(belly[0] + belly_r * 0.95, belly[1], z)
+            if north <= belly_r * 0.3 and c.get(int(x), int(y)) in skin + ("glow", "yellow", "orange"):
+                c.set(int(x), int(y), "glow")
+                on_skin(int(x) + 1, int(y), "yellow" if i % 3 else "glow")
+    _, _, head_north = m.project(*head)
+    for s in (-2.0 * k, 2.0 * k):
+        x, y, north = m.project(head[0] + 4.4 * k, head[1] + s, head[2] + 0.5 * k)
+        if eyes and north <= head_north + 0.5:
+            c.rect(int(x), int(y), int(x) + 1, int(y) + 1, "glow" if hot else "green_2")
+
+
+def mega_frame(direction: int, frame: int, pose: Pose = UPRIGHT, mode: str = "walk", eyes: bool = True,
+               swell: float = 0.0, stain: float = 0.0) -> Canvas:
+    k = MEGA_SCALE
+    m = Model(direction * 45.0, KOLOSS, pose)
+    c = Canvas(KOLOSS, KOLOSS)
+    if stain > 0:
+        m.ground_stain(c, m.posed(0.0, 0.0, 40.0 * k)[0], 0.0, stain, "green_0", "outline")
+    if mode == "split":
+        extra, seam, apart = MEGA_SPLIT[frame]
+        if apart <= 0:
+            belly, belly_r, head, pulse = mega_body(m, 1, extra * k, walking=False)
+            m.paint(c)
+            mega_details(c, m, belly, belly_r, head, pulse, k, True, eyes, seam)
+        else:
+            # Two lumps pulling apart sideways, each a smaller boomer.
+            half = k * 0.7
+            bodies = [mega_body(m, 1, extra, side, half, walking=False) for side in (-apart * k * 0.6, apart * k * 0.6)]
+            m.paint(c)
+            for belly, belly_r, head, pulse in bodies:
+                mega_details(c, m, belly, belly_r, head, pulse, half, seam > 0, eyes, seam * 0.5)
+            if seam > 0:
+                # Strings of goo still between the halves.
+                for t in range(-int(apart * k * 0.5), int(apart * k * 0.5) + 1):
+                    x, y, north = m.project(2.0 * k, t, 20.0 * k + 2.0 * math.sin(t * 0.4))
+                    if c.get(int(x), int(y)) is None:
+                        c.set(int(x), int(y), "green_2")
+        c.outline("outline")
+        return c
+    walking = mode == "walk"
+    belly, belly_r, head, pulse = mega_body(m, frame, swell, walking=walking)
+    m.paint(c)
+    mega_details(c, m, belly, belly_r, head, pulse, k, swell > 0, eyes)
+    if walking:
+        # A drip of goo falls from the low belly; it is what leaves the puddles.
+        x, y, _ = m.project(belly[0] + belly_r * 0.4, belly[1], belly[2] - belly_r * 0.9)
+        drop = frame * 3
+        c.rect(int(x), int(y) + drop, int(x) + 1, int(y) + drop + 2, "green_2")
+    c.outline("outline")
+    return c
+
+
+def mega_hit(direction: int, frame: int) -> Canvas:
+    return mega_frame(direction, 1, Pose(tilt=HIT_POSES[frame].tilt * 0.5), mode="still")
+
+
+def mega_death(direction: int, frame: int) -> Canvas:
+    """Frame 0: blown up, cracks of light all over. Frame 1: the burst. Frames 2..4: a growing sticky pool with
+    scraps. Unlike the small boomer it does not explode, so no blast effect plays."""
+    k = MEGA_SCALE
+    if frame == 0:
+        c = mega_frame(direction, 1, mode="still", swell=6.0, eyes=False)
+        rng = random.Random(direction * 37 + 11)
+        for _ in range(30):
+            x, y = rng.randint(36, 92), rng.randint(40, 108)
+            if c.get(x, y) in ("dusk", "mauve", "clay"):
+                c.rect(x, y, x + 1, y, "glow")
+        return c
+    c = Canvas(KOLOSS, KOLOSS)
+    cx, cy = KOLOSS / 2, KOLOSS - FOOT_MARGIN - 14
+    pool = (8.0 + 3.0 * frame) * k
+    c.ellipse(cx, cy, pool + 1, pool * 0.5 + 1, "outline")
+    c.ellipse(cx, cy - 0.5, pool, pool * 0.5, "green_0")
+    c.ellipse(cx - 2, cy - 2, pool * 0.55, pool * 0.3, "green_1")
+    c.ellipse(cx - 3, cy - 3, pool * 0.25, pool * 0.14, "green_2")
+    rng = random.Random(direction * 17 + frame)
+    reach, lift = (34.0, 28.0) if frame == 1 else (pool + 2.0, 0.0)
+    for i in range(12):
+        a = rng.uniform(0, 2 * math.pi)
+        d = rng.uniform(0.5, 1.0) * reach
+        x = cx + math.cos(a) * d
+        y = cy - math.sin(a) * d * 0.5 - lift * rng.uniform(0.4, 1.0)
+        color = ("mauve", "clay", "green_1", "dusk")[i % 4]
+        c.ellipse(x, y, 3.2, 2.6, color)
+    if frame == 1:
+        c.ellipse(cx, cy - 20, 10, 8, "glow")
+        c.ellipse(cx, cy - 20, 6, 5, "white")
+    c.outline("outline")
+    return c
+
+
+# Puddle the Mega-Boomer leaves (decision C9b), 48x24: two frames of the warm-up glow, then two of the
+# bubbling, harmful pool. Drawn flat on the floor, under the figures.
+PUDDLE_WIDTH, PUDDLE_HEIGHT = 48, 24
+
+
+def puddle(state: str, frame: int) -> Canvas:
+    c = Canvas(PUDDLE_WIDTH, PUDDLE_HEIGHT)
+    cx, cy = PUDDLE_WIDTH / 2, PUDDLE_HEIGHT / 2
+    rx, ry = PUDDLE_WIDTH / 2 - 1.5, PUDDLE_HEIGHT / 2 - 1.5
+    # Lobed rim, so it reads as spilled goo and not as a disc.
+    for lx, ly, lr in ((-12, 2, 8), (11, -2, 9), (2, 4, 7), (-4, -4, 7)):
+        c.ellipse(cx + lx, cy + ly * 0.8, lr, lr * 0.55, "outline")
+    c.ellipse(cx, cy, rx, ry, "outline")
+    inner = [(lx, ly, lr - 1.5) for lx, ly, lr in ((-12, 2, 8), (11, -2, 9), (2, 4, 7), (-4, -4, 7))]
+    if state == "warm":
+        base, rim = "green_0", ("orange" if frame == 0 else "yellow")
+        c.ellipse(cx, cy, rx - 1, ry - 1, rim)
+        for lx, ly, lr in inner:
+            c.ellipse(cx + lx, cy + ly * 0.8, lr, lr * 0.55, rim)
+        c.ellipse(cx, cy, rx - 3, ry - 2.5, base)
+        for lx, ly, lr in inner:
+            c.ellipse(cx + lx, cy + ly * 0.8, lr - 2, (lr - 2) * 0.55, base)
+        # Embers of light gathering in the middle.
+        for dx, dy in ((-6, 0), (5, -1), (0, 2), (9, 2), (-11, -1))[: 3 + frame * 2]:
+            c.set(int(cx + dx), int(cy + dy), rim)
+        return c
+    c.ellipse(cx, cy, rx - 1, ry - 1, "green_1")
+    for lx, ly, lr in inner:
+        c.ellipse(cx + lx, cy + ly * 0.8, lr, lr * 0.55, "green_1")
+    c.ellipse(cx - 2, cy - 1, rx * 0.6, ry * 0.5, "green_2")
+    # Bubbles that pop in turn.
+    for i, (dx, dy) in enumerate(((-10, 1), (6, -2), (13, 2), (-3, 3), (1, -4))):
+        if (i + frame) % 2 == 0:
+            x, y = int(cx + dx), int(cy + dy)
+            c.rect(x, y, x + 1, y + 1, "yellow")
+            c.set(x, y, "glow")
+        else:
+            c.set(int(cx + dx), int(cy + dy), "green_0")
+    return c
 
 
 def boomer_hit(direction: int, frame: int) -> Canvas:
@@ -3046,12 +3243,22 @@ def outputs() -> dict[str, Image.Image]:
             files[f"Sprites/Enemies/Brutmutter_Hit_{name}_{frame}.png"] = brood_hit(d, frame).to_image()
         for frame, c in enumerate(death_frames(brood_death, d, len(BROOD_DEATH_STAIN))):
             files[f"Sprites/Enemies/Brutmutter_Death_{name}_{frame}.png"] = c.to_image()
+        for mode, file_state in (("walk", "Walk"), ("split", "Split")):
+            for frame in range(4):
+                files[f"Sprites/Enemies/MegaBoomer_{file_state}_{name}_{frame}.png"] = mega_frame(d, frame, mode=mode).to_image()
+        for frame in range(len(HIT_POSES)):
+            files[f"Sprites/Enemies/MegaBoomer_Hit_{name}_{frame}.png"] = mega_hit(d, frame).to_image()
+        for frame, c in enumerate(death_frames(mega_death, d, MEGA_DEATH_FRAMES)):
+            files[f"Sprites/Enemies/MegaBoomer_Death_{name}_{frame}.png"] = c.to_image()
         for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Brute_Walk_{name}_{frame}.png"] = brute_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Boomer_Walk_{name}_{frame}.png"] = boomer_frame(d, frame).to_image()
     files["Sprites/Effects/Koloss_ChargeLine.png"] = koloss_charge_line().to_image()
+    for state in ("warm", "active"):
+        for frame in range(2):
+            files[f"Sprites/Effects/Puddle_{state.capitalize()}_{frame}.png"] = puddle(state, frame).to_image()
     for frame in range(EXPLOSION_FRAMES):
         files[f"Sprites/Effects/Explosion_{frame}.png"] = explosion_frame(frame).to_image()
     for variant in range(3):
@@ -3113,6 +3320,7 @@ ANIMATION_PREVIEWS = {
     "Boomer": [("Walk", 8, 2), ("Hit", 12, 1), ("Swell", 12, 4), ("Death", 10, 1)],
     "Koloss": [("Walk", 8, 2), ("Windup", 8, 3), ("Charge", 12, 2), ("Stun", 6, 3), ("Hit", 12, 1), ("Death", 10, 1)],
     "Brutmutter": [("Walk", 6, 2), ("Birth", 6, 2), ("Hit", 12, 1), ("Death", 10, 1)],
+    "MegaBoomer": [("Walk", 6, 2), ("Split", 6, 1), ("Hit", 12, 1), ("Death", 10, 1)],
     "Player": [("Walk", 10, 3), ("Dash", 10, 2), ("Hit", 12, 1), ("Death", 10, 1)],
 }
 # Pause on the last death frame before the preview loops, in milliseconds.
