@@ -74,13 +74,16 @@ Fragen zum Epic #171 (Lastenheft F-SPF-05, Abschnitt 8). Heute gibt es eine Waff
 
 | # | Epic | Frage | Vorschlag | Entscheidung |
 |---|---|---|---|---|
-| W1 | #171 | Kommen weitere Waffen vor oder nach 1.0? | Nach 1.0 als v1.1.0; die Kampagne ist mit einer Waffe fertig abgestimmt, neue Waffen würden Bosse und Sterne verschieben | |
-| W2 | #171 | Welche Waffen gibt es? | Drei neue zur Startwaffe: Sturmgewehr (schneller, etwas Streuung), Schrotflinte (langsam, 5 Kugeln im Fächer, kurze Reichweite), Dual-Pistolen (abwechselnd links und rechts, sehr schnell, wenig Schaden) | |
-| W3 | #171 | Wodurch unterscheiden sich die Waffen? | Nur Feuerrate, Schaden, Streuung, Kugeln pro Schuss, Reichweite und Klang; kein Nachladen, keine Munition (passt zum Auto-Feuer, F-STE-02) | |
-| W4 | #171 | Wie werden Waffen freigeschaltet? | Je eine Waffe durch den Sieg über einen Boss (Koloss, Brutmutter, Mega-Boomer) | |
-| W5 | #171 | Wie wählt man die Waffe? | Vor dem Level im Menü, ähnlich dem Skin-Karussell; die Wahl wird gespeichert. Kein Wechsel im Level | |
-| W6 | #171 | Gibt es Waffen auch als Pickup im Level (zeitlich begrenzt, wie ein Perk)? | Nein; Perks bleiben der einzige Pickup | |
-| W7 | #171 | Werden Bosse und Sterne-Schwellen pro Waffe abgestimmt? | Nein; alle Waffen haben etwa denselben Schaden pro Sekunde wie die Startwaffe (etwa 6) und unterscheiden sich im Spielgefühl, nicht in der Stärke | |
+| W1 | #171 | Kommen weitere Waffen vor oder nach 1.0? | Nach 1.0 als v1.1.0; die Kampagne ist mit einer Waffe fertig abgestimmt, neue Waffen würden Bosse und Sterne verschieben |V|
+| W2 | #171 | Welche Waffen gibt es? | Drei neue zur Startwaffe: Sturmgewehr (schneller, etwas Streuung), Schrotflinte (langsam, 5 Kugeln im Fächer, kurze Reichweite), Dual-Pistolen (abwechselnd links und rechts, sehr schnell, wenig Schaden) |V|
+| W3 | #171 | Wodurch unterscheiden sich die Waffen? | Nur Feuerrate, Schaden, Streuung, Kugeln pro Schuss, Reichweite und Klang; kein Nachladen, keine Munition (passt zum Auto-Feuer, F-STE-02) |V|
+| W4 | #171 | Wie werden Waffen freigeschaltet? | Je eine Waffe durch den Sieg über einen Boss (Koloss, Brutmutter, Mega-Boomer) |V|
+| W5 | #171 | Wie wählt man die Waffe? | Vor dem Level im Menü, ähnlich dem Skin-Karussell; die Wahl wird gespeichert. Kein Wechsel im Level |Es sollte die möglichkeit geben, Waffen im Level zu wechseln|
+| W6 | #171 | Gibt es Waffen auch als Pickup im Level (zeitlich begrenzt, wie ein Perk)? | Nein; Perks bleiben der einzige Pickup |Es gibt auch Waffen im Level|
+| W8 | #171 | Wie hebt man eine Waffe im Level auf (zu W5, W6)? | | Waffen hängen als Silhouette an festen Stellen an der Wand. Man bleibt etwa 0,5 s davor stehen, ein Ring füllt sich, dann ist die Waffe aufgehoben; kostenlos. Sie bleibt bis Levelende, auch wenn sie noch nicht freigeschaltet ist |
+| W9 | #171 | Wie viele Waffen hat man im Level dabei? | Zwei Slots: die vor dem Level gewählte Waffe und eine aufgehobene; eine neue Wandwaffe ersetzt den zweiten Slot |V|
+| W10 | #171 | Wie wechselt man zwischen den zwei Slots? | Kleiner Tausch-Button neben dem Dash, erscheint erst mit zwei Waffen |V|
+| W7 | #171 | Werden Bosse und Sterne-Schwellen pro Waffe abgestimmt? | Nein; alle Waffen haben etwa denselben Schaden pro Sekunde wie die Startwaffe (etwa 6) und unterscheiden sich im Spielgefühl, nicht in der Stärke |V|
 
 ## Aus Level 1-1 (vor dem Spieltest)
 
