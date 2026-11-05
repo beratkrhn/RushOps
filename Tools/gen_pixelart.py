@@ -22,6 +22,7 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Brute_Death_<DIR>_<F>.png 96x96, 8 directions x 5 frames, slams face down (issue #101)
   Sprites/Enemies/Koloss_<STATE>_<DIR>_<F>.png 128x128, Koloss boss: Walk 4, Windup 2, Charge 4, Stun 2, Hit 2, Death 5 (issue #151)
   Sprites/Effects/Koloss_ChargeLine.png    32x8, floor mark of the Koloss charge, stretched (issue #151)
+  Sprites/Enemies/Brutmutter_<STATE>_<DIR>_<F>.png 96x96, Brutmutter boss: Walk 4, Birth 4, Hit 2, Death 5 (issue #155)
   Sprites/Enemies/Boomer_Walk_<DIR>_<F>.png 64x64, 8 directions x 4 frames, pulsing belly (issue #22)
   Sprites/Enemies/Boomer_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames (issue #101)
   Sprites/Enemies/Boomer_Swell_<DIR>_<F>.png 64x64, 8 directions x 4 frames, inflated and glowing near the player (issue #101)
@@ -282,6 +283,9 @@ RAMP = {
     # Koloss (issue #151): a giant brute with sun-burnt skin and stone-grey armour plates on shoulders and chest.
     "burnt": ("brown_0", "skin_0", "clay"),
     "plate": ("slate_1", "slate_3", "slate_5"),
+    # Brutmutter (issue #155): grey-violet, sagging skin and a huge raw egg sac on her back with glowing eggs.
+    "brood": ("night", "dusk", "mauve"),
+    "sac": ("red_0", "red_1", "clay"),
     "rags": ("green_0", "green_1", "green_1"),
 }
 
@@ -711,6 +715,106 @@ def koloss_charge_line() -> Canvas:
     c.rect(0, 2, TILE - 1, 5, "red_0")
     c.rect(0, 3, TILE - 1, 4, "red_1")
     return c
+
+
+# --- Brutmutter (issue #155) -----------------------------------------------------------
+# A hunched, bloated mother on the brute's 96 px canvas (decision C10): short legs, long thin arms reaching forward,
+# a small head and a huge egg sac on her back with glowing eggs. Modes: "walk" (4 frames, slow waddle, the sac
+# wobbles) and "birth" (4 frames: she crouches, the sac squeezes, a runner's pale head pushes out low behind her and
+# the sac sags). The runner itself appears in the game when the birth ends.
+BROOD_DEATH_POSES = [Pose(tilt=8.0, shift=30.0, squash=0.15), Pose(tilt=30.0, shift=30.0, squash=0.25),
+                     Pose(tilt=58.0, shift=30.0, squash=0.3), Pose(tilt=80.0, shift=30.0, squash=0.32),
+                     Pose(tilt=86.0, shift=30.0, squash=0.32)]
+BROOD_DEATH_STAIN = [0.0, 0.0, 0.0, 14.0, 20.0]
+# Birth: crouch depth, squeeze of the sac (pixels of radius lost) and how far the runner's head is out (0..1).
+BROOD_BIRTH = [(3.0, 0.0, 0.0), (5.0, 2.5, 0.3), (5.0, 4.0, 1.0), (2.0, 5.0, 0.0)]
+# Eggs in the sac: (forward, side, height) offsets from the sac's center, scaled by its radius.
+BROOD_EGGS = [(0.55, -0.45, 0.25), (0.35, 0.5, -0.1), (0.65, 0.05, -0.35), (0.1, -0.7, -0.3), (0.2, 0.65, 0.45),
+              (-0.1, -0.2, 0.75)]
+
+
+def brood_frame(direction: int, frame: int, pose: Pose = UPRIGHT, mode: str = "walk", eyes: bool = True,
+                stain: float = 0.0) -> Canvas:
+    m = Model(direction * 45.0, BRUTE, pose)
+    c = Canvas(BRUTE, BRUTE)
+    if stain > 0:
+        m.ground_stain(c, m.posed(0.0, 0.0, 50.0)[0], 0.0, stain, "red_0", "outline")
+    phase = frame / 4 * 2 * math.pi
+    crouch, squeeze, emerge = BROOD_BIRTH[frame] if mode == "birth" else (0.0, 0.0, 0.0)
+    stride = 3.5 * math.sin(phase) if mode == "walk" else 0.0
+    bob = 1.2 * abs(math.sin(phase)) if mode == "walk" else 0.0
+    sway = 2.0 * math.sin(phase) if mode == "walk" else 0.0
+    hip_z = 18.0 - bob - crouch
+
+    # Short legs, wide apart under the weight.
+    for side, step in ((-8.0, stride), (8.0, -stride)):
+        m.capsule((0, side, hip_z), (step, side * 1.2, 5), 5.0, "brood")
+        m.sphere(step + 1.5, side * 1.2, 3.5, 4.5, "shoe")
+    # The egg sac on her back, wobbling against the steps; it shrinks as it squeezes a runner out.
+    sac_r = 18.0 - squeeze + 0.8 * math.sin(phase + 1.0)
+    sac = (-11.0, -sway * 0.4, 33.0 - bob - crouch * 0.5)
+    m.sphere(*sac, sac_r, "sac")
+    if emerge > 0:
+        # The runner's pale head pushes out of the sac's low back.
+        m.sphere(sac[0] - sac_r * 0.55 - 2.0 * emerge, sac[1], sac[2] - sac_r * 0.6, 3.0 + 2.5 * emerge, "pale")
+    # Hunched torso leaning forward out of the sac.
+    shoulder_z = 40.0 - bob - crouch
+    m.capsule((-2.0, sway * 0.5, hip_z + 3), (6.0, sway, shoulder_z), 10.0, "brood")
+    # Long thin arms reaching forward, hands with long fingers near the ground.
+    for side, swing in ((-13.0, -stride), (13.0, stride)):
+        shoulder = (6.0, side + sway, shoulder_z + 1)
+        elbow = (14.0 + swing * 0.6, side * 1.15 + sway, 30.0 - bob - crouch * 0.5)
+        hand = (20.0 + swing, side * 1.05 + sway, 15.0 - bob - crouch * 0.3)
+        m.sphere(*shoulder, 5.0, "brood")
+        m.capsule(shoulder, elbow, 3.2, "brood")
+        m.capsule(elbow, hand, 2.8, "brood")
+        m.sphere(*hand, 3.5, "brood")
+    # Small head low and forward between the shoulders.
+    head = (13.0, sway, shoulder_z + 6.0)
+    m.sphere(*head, 6.0, "brood")
+    m.paint(c)
+
+    # Eggs glow through the skin of the sac where it faces the viewer; brightest while she gives birth.
+    _, _, sac_north = m.project(*sac)
+    for i, (ef, es, ez) in enumerate(BROOD_EGGS):
+        x, y, north = m.project(sac[0] + ef * sac_r, sac[1] + es * sac_r, sac[2] + ez * sac_r)
+        if north > sac_north + sac_r * 0.3 or c.get(int(x), int(y)) not in RAMP["sac"]:
+            continue
+        hot = mode == "birth" and frame in (1, 2) or (mode == "walk" and (i + frame) % 3 == 0)
+        # Dark pocket around each egg, then the egg itself (3x3 with a bright core).
+        for dy in range(-2, 4):
+            for dx in range(-2, 4):
+                if abs(dx - 0.5) + abs(dy - 0.5) <= 3.5 and c.get(int(x) + dx, int(y) + dy) in RAMP["sac"]:
+                    c.set(int(x) + dx, int(y) + dy, "red_0")
+        for dy in range(-1, 2):
+            for dx in range(-1, 2):
+                if abs(dx) + abs(dy) <= 1:
+                    c.set(int(x) + dx + 1, int(y) + dy + 1, "yellow" if hot else "orange")
+        c.set(int(x) + 1, int(y) + 1, "glow" if hot else "yellow")
+    # Veins across the sac between the eggs.
+    for k in range(-6, 7):
+        for row in (-0.35, 0.3):
+            x, y, north = m.project(sac[0] + sac_r * 0.8, sac[1] + k * sac_r / 8.0,
+                                    sac[2] + sac_r * (row + 0.12 * math.sin(k * 1.3)))
+            if north <= sac_north + sac_r * 0.3 and c.get(int(x), int(y)) in ("red_1", "clay"):
+                c.set(int(x), int(y), "red_0")
+    # Yellow eyes, only where they face the viewer.
+    _, _, head_north = m.project(*head)
+    for s in (-2.2, 2.2):
+        x, y, north = m.project(head[0] + 5.0, head[1] + s, head[2] + 1.0)
+        if north <= head_north + 0.5:
+            c.set(int(x), int(y), ("glow" if mode == "birth" else "yellow") if eyes else "dusk")
+    c.outline("outline")
+    return c
+
+
+def brood_hit(direction: int, frame: int) -> Canvas:
+    return brood_frame(direction, 0, Pose(tilt=HIT_POSES[frame].tilt * 0.5))
+
+
+def brood_death(direction: int, frame: int) -> Canvas:
+    """She topples onto her egg sac, which bursts into a pool."""
+    return brood_frame(direction, 0, BROOD_DEATH_POSES[frame], eyes=frame == 0, stain=BROOD_DEATH_STAIN[frame])
 
 
 def boomer_hit(direction: int, frame: int) -> Canvas:
@@ -2817,6 +2921,13 @@ def outputs() -> dict[str, Image.Image]:
             files[f"Sprites/Enemies/Koloss_Hit_{name}_{frame}.png"] = koloss_hit(d, frame).to_image()
         for frame, c in enumerate(death_frames(koloss_death, d, len(KOLOSS_DEATH_STAIN))):
             files[f"Sprites/Enemies/Koloss_Death_{name}_{frame}.png"] = c.to_image()
+        for mode, file_state in (("walk", "Walk"), ("birth", "Birth")):
+            for frame in range(4):
+                files[f"Sprites/Enemies/Brutmutter_{file_state}_{name}_{frame}.png"] = brood_frame(d, frame, mode=mode).to_image()
+        for frame in range(len(HIT_POSES)):
+            files[f"Sprites/Enemies/Brutmutter_Hit_{name}_{frame}.png"] = brood_hit(d, frame).to_image()
+        for frame, c in enumerate(death_frames(brood_death, d, len(BROOD_DEATH_STAIN))):
+            files[f"Sprites/Enemies/Brutmutter_Death_{name}_{frame}.png"] = c.to_image()
         for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
@@ -2883,6 +2994,7 @@ ANIMATION_PREVIEWS = {
     "Brute": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Boomer": [("Walk", 8, 2), ("Hit", 12, 1), ("Swell", 12, 4), ("Death", 10, 1)],
     "Koloss": [("Walk", 8, 2), ("Windup", 8, 3), ("Charge", 12, 2), ("Stun", 6, 3), ("Hit", 12, 1), ("Death", 10, 1)],
+    "Brutmutter": [("Walk", 6, 2), ("Birth", 6, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Player": [("Walk", 10, 3), ("Dash", 10, 2), ("Hit", 12, 1), ("Death", 10, 1)],
 }
 # Pause on the last death frame before the preview loops, in milliseconds.

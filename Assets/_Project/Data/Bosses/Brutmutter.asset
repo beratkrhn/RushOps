@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92d2edb721fd341f3b496cf7728d828d, type: 3}
+  m_Name: Brutmutter
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Bosses.BroodMotherDefinition
+  _displayName: Brutmutter
+  _health: 320
+  _moveSpeed: 0.9
+  _contactDamage: 1
+  _points: 1000
+  _perkThresholds:
+  - 0.66
+  - 0.33
+  _deathDuration: 0.6
+  _victoryDelay: 1.5
+  _mass: 200
+  _spawnInterval: 3
+  _enragedSpawnInterval: 2
+  _enragedHealthShare: 0.5
+  _birthTime: 0.6
