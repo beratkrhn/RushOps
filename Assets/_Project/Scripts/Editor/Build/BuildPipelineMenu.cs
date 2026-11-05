@@ -45,6 +45,11 @@ namespace RushOps.Editor.Build
             // 64-bit ARM is required by Google Play and covers current phones.
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            // The app collects no data (App Store privacy label, issue #193): no hardware statistics to Unity. The
+            // setting („Hardware Statistics“) has no public API, so it goes through the serialized player settings.
+            var player = new SerializedObject(Unsupported.GetSerializedAssetInterfaceSingleton("PlayerSettings"));
+            player.FindProperty("submitAnalytics").boolValue = false;
+            player.ApplyModifiedPropertiesWithoutUndo();
             AppIconSetup.Apply();
             AssetDatabase.SaveAssets();
             Debug.Log($"[BuildPipelineMenu] Player settings applied: {BundleId}, Android API {(int)AndroidMinSdk}+, iOS {IosMinVersion}+");
