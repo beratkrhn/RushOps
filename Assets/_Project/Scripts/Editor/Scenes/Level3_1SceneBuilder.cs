@@ -141,6 +141,11 @@ namespace RushOps.Editor.Scenes
             level.Gates[gates[3]].Kills = GratKills;
             level.Gates[gates[3]].CountKillsFromZone = 3;
             level.Gates[gates[4]].Puzzles.Add(hang);
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Zone 2 Glutspalten, among the switches.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(17, 35), Combat.WeaponCatalogBuilder.DualPistolsPath));
+            // Zone 5 Aschehang, among the switches.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(14, 99), Combat.WeaponCatalogBuilder.AssaultRiflePath));
             return level;
         }
 

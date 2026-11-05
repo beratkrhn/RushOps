@@ -138,6 +138,9 @@ namespace RushOps.Editor.Scenes
             level.Gates[gates[1]].Puzzles.Add(hold);
             level.Gates[gates[2]].Puzzles.Add(switches);
             level.Gates[gates[3]].Puzzles.Add(transport);
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Zone 4 Generator: on the long block, between the two cells.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(12, 86), Combat.WeaponCatalogBuilder.ShotgunPath));
             return level;
         }
 

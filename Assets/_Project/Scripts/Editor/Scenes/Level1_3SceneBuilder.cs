@@ -107,6 +107,9 @@ namespace RushOps.Editor.Scenes
                 DefinitionType = typeof(ColossusDefinition),
                 Create = ColossusBuilder.Create,
             };
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Zone 2 before the arena (decision C6).
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(12, 24), Combat.WeaponCatalogBuilder.ShotgunPath));
             return level;
         }
     }

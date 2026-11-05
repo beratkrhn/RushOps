@@ -184,6 +184,9 @@ namespace RushOps.Editor.Scenes
             level.Gates[tunnel].CountKillsFromZone = 2;
             level.Gates[stellwerk].Puzzles.Add(hold);
             level.Gates[gleise].Puzzles.Add(gleiseSwitches);
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Tunnel, the western side branch, beside the generator.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(5, 36), Combat.WeaponCatalogBuilder.AssaultRiflePath));
             return level;
         }
 

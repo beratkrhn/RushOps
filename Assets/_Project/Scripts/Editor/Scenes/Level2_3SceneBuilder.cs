@@ -106,6 +106,9 @@ namespace RushOps.Editor.Scenes
                 DefinitionType = typeof(RushOps.Bosses.BroodMotherDefinition),
                 Create = BroodMotherBuilder.Create,
             };
+            // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
+            // Zone 2 Pumpwerk before the arena, on the west pump.
+            level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(5, 26), Combat.WeaponCatalogBuilder.AssaultRiflePath));
             return level;
         }
     }
