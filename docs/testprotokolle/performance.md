@@ -38,14 +38,36 @@ Apple M3, Unity 6000.3.10f1, Batchmode mit Metal, Commit nach `a341fd6` (Branch 
 - Ladezeit (NF-05): Ein Development-Build schreibt beim ersten Hauptmenü „[RushOps] Hauptmenü nach X s geladen“ ins Log (Xcode-Konsole oder `Logs/devicectl-ios.log`). Der Wert wird im Gesamtspieltest notiert.
 - Speicher: Der Gesamtspeicher des Editors (etwa 1,3 GB) sagt über das Gerät nichts aus. Gemessen wird er am Gerät.
 
-## Vorschlag für das Frame-Budget (R8)
+## Frame-Budget (R8, Issue #190)
 
-Ein Mittelklasse-iPhone (A13 bis A15) ist auf einem Kern etwa zwei- bis dreimal langsamer als der M3. Für die Stress-Szene im Editor gilt deshalb:
+Ein Mittelklasse-iPhone (A13 bis A15) ist auf einem Kern etwa zwei- bis dreimal langsamer als der M3. Das Budget liegt in `Data/Performance/PerformanceBudget.asset`. Der PlayMode-Test `PerformanceBudgetTests` misst die Stress-Szene 10 s lang und prüft es bei jedem `Tools/unity-check.sh`. Draw Calls zählt er nur mit Grafikgerät, also in `Tools/unity-perf.sh`; unter `-nographics` wird nichts gerendert.
 
 | Wert | Budget | Gemessen | Am Gerät etwa |
 |---|---|---|---|
-| Spiel-CPU im Mittel | ≤ 2 ms | 0,24 ms | ≤ 6 ms |
-| Spiel-CPU, langsamstes 1 % | ≤ 5 ms | 1,73 ms | ≤ 15 ms, also unter 16,7 ms |
-| GC pro Frame nach dem Aufwärmen | 0 Byte | 0 Byte | 0 Byte |
+| Spiel-CPU im Mittel | ≤ 2 ms | 0,25 ms | ≤ 6 ms |
+| Spiel-CPU, langsamstes 1 % | ≤ 5 ms | 1,78 ms | ≤ 15 ms, also unter 16,7 ms |
+| GC in jedem Frame nach dem Aufwärmen | 0 Byte | 0 Byte | 0 Byte |
+| Draw Calls im vollsten Frame | ≤ 150 | 49 | gleich |
+| Speicher der App am Gerät | ≤ 300 MB | wird in #195 abgelesen | |
 
-Das Budget kommt in Issue #190 als ScriptableObject dazu und wird dort von einem PlayMode-Test geprüft.
+## Messung 05.11.2026 mit Draw Calls (Issue #190)
+
+| Szene | Gegner | Spiel-CPU Ø / 1 % (ms) | Skripte Ø (ms) | Physik Ø (ms) | GC pro Frame (B) | Frames mit GC | Texturen (MB) | Draw Calls Ø / max | SetPass Ø |
+|---|---|---|---|---|---|---|---|---|---|
+| Stress_Test | 8 | 0.25 / 1.78 | 0.08 | 0.02 | 0 | 0 von 1201 | 204 | 40 / 49 | 18 |
+| Level_1-1 | 4 | 0.18 / 0.81 | 0.06 | 0.01 | 0 | 0 von 1201 | 166 | 57 / 63 | 16 |
+| Level_2-1 | 5 | 0.18 / 0.60 | 0.06 | 0.01 | 0 | 0 von 1201 | 166 | 53 / 59 | 16 |
+| Level_3-1 | 7 | 0.19 / 0.94 | 0.06 | 0.01 | 0 | 0 von 1200 | 166 | 54 / 63 | 17 |
+| MainMenu | 0 | 0.09 / 0.28 | 0.01 | 0.00 | 0 | 0 von 1200 | 169 | 1 / 1 | 1 |
+
+**Vorher/Nachher:** Story 1 hat keine Engpässe gefunden, deshalb gibt es in #190 nichts zu beheben, nur das Budget abzusichern. Die Werte schwanken zwischen den Läufen um wenige Hundertstel Millisekunden.
+
+**Sprite-Atlanten:** nicht nötig. Alle Sprites zusammen sind unkomprimiert etwa 47 MB groß (Gegner 29 MB, Spieler 16 MB); der Texturzähler im Editor enthält dazu Editor- und Render-Texturen. Mit 40 bis 63 Draw Calls und 16 bis 18 SetPass-Aufrufen pro Frame liegt das Spiel weit unter dem, was ein iPhone verträgt. Atlanten würden daran wenig ändern.
+
+**Akku:**
+- Fest 60 FPS (`FrameRateSetup`). Auf ProMotion-Geräten läuft das Spiel nicht mit 120 Hz.
+- `runInBackground` ist aus, iOS hält die App im Hintergrund an.
+- Beim Wechsel in den Hintergrund öffnet `PauseController` die Pause, damit der Spieler nach der Rückkehr nicht mitten im Kampf steht.
+- Den Verbrauch über 30 Minuten misst der Gesamtspieltest (#195).
+
+**Speicher am Gerät:** Die FPS-Anzeige im Development-Build zeigt jetzt als dritte Zeile „RAM … MB“ (Zähler „System Used Memory“). Im Editor bleibt die Zeile weg, weil sie dort den Editor-Prozess messen würde.
