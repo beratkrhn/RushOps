@@ -8,7 +8,7 @@ namespace RushOps.Enemies
     public class EnemyDefinition : ScriptableObject
     {
         [Tooltip("Hit points; one projectile hit removes the weapon's damage.")]
-        [SerializeField, Min(1)] private int _health = 3;
+        [SerializeField, Min(1)] private int _health = 30;
 
         [Tooltip("Top speed in units (tiles) per second.")]
         [SerializeField, Min(0f)] private float _moveSpeed = 2.5f;

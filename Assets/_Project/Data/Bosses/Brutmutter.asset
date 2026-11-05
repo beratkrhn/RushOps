@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Brutmutter
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Bosses.BroodMotherDefinition
   _displayName: Brutmutter
-  _health: 320
+  _health: 3200
   _moveSpeed: 0.9
   _contactDamage: 1
   _points: 1000

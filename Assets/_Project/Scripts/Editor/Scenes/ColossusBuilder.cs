@@ -23,7 +23,7 @@ namespace RushOps.Editor.Scenes
         /// </summary>
         public static void Configure(BossDefinition definition)
         {
-            definition.Configure("Koloss", 250, 1.4f, 1, 1000);
+            definition.Configure("Koloss", 2500, 1.4f, 1, 1000);
         }
 
         /// <summary>Creates the Koloss at <paramref name="position"/> (its feet).</summary>

@@ -85,7 +85,7 @@ namespace RushOps.Tests.PlayMode
             Enemy runner = _runners.Spawn(new Vector2(5.5f, 5.5f));
             yield return null;
 
-            Assert.IsTrue(((IDamageable)runner).TakeHit(1, Vector2.right));
+            Assert.IsTrue(((IDamageable)runner).TakeHit(10, Vector2.right), "one pistol hit (ADR 0012)");
 
             Assert.IsTrue(runner.IsDead);
         }
