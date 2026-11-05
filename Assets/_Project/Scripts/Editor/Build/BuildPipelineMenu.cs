@@ -45,6 +45,7 @@ namespace RushOps.Editor.Build
             // 64-bit ARM is required by Google Play and covers current phones.
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.Android, ScriptingImplementation.IL2CPP);
             PlayerSettings.Android.targetArchitectures = AndroidArchitecture.ARM64;
+            AppIconSetup.Apply();
             AssetDatabase.SaveAssets();
             Debug.Log($"[BuildPipelineMenu] Player settings applied: {BundleId}, Android API {(int)AndroidMinSdk}+, iOS {IosMinVersion}+");
         }
