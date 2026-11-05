@@ -17,7 +17,7 @@ namespace RushOps.Combat
         [SerializeField, Min(0)] private int _playerDamage = 2;
 
         [Tooltip("Damage to every other enemy inside the radius, in weapon hit points.")]
-        [SerializeField, Min(0)] private int _enemyDamage = 5;
+        [SerializeField, Min(0)] private int _enemyDamage = 50;
 
         [Tooltip("Seconds before an explosive enemy killed by an explosion blows up itself, so chain reactions are visible.")]
         [SerializeField, Min(0f)] private float _chainDelay = 0.12f;

@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0fdf9f9d1df343199fe415f6afe9fcf2, type: 3}
+  m_Name: Shotgun
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Combat.WeaponDefinition
+  _displayName: Schrotflinte
+  _fireRate: 1.2
+  _damage: 10
+  _projectilesPerShot: 5
+  _fanAngle: 30
+  _spread: 2
+  _range: 5
+  _projectileSpeed: 13
+  _shotSound: {fileID: 8300000, guid: 19025c5ab09f24eeaa09e6b295f9ae56, type: 3}
+  _icon: {fileID: 21300000, guid: e60a1a1f3d27f4fad8a7421729f98513, type: 3}
+  _projectileSprite: {fileID: 21300000, guid: cb42110df0fb745b39bfae5d80fa9d65, type: 3}
+  _alternateMuzzles: 0
+  _muzzleSeparation: 0.18

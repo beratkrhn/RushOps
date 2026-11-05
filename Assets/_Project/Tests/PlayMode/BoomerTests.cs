@@ -61,7 +61,7 @@ namespace RushOps.Tests.PlayMode
         {
             EnemyDefinition boomer = _boomers.Definition;
 
-            Assert.AreEqual(4, boomer.Health);
+            Assert.AreEqual(40, boomer.Health, "ADR 0012: tenfold health");
             Assert.AreEqual(2f, boomer.MoveSpeed, 1e-4f);
             Assert.AreEqual(20, boomer.Points);
             Assert.AreEqual(0, boomer.ContactDamage, "the boomer hurts by its explosion, not by touch");

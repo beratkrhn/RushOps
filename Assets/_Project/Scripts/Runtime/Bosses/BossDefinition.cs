@@ -10,7 +10,7 @@ namespace RushOps.Bosses
         [SerializeField] private string _displayName = "Boss";
 
         [Tooltip("Hit points; chosen so the fight lasts as decided without perks (C5).")]
-        [SerializeField, Min(1)] private int _health = 100;
+        [SerializeField, Min(1)] private int _health = 1000;
 
         [Tooltip("Speed in units (tiles) per second while chasing the player.")]
         [SerializeField, Min(0f)] private float _moveSpeed = 2f;

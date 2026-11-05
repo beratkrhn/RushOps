@@ -74,6 +74,23 @@ namespace RushOps.Combat
         }
 
         /// <summary>
+        /// Offset of the muzzle for shot number <paramref name="shot"/> of a weapon that alternates two muzzles (dual
+        /// pistols): even shots come from the left of <paramref name="aim"/>, odd ones from the right, each
+        /// <paramref name="separation"/> units from the aim line. Zero for a zero aim.
+        /// </summary>
+        public static Vector2 AlternateMuzzleOffset(Vector2 aim, int shot, float separation)
+        {
+            if (aim == Vector2.zero || separation <= 0f)
+            {
+                return Vector2.zero;
+            }
+
+            Vector2 forward = aim.normalized;
+            Vector2 left = new Vector2(-forward.y, forward.x);
+            return left * ((shot & 1) == 0 ? separation : -separation);
+        }
+
+        /// <summary>
         /// Range of the aim assist for a weapon with <paramref name="weaponRange"/>: <paramref name="factor"/> of it, so
         /// the assist only aims at enemies the projectiles can reach.
         /// </summary>

@@ -32,7 +32,7 @@ namespace RushOps.Editor.Scenes
         /// </summary>
         public static void Configure(BossDefinition definition)
         {
-            definition.Configure("Mega-Boomer", 360, 1.1f, 1, 1000);
+            definition.Configure("Mega-Boomer", 3600, 1.1f, 1, 1000);
         }
 
         /// <summary>Creates the Mega-Boomer at <paramref name="position"/> (its feet), with its halves and puddles.</summary>

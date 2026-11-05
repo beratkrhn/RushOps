@@ -49,7 +49,7 @@ namespace RushOps.Editor.Scenes
             int arena = level.AddZone(new LevelZone(
                 "Zone_Arena", new RectInt(1, ArenaBottom, Width - 2, Height - 1 - ArenaBottom), null, null, -1));
             level.Boss = new LevelBoss(DefinitionPath, new Vector2(12f, 36f), arena, gate,
-                d => d.Configure("Testboss", 60, 2f, 1, 1000));
+                d => d.Configure("Testboss", 600, 2f, 1, 1000));
             return level;
         }
     }

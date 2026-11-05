@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Boss_Test
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Bosses.BossDefinition
   _displayName: Testboss
-  _health: 60
+  _health: 600
   _moveSpeed: 2
   _contactDamage: 1
   _points: 1000

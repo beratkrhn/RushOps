@@ -25,7 +25,7 @@ namespace RushOps.Editor.Scenes
         /// </summary>
         public static void Configure(BossDefinition definition)
         {
-            definition.Configure("Brutmutter", 320, 0.9f, 1, 1000);
+            definition.Configure("Brutmutter", 3200, 0.9f, 1, 1000);
         }
 
         /// <summary>Creates the Brutmutter at <paramref name="position"/> (her feet).</summary>

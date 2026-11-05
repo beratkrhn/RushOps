@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: efeae419fe4b34a408d019f33584047a, type: 3}
   m_Name: Boomer
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Enemies.EnemyDefinition
-  _health: 4
+  _health: 40
   _moveSpeed: 2
   _contactDamage: 0
   _deathDuration: 0.12

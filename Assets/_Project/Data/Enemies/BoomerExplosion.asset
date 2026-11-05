@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Combat.ExplosionDefinition
   _radius: 2.5
   _playerDamage: 2
-  _enemyDamage: 5
+  _enemyDamage: 50
   _chainDelay: 0.12
   _shakeStrength: 0.3
   _shakeDuration: 0.35
