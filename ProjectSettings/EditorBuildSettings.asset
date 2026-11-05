@@ -62,6 +62,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Level_3-3.unity
     guid: c45e75ebcc3cc4852821e6fd8f9cf38a
+  - enabled: 1
+    path: Assets/_Project/Scenes/Stress_Test.unity
+    guid: b5584c2770c2544ec8af167260894a2a
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
