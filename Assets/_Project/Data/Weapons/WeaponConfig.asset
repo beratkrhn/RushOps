@@ -12,10 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fb4bb360c6a2644f6a24c16bb88e2da7, type: 3}
   m_Name: WeaponConfig
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Combat.WeaponConfig
-  _fireRate: 6
-  _projectileSpeed: 14
-  _maxRange: 10
-  _damage: 1
+  _startWeapon: {fileID: 11400000, guid: baa9f7c5be844d7d85a10599493019dd, type: 2}
   _aimAssistEnabled: 1
   _aimAssistAngle: 10
-  _aimAssistRange: 8
+  _aimAssistRangeFactor: 0.8
