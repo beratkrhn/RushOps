@@ -157,7 +157,7 @@ namespace RushOps.UI
 
             if (_puzzles != null && closed)
             {
-                Puzzle current = _puzzles.Current;
+                Puzzle current = _puzzles.Shown;
                 if (current != null)
                 {
                     ShowPuzzle(current);

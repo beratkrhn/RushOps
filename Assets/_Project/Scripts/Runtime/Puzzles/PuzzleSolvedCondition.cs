@@ -13,6 +13,10 @@ namespace RushOps.Puzzles
         [Tooltip("Puzzles that must all be solved to open the gate.")]
         [SerializeField] private Puzzle[] _puzzles = Array.Empty<Puzzle>();
 
+        // Reused by Shown, so the tracker reading it every frame allocates nothing.
+        private PuzzleState[] _states;
+        private PuzzleDisplayKind[] _kinds;
+
         /// <summary>Puzzles that must all be solved, in their order.</summary>
         public System.Collections.Generic.IReadOnlyList<Puzzle> Puzzles => _puzzles ?? Array.Empty<Puzzle>();
 
@@ -49,6 +53,37 @@ namespace RushOps.Puzzles
                 }
 
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// The puzzle the mission tracker shows: one with a running countdown first, else <see cref="Current"/>
+        /// (<see cref="PuzzleFocus"/>); null once all are solved.
+        /// </summary>
+        public Puzzle Shown
+        {
+            get
+            {
+                if (_puzzles == null || _puzzles.Length == 0)
+                {
+                    return null;
+                }
+
+                if (_states == null || _states.Length != _puzzles.Length)
+                {
+                    _states = new PuzzleState[_puzzles.Length];
+                    _kinds = new PuzzleDisplayKind[_puzzles.Length];
+                }
+
+                for (int i = 0; i < _puzzles.Length; i++)
+                {
+                    Puzzle puzzle = _puzzles[i];
+                    _states[i] = puzzle != null ? puzzle.State : PuzzleState.Solved;
+                    _kinds[i] = puzzle != null ? puzzle.Display.Kind : PuzzleDisplayKind.Text;
+                }
+
+                int index = PuzzleFocus.IndexToShow(_states, _kinds);
+                return index >= 0 ? _puzzles[index] : null;
             }
         }
     }
