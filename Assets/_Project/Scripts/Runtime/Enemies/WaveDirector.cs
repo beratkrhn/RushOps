@@ -77,6 +77,14 @@ namespace RushOps.Enemies
         }
 
         /// <summary>
+        /// Enemies that may still appear before the cap of <see cref="SpawnerConfig.MaxActive"/> is reached, counting
+        /// living and announced non-boss enemies; 0 without config. Bosses that spawn enemies themselves check it too.
+        /// </summary>
+        public int FreeSlots => _config != null
+            ? SpawnRules.FreeSlots(_config.MaxActive, AliveCount, _announcedCount - _announcedBosses)
+            : 0;
+
+        /// <summary>
         /// Runs <paramref name="waves"/> in <paramref name="zone"/> from now on instead of its current waves, e.g. faster
         /// spawns while a puzzle is worked on (issue #34). Enemies still waiting in the queue for the old waves are
         /// dropped; living ones stay. The new waves start at once if the zone is active, otherwise with the zone.
@@ -345,8 +353,7 @@ namespace RushOps.Enemies
         {
             while (true)
             {
-                int free = SpawnRules.FreeSlots(_config.MaxActive, AliveCount, _announcedCount - _announcedBosses);
-                int index = _queue.FindReady(free, _canPlace);
+                int index = _queue.FindReady(FreeSlots, _canPlace);
                 if (index < 0)
                 {
                     return;

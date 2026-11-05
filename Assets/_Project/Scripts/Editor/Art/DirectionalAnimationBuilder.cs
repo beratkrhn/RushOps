@@ -79,6 +79,14 @@ namespace RushOps.Editor.Art
 
         public const string KolossDeathPath = AnimationsDir + "/Koloss_Death.asset";
 
+        public const string BrutmutterWalkPath = AnimationsDir + "/Brutmutter_Walk.asset";
+
+        public const string BrutmutterBirthPath = AnimationsDir + "/Brutmutter_Birth.asset";
+
+        public const string BrutmutterHitPath = AnimationsDir + "/Brutmutter_Hit.asset";
+
+        public const string BrutmutterDeathPath = AnimationsDir + "/Brutmutter_Death.asset";
+
         private const string AnimationsDir = "Assets/_Project/Data/Animations";
 
         // Start values for new hit and death assets; tuned values in existing assets are kept.
@@ -86,6 +94,9 @@ namespace RushOps.Editor.Art
         private const float DeathFramesPerSecond = 10f;
         private const float SwellFramesPerSecond = 12f;
         private const float KolossStunFramesPerSecond = 6f;
+        // Four frames over a birth of about 0.6 s (issue #155).
+        private const float BrutmutterBirthFramesPerSecond = 7f;
+        private const float BrutmutterWalkFramesPerSecond = 6f;
         private const float PlayerWalkFramesPerSecond = 10f;
         // Only the order of the frames matters: the animator stretches the somersault to the dash time.
         private const float PlayerDashFramesPerSecond = 30f;
@@ -118,6 +129,10 @@ namespace RushOps.Editor.Art
             CreateOrUpdate(KolossStunPath, SpritesDir + "/Enemies", "Koloss_Stun", true, KolossStunFramesPerSecond);
             CreateOrUpdate(KolossHitPath, SpritesDir + "/Enemies", "Koloss_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(KolossDeathPath, SpritesDir + "/Enemies", "Koloss_Death", false, DeathFramesPerSecond);
+            CreateOrUpdate(BrutmutterWalkPath, SpritesDir + "/Enemies", "Brutmutter_Walk", true, BrutmutterWalkFramesPerSecond);
+            CreateOrUpdate(BrutmutterBirthPath, SpritesDir + "/Enemies", "Brutmutter_Birth", true, BrutmutterBirthFramesPerSecond);
+            CreateOrUpdate(BrutmutterHitPath, SpritesDir + "/Enemies", "Brutmutter_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(BrutmutterDeathPath, SpritesDir + "/Enemies", "Brutmutter_Death", false, DeathFramesPerSecond);
             AssetDatabase.SaveAssets();
         }
 

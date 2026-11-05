@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Brutmutter_Walk
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 6
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 2ff0d790650074ff998861362a999735, type: 3}
+    - {fileID: 21300000, guid: a686f5f3e7ef744d1a9ac29a455b4f49, type: 3}
+    - {fileID: 21300000, guid: 4d25c07de2a2d4f1fa557686bf4200fe, type: 3}
+    - {fileID: 21300000, guid: c9324797abae74fc9a01aa0fbdba1d11, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 92d04f0531f94441fa892d931fa5b9fd, type: 3}
+    - {fileID: 21300000, guid: bdf6d4692b52e4b5c90ee1511bcb040d, type: 3}
+    - {fileID: 21300000, guid: c9dd62356551f4a6cb98f6573fc3c024, type: 3}
+    - {fileID: 21300000, guid: 64b167ea8b1494b28a57d4220ef27256, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 4c9c5bf67df4641d2a342d597a3f0277, type: 3}
+    - {fileID: 21300000, guid: 5a0a045fbacf9444d990bafbb2328545, type: 3}
+    - {fileID: 21300000, guid: c91e7b0871b9c4f50a8ed8cfb091b598, type: 3}
+    - {fileID: 21300000, guid: 77dbfae152b9248448fff204671cf3d8, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 61818fb823ce342ea9e115918fc66f4f, type: 3}
+    - {fileID: 21300000, guid: f9179de845f4e4d6880fea95009ce02d, type: 3}
+    - {fileID: 21300000, guid: fcb0fb2d0446b4604bb5ffdbdd874d3b, type: 3}
+    - {fileID: 21300000, guid: 7de43f0d5ddfd438bbca0063b80f37a8, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 112ecb561a7b24d4b9f8ec60d045195d, type: 3}
+    - {fileID: 21300000, guid: 556ab1a39e333426080a377f82b85099, type: 3}
+    - {fileID: 21300000, guid: 17c65ae7769b54659975460756257b24, type: 3}
+    - {fileID: 21300000, guid: cde30d3abe31c4e4b8cb14d49be203a7, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 3bf64c681f40748438c26a2c66afb4b4, type: 3}
+    - {fileID: 21300000, guid: b491d27b9a1c54f0da678695648ab4a6, type: 3}
+    - {fileID: 21300000, guid: e8271882ae329450fbaaa5c529e598d9, type: 3}
+    - {fileID: 21300000, guid: dfad4b6c9403d4539adc110b4fa323ee, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: ef57c08bb5ffc431c97bd09216767279, type: 3}
+    - {fileID: 21300000, guid: 199b11a4ce9094a1cba04127d0ea3688, type: 3}
+    - {fileID: 21300000, guid: 6400804918b3147379f83a83989b53f5, type: 3}
+    - {fileID: 21300000, guid: 81213e235cff44de3ac46a1173eefef2, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: dbe40305f19ba4922bb26543eed374b0, type: 3}
+    - {fileID: 21300000, guid: 30cf7498eb68d4e2085aefd63fedf8bc, type: 3}
+    - {fileID: 21300000, guid: 0996b66f187314c9b88e5d21c774a3af, type: 3}
+    - {fileID: 21300000, guid: cad7638e5eec1480eb2e63785c44ef56, type: 3}

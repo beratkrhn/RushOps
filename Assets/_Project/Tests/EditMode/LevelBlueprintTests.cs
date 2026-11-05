@@ -99,6 +99,19 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Level2_3_FollowsLevelDesignRules_WithBrutmutterAfterTwoZones()
+        {
+            CollectionAssert.IsEmpty(Level2_3SceneBuilder.Validate());
+            LevelBlueprint level = Level2_3SceneBuilder.Blueprint;
+            Assert.AreEqual(3, level.Zones.Count, "decision C6: two short zones, then the arena");
+            Assert.AreEqual(typeof(RushOps.Bosses.BroodMotherDefinition), level.Boss.DefinitionType);
+            Assert.AreEqual(LevelDifficulties.Island2Path, level.DifficultyPath, "decision C3");
+            Assert.AreEqual(IslandThemes.StadtPath, level.ThemePath);
+            Assert.AreEqual(1, level.Island);
+            Assert.AreEqual(2, level.Slot);
+        }
+
+        [Test]
         public void BossTest_FollowsLevelDesignRules()
         {
             CollectionAssert.IsEmpty(LevelBlueprintBuilder.Validate(BossTestSceneBuilder.Blueprint));

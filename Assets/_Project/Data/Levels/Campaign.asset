@@ -22,7 +22,7 @@ MonoBehaviour:
     _levels:
     - {fileID: 11400000, guid: 27f6a1432428a46129a3b89395a72f72, type: 2}
     - {fileID: 11400000, guid: 821f46787a41f405eb3ecd1b6e26e573, type: 2}
-    - {fileID: 0}
+    - {fileID: 11400000, guid: aa5dd02e656d74915940d9e4d6fff458, type: 2}
   - _displayName: Vulkan
     _levels:
     - {fileID: 0}

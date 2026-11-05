@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Brutmutter_Hit
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 0
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: a99b41aa20e854b79a3b5511c541e8ca, type: 3}
+    - {fileID: 21300000, guid: c510eba5d380343cfb67885c6f04555f, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: f2b6e568bace24d9b865b3a604c6e720, type: 3}
+    - {fileID: 21300000, guid: ae84aef45f0f94620ba2ffcdf6a5b4f1, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 8deeb20c173c544ef8ee23a0133bf048, type: 3}
+    - {fileID: 21300000, guid: d9e585856f2ca462da1d5637fe1a12f8, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 642e9ac18debe41da9c5b5e4ea565133, type: 3}
+    - {fileID: 21300000, guid: a72fcfd1a14f742bb95153f8a20e7098, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: e4b509d02f2714994813f8df74f29777, type: 3}
+    - {fileID: 21300000, guid: 75ba59ef82b38449db2eb203f7b2c91a, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: ec19db3d1a160492a84e31a08db8628d, type: 3}
+    - {fileID: 21300000, guid: 05fb9c652d7774e66a124ec824a8f5a6, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 28f0ddae1753f42f4b6a7dd50b4d5e24, type: 3}
+    - {fileID: 21300000, guid: c315a8d07edf844a69bb9608c390638e, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: a0c07b93bba684e46946f7d5514eb1cb, type: 3}
+    - {fileID: 21300000, guid: 615c4a9efa783441ea0f2a95f7410ec3, type: 3}

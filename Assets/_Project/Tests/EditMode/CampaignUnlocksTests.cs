@@ -175,6 +175,8 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual("Hinterhöfe", campaign.LevelAt(1, 0).DisplayName);
             Assert.AreEqual("Level_2-2", campaign.LevelAt(1, 1).SceneName);
             Assert.AreEqual("U-Bahn", campaign.LevelAt(1, 1).DisplayName);
+            Assert.AreEqual("Level_2-3", campaign.LevelAt(1, 2).SceneName);
+            Assert.AreEqual("Kanalisation", campaign.LevelAt(1, 2).DisplayName);
             Assert.IsTrue(campaign.Unlocks.IsLevelUnlocked(0, 0, new ProgressData()));
         }
     }
