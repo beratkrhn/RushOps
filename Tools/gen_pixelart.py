@@ -24,6 +24,9 @@ Output (under Assets/_Project/Art/):
   Sprites/Effects/Koloss_ChargeLine.png    32x8, floor mark of the Koloss charge, stretched (issue #151)
   Sprites/Enemies/Brutmutter_<STATE>_<DIR>_<F>.png 96x96, Brutmutter boss: Walk 4, Birth 4, Hit 2, Death 5 (issue #155)
   Sprites/UI/Weapon_<NAME>.png              32x16 weapon icons: Pistol, AssaultRifle, Shotgun, DualPistols (issue #174)
+  Sprites/Level/WallWeapon_<NAME>.png      32x32 weapon silhouette on a board, hangs on a wall (issue #175)
+  Sprites/Effects/PickupRing_<F>.png       28x14, 8 frames of the ring filling while picking up a wall weapon (issue #175)
+  Sprites/UI/Swap_Button.png               24x24 plate of the weapon swap button (issue #175)
   Sprites/Projectiles/Bullet_<Rifle|Pellet|Dual>.png 16x16 bullet look per weapon (issue #174)
   Sprites/Enemies/MegaBoomer_<STATE>_<DIR>_<F>.png 128x128, Mega-Boomer boss: Walk 4, Split 4, Hit 2, Death 5 (issue #159)
   Sprites/Effects/Puddle_<Warm|Active>_<F>.png 48x24, Mega-Boomer puddle: 2 frames warm-up glow, 2 frames harmful (issue #159)
@@ -1575,6 +1578,57 @@ def weapon_icon(name: str) -> Canvas:
         for x, key in enumerate(row):
             if key in WEAPON_ICON_COLORS:
                 c.set(x, y, WEAPON_ICON_COLORS[key])
+    c.outline()
+    return c
+
+
+def wall_weapon(name: str) -> Canvas:
+    """Weapon on the wall (issue #175, W8), 32x32 on the wall face: a dark board on two hooks with the weapon as a
+    pale silhouette, so it reads as "something to take" without looking like a pickup on the floor."""
+    c = Canvas(32, 32)
+    c.rect(2, 9, 29, 24, "brown_0")
+    c.rect(3, 10, 28, 23, "brown_1")
+    for x in (6, 25):
+        c.rect(x, 7, x + 1, 9, "slate_4")
+    icon = weapon_icon(name)
+    for y in range(icon.height):
+        for x in range(icon.width):
+            key = icon.get(x, y)
+            if key is not None and 0 <= x - 0 < 32 and key != "outline":
+                c.set(x, y + 9, "cream" if key in ("slate_5", "slate_3") else "peach")
+            elif key == "outline":
+                c.set(x, y + 9, "outline")
+    c.outline()
+    return c
+
+
+PICKUP_RING_FRAMES = 8
+
+
+def pickup_ring(frame: int) -> Canvas:
+    """Ring on the floor in front of a wall weapon (issue #175), 28x14: fills clockwise from the top in 8 steps."""
+    c = Canvas(28, 14)
+    cx, cy, rx, ry = 14.0, 7.0, 13.0, 6.0
+    filled = (frame + 1) / PICKUP_RING_FRAMES
+    for y in range(c.height):
+        for x in range(c.width):
+            dx, dy = (x + 0.5 - cx) / rx, (y + 0.5 - cy) / ry
+            d = dx * dx + dy * dy
+            if 0.55 <= d <= 1.0:
+                # Angle clockwise from the top, 0..1.
+                a = (math.atan2(dx, -dy) / (2 * math.pi)) % 1.0
+                c.set(x, y, "yellow" if a <= filled else "slate_2")
+    return c
+
+
+def swap_button() -> Canvas:
+    """Round plate of the weapon swap button (issue #175, W10), 24x24; the icon of the other weapon sits on it."""
+    c = Canvas(24, 24)
+    c.ellipse(12.0, 12.0, 11.0, 11.0, "slate_1")
+    c.ellipse(12.0, 11.5, 9.5, 9.5, "slate_2")
+    # Two small arrows round the edge: swap.
+    for x, y in ((4, 6), (5, 5), (6, 4), (19, 19), (18, 20), (17, 21)):
+        c.set(x, y, "white")
     c.outline()
     return c
 
@@ -3306,6 +3360,9 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/Generator_On.png": generator(True).to_image(),
         "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),
         **{f"Sprites/UI/Weapon_{name}.png": weapon_icon(name).to_image() for name in WEAPON_ICONS},
+        **{f"Sprites/Level/WallWeapon_{name}.png": wall_weapon(name).to_image() for name in WEAPON_ICONS},
+        **{f"Sprites/Effects/PickupRing_{f}.png": pickup_ring(f).to_image() for f in range(PICKUP_RING_FRAMES)},
+        "Sprites/UI/Swap_Button.png": swap_button().to_image(),
         "Sprites/Projectiles/Bullet_Rifle.png": bullet_rifle().to_image(),
         "Sprites/Projectiles/Bullet_Pellet.png": bullet_pellet().to_image(),
         "Sprites/Projectiles/Bullet_Dual.png": bullet_dual().to_image(),
