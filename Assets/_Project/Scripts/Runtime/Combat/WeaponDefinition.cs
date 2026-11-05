@@ -40,6 +40,9 @@ namespace RushOps.Combat
         [Tooltip("Icon for the HUD, the swap button and the weapon selection.")]
         [SerializeField] private Sprite _icon;
 
+        [Tooltip("Silhouette hanging on the wall where it can be picked up in a level (issue #175).")]
+        [SerializeField] private Sprite _wallSprite;
+
         [Tooltip("Normal look of its projectiles; empty keeps the bullet of the projectile prefab. Perk looks win.")]
         [SerializeField] private Sprite _projectileSprite;
 
@@ -78,6 +81,9 @@ namespace RushOps.Combat
 
         /// <summary>Icon for the HUD, the swap button and the weapon selection.</summary>
         public Sprite Icon => _icon;
+
+        /// <summary>Silhouette on the wall where it can be picked up.</summary>
+        public Sprite WallSprite => _wallSprite;
 
         /// <summary>Normal look of its projectiles; null keeps the prefab's bullet.</summary>
         public Sprite ProjectileSprite => _projectileSprite;

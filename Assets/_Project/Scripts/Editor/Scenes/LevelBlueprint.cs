@@ -69,6 +69,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Boss of a boss level, or null. A boss level has no exit; beating the boss finishes it.</summary>
         public LevelBoss Boss { get; set; }
 
+        /// <summary>Weapons hanging on walls (issue #175).</summary>
+        public List<LevelWallWeapon> WallWeapons { get; } = new List<LevelWallWeapon>();
+
         /// <summary>Path of the scene asset.</summary>
         public string ScenePath => $"Assets/_Project/Scenes/{SceneName}.unity";
 

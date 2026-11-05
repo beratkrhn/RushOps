@@ -20,6 +20,7 @@ namespace RushOps.Editor.Combat
 
         private const string WeaponsDir = "Assets/_Project/Data/Weapons";
         private const string UiDir = "Assets/_Project/Art/Sprites/UI";
+        private const string LevelDir = "Assets/_Project/Art/Sprites/Level";
         private const string ProjectilesDir = "Assets/_Project/Art/Sprites/Projectiles";
 
         private readonly struct Spec
@@ -78,6 +79,22 @@ namespace RushOps.Editor.Combat
             All();
         }
 
+        /// <summary>The weapon asset at <paramref name="path"/>, created or updated first.</summary>
+        public static WeaponDefinition Get(string path)
+        {
+            foreach (Spec spec in Specs)
+            {
+                if (spec.Path == path)
+                {
+                    WeaponDefinition weapon = CreateOrUpdate(spec);
+                    AssetDatabase.SaveAssets();
+                    return weapon;
+                }
+            }
+
+            throw new System.ArgumentException($"No weapon at {path}");
+        }
+
         /// <summary>Creates or updates all weapons; returns them in the order pistol, rifle, shotgun, dual pistols.</summary>
         public static WeaponDefinition[] All()
         {
@@ -110,6 +127,7 @@ namespace RushOps.Editor.Combat
             }
 
             serialized.FindProperty("_icon").objectReferenceValue = LoadSprite($"{UiDir}/{spec.Icon}");
+            serialized.FindProperty("_wallSprite").objectReferenceValue = LoadSprite($"{LevelDir}/Wall{spec.Icon}");
             serialized.FindProperty("_projectileSprite").objectReferenceValue =
                 spec.Bullet != null ? LoadSprite($"{ProjectilesDir}/{spec.Bullet}") : null;
             serialized.FindProperty("_shotSound").objectReferenceValue = ArenaTestSceneBuilder.LoadClip(spec.Sound);

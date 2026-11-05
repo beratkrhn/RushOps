@@ -138,6 +138,11 @@ namespace RushOps.Editor.Scenes
                 }
             }
 
+            foreach (LevelWallWeapon wallWeapon in blueprint.WallWeapons)
+            {
+                ValidateWallWeapon(problems, layout, reached, size, wallWeapon);
+            }
+
             // Boss levels end with the boss, not at an exit.
             if (blueprint.Boss == null)
             {
@@ -153,6 +158,30 @@ namespace RushOps.Editor.Scenes
             }
 
             return problems;
+        }
+
+        /// <summary>
+        /// A wall weapon hangs on a wall cell with open floor in front (below) of it, which a body of
+        /// <paramref name="size"/> cells reaches (issue #175).
+        /// </summary>
+        internal static void ValidateWallWeapon(
+            List<string> problems, ArenaLayout layout, bool[,] reached, int size, LevelWallWeapon wallWeapon)
+        {
+            Vector2Int cell = wallWeapon.Cell;
+            Vector2Int front = wallWeapon.PickupCell;
+            string name = $"wall weapon {System.IO.Path.GetFileNameWithoutExtension(wallWeapon.WeaponPath)} at {cell}";
+            if (!layout.IsWall(cell.x, cell.y))
+            {
+                problems.Add($"{name} does not hang on a wall");
+            }
+            else if (front.y < 0 || layout.IsWall(front.x, front.y))
+            {
+                problems.Add($"{name} has no open floor in front of it");
+            }
+            else if (!LevelLayoutCheck.Covers(reached, size, front))
+            {
+                problems.Add($"{name} is not reachable through passages of {size} cells");
+            }
         }
 
         // Arena without obstacles (decision L5), a gate leading in and room behind it for the door to close (C6).
@@ -354,6 +383,15 @@ namespace RushOps.Editor.Scenes
             }
 
             PuzzleBuilder.SetLevelPuzzles(arena, puzzles);
+            if (blueprint.WallWeapons.Count > 0)
+            {
+                var wallWeaponsRoot = new GameObject("WallWeapons").transform;
+                foreach (LevelWallWeapon spec in blueprint.WallWeapons)
+                {
+                    Combat.WallWeaponBuilder.Create(
+                        arena, spec.Cell, Combat.WeaponCatalogBuilder.Get(spec.WeaponPath), wallWeaponsRoot);
+                }
+            }
             if (blueprint.Boss != null)
             {
                 BossBuilder.Create(blueprint, blueprint.Boss, arena, zones);
