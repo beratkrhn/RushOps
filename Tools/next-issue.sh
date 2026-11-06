@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Prints the next issue to work on.
-# Rule: oldest open milestone (by SemVer), label "story", issues labeled "priority" first,
+# Rule: oldest open milestone (by SemVer; non-SemVer titles such as "Release" come last), label "story", issues labeled "priority" first,
 # then lowest issue number, skipping issues labeled "blocked", "needs-design" or "in-progress".
 # Requires the GitHub CLI (gh), authenticated via `gh auth login`.
 # Uses only the REST API, so it also works where GraphQL is unavailable.
@@ -10,7 +10,7 @@ REPO="${RUSHOPS_REPO:-beratkrhn/RushOps}"
 
 # "number<TAB>title" of open milestones, sorted by SemVer title
 milestones=$(gh api "repos/$REPO/milestones?state=open&per_page=100" \
-  --jq 'sort_by(.title | ltrimstr("v") | split(".") | map(tonumber? // 0)) | .[] | "\(.number)\t\(.title)"')
+  --jq 'sort_by(.title | ltrimstr("v") | split(".") | map(tonumber? // 999)) | .[] | "\(.number)\t\(.title)"')
 
 while IFS=$'\t' read -r ms_number ms_title; do
   [[ -z "$ms_number" ]] && continue
