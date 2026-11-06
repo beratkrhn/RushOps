@@ -110,3 +110,120 @@ Fragen zu den Epics #42, #52, #53 und #54, entschieden am 05.11.2026. Schon vorh
 | R9 | alle | Wann wird am Gerät gespielt und abgenommen? | | Einmal ganz am Ende. Die Spieltest-Issues #156, #160 und #178 sind gelöscht und gehen im Gesamtspieltest von v1.0.0 auf |
 | R10 | #53 | Nur iPhone oder auch iPad? | Nur iPhone; auf dem iPad bleibt es über den Kompatibilitätsmodus installierbar | V |
 | R11 | #54 | Was wird aus v0.7.0, v0.8.0 und v1.1.0, die nie einzeln veröffentlicht wurden? | Milestones schließen; ihre Inhalte (Insel 2 und 3, Waffen) erscheinen mit 1.0.0, Tags gibt es erst ab `v1.0.0` | V |
+
+## Ab v1.0.0 – Endlos-Modus und weitere Epics
+
+Entschieden am 06.11.2026 (Notion-Seite „Design-Fragen ab v1.0.0“). „V“ heißt „Vorschlag übernommen“; leere Antworten galten als V. Ersetzt R9 (Spieltest nur am Ende) durch A3. Ablauf und Roadmap in [`roadmap.md`](roadmap.md#ab-v100--erweiterungen).
+
+### Allgemein
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| A1 | Reihenfolge der Epics? | Erst Inhalte (Beute, Perks, Superwaffen, Hunde), dann Modi | Endlos-Modus zuerst, danach wie vorgeschlagen |
+| A2 | Versionsnummern ohne Veröffentlichung? | Intern weiterzählen, Release-Version am Ende festlegen | V |
+| A3 | Spieltest nur am Ende (R9)? | Nach jedem Epic kurz am Gerät | Getestet wird, wann Berat es sagt; kein fester Takt |
+| A4 | Neue Inhalte auch in den 9 Leveln? | Gold, Perks, Superwaffen überall; Hunde im Endlos-Modus und ab v1.8.0 in neuen Zonen; Sterne in v1.9.0 neu | V |
+| A5 | Vierte Insel? | Nicht in diesem Plan | V |
+
+### v1.1.0 – Endlos-Modus
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| E1 | Eine Arena oder Räume nacheinander? | Räume aus einem Pool | **Eine runde Arena** (Kolosseum) mit Brunnen in der Mitte; Zombies spawnen an festen Punkten im Norden, Osten, Süden und Westen |
+| E2 | Rätsel im Endlos-Modus? | Ab und zu | **Nein**, nur Endlos |
+| E3 | Bosse? | Alle 10 Runden einer der drei Bosse, jedes Mal mehr Leben | V |
+| E4 | Wie wird es schwerer? | Höchstzahl 10 bleibt | Höchstzahl darf überschritten werden |
+| E5 | Herzen? | +1 Herz nach jeder Runde | V |
+| E6 | Welche Waffen? | Gewählte Waffe plus Wandwaffen | Alle 5 Runden wird eine weitere Waffe freigeschaltet; die Waffen hängen nebeneinander |
+| E7 | Ab wann spielbar? | Nach dem Koloss | Von Anfang an |
+| E8 | Wertung? | Score und Runde, lokale Top 10 | V |
+| E9 | Belohnungen? | Skins für Runde 10, 25, 50 | V |
+| E10 | Zwischenstand? | Nein | V |
+
+### v1.2.0 – Beute
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| B1 | Gold nur Punkte oder Währung? | Nur Punkte | **Währung**: ein Goldskin soll damit kaufbar sein |
+| B2 | Gold und Multiplikator? | Punkte × Multiplikator, verlängert Kombo-Fenster | V |
+| B3 | Wertstufen? | Münze und Edelstein | **Nur Gold** |
+| B4 | Verschwindet Gold? | Nach 8 s, blinkt in den letzten 2 s | V |
+| B5 | Magnet? | 1 Kachel, später als Upgrade größer | V |
+
+### v1.3.0 – Begleiter und Strohmann
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| K1 | Begleiter zeitlich oder bis Levelende? | 15 s, erneutes Aufsammeln setzt zurück | V |
+| K2 | Kann er sterben? | Nein | V |
+| K3 | Wie stark? | Halber Schaden pro Sekunde der Startwaffe, Reichweite 5 | V |
+| K4 | Aussehen? | Kleine Kampfdrohne | V |
+| K5 | Wo steht der Strohmann? | Am Aufsammelort | V |
+| K6 | Ende des Strohmanns? | Explodiert ohne Spielerschaden, Kills zählen | V |
+| K7 | Wirkt er auf Bosse? | Nein | V |
+| K8 | Gewichte? | Begleiter 10, Strohmann 8, Drop-Chance bleibt 12 % | V |
+
+### v1.4.0 – Superwaffen
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| W11 | Slot-Waffen oder Superwaffen? | Seltene Superwaffen als Perk-Drop, 12 s | V |
+| W12 | Rakete trifft Spieler? | Nein | V |
+| W13 | Nachbrennen? | 1,5 s | V |
+| W14 | Volle Wirkung auf Bosse? | Ja | V |
+| W15 | Gewicht? | Je 4 | V |
+
+### v1.5.0 – Hunde
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| H1 | Gegner oder Begleiter? | Gegner | Gegner; im Endlos-Modus ist jede 6. Runde eine Hunderunde, in der nur Hunde kommen |
+| H2 | Unterschied zum Runner? | Rudel von 3, angekündigter Sprung (0,4 s ducken) | V |
+| H3 | Leben und Schaden? | Wie Runner, 1 Herz | V |
+| H4 | Zählen zur Höchstzahl? | Ja, Rudel zählt 3 | V |
+| H5 | Wo spawnen sie? | Normale Spawnpunkte, Rudel gemeinsam | V |
+| H6 | Dieb-Gegner? | Nach dem Release | V |
+
+### v1.6.0 – Rush-Meter
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| RM1 | Rush-Meter überhaupt? | Ja | V |
+| RM2 | Was macht der Rush? | 5 s Gegner-Zeitlupe 50 %, Dash ohne Abklingzeit | V, zusätzlich **mehr Schaden** |
+| RM3 | Auslösen? | Eigener Button links oben | V |
+| RM4 | Füllung? | 25 Kills, mit Multiplikator schneller, Treffer leert nicht | V |
+| RM5 | Wo? | Kampagne und Endlos | V |
+| RM6 | Zeitlupe auf Bosse? | Schwächer (75 %) | V |
+
+### v1.7.0 – Endlos-Upgrades und Tageslauf
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| T1 | Welche Upgrades? | 10 bis 12, z. B. Abpraller, +1 Herz, längere Perks, Gold-Magnet, Feuerspur, Begleiter dauerhaft | V |
+| T2 | Wie oft? | 1 aus 3 nach jeder dritten Runde | V |
+| T3 | Versuche im Tageslauf? | Beliebig viele, der beste zählt | V |
+| T4 | Austricksen über die Uhr egal? | Ja | V |
+
+### v1.8.0 – Herausforderungen und Rätsel mit Zombies
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| CH1 | Herausforderungen statt Sterne? | Zusätzlich als Abzeichen, die Skins freischalten | V |
+| CH2 | Mutatoren? | Nach dem Release | V |
+| Z1 | Welche Rätsel? | Druckplatte (nur Brute), rissige Wand (nur Boomer) | V, mit **Hinweisen** |
+| Z2 | Wo? | Endlos-Räume und je eine Zone pro Insel | Nur Kampagne (wegen E2) |
+
+### Nachfragen
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| N1 | Preis und Zahl der Goldskins? | Einer, „Goldrausch“, 2500 Gold | V |
+| N2 | Bosse und Brunnen (L5)? | Runder Brunnen, Radius etwa 2 Kacheln; Bosse gleiten am Rand entlang | V |
+| N3 | Höchstzahl im Endlos-Modus? | Start 10, +1 alle 5 Runden, höchstens 20, gegen Frame-Budget messen | V |
+| N4 | Waffen alle 5 Runden? | Start mit Pistole; Runde 5 Schrotflinte, 10 Sturmgewehr, 15 Dual-Pistolen, unabhängig von der Kampagne | V |
+| N5 | Was ist eine Runde? | Eine Welle bis alle Gegner tot; 4 s Pause mit „Runde X“ | V |
+| N6 | Boss- und Hunderunde zugleich? | Boss geht vor, Hunderunde eine Runde später | V |
+| N7 | Hunderunde vor v1.5.0? | Kommt mit dem Hunde-Epic | V |
+| N8 | Mehr Schaden im Rush? | ×1,5, mit Doppelschaden ×3 | V |
+| N9 | Hinweise für Zombie-Rätsel? | Symbol am Rätsel und beim ersten Mal Text im Missions-Tracker | V |
+| N10 | Tileset der Arena? | Eigenes Kolosseum-Tileset aus der gemeinsamen Palette | V |

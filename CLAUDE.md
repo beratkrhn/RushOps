@@ -189,6 +189,21 @@ Das GitHub-Repo ist `beratkrhn/RushOps`. Für GitHub-Zugriffe die REST-API über
 
 Bei „Mach die nächsten N Issues“ werden die Issues nacheinander abgearbeitet, jedes auf eigenem Branch mit eigenem PR. Baut ein Issue auf einem ungemergten vorherigen auf, wird der neue Branch vom vorherigen abgezweigt und das im PR vermerkt.
 
+## Nachtmodus (unbeaufsichtigt)
+
+Berat startet `Tools/nachtlauf.sh [max_issues] [model]` im Terminal (Laptop offen, am Strom, Unity-Editor mit dem Projekt am besten offen). Das Skript startet pro Issue eine **eigene Claude-Code-Sitzung mit frischem Kontext**; der Prompt beginnt mit „Nachtmodus“. Dann gilt der Ablauf bei „Mach das nächste Issue“ mit diesen Abweichungen:
+
+- **Niemand antwortet.** Keine Rückfragen und keine Modell-Nachricht (Schritt 4). Stattdessen am Ende einen Eintrag an `Logs/nachtlauf.md` anhängen: Datum und Uhrzeit, Issue, verwendetes Modell, empfohlenes Modell mit einem Satz Begründung, Ergebnis, Branch, PR-Link. `Logs/` ist nicht im Repo.
+- **Schritt 1:** Offene PRs aus früheren Nachtläufen sind erlaubt. Der neue Branch zweigt vom Branch des zuletzt geöffneten, noch ungemergten Nachtlauf-PRs ab (steht in `Logs/nachtlauf.md`), sonst von `main`. Im PR steht dann „Builds on #<nr>“. Ist das Arbeitsverzeichnis nicht sauber: `Logs/nachtlauf.stop` mit Grund anlegen und beenden.
+- **Schritt 5:** Bei Unklarheiten zuerst die Entscheidungen in `docs/backlog/design-fragen.md` und die Startwerte im Backlog anwenden. Fehlt wirklich eine Designentscheidung: Label `blocked`, Kommentar ins Issue, `Logs/nachtlauf.stop` mit Grund anlegen und beenden.
+- **Schritt 8:** Lassen sich Compile-Fehler oder rote Tests nicht beheben: Zwischenstand auf dem Branch pushen, Draft-PR öffnen (`gh api … -F draft=true`), Label `blocked` setzen, `Logs/nachtlauf.stop` anlegen und beenden.
+- **Nach dem PR** bleibt das Label `in-progress` gesetzt, damit `Tools/next-issue.sh` das Issue überspringt.
+- **Nie:** nach `main` pushen, PRs mergen, Issues schließen, Szenen, Prefabs oder Assets löschen, Pakete hinzufügen, Dateien außerhalb des Repos ändern, Designentscheidungen ändern.
+- Ist der Unity-Editor offen, im offenen Editor arbeiten (Pipeline, `unity command`). Screenshots per PlayMode-Test aufnehmen.
+- **Genau ein Issue pro Sitzung.** Zum Schluss eine kurze Zusammenfassung ausgeben.
+
+Am Morgen liest Berat `Logs/nachtlauf.md`, prüft die PRs in Reihenfolge und mergt sie.
+
 ## Definition of Done (pro Story)
 
 1. Akzeptanzkriterien des Issues erfüllt.

@@ -1,4 +1,4 @@
-# Roadmap v0.4.0 bis v1.0.0 (Epics)
+# Roadmap (Epics)
 
 Diese Blöcke sind bewusst grob. Sie werden erst nach dem Spieltest von v0.3.0 in Stories zerlegt, weil die Erfahrungen am Gerät das Design noch verändern. Auf GitHub sind sie als Issues mit den Labels `epic` und `needs-design` angelegt und werden von „Mach das nächste Issue“ übersprungen.
 
@@ -62,23 +62,33 @@ Spawnt laufend Runner; Schaden machen unter Kontrolle der Spawns.
 ### Boss: Mega-Boomer (Level 3-3) (#51)
 Pfützen, teilt sich bei halber Gesundheit in zwei Boomer.
 
-## v1.0.0 – Release
+## v1.0.0 – Stand der Kampagne
 
-In Stories zerlegt: [`v1.0.0.md`](v1.0.0.md) (#189 bis #196), Entscheidungen R1 bis R11 in [`design-fragen.md`](design-fragen.md#v100--release). Die Epics #52 bis #54 sind damit erledigt. Erscheint nur im App Store für das iPhone (R2, R10); die Spieltests von v0.7.0, v0.8.0 und v1.1.0 gehen im Gesamtspieltest von v1.0.0 auf (R9).
+In Stories zerlegt: [`v1.0.0.md`](v1.0.0.md) (#189 bis #196), Entscheidungen R1 bis R11 in [`design-fragen.md`](design-fragen.md#v100--release). Die Kampagne mit drei Inseln, Bossen und Waffen ([`v1.0.0-waffen.md`](v1.0.0-waffen.md)) ist fertig. Erledigt sind Leistungsmessung (#189, #190), App-Icon, Store-Screenshots und Store-Eintrag (#191 bis #193); die Epics #52 und #53 sind damit abgeschlossen.
 
-### Performance und Gerätetests (#52)
-Profiling im Editor mit Stresslevel und Frame-Budget, Messung auf dem iPhone, Akkuverbrauch, Speicher.
+**Entscheidung vom 06.11.2026:** Es wird noch nicht veröffentlicht. Release-Build, Gesamtspieltest und Einreichung (#194 bis #196, Epic #54) liegen im Milestone **Release** ganz am Ende. Am Gerät wird getestet, wann Berat es sagt (A3, ersetzt R9).
 
-### Store-Vorbereitung (#53)
-App-Icon, Screenshots, Store-Texte, Datenschutzerklärung, Altersfreigabe.
+## Ab v1.0.0 – Erweiterungen
 
-### Release 1.0.0 (#54)
-Release-Build, TestFlight, Gesamtspieltest, Einreichung im App Store, Tag `v1.0.0`.
+Entscheidungen A1 bis A5, B, K, W11 bis W15, H, E, RM, T, CH, Z und N1 bis N10 in [`design-fragen.md`](design-fragen.md#ab-v100--endlos-modus-und-weitere-epics). Jede Version ist ein Milestone mit einem Epic-Issue; zerlegt wird jeweils, wenn die vorherige fertig ist.
 
-## Nach v1.0.0
+| Version | Epic | Kern |
+|---|---|---|
+| v1.1.0 | Endlos-Modus | runde Arena mit Brunnen, Runden ohne Ende, Bosse alle 10 Runden, Waffen alle 5 Runden, lokale Top 10 |
+| v1.2.0 | Beute | Gold von Zombies als Währung, Goldskin kaufbar |
+| v1.3.0 | Begleiter und Strohmann | zwei neue Perks |
+| v1.4.0 | Superwaffen | Flammenwerfer und Raketenwerfer als seltene Drops |
+| v1.5.0 | Hunde | neuer Gegnertyp, Hunderunde alle 6 Runden im Endlos-Modus |
+| v1.6.0 | Rush-Meter | aufladbarer Spezialmodus mit Zeitlupe und mehr Schaden |
+| v1.7.0 | Endlos-Upgrades und Tageslauf | Upgrade-Wahl nach jeder dritten Runde, täglicher Lauf offline |
+| v1.8.0 | Herausforderungen und Rätsel mit Zombies | Abzeichen pro Level, Druckplatte und rissige Wand mit Hinweisen (nur Kampagne) |
+| v1.9.0 | Feinschliff | Musik (#42), Haptik, Balancing, Sterne-Schwellen neu |
+| Release | Release | #194 bis #196, Store-Material aktualisieren |
+
+### v1.1.0 – Endlos-Modus
+
+In Stories zerlegt: [`v1.1.0.md`](v1.1.0.md) (#205 bis #212, Epic #213). Die Epics der folgenden Versionen sind #214 bis #220; v1.9.0 enthält Musik (#42).
 
 ### Musik (#42)
-Ein Menütrack und je ein loopbarer Action-Track pro Insel, per Skript erzeugt (G11, G12). Nach 1.0 verschoben (R1), noch `needs-design`.
 
-### Waffensystem (#171)
-In Stories zerlegt: [`v1.1.0.md`](v1.1.0.md). Entscheidungen W1 bis W10 in [`design-fragen.md`](design-fragen.md#waffen).
+Ein Menütrack, je ein loopbarer Action-Track pro Insel und einer für die Arena, per Skript erzeugt (G11, G12). Teil von v1.9.0.

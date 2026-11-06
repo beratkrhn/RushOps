@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Version** | 0.8 |
-| **Stand** | 05.11.2026 |
+| **Version** | 0.9 |
+| **Stand** | 07.11.2026 |
 | **Status** | Entwurf, nicht final |
 | **Autor** | Berat Karahan |
 
@@ -78,7 +78,7 @@ Alle Gegner verursachen ausschließlich **Kontaktschaden**. Es gibt keine Fernka
 |---|---|---|
 | F-GEG-01 | Gegner verfolgen den Spieler per Pathfinding um Hindernisse herum. Technisch wird ein Flow-Field verwendet (siehe ADR 0003). | Muss |
 | F-GEG-02 | Gegner spawnen **wellenweise pro Zone** an **festen Spawnpunkten**. Spawnpunkte im direkten Sichtbereich nahe am Spieler werden übersprungen. | Muss |
-| F-GEG-03 | Höchstens **10 Gegner** *(Startwert)* gleichzeitig. Bosse zählen nicht dazu. | Muss |
+| F-GEG-03 | Höchstens **10 Gegner** *(Startwert)* gleichzeitig. Bosse zählen nicht dazu. Gilt in der Kampagne; im Endlos-Modus siehe F-END-04. | Muss |
 | F-GEG-04 | Gegner sind über ScriptableObjects konfigurierbar (Gesundheit, Tempo, Schaden, Größe, Punkte). | Muss |
 
 **Gegnertypen**
@@ -181,6 +181,22 @@ Alle Werte sind *Startwerte*.
 | F-SKN-03 | Zusätzliche Skins werden über spielübergreifende Meilensteine freigeschaltet (z. B. 100 Kills insgesamt). | Muss |
 | F-SKN-04 | Skins sind in Version 1.0 **rein kosmetisch**. | Muss |
 
+### 2.10 Endlos-Modus
+
+Neben dem Story Mode gibt es einen Endlos-Modus (Design-Fragen E1 bis E10, N2 bis N5, Backlog [`v1.1.0.md`](backlog/v1.1.0.md)).
+
+| ID | Anforderung | Prio |
+|---|---|---|
+| F-END-01 | Das Hauptmenü bekommt den Bereich **Endlos**. Er ist von Anfang an spielbar. | Muss |
+| F-END-02 | Gespielt wird in **einer runden Arena** im Stil eines Kolosseums mit einem **Brunnen in der Mitte**. Zombies spawnen an festen Punkten im **Norden, Osten, Süden und Westen**. | Muss |
+| F-END-03 | Ein Lauf besteht aus **Runden**. Eine Runde endet, wenn alle ihre Gegner besiegt sind; danach folgt eine kurze Pause mit Anzeige „Runde X“ *(Startwert 4 s)*. Es gibt keine Rätsel. | Muss |
+| F-END-04 | Jede Runde wird schwerer: mehr Gegner, mehr Runner, Boomer und Brutes. Die Höchstzahl gleichzeitiger Gegner darf über 10 steigen *(Startwert: 10, +1 alle 5 Runden, höchstens 20)*. | Muss |
+| F-END-05 | Alle **10 Runden** kommt einer der drei Bosse, mit jedem Auftritt mehr Leben *(Startwert +25 %)*. Bosse gleiten am runden Brunnen entlang. | Muss |
+| F-END-06 | Nach jeder geschafften Runde gibt es **+1 Herz** bis zum Maximum. | Muss |
+| F-END-07 | Der Lauf startet mit der Pistole. **Alle 5 Runden** wird an der Arenawand eine weitere Waffe verfügbar; die Waffen hängen nebeneinander *(Startwert: Runde 5 Schrotflinte, 10 Sturmgewehr, 15 Dual-Pistolen)*. | Muss |
+| F-END-08 | Der Lauf endet bei 0 Herzen; es gibt keinen Zwischenstand. Score und erreichte Runde werden als lokale **Top 10** gespeichert. | Muss |
+| F-END-09 | Skins werden für das Erreichen von Runde 10, 25 und 50 freigeschaltet. | Soll |
+
 ---
 
 ## 3. Benutzeroberfläche
@@ -190,7 +206,7 @@ Alle Werte sind *Startwerte*.
 | ID | Anforderung | Prio |
 |---|---|---|
 | F-UI-01 | Beim Start läuft eine kurze **Logo-Animation**, die in das Hauptmenü übergeht. | Muss |
-| F-UI-02 | Das Hauptmenü hat drei Bereiche: **Story Mode**, **Spielerauswahl**, **Einstellungen**. | Muss |
+| F-UI-02 | Das Hauptmenü hat vier Bereiche: **Story Mode**, **Endlos**, **Spielerauswahl**, **Einstellungen**. | Muss |
 | F-UI-03 | **Spielerauswahl**: horizontal scrollbares Karussell mit allen Skins. Gesperrte Skins zeigen ihre Freischaltbedingung. | Muss |
 | F-UI-04 | **Einstellungen**: Lautstärke (Gesamt, Musik, Effekte), Zielhilfe an/aus, Credits. Die Sticks werden nicht eingestellt; Modus, Größe und Position sind fest (Design-Frage M3). | Muss |
 
@@ -227,7 +243,7 @@ Alle Werte sind *Startwerte*.
 | F-DAT-01 | Gespeichert wird lokal als JSON-Datei im App-Speicher (`Application.persistentDataPath`). | Muss |
 | F-DAT-02 | Es gibt kein manuelles Speichern und keinen Speicherstand innerhalb eines Levels. | Muss |
 | F-DAT-03 | **Autosave** bei: Level geschafft, Tod der Spielfigur (Statistiken), Änderung der Einstellungen. | Muss |
-| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen. | Muss |
+| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08). | Muss |
 | F-DAT-05 | Das Speicherformat hat eine Versionsnummer, damit spätere Versionen alte Spielstände migrieren können. | Muss |
 | F-DAT-06 | Ein beschädigter Spielstand führt nicht zum Absturz. Es wird ein Backup geladen oder ein neuer Spielstand angelegt. | Muss |
 
@@ -258,6 +274,8 @@ Alle Werte sind *Startwerte*.
 
 ## 7. Abgrenzung (nicht Teil von Version 1.0)
 
+Seit 06.11.2026 wird erst nach den Erweiterungen aus Abschnitt 8 veröffentlicht. Diese Abgrenzung gilt für das spätere Release.
+
 - Querformat
 - Android und iPad (Design-Fragen R2, R10)
 - Musik (Design-Frage R1)
@@ -270,10 +288,19 @@ Alle Werte sind *Startwerte*.
 
 ## 8. Spätere Erweiterungen
 
-- **Waffensystem** (v1.1.0, Entscheidungen W1 bis W10): Sturmgewehr, Schrotflinte und Dual-Pistolen zur Startwaffe, jeweils mit eigenem Schussgeräusch. Je eine Waffe wird durch einen Bosssieg freigeschaltet und vor dem Level gewählt. Im Level hängen Waffen an festen Stellen an der Wand und können aufgehoben werden (zwei Slots, Tausch-Button). Kein Nachladen, keine Munition; alle Waffen haben etwa denselben Schaden pro Sekunde.
-- **Skins mit Modifikatoren** (z. B. Tempo, Feuerrate).
-- Weitere Inseln und Gegnertypen.
-- Vibration (Haptik) bei Treffern und Explosionen.
+Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs/backlog/design-fragen.md`). Anforderungs-IDs kommen hinzu, sobald die jeweilige Version in Stories zerlegt wird.
+
+- **v1.1.0 Endlos-Modus**: siehe Abschnitt 2.10.
+- **v1.2.0 Beute**: Zombies lassen Gold fallen (eine Sorte, Magnet, verschwindet nach 8 s). Gold gibt Punkte und ist eine Währung im Spiel; ein Goldskin ist damit kaufbar. F-SKN-01 wird dann zu „keine In-App-Käufe, keine Premium-Währung; Gold wird nur im Spiel verdient“.
+- **v1.3.0 Begleiter und Strohmann**: Perk Begleiter (Kampfdrohne, schießt mit) und Perk Strohmann (lenkt normale Gegner ab und explodiert am Ende).
+- **v1.4.0 Superwaffen**: Flammenwerfer und Raketenwerfer als seltene Perk-Drops für kurze Zeit.
+- **v1.5.0 Hunde**: Zombiehunde im Rudel mit angekündigtem Sprung; im Endlos-Modus jede 6. Runde eine Hunderunde.
+- **v1.6.0 Rush-Meter**: Kills füllen eine Leiste; voll löst ein Button Zeitlupe für Gegner, Dash ohne Abklingzeit und mehr Schaden aus.
+- **v1.7.0 Endlos-Upgrades und Tageslauf**: Upgrade-Wahl nach jeder dritten Runde; täglicher Lauf mit dem Datum als Zufalls-Seed.
+- **v1.8.0 Herausforderungen und Rätsel mit Zombies**: Abzeichen pro Level; Druckplatte (nur Brute) und rissige Wand (nur Boomer) mit Hinweisen, nur in der Kampagne.
+- **v1.9.0 Feinschliff**: Musik, Vibration (Haptik) bei Treffern und Explosionen, Balancing, Sterne-Schwellen neu.
+- Erledigt: **Waffensystem** (W1 bis W10), erschienen mit v1.0.0 ([`v1.0.0-waffen.md`](backlog/v1.0.0-waffen.md)).
+- Nach dem Release: Skins mit Modifikatoren, Dieb-Gegner, Mutatoren, weitere Inseln.
 
 ### Entschiedene Punkte
 
@@ -283,6 +310,7 @@ Alle Werte sind *Startwerte*.
 
 - Musik: vorerst keine; falls später, per Skript erzeugt (04.11.2026, Design-Frage G11); nicht in 1.0 (05.11.2026, R1)
 - Inselthemen: Strand, düstere Stadt, Vulkan (04.11.2026, Design-Frage G6)
+- Kein Release vor den Erweiterungen v1.1.0 bis v1.9.0; getestet wird am Gerät, wann Berat es sagt (06.11.2026, Design-Fragen A1 bis A3)
 
 ### Offene Punkte
 
@@ -302,3 +330,4 @@ Alle Werte sind *Startwerte*.
 | 0.6 | 04.11.2026 | F-UI-04: keine Stick-Einstellungen im Menü (Design-Frage M3). |
 | 0.7 | 04.11.2026 | F-LVL-03: Kill-Gates können ab Betreten ihrer Zone zählen (Design-Frage P1, Issue #147). |
 | 0.8 | 05.11.2026 | F-PLT-01: nur iOS auf dem iPhone; Android, iPad und Musik nicht in 1.0 (Design-Fragen R1, R2, R10). |
+| 0.9 | 07.11.2026 | Release verschoben, Erweiterungen v1.1.0 bis v1.9.0 in Abschnitt 8; neuer Abschnitt 2.10 Endlos-Modus (F-END-01 bis F-END-09); F-GEG-03 gilt nur in der Kampagne; F-UI-02 mit Bereich Endlos; F-DAT-04 mit Endlos-Bestwerten (Design-Fragen A, E, N). |
