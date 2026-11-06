@@ -1,28 +1,29 @@
-## Worum geht es?
+## What is this about?
 
 Closes #
 
-## Änderungen
+## Changes
 
 -
 
-## So testest du das
+## How to test
 
 1.
 
-## Getestet
+## Tested
 
-- [ ] Kompiliert ohne Fehler und ohne neue Warnungen
-- [ ] EditMode-Tests grün
-- [ ] Im Device Simulator (Hochformat) angespielt
-- [ ] Auf echtem Gerät angespielt (Gerät: )
+- [ ] Compiles without errors and without new warnings
+- [ ] EditMode tests green
+- [ ] Played in the Device Simulator (portrait)
+- [ ] Played on a real device (device: )
 
 ## Definition of Done
 
-- [ ] Akzeptanzkriterien erfüllt
-- [ ] Balancing-Werte in ScriptableObjects
-- [ ] `CHANGELOG.md` unter „Unreleased“ ergänzt
-- [ ] ADR angelegt (falls Architekturentscheidung)
+- [ ] Acceptance criteria met
+- [ ] Balancing values in ScriptableObjects
+- [ ] `CHANGELOG.md` updated under "Unreleased"
+- [ ] ADR added (if architectural decision)
 
-## Screenshots / Videos
+## Screenshots
 
+<!-- In-game screenshot (portrait) for every visible change. If none is possible, say why. -->

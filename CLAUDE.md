@@ -11,6 +11,8 @@ RushOps ist ein mobiler 2D-Top-down-Twin-Stick-Shooter (Zombiehorden, Perks, Act
 - Backlog pro Version: [`docs/backlog/`](docs/backlog/)
 - Änderungen pro Version: [`CHANGELOG.md`](CHANGELOG.md)
 
+**Stand:** v1.0.0 (Kampagne fertig). Es gibt noch **kein Release**; TestFlight, Gesamtspieltest und Einreichung (#194 bis #196) kommen in einen Milestone „Release“ ganz am Ende. Als Nächstes kommt v1.1.0 Endlos-Modus. Am Gerät wird getestet, wann Berat es sagt.
+
 ## Technik
 
 | | |
@@ -55,7 +57,9 @@ Tools/        Python-Skripte für Asset-Erzeugung (Pixelart, SFX), nicht Teil de
 ## Code-Konventionen
 
 - Namespaces: `RushOps.<Bereich>` (z. B. `RushOps.Player`, `RushOps.Enemies`, `RushOps.Perks`).
-- Bezeichner und Code-Kommentare auf **Englisch**; Doku, Issues und PR-Texte auf **Deutsch**. Spieltexte auf Deutsch.
+- Bezeichner und Code-Kommentare auf **Englisch**.
+- **Commits, Branches, Pull Requests, Issues und Kommentare darin auf Englisch.**
+- Doku im Repo (Lastenheft, ADRs, Backlog, `CHANGELOG.md`) auf **Deutsch**. Spieltexte auf Deutsch.
 - C#-Standard: `PascalCase` für Typen, Methoden, Properties; `_camelCase` für private Felder; `[SerializeField] private` statt öffentlicher Felder.
 - Eine Klasse pro Datei, Dateiname = Klassenname.
 - XML-Doku-Kommentare für öffentliche APIs von Systemen.
@@ -132,10 +136,41 @@ Die Details stehen in ADR 0006 (ersetzt Teile von ADR 0002). Kurzfassung:
 ## Git-Workflow
 
 - `main` ist immer lauffähig. Gearbeitet wird auf Branches, gemergt per Pull Request.
-- Branch-Namen: `feature/<issue>-<kurz>`, `fix/<issue>-<kurz>`, `chore/<kurz>`, `docs/<kurz>`.
-- **Conventional Commits**, Beschreibung auf Deutsch: `feat(player): Dash mit i-Frames`, `fix(enemies): Runner bleibt an Ecken hängen`, `docs: ADR zu Flow-Field`, `chore: …`, `refactor: …`, `test: …`, `art: …`, `audio: …`.
+- Branch-Namen auf Englisch: `feature/<issue>-<short>`, `fix/<issue>-<short>`, `chore/<short>`, `docs/<short>`.
+- **Conventional Commits auf Englisch**: `feat(player): add dash with i-frames`, `fix(enemies): runner no longer gets stuck on corners`, `docs: add ADR for flow field`, `chore: …`, `refactor: …`, `test: …`, `art: …`, `audio: …`.
+- **Modell im Commit**: Jede Commit-Nachricht endet mit einer Trailer-Zeile, die das verwendete Modell nennt:
+
+  ```
+  feat(endless): add round counter
+
+  Model: Claude Sonnet 5.5
+  ```
+
+- **Sonst wird Claude nirgends erwähnt**: keine `Co-Authored-By`-Zeilen, keine Session-Links, kein „Generated with …“, keine Prompts, Chatverläufe oder Hinweise auf KI in Commits, PRs, Issues oder Kommentaren. Die einzige Ausnahme ist die `Model:`-Zeile im Commit. Das gilt auch, wenn das Werkzeug solche Zeilen standardmäßig anhängen will.
 - PRs verweisen auf das Issue (`Closes #12`) und folgen der PR-Vorlage.
-- Versionen nach SemVer, ein Milestone pro Version, Tag `vX.Y.Z` bei Release. `bundleVersion` in den ProjectSettings passt zur Version.
+- **In-Game-Screenshot**: Zu jeder sichtbaren Änderung kommt, wenn möglich, mindestens ein Screenshot aus dem Spiel im Hochformat in den PR (z. B. per PlayMode-Testklasse wie `StoreScreenshots` oder Editor-Skript im Device Simulator aufgenommen). Ist kein Screenshot möglich, steht im PR, warum.
+- Versionen nach SemVer, ein Milestone pro Version. Tags `vX.Y.Z` und `bundleVersion` erst ab dem Release.
+
+## Modellwahl vor jedem Issue
+
+Bevor die Arbeit an einem Issue beginnt, schickt Claude Berat **eine kurze Nachricht auf Deutsch** und wartet auf seine Antwort:
+
+```
+Issue #<nr> – <Titel>
+Aktuelles Modell: <Modell>
+Empfehlung: <Haiku | Sonnet | Opus> – <ein Satz, warum>
+Modell wechseln? (/model)
+```
+
+Faustregel für die Empfehlung:
+
+| Modell | Wofür |
+|---|---|
+| Haiku | Doku, Backlog, Changelog, Werte in ScriptableObjects ändern, kleine Fixes in einer Datei |
+| Sonnet | Normale Stories nach bestehendem Muster: neue Perks, UI-Elemente, Level mit dem Baukasten, Tests, Pixelart- und Sound-Skripte |
+| Opus | Neue Systeme und Architektur (z. B. Endlos-Modus-Grundlage, Flow-Field-Ziele, Boss-Verhalten, Savegame-Migration), ADRs, schwierige Bugs, Performance |
+
+Reicht ein kleineres Modell, sagt Claude das ausdrücklich. Erst nach Berats Antwort geht es weiter.
 
 ## Ablauf bei „Mach das nächste Issue“
 
@@ -144,12 +179,13 @@ Das GitHub-Repo ist `beratkrhn/RushOps`. Für GitHub-Zugriffe die REST-API über
 1. **Ausgangslage prüfen:** `git checkout main && git pull`. Ist das Arbeitsverzeichnis nicht sauber oder gibt es noch einen offenen PR von mir, der nicht gemergt ist: nachfragen, bevor es weitergeht.
 2. **Issue bestimmen:** `Tools/next-issue.sh` ausführen. Regel: ältester offener Milestone, Label `story`, Issues mit Label `priority` zuerst, dann niedrigste Nummer, ohne `blocked`, `needs-design` oder `in-progress`. Hat der Mensch eine Nummer genannt, diese nehmen.
 3. **Issue lesen:** `gh api repos/beratkrhn/RushOps/issues/<N>` und den passenden Abschnitt in `docs/backlog/`. Die referenzierten Anforderungen im Lastenheft nachlesen.
-4. **Unklarheiten zuerst klären:** Widersprechen sich Issue und Lastenheft, oder fehlt eine Designentscheidung, nachfragen statt raten. Kann das Issue nicht umgesetzt werden (z. B. Abhängigkeit fehlt), Label `blocked` setzen, Grund als Kommentar ins Issue schreiben und stoppen. Ist eine Story größer als etwa zwei Tage, eine Aufteilung vorschlagen.
-5. **Starten:** Label `in-progress` setzen (`gh api repos/beratkrhn/RushOps/issues/<N>/labels -f "labels[]=in-progress"`), Branch `feature/<N>-<kurz>` (bzw. `fix/…`) von `main` anlegen.
-6. **Umsetzen** nach den Regeln dieser Datei, in kleinen Conventional Commits.
-7. **Prüfen:** `Tools/unity-check.sh` (kompilieren ohne Warnungen, EditMode- und PlayMode-Tests). Unity darf dabei offen bleiben. Nur wenn das Skript im Batchmode-Rückfall landet und das Projekt trotzdem geöffnet ist, den Menschen bitten, Unity zu schließen. Alle Fehler beheben, bevor ein PR entsteht.
-8. **Abschließen:** `CHANGELOG.md` ergänzen, pushen, PR nach Vorlage öffnen (`Closes #<N>`). Im Abschnitt „So testest du das“ konkrete Schritte für den manuellen Test im Editor oder auf dem Gerät aufschreiben.
-9. **Stoppen.** Kein weiteres Issue beginnen, bevor der PR gemergt ist, außer der Mensch sagt es ausdrücklich. Dem Menschen kurz sagen, was fertig ist und was er testen soll.
+4. **Modell abfragen:** Nachricht nach „Modellwahl vor jedem Issue“ schicken und auf die Antwort warten. Wechselt Berat das Modell, liest das neue Modell die Schritte 1 bis 3 noch einmal.
+5. **Unklarheiten zuerst klären:** Widersprechen sich Issue und Lastenheft, oder fehlt eine Designentscheidung, nachfragen statt raten. Kann das Issue nicht umgesetzt werden (z. B. Abhängigkeit fehlt), Label `blocked` setzen, Grund als Kommentar ins Issue schreiben und stoppen. Ist eine Story größer als etwa zwei Tage, eine Aufteilung vorschlagen.
+6. **Starten:** Label `in-progress` setzen (`gh api repos/beratkrhn/RushOps/issues/<N>/labels -f "labels[]=in-progress"`), Branch `feature/<N>-<short>` (bzw. `fix/…`) von `main` anlegen.
+7. **Umsetzen** nach den Regeln dieser Datei, in kleinen Conventional Commits auf Englisch mit `Model:`-Zeile.
+8. **Prüfen:** `Tools/unity-check.sh` (kompilieren ohne Warnungen, EditMode- und PlayMode-Tests). Unity darf dabei offen bleiben. Nur wenn das Skript im Batchmode-Rückfall landet und das Projekt trotzdem geöffnet ist, den Menschen bitten, Unity zu schließen. Alle Fehler beheben, bevor ein PR entsteht.
+9. **Abschließen:** `CHANGELOG.md` ergänzen, pushen, PR nach Vorlage auf Englisch öffnen (`Closes #<N>`), mit In-Game-Screenshot bei sichtbaren Änderungen. Im Abschnitt „How to test“ konkrete Schritte für den manuellen Test im Editor oder auf dem Gerät aufschreiben.
+10. **Stoppen.** Kein weiteres Issue beginnen, bevor der PR gemergt ist, außer der Mensch sagt es ausdrücklich. Dem Menschen kurz sagen, was fertig ist und was er testen soll.
 
 Bei „Mach die nächsten N Issues“ werden die Issues nacheinander abgearbeitet, jedes auf eigenem Branch mit eigenem PR. Baut ein Issue auf einem ungemergten vorherigen auf, wird der neue Branch vom vorherigen abgezweigt und das im PR vermerkt.
 
@@ -159,9 +195,10 @@ Bei „Mach die nächsten N Issues“ werden die Issues nacheinander abgearbeite
 2. Projekt kompiliert ohne Fehler und ohne neue Warnungen.
 3. EditMode-Tests für neue Logik vorhanden und grün.
 4. Balancing-Werte in ScriptableObjects, nicht im Code.
-5. Auf dem Handy oder im Device Simulator (Hochformat) angespielt; Ergebnis im PR vermerkt.
-6. `CHANGELOG.md` unter „Unreleased“ ergänzt.
-7. Bei Architekturentscheidungen: ADR angelegt.
+5. Im Device Simulator (Hochformat) angespielt; am Gerät nur, wenn Berat es verlangt. Ergebnis im PR vermerkt.
+6. In-Game-Screenshot im PR (bei sichtbaren Änderungen, sofern möglich).
+7. `CHANGELOG.md` unter „Unreleased“ ergänzt.
+8. Bei Architekturentscheidungen: ADR angelegt.
 
 ## Was Claude nicht allein entscheidet
 
@@ -169,3 +206,4 @@ Bei „Mach die nächsten N Issues“ werden die Issues nacheinander abgearbeite
 - Neue Pakete oder Asset-Store-Abhängigkeiten: erst nachfragen.
 - Löschen von Szenen, Prefabs oder Assets: erst nachfragen.
 - Spielgefühl (Tempo, Sprungweiten, Schwierigkeit) wird vorgeschlagen, aber vom Menschen am Gerät abgenommen.
+- Mit einem Issue anfangen, bevor Berat auf die Modell-Nachricht geantwortet hat.
