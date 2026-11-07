@@ -150,6 +150,8 @@ namespace RushOps.Save
                 data.Settings ??= new SettingsData();
                 data.Skins ??= new SkinsData();
                 data.Skins.Unlocked ??= new List<string>();
+                data.Skins.Purchased ??= new List<string>();
+                data.Gold ??= new GoldData();
                 data.Weapons ??= new WeaponsData();
                 data.Weapons.Unlocked ??= new List<string>();
                 data.Endless ??= new EndlessData();

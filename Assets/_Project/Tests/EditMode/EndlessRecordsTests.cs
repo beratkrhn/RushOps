@@ -89,7 +89,7 @@ namespace RushOps.Tests.EditMode
             string json = SaveMigrator.Default.Migrate(v2, 2);
             SaveData data = JsonUtility.FromJson<SaveData>(json);
 
-            Assert.AreEqual(3, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.IsNotNull(data.Endless);
             Assert.IsEmpty(data.Endless.Top);
             Assert.AreEqual(0, data.Endless.Runs);
@@ -100,13 +100,13 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void MigrationFromVersion1_ReachesVersion3()
+        public void MigrationFromVersion1_ReachesTheCurrentVersion()
         {
             const string v1 = "{\"Version\": 1, \"Stats\": {\"TotalKills\": 7}}";
 
             SaveData data = JsonUtility.FromJson<SaveData>(SaveMigrator.Default.Migrate(v1, 1));
 
-            Assert.AreEqual(3, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.IsNotNull(data.Endless);
             Assert.IsNotNull(data.Weapons);
             Assert.AreEqual(7, data.Stats.TotalKills);
