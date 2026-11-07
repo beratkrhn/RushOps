@@ -60,6 +60,8 @@ SKINS = {
     "Gladiator": dict(dark="brown_0", mid="red_0", cloak="red_1", light="orange", accent_0="brown_1", accent_1="skin_1"),
     "Zenturio": dict(dark="slate_0", mid="slate_2", cloak="slate_4", light="slate_5", accent_0="red_0", accent_1="red_1"),
     "Imperator": dict(dark="brown_0", mid="slate_3", cloak="white", light="cream", accent_0="orange", accent_1="yellow"),
+    # Gold (issue #237): bought with gold in the skin carousel; golden clothes and cloak, bright gold armour
+    "Goldrausch": dict(dark="brown_0", mid="orange", cloak="yellow", light="glow", accent_0="orange", accent_1="glow"),
 }
 
 PREVIEW_DIRECTIONS = ["S", "SE", "E", "N"]
