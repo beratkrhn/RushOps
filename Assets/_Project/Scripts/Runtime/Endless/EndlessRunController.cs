@@ -1,4 +1,5 @@
 using System;
+using RushOps.Combat;
 using RushOps.Enemies;
 using RushOps.Levels;
 using RushOps.Player;
@@ -59,6 +60,12 @@ namespace RushOps.Endless
             CurrentRound = null;
             _sequence = null;
             _shownRemaining = -1;
+            // A run always starts with the pistol, whatever weapon the menu has selected (F-END-07).
+            if (_config.StartWeapon != null && _player.TryGetComponent(out PlayerWeapon weapon))
+            {
+                weapon.Slots.Reset(_config.StartWeapon);
+            }
+
             _run = new EndlessRun(_config, _player.Current, _player.Max);
             _run.PauseStarted += OnPauseStarted;
             _run.RoundStarted += OnRoundStarted;

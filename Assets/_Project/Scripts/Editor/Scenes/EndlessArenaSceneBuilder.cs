@@ -27,6 +27,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Scene asset of the endless arena.</summary>
         public const string ScenePath = "Assets/_Project/Scenes/Endless_Arena.unity";
 
+        /// <summary>Name of the scene, as the main menu loads it.</summary>
+        public const string SceneName = "Endless_Arena";
+
         /// <summary>Name of the zone over the whole arena.</summary>
         public const string ZoneName = "Arena";
 
