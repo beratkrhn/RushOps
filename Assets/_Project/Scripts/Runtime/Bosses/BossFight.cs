@@ -48,6 +48,9 @@ namespace RushOps.Bosses
         /// <summary>True once all bodies are dead.</summary>
         public bool IsWon { get; private set; }
 
+        /// <summary>The body the fight starts with, as set in the scene; also on an inactive template.</summary>
+        public Boss FirstBody => _bodies != null && _bodies.Length > 0 ? _bodies[0] : null;
+
         /// <summary>All bodies of the boss so far.</summary>
         public IReadOnlyList<Boss> Bodies => _all;
 

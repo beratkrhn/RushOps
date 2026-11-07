@@ -53,5 +53,13 @@ namespace RushOps.Tests.EditMode
 
             Assert.AreEqual(1, EndlessStart.Consume());
         }
+
+        [Test]
+        public void BossTracker_ShowsRoundAndTheBoss_TheNoticeTakesTheSecondLine()
+        {
+            Assert.AreEqual("Runde 10\nBoss besiegen", EndlessText.BossTracker(10, null));
+            Assert.AreEqual("Runde 10\nNeue Waffe: Sturmgewehr",
+                EndlessText.BossTracker(10, EndlessText.NewWeapon("Sturmgewehr")));
+        }
     }
 }
