@@ -26,6 +26,7 @@ namespace RushOps.Editor.Scenes
             StressTestSceneBuilder.Build();
             IslandTestScenesBuilder.BuildStadt();
             IslandTestScenesBuilder.BuildVulkan();
+            EndlessArenaSceneBuilder.Build();
             TestMenuSceneBuilder.Build();
             MainMenuSceneBuilder.Build();
             IslandMapSceneBuilder.Build();
