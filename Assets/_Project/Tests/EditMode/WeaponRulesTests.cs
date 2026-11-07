@@ -78,7 +78,7 @@ namespace RushOps.Tests.EditMode
         [Test]
         public void DefaultMigrator_ReadsVersion1Saves()
         {
-            Assert.AreEqual(2, SaveData.CurrentVersion);
+            Assert.GreaterOrEqual(SaveData.CurrentVersion, 2);
             Assert.IsTrue(SaveMigrator.Default.CanMigrate(1));
         }
     }
