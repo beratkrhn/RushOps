@@ -2028,7 +2028,7 @@ namespace RushOps.Editor.Scenes
         }
 
         // Full screen and blocking touches, so nothing behind a result screen can be pressed.
-        private static RectTransform CreateDimPanel(string name, RectTransform parent)
+        internal static RectTransform CreateDimPanel(string name, RectTransform parent)
         {
             RectTransform panel = CreateUiRect(name, parent, Vector2.zero, Vector2.one);
             var background = panel.gameObject.AddComponent<Image>();

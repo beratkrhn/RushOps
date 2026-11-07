@@ -1,8 +1,15 @@
 using System.Collections.Generic;
+using RushOps.Editor.Art;
+using RushOps.Editor.Endless;
+using RushOps.Endless;
 using RushOps.Levels;
+using RushOps.Player;
+using RushOps.Scoring;
+using RushOps.UI;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 namespace RushOps.Editor.Scenes
 {
@@ -63,6 +70,61 @@ namespace RushOps.Editor.Scenes
             }
 
             ArenaTestSceneBuilder.AssignZones(arena, new[] { zone });
+            CreateRunFlow(arena, zone);
+        }
+
+        // Round flow (issue #207): the HUD parts, the death handler and the controller that plays the rounds in the zone.
+        private static void CreateRunFlow(ArenaScene arena, Zone zone)
+        {
+            var parent = (RectTransform)arena.Tracker.transform.parent;
+            Font font = PixelFontBuilder.Build();
+            PauseController pause = Object.FindAnyObjectByType<PauseController>();
+            LevelScore score = Object.FindAnyObjectByType<LevelScore>();
+            var player = arena.Player.GetComponent<PlayerHealth>();
+
+            // „Runde X“ large in the upper middle, between the break and the first enemies.
+            Text banner = ArenaTestSceneBuilder.CreateText(
+                "RoundBanner", parent, font, EndlessText.Round(1), ArenaTestSceneBuilder.TitlePixelScale, new Vector2(0f, 110f));
+            banner.enabled = false;
+
+            RectTransform result = ArenaTestSceneBuilder.CreateDimPanel("EndlessResultPanel", parent);
+            ArenaTestSceneBuilder.CreateText(
+                "Title", result, font, EndlessText.RunOver, ArenaTestSceneBuilder.TitlePixelScale, new Vector2(0f, 80f));
+            Text round = ArenaTestSceneBuilder.CreateText(
+                "Round", result, font, EndlessText.Round(1), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 30f));
+            Text resultScore = ArenaTestSceneBuilder.CreateText(
+                "Score", result, font, ResultText.Score(0), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 5f));
+            float step = ArenaTestSceneBuilder.MenuButtonSize.y + 12f;
+            ArenaTestSceneBuilder.CreateMenuButton("RetryButton", result, font, "Nochmal", new Vector2(0f, -50f), pause.Restart);
+            ArenaTestSceneBuilder.CreateMenuButton("MenuButton", result, font, "Hauptmenü", new Vector2(0f, -50f - step), pause.QuitToMenu);
+            result.gameObject.SetActive(false);
+
+            var hud = parent.gameObject.AddComponent<EndlessHud>();
+            var serializedHud = new SerializedObject(hud);
+            // The mission tracker stays empty in the arena (no exit gate); its label shows the round line.
+            serializedHud.FindProperty("_tracker").objectReferenceValue =
+                new SerializedObject(arena.Tracker).FindProperty("_label").objectReferenceValue;
+            serializedHud.FindProperty("_banner").objectReferenceValue = banner;
+            serializedHud.FindProperty("_resultPanel").objectReferenceValue = result.gameObject;
+            serializedHud.FindProperty("_resultRound").objectReferenceValue = round;
+            serializedHud.FindProperty("_resultScore").objectReferenceValue = resultScore;
+            serializedHud.FindProperty("_score").objectReferenceValue = score;
+            serializedHud.FindProperty("_pause").objectReferenceValue = pause;
+            serializedHud.ApplyModifiedPropertiesWithoutUndo();
+
+            // At 0 hearts the run ends with the result screen of the endless mode instead of „Gescheitert“.
+            var restarter = new SerializedObject(Object.FindAnyObjectByType<LevelRestarter>());
+            restarter.FindProperty("_deathHandler").objectReferenceValue = hud;
+            restarter.ApplyModifiedPropertiesWithoutUndo();
+
+            var controller = new GameObject("EndlessRun").AddComponent<EndlessRunController>();
+            var serialized = new SerializedObject(controller);
+            serialized.FindProperty("_config").objectReferenceValue = EndlessConfigBuilder.Get();
+            serialized.FindProperty("_director").objectReferenceValue = arena.Director;
+            serialized.FindProperty("_zone").objectReferenceValue = zone;
+            serialized.FindProperty("_player").objectReferenceValue = player;
+            serialized.FindProperty("_hud").objectReferenceValue = hud;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // The theme draws every outer wall as ring wall; here the stands, the weapon boards, the gate openings and the

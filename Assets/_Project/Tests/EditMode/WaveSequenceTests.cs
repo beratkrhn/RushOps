@@ -62,6 +62,27 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void Remaining_CountsComingAndLivingEnemies_ZeroOutsideAWave()
+        {
+            var sequence = new WaveSequence(Waves(AfterLastWave.End, 1f, 2f, new Wave(new WaveEntry(_walker, 3))));
+            Assert.AreEqual(0, sequence.Remaining, "idle");
+
+            sequence.Start();
+            Assert.AreEqual(3, sequence.Remaining, "nothing handed out yet");
+            sequence.Tick(0.01f);
+            Assert.AreEqual(3, sequence.Remaining, "one handed out, still alive");
+            sequence.Tick(2f);
+            sequence.NotifyKilled();
+            Assert.AreEqual(2, sequence.Remaining);
+            sequence.NotifyKilled();
+            sequence.NotifyKilled();
+            sequence.Tick(0.01f);
+
+            Assert.AreEqual(WavePhase.Finished, sequence.Phase);
+            Assert.AreEqual(0, sequence.Remaining);
+        }
+
+        [Test]
         public void MixedWave_AlternatesTypes()
         {
             var wave = new Wave(new WaveEntry(_walker, 3), new WaveEntry(_runner, 1));
