@@ -35,7 +35,7 @@ namespace RushOps.Skins
         [Tooltip("Statistic counted, for Milestone.")]
         [SerializeField] private SkinMilestone _milestone = SkinMilestone.TotalKills;
 
-        [Tooltip("Value the statistic has to reach, for Milestone; the round to reach, for EndlessRound.")]
+        [Tooltip("Value the statistic has to reach, for Milestone; the round to reach, for EndlessRound; the price in gold, for Purchase.")]
         [SerializeField, Min(0)] private int _threshold = 100;
 
         /// <summary>Stable id in the save game.</summary>
@@ -64,6 +64,9 @@ namespace RushOps.Skins
 
         /// <summary>Level name in the unlock hint.</summary>
         public string LevelName => _levelName;
+
+        /// <summary>Price in gold of a skin that is bought (<see cref="SkinUnlockKind.Purchase"/>).</summary>
+        public int Price => _threshold;
 
         /// <summary>The unlock condition as plain data.</summary>
         public SkinUnlock Unlock => new SkinUnlock(_id, _unlockKind, _levelId, _milestone, _threshold);

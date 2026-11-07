@@ -29,7 +29,8 @@ namespace RushOps.Skins
         public SkinMilestone Milestone { get; }
 
         /// <summary>
-        /// Value <see cref="Milestone"/> has to reach; for <see cref="SkinUnlockKind.EndlessRound"/> the round to reach.
+        /// Value <see cref="Milestone"/> has to reach; for <see cref="SkinUnlockKind.EndlessRound"/> the round to reach;
+        /// for <see cref="SkinUnlockKind.Purchase"/> the price in gold.
         /// </summary>
         public int Threshold { get; }
 
@@ -43,6 +44,10 @@ namespace RushOps.Skins
         /// <summary>A skin unlocked once <paramref name="milestone"/> reaches <paramref name="threshold"/>.</summary>
         public static SkinUnlock AtMilestone(string skinId, SkinMilestone milestone, int threshold) =>
             new SkinUnlock(skinId, SkinUnlockKind.Milestone, null, milestone, threshold);
+
+        /// <summary>A skin bought for <paramref name="price"/> gold (issue #237).</summary>
+        public static SkinUnlock ForPrice(string skinId, int price) =>
+            new SkinUnlock(skinId, SkinUnlockKind.Purchase, null, SkinMilestone.TotalKills, price);
 
         /// <summary>A skin unlocked once an endless run reaches <paramref name="round"/> (issue #211).</summary>
         public static SkinUnlock AtEndlessRound(string skinId, int round) =>

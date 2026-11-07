@@ -37,6 +37,9 @@ namespace RushOps.Tests.EditMode
         [Test]
         public void Counter_CountsFromOne()
         {
+            Assert.AreEqual("2500 Gold", SkinHint.Price(2500));
+            Assert.AreEqual("Goldrausch für 2500 Gold kaufen?", SkinHint.ConfirmPurchase("Goldrausch", 2500));
+            Assert.AreEqual("2500 Gold", SkinHint.Unlock(SkinUnlock.ForPrice("Goldrausch", 2500), "", 0));
             Assert.AreEqual("1 / 13", SkinHint.Counter(0, 13));
             Assert.AreEqual("13 / 13", SkinHint.Counter(12, 13));
         }

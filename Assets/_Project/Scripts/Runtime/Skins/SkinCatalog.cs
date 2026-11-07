@@ -53,6 +53,24 @@ namespace RushOps.Skins
             return count;
         }
 
+        /// <summary>True if <paramref name="skin"/> is bought with gold and not yet owned.</summary>
+        public bool IsBuyable(SaveData data, SkinDefinition skin)
+        {
+            return SkinRules.IsBuyable(Unlocks, data, Array.IndexOf(_skins, skin));
+        }
+
+        /// <summary>True if <paramref name="skin"/> is buyable and the balance covers its price.</summary>
+        public bool CanBuy(SaveData data, SkinDefinition skin)
+        {
+            return SkinRules.CanBuy(Unlocks, data, Array.IndexOf(_skins, skin));
+        }
+
+        /// <summary>Buys <paramref name="skin"/>, unlocks and selects it (<see cref="SkinRules.TryBuy"/>).</summary>
+        public bool Buy(SaveData data, SkinDefinition skin)
+        {
+            return SkinRules.TryBuy(Unlocks, data, Array.IndexOf(_skins, skin));
+        }
+
         /// <summary>Makes <paramref name="skin"/> the current skin if it is unlocked.</summary>
         public bool Select(SaveData data, SkinDefinition skin)
         {

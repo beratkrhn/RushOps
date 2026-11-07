@@ -14,6 +14,21 @@ namespace RushOps.Skins
         /// <summary>Label of the select button for a locked skin.</summary>
         public const string Locked = "Gesperrt";
 
+        /// <summary>Label of the buy button of a skin that costs gold.</summary>
+        public const string Buy = "Kaufen";
+
+        /// <summary>Price of a skin, e.g. „2500 Gold“.</summary>
+        public static string Price(int price)
+        {
+            return price.ToString(CultureInfo.InvariantCulture) + " Gold";
+        }
+
+        /// <summary>Question before a purchase, e.g. „Goldrausch für 2500 Gold kaufen?“.</summary>
+        public static string ConfirmPurchase(string skinName, int price)
+        {
+            return $"{skinName} für {Price(price)} kaufen?";
+        }
+
         /// <summary>
         /// How to get a locked skin, e.g. „Schaffe Level 1-2“, „Noch 340 Kills“ or „Erreiche Endlos-Runde 10“; empty for
         /// default skins.
@@ -29,6 +44,8 @@ namespace RushOps.Skins
                     return Milestone(unlock.Milestone, remaining, unlock.Threshold);
                 case SkinUnlockKind.EndlessRound:
                     return "Erreiche Endlos-Runde " + unlock.Threshold.ToString(CultureInfo.InvariantCulture);
+                case SkinUnlockKind.Purchase:
+                    return Price(unlock.Threshold);
                 default:
                     return string.Empty;
             }
