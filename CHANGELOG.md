@@ -30,6 +30,9 @@ Alle relevanten Änderungen an RushOps. Format nach [Keep a Changelog](https://k
 - **Treffer am ganzen Körper**: Gegner und Bosse haben eine Hurtbox über den ganzen sichtbaren Körper (Vereinigung aller Lauf-Frames in 8 Richtungen, Ebene `EnemyHurtbox`, kollidiert mit nichts). Vorher trafen Schüsse nur den kleinen Fuß-Kollider. Die Zielhilfe zielt auf die Körpermitte; Bewegung, Pfadsuche, Kontaktschaden und Explosionen nutzen weiter den Fuß-Kollider.
 - **Missions-Tracker bei zwei Rätseln an einem Tor**: ein laufender Schalter-Countdown hat Vorrang vor dem anderen Rätsel (`PuzzleFocus`, F-RAE-04); vorher war nur das erste ungelöste Rätsel zu sehen.
 
+### Behoben
+- **HUD-Überlappungen** (Issue #201): Das Icon der aktiven Waffe steht jetzt links neben dem Pause-Knopf auf seiner Höhe statt darunter und verdeckt Missionstext und Fortschrittsbalken nicht mehr. Die Boss-Lebensleiste beginnt 116 statt 64 Einheiten unter dem oberen Rand, damit der Bossname unter Score und Multiplikator und unter einem zweizeiligen Missionstext steht. Alle Level-Szenen und die Store-Screenshots sind neu erzeugt; PlayMode-Tests prüfen die Abstände.
+
 ## [0.6.0] – 2026-11-04
 
 ### Hinzugefügt

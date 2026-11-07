@@ -23,8 +23,10 @@ namespace RushOps.Editor.Scenes
         private const float PlaceholderColliderRadius = 0.45f;
         private static readonly Vector2 PlaceholderColliderOffset = new Vector2(0f, 0.45f);
 
-        // Health bar under score and multiplier, across the screen (F-HUD-05).
-        private const float BarTop = 64f;
+        // Health bar under score and multiplier, across the screen (F-HUD-05). The name label (30 units high, 2 above
+        // the bar) must clear the multiplier (down to 58) and a two-line mission text at the top right (44 to 84), so
+        // the bar starts at 116 (issue #201).
+        private const float BarTop = 116f;
         private const float BarHeight = 6f;
         private const float BarSideMargin = 24f;
         private static readonly Color BarBack = new Color32(31, 29, 43, 255);
