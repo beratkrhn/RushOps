@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Measures frame times and memory in the editor (issue #189, decision R8): runs the explicit PlayMode fixture
-# PerformanceBenchmark (stress scene, one regular level per island, main menu) and prints a Markdown table for
+# PerformanceBenchmark (stress scene, full endless arena, one regular level per island, main menu) and prints a Markdown table for
 # docs/testprotokolle/performance.md. Raw values land in Logs/perf/<scene>.json.
 #
 # Runs in batch mode with graphics (Metal), so Unity must be closed. Takes about two minutes.
@@ -18,7 +18,7 @@ rc=$?
 
 python3 - <<'PY'
 import glob, json, os
-order = ["Stress_Test", "Level_1-1", "Level_2-1", "Level_3-1", "MainMenu"]
+order = ["Stress_Test", "Endless_Arena", "Level_1-1", "Level_2-1", "Level_3-1", "MainMenu"]
 rows = {os.path.basename(p)[:-5]: json.load(open(p)) for p in glob.glob("Logs/perf/*.json")}
 if not rows:
     print("Keine Messwerte unter Logs/perf/")
