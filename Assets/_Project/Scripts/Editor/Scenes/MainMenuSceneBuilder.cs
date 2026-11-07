@@ -29,6 +29,9 @@ namespace RushOps.Editor.Scenes
         private const float FirstButtonY = -80f;
         private const float ButtonStep = 50f;
         private const float FooterY = -295f;
+        private const float BalanceMargin = 12f;
+        private const float BalanceIconSize = 20f;
+        private const float BalanceTextWidth = 56f;
         private static readonly Color PaletteOutline = new Color32(13, 11, 20, 255);
         private static readonly Color PaletteSlate3 = new Color32(107, 106, 128, 255);
 
@@ -90,7 +93,8 @@ namespace RushOps.Editor.Scenes
 
             var audio = new GameObject("Audio");
             ArenaTestSceneBuilder.CreateAudio(audio);
-            SkinSelectionBuilder.Create(safeArea, font, skins, figure);
+            GoldBalanceView menuBalance = CreateBalance(safeArea, font, "MenuBalance");
+            SkinSelectionBuilder.Create(safeArea, font, skins, figure, menuBalance);
             WeaponSelectionBuilder.Create(safeArea, font, weapons);
             SettingsScreenBuilder.Create(safeArea, font, settings, audio.GetComponent<RushOps.Audio.AudioVolumes>());
             ArenaTestSceneBuilder.AddClickSounds(audio.GetComponent<RushOps.Audio.UiClickSound>());
@@ -99,6 +103,42 @@ namespace RushOps.Editor.Scenes
             ArenaTestSceneBuilder.AddToBuildSettings(ScenePath, false);
             AssetDatabase.SaveAssets();
             Debug.Log($"[MainMenuSceneBuilder] Saved {ScenePath}");
+        }
+
+        // Coin icon and the spendable gold balance in the top right corner (F-GLD-06, issue #237).
+        internal static GoldBalanceView CreateBalance(RectTransform parent, Font font, string name)
+        {
+            var topRight = new Vector2(1f, 1f);
+            RectTransform row = ArenaTestSceneBuilder.CreateUiRect(name, parent, topRight, topRight);
+            row.pivot = topRight;
+            row.anchoredPosition = new Vector2(-BalanceMargin, -BalanceMargin);
+            row.sizeDelta = Vector2.zero;
+
+            var sprite = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/Sprites/Pickups/Gold_0.png");
+            Text label = ArenaTestSceneBuilder.CreateText(name + "Text", row, font, "0", ArenaTestSceneBuilder.HudPixelScale, Vector2.zero);
+            label.rectTransform.anchorMin = topRight;
+            label.rectTransform.anchorMax = topRight;
+            label.rectTransform.pivot = topRight;
+            label.rectTransform.anchoredPosition = Vector2.zero;
+            label.alignment = TextAnchor.MiddleRight;
+            label.color = new Color32(246, 208, 77, 255);
+
+            RectTransform icon = ArenaTestSceneBuilder.CreateUiRect("Icon", row, topRight, topRight);
+            icon.pivot = topRight;
+            icon.sizeDelta = new Vector2(BalanceIconSize, BalanceIconSize);
+            icon.anchoredPosition = new Vector2(-BalanceTextWidth, 0f);
+            var image = icon.gameObject.AddComponent<Image>();
+            image.sprite = sprite;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+
+            var view = row.gameObject.AddComponent<GoldBalanceView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_save").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<RushOps.Save.SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
+            serialized.FindProperty("_label").objectReferenceValue = label;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return view;
         }
 
         internal static Image CreateSprite(string name, RectTransform parent, Sprite sprite, Vector2 position)

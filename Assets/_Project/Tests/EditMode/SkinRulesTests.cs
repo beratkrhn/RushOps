@@ -152,6 +152,108 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(0, SkinRules.CurrentIndex(Skins, data.Skins));
         }
 
+        private static readonly SkinUnlock[] WithGold =
+        {
+            SkinUnlock.Default("Standard"),
+            SkinUnlock.ForPrice("Goldrausch", 2500),
+        };
+
+        [Test]
+        public void PurchaseSkin_IsNeverUnlockedByAConditionOnly()
+        {
+            var data = new SaveData();
+            data.Gold.Balance = 99999;
+            data.Stats.TotalKills = 99999;
+
+            Assert.AreEqual(0, SkinRules.UnlockNew(WithGold, data));
+            Assert.IsFalse(SkinRules.IsUnlocked(WithGold[1], data.Skins));
+        }
+
+        [Test]
+        public void Buy_WithEnoughGold_PaysUnlocksAndSelects()
+        {
+            var data = new SaveData();
+            data.Gold.Balance = 2600;
+            data.Gold.TotalEarned = 5000;
+
+            Assert.IsTrue(SkinRules.CanBuy(WithGold, data, 1));
+            Assert.IsTrue(SkinRules.TryBuy(WithGold, data, 1));
+
+            Assert.AreEqual(100, data.Gold.Balance);
+            Assert.AreEqual(5000, data.Gold.TotalEarned, "spending does not lower the gold earned");
+            Assert.IsTrue(SkinRules.IsUnlocked(WithGold[1], data.Skins));
+            Assert.AreEqual("Goldrausch", data.Skins.Current);
+        }
+
+        [Test]
+        public void Buy_WithTooLittleGold_ChangesNothing()
+        {
+            var data = new SaveData();
+            data.Gold.Balance = 2499;
+
+            Assert.IsFalse(SkinRules.CanBuy(WithGold, data, 1));
+            Assert.IsFalse(SkinRules.TryBuy(WithGold, data, 1));
+
+            Assert.AreEqual(2499, data.Gold.Balance);
+            Assert.IsFalse(SkinRules.IsUnlocked(WithGold[1], data.Skins));
+            Assert.IsTrue(string.IsNullOrEmpty(data.Skins.Current));
+        }
+
+        [Test]
+        public void Buy_ExactPrice_LeavesZero()
+        {
+            var data = new SaveData();
+            data.Gold.Balance = 2500;
+
+            Assert.IsTrue(SkinRules.TryBuy(WithGold, data, 1));
+            Assert.AreEqual(0, data.Gold.Balance);
+        }
+
+        [Test]
+        public void Buy_Twice_IsImpossible()
+        {
+            var data = new SaveData();
+            data.Gold.Balance = 6000;
+            Assert.IsTrue(SkinRules.TryBuy(WithGold, data, 1));
+
+            Assert.IsFalse(SkinRules.IsBuyable(WithGold, data, 1));
+            Assert.IsFalse(SkinRules.TryBuy(WithGold, data, 1));
+
+            Assert.AreEqual(3500, data.Gold.Balance, "paid only once");
+            CollectionAssert.AreEqual(new[] { "Goldrausch" }, data.Skins.Unlocked);
+        }
+
+        [Test]
+        public void Buy_OtherKindsOfSkin_IsRefused()
+        {
+            var data = new SaveData();
+            data.Gold.Balance = 99999;
+
+            Assert.IsFalse(SkinRules.TryBuy(Skins, data, 0));
+            Assert.IsFalse(SkinRules.TryBuy(Skins, data, 1));
+            Assert.IsFalse(SkinRules.TryBuy(WithGold, data, 5));
+            Assert.AreEqual(99999, data.Gold.Balance);
+        }
+
+        [Test]
+        public void PurchasedSkin_StaysUnlockedAfterSavingAndLoading()
+        {
+            var files = new MemorySaveFileSystem();
+            var data = new SaveData();
+            data.Gold.Balance = 2500;
+            Assert.IsTrue(SkinRules.TryBuy(WithGold, data, 1));
+            new SaveGameStore(files, "skin-buy-tests").Save(data);
+
+            SaveData loaded = new SaveGameStore(files, "skin-buy-tests").Load();
+
+            Assert.IsTrue(SkinRules.IsUnlocked(WithGold[1], loaded.Skins));
+            Assert.AreEqual("Goldrausch", loaded.Skins.Current);
+            Assert.AreEqual(1, SkinRules.CurrentIndex(WithGold, loaded.Skins));
+            Assert.AreEqual(0, loaded.Gold.Balance);
+            Assert.AreEqual(0, SkinRules.UnlockNew(WithGold, loaded), "unlock check keeps the purchase");
+            Assert.IsTrue(SkinRules.IsUnlocked(WithGold[1], loaded.Skins));
+        }
+
         [Test]
         public void UnlockNew_RepairsMissingSkinData()
         {

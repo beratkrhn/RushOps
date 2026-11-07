@@ -14,5 +14,8 @@ namespace RushOps.Skins
 
         /// <summary>Unlocked once an endless run reaches a certain round (issue #211, F-END-09).</summary>
         EndlessRound,
+
+        /// <summary>Bought with gold; the price is the threshold (issue #237, F-GLD-06).</summary>
+        Purchase,
     }
 }

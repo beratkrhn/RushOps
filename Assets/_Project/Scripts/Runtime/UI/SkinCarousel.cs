@@ -30,6 +30,14 @@ namespace RushOps.UI
         [SerializeField] private Text _counter;
         [SerializeField] private Button _select;
         [SerializeField] private Text _selectLabel;
+        [Tooltip("Buys the locked skin in the middle for gold (issue #237); replaces the select button for such skins.")]
+        [SerializeField] private Button _buy;
+        [SerializeField] private Text _buyLabel;
+        [Tooltip("Asks once before buying: question, „Kaufen“ (ConfirmBuy) and „Abbrechen“ (CancelBuy).")]
+        [SerializeField] private GameObject _confirmPanel;
+        [SerializeField] private Text _confirmText;
+        [Tooltip("Balance displays that are refreshed after a purchase.")]
+        [SerializeField] private GoldBalanceView[] _balanceViews;
         [SerializeField] private Button _previous;
         [SerializeField] private Button _next;
 
@@ -45,6 +53,9 @@ namespace RushOps.UI
 
         /// <summary>True while the skin selection shows.</summary>
         public bool IsOpen => _panel != null && _panel.activeSelf;
+
+        /// <summary>True while the purchase question shows.</summary>
+        public bool IsConfirming => _confirmPanel != null && _confirmPanel.activeSelf;
 
         /// <summary>Index of the skin in the middle.</summary>
         public int Index => _index;
@@ -78,9 +89,59 @@ namespace RushOps.UI
         /// <summary>Hides the skin selection („Zurück“).</summary>
         public void Close()
         {
+            CancelBuy();
             if (_panel != null)
             {
                 _panel.SetActive(false);
+            }
+
+            RefreshBalances();
+        }
+
+        /// <summary>
+        /// „Kaufen“: asks once whether to buy the skin in the middle; does nothing if it is not for sale or the balance is
+        /// too low (issue #237).
+        /// </summary>
+        public void Buy()
+        {
+            SkinDefinition skin = Shown;
+            if (skin == null || Data == null || !_catalog.CanBuy(Data, skin))
+            {
+                return;
+            }
+
+            SetText(_confirmText, SkinHint.ConfirmPurchase(skin.DisplayName, skin.Price));
+            if (_confirmPanel != null)
+            {
+                _confirmPanel.SetActive(true);
+            }
+        }
+
+        /// <summary>Answers the purchase question with yes: pays, unlocks, selects and saves at once.</summary>
+        public void ConfirmBuy()
+        {
+            if (_confirmPanel != null)
+            {
+                _confirmPanel.SetActive(false);
+            }
+
+            SkinDefinition skin = Shown;
+            if (skin == null || Data == null || !_catalog.Buy(Data, skin))
+            {
+                return;
+            }
+
+            _save.Save();
+            ShowInMenu(skin);
+            Refresh();
+        }
+
+        /// <summary>Answers the purchase question with no.</summary>
+        public void CancelBuy()
+        {
+            if (_confirmPanel != null)
+            {
+                _confirmPanel.SetActive(false);
             }
         }
 
@@ -105,6 +166,7 @@ namespace RushOps.UI
             }
 
             _index = Mathf.Clamp(index, 0, SkinCount - 1);
+            CancelBuy();
             Refresh();
         }
 
@@ -128,6 +190,8 @@ namespace RushOps.UI
             {
                 _panel.SetActive(false);
             }
+
+            CancelBuy();
         }
 
         private void Start()
@@ -203,10 +267,21 @@ namespace RushOps.UI
                 : SkinHint.Unlock(skin.Unlock, skin.LevelName, SkinRules.Remaining(skin.Unlock, data?.Progress, data?.Stats)));
             SetText(_counter, SkinHint.Counter(_index, SkinCount));
             SetText(_selectLabel, current ? SkinHint.Chosen : unlocked ? SkinHint.Choose : SkinHint.Locked);
+            bool buyable = _catalog.IsBuyable(data, skin);
             if (_select != null)
             {
+                _select.gameObject.SetActive(!buyable);
                 _select.interactable = unlocked && !current;
             }
+
+            if (_buy != null)
+            {
+                _buy.gameObject.SetActive(buyable);
+                _buy.interactable = buyable && _catalog.CanBuy(data, skin);
+            }
+
+            SetText(_buyLabel, SkinHint.Buy);
+            RefreshBalances();
 
             if (_previous != null)
             {
@@ -216,6 +291,22 @@ namespace RushOps.UI
             if (_next != null)
             {
                 _next.interactable = _index < SkinCount - 1;
+            }
+        }
+
+        private void RefreshBalances()
+        {
+            if (_balanceViews == null)
+            {
+                return;
+            }
+
+            foreach (GoldBalanceView view in _balanceViews)
+            {
+                if (view != null)
+                {
+                    view.Refresh();
+                }
             }
         }
 

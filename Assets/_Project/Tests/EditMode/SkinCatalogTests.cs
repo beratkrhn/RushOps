@@ -22,7 +22,7 @@ namespace RushOps.Tests.EditMode
         {
             IReadOnlyList<SkinDefinition> skins = Load().Skins;
 
-            Assert.AreEqual(10, skins.Count);
+            Assert.AreEqual(11, skins.Count);
             Assert.AreEqual(SkinUnlockKind.Default, skins[0].UnlockKind, "the default skin comes first");
             int levels = 0;
             int milestones = 0;
@@ -49,6 +49,15 @@ namespace RushOps.Tests.EditMode
 
             Assert.AreEqual(3, levels, "one skin per island");
             Assert.AreEqual(3, milestones);
+            SkinDefinition gold = null;
+            foreach (SkinDefinition skin in skins)
+            {
+                gold = skin.UnlockKind == SkinUnlockKind.Purchase ? skin : gold;
+            }
+
+            Assert.IsNotNull(gold, "F-GLD-06: the gold skin");
+            Assert.AreEqual("Goldrausch", gold.Id);
+            Assert.AreEqual(2500, gold.Price, "N1: 2500 gold");
             CollectionAssert.AreEqual(new[] { 10, 25, 50 }, endlessRounds, "F-END-09: rounds 10, 25 and 50");
         }
 

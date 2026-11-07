@@ -62,6 +62,8 @@ namespace RushOps.Editor.Skins
             new Spec("Gladiator", "Gladiator", SkinUnlockKind.EndlessRound, "", default, 10),
             new Spec("Zenturio", "Zenturio", SkinUnlockKind.EndlessRound, "", default, 25),
             new Spec("Imperator", "Imperator", SkinUnlockKind.EndlessRound, "", default, 50),
+            // Bought with gold in the carousel (issue #237, F-GLD-06): the price is the threshold.
+            new Spec("Goldrausch", "Goldrausch", SkinUnlockKind.Purchase, "", default, 2500),
         };
 
         /// <summary>Ids of all skins in display order.</summary>

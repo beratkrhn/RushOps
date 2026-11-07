@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888eeded5bb69477890c2c429787ba4d, type: 3}
+  m_Name: Skin_Goldrausch
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
+  _id: Goldrausch
+  _displayName: Goldrausch
+  _idle: {fileID: 11400000, guid: 66988f2d578594f27a303bae4c3581a0, type: 2}
+  _walk: {fileID: 11400000, guid: 9c21f616b129b47d5a993f82ba9abf8b, type: 2}
+  _hit: {fileID: 11400000, guid: 3a8fe358fc6f24faf9a950fc85d541ad, type: 2}
+  _death: {fileID: 11400000, guid: a9913624612a14963b6126ace559e960, type: 2}
+  _dash: {fileID: 11400000, guid: 7273c6c9749d54a00bab6017ffefd79f, type: 2}
+  _unlockKind: 4
+  _levelId: 
+  _levelName: 
+  _milestone: 0
+  _threshold: 2500

@@ -37,6 +37,8 @@ namespace RushOps.Skins
                 SkinUnlockKind.LevelCompleted => ProgressRules.IsCompleted(progress, unlock.LevelId),
                 SkinUnlockKind.Milestone => MilestoneValue(unlock.Milestone, progress, stats) >= unlock.Threshold,
                 SkinUnlockKind.EndlessRound => endless != null && endless.HighestRound >= unlock.Threshold,
+                // Bought with gold, never unlocked by a condition (issue #237).
+                SkinUnlockKind.Purchase => false,
                 _ => false,
             };
         }
@@ -63,6 +65,40 @@ namespace RushOps.Skins
             }
 
             return skins?.Unlocked != null && !string.IsNullOrEmpty(unlock.SkinId) && skins.Unlocked.Contains(unlock.SkinId);
+        }
+
+        /// <summary>True if skin <paramref name="index"/> is bought with gold and not yet owned.</summary>
+        public static bool IsBuyable(IReadOnlyList<SkinUnlock> skins, SaveData data, int index)
+        {
+            return skins != null && data != null && index >= 0 && index < skins.Count
+                && skins[index].Kind == SkinUnlockKind.Purchase && !IsUnlocked(skins[index], data.Skins);
+        }
+
+        /// <summary>True if skin <paramref name="index"/> is buyable and the balance covers its price (F-GLD-06).</summary>
+        public static bool CanBuy(IReadOnlyList<SkinUnlock> skins, SaveData data, int index)
+        {
+            return IsBuyable(skins, data, index) && data.Gold != null && data.Gold.Balance >= skins[index].Threshold;
+        }
+
+        /// <summary>
+        /// Buys skin <paramref name="index"/>: takes the price from the balance (not from the gold earned over all time),
+        /// unlocks the skin and makes it the current one. The caller saves right after.
+        /// </summary>
+        /// <returns>False if the skin cannot be bought or the balance is too low; nothing changes then.</returns>
+        public static bool TryBuy(IReadOnlyList<SkinUnlock> skins, SaveData data, int index)
+        {
+            if (!CanBuy(skins, data, index))
+            {
+                return false;
+            }
+
+            SkinUnlock skin = skins[index];
+            data.Gold.Balance -= skin.Threshold;
+            data.Skins ??= new SkinsData();
+            data.Skins.Unlocked ??= new List<string>();
+            data.Skins.Unlocked.Add(skin.SkinId);
+            data.Skins.Current = skin.SkinId;
+            return true;
         }
 
         /// <summary>
