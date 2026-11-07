@@ -84,6 +84,13 @@ Output (under Assets/_Project/Art/):
   Tiles/<Island>/Obstacle_Top.png, Obstacle_Front.png inner walls (obstacles)
   Tiles/<Island>/Decor_<N>.png             32x32 flat decorations without collision
   Tiles/<Island>/Gate_<F>.png              32x32 gate cell, frame 0 closed .. last frame open
+  Tiles/Kolosseum/Floor_0..2.png           arena sand of the endless arena (issue #206)
+  Tiles/Kolosseum/Wall_Top.png, Wall_Front.png  round ring wall with the coping of the stands
+  Tiles/Kolosseum/Wall_Rack.png            ring wall with an empty weapon board (slot for the endless wall weapons)
+  Tiles/Kolosseum/Stands_H.png, Stands_V.png    empty tiers behind the wall, rows across the line to the centre
+  Tiles/Kolosseum/Decor_<N>.png            32x32 flat decorations on the arena sand
+  Sprites/Level/Kolosseum/Gate_<N|S|W|E>.png    64x128 / 128x64 barred gate with its tunnel through the stands
+  Sprites/Level/Kolosseum/Fountain.png     128x184 round fountain, radius 2 tiles, centred on its footprint
 
 Usage:
   python3 Tools/gen_pixelart.py [--preview PATH] [--animations DIR]
@@ -3318,6 +3325,402 @@ def island_preview(files: dict[str, Image.Image], island: str, path: Path, scale
     sheet.resize((sheet.width * scale, sheet.height * scale), Image.NEAREST).save(path)
 
 
+# --- Endless arena: colosseum (issue #206, decision N10) ---------------------------
+# Warm, trampled sand inside a ring wall of pale travertine with a bright coping (the rim of the stands), empty
+# tiers of dusky stone behind it, four barred gates and a round fountain in the middle. The geometry below mirrors
+# RushOps.Editor.Scenes.ColosseumLayout, so the preview shows the arena as the scene builder lays it out.
+COLOSSEUM_GRID = 32
+COLOSSEUM_CENTER = 16.0
+COLOSSEUM_FLOOR_RADIUS = 12.5
+COLOSSEUM_FOUNTAIN_RADIUS = 2.0
+COLOSSEUM_DECORATIONS = 5
+# Fountain sprite: footprint circle of 2 tiles radius plus room above for the spout, padded equally below so the
+# sprite's center is the footprint's center.
+FOUNTAIN_WIDTH = 4 * TILE
+FOUNTAIN_PAD = 28
+FOUNTAIN_HEIGHT = FOUNTAIN_WIDTH + 2 * FOUNTAIN_PAD
+FOUNTAIN_RIM = 8
+
+
+def arena_sand(variant: int) -> Canvas:
+    """Arena sand. Variant 0 plain, 1 with rake marks, 2 trampled with pebbles."""
+    c = Canvas(TILE, TILE, fill="skin_0")
+    rng = random.Random(7100 + variant)
+    for _ in range(40):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "brown_1")
+    for _ in range(18):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "clay")
+    for _ in range(12):
+        wrap_set(c, rng.randrange(TILE), rng.randrange(TILE), "brown_0")
+    if variant == 1:
+        for y0 in (6, 14, 22, 30):
+            for x in range(TILE):
+                y = y0 + round(math.sin(x / TILE * 2 * math.pi))
+                wrap_set(c, x, y, "brown_1")
+                if x % 4:
+                    wrap_set(c, x, y - 1, "brown_0")
+    elif variant == 2:
+        c.ellipse(16.0, 16.0, 9.0, 6.0, "brown_1")
+        for _ in range(16):
+            wrap_set(c, rng.randrange(8, 24), rng.randrange(11, 21), "skin_0")
+        for x, y in ((9, 11), (21, 19), (14, 21)):
+            c.rect(x, y, x + 1, y, "slate_2")
+            c.set(x, y - 1, "slate_3")
+    return c
+
+
+def travertine_top_face(c: Canvas, y0: int, y1: int) -> None:
+    """Coping of the ring wall seen from above: pale blocks with seams, the rim of the stands."""
+    c.rect(0, y0, TILE - 1, y1, "peach")
+    rng = random.Random(7200 + y0)
+    for _ in range(14):
+        x, y = rng.randrange(TILE), rng.randrange(y0, y1 + 1)
+        c.set(x, y, "cream")
+    for _ in range(8):
+        x, y = rng.randrange(TILE), rng.randrange(y0, y1 + 1)
+        c.set(x, y, "apricot")
+    for x in (0, 16):
+        c.rect(x, y0, x, y1, "clay")
+
+
+def colosseum_wall_top() -> Canvas:
+    c = Canvas(TILE, TILE)
+    travertine_top_face(c, 0, TILE - 1)
+    c.rect(0, TILE // 2, TILE - 1, TILE // 2, "clay")
+    return c
+
+
+def colosseum_wall_front() -> Canvas:
+    """Ring wall with the arena to the south: coping above, travertine blocks with a red painted band below."""
+    c = Canvas(TILE, TILE)
+    top = 10
+    travertine_top_face(c, 0, top - 1)
+    c.rect(0, top - 1, TILE - 1, top - 1, "cream")
+    c.rect(0, top, TILE - 1, TILE - 1, "clay")
+    c.rect(0, top, TILE - 1, top + 2, "red_0")
+    c.rect(0, top + 3, TILE - 1, top + 3, "skin_0")
+    for row, y in enumerate(range(top + 4, TILE - 2, 7)):
+        c.rect(0, y + 6, TILE - 1, y + 6, "skin_0")
+        offset = 0 if row % 2 == 0 else 8
+        for x in range(offset, TILE, 16):
+            c.rect(x, y, x, min(y + 5, TILE - 1), "skin_0")
+        c.rect(0, y, TILE - 1, y, "apricot")
+    c.rect(0, TILE - 2, TILE - 1, TILE - 1, "brown_0")
+    return c
+
+
+def colosseum_wall_rack() -> Canvas:
+    """Ring wall with an empty weapon board on two hooks (issue #206): one of the three slots of the endless wall
+    weapons. The board has the size of the one in wall_weapon, so a hung weapon covers it exactly."""
+    c = colosseum_wall_front()
+    c.rect(2, 9, 29, 24, "brown_0")
+    c.rect(3, 10, 28, 23, "brown_1")
+    c.rect(3, 23, 28, 23, "brown_0")
+    for x in (6, 25):
+        c.rect(x, 7, x + 1, 9, "slate_4")
+    return c
+
+
+def colosseum_stands(vertical: bool) -> Canvas:
+    """Empty tiers of the stands seen from above: dusky stone treads with a dark step edge every half tile. The
+    rows run across the line to the arena center: horizontal north and south of it, vertical east and west."""
+    c = Canvas(TILE, TILE)
+    rng = random.Random(7300 + vertical)
+    for a in range(TILE):
+        for b in range(TILE):
+            step = b % 16
+            color = "dusk"
+            if step >= 13:
+                color = "night"
+            elif step == 12:
+                color = "slate_1"
+            elif step == 0:
+                color = "mauve"
+            x, y = (b, a) if vertical else (a, b)
+            c.set(x, y, color)
+    for _ in range(18):
+        a, b = rng.randrange(TILE), rng.randrange(TILE)
+        if 1 <= b % 16 <= 11:
+            x, y = (b, a) if vertical else (a, b)
+            c.set(x, y, "slate_2" if rng.random() < 0.6 else "mauve")
+    # Seams between the seat blocks.
+    for a in range(0, TILE, 16):
+        for b in range(TILE):
+            if b % 16 <= 11:
+                x, y = (b, a) if vertical else (a, b)
+                c.set(x, y, "slate_1")
+    return c
+
+
+def arena_decoration(kind: int) -> Canvas:
+    """Flat things on the arena sand, without collision: 0 dried blood, 1 bones, 2 broken round shield,
+    3 scuff marks, 4 chipped stone from the wall."""
+    c = Canvas(TILE, TILE)
+    if kind == 0:
+        c.ellipse(16.0, 17.0, 7.0, 4.0, "red_0")
+        c.ellipse(21.0, 14.0, 2.0, 1.5, "red_0")
+        c.ellipse(15.0, 17.0, 4.0, 2.0, "brown_0")
+        return c
+    if kind == 1:
+        c.rect(9, 16, 21, 17, "slate_5")
+        c.rect(8, 15, 9, 18, "white")
+        c.rect(21, 15, 22, 18, "white")
+        c.rect(14, 20, 19, 20, "slate_4")
+        c.set(19, 21, "slate_5")
+    elif kind == 2:
+        c.ellipse(16.0, 17.0, 7.0, 4.5, "red_0")
+        c.ellipse(16.0, 17.0, 5.5, 3.2, "red_1")
+        c.ellipse(16.0, 17.0, 1.5, 1.0, "yellow")
+        for y in range(12, 23):
+            for x in range(17, 25):
+                if x - 17 > (y - 12) * 0.9:
+                    c.set(x, y, None)
+    elif kind == 3:
+        for x, y in ((8, 12), (13, 15), (18, 13), (23, 16), (11, 20), (20, 21)):
+            c.rect(x, y, x + 2, y, "brown_1")
+            c.set(x + 1, y + 1, "brown_0")
+        return c
+    elif kind == 4:
+        for x, y, w in ((10, 17, 4), (17, 15, 3), (20, 20, 2)):
+            c.rect(x, y, x + w - 1, y + 1, "clay")
+            c.rect(x, y, x + w - 2, y, "peach")
+    c.outline("outline")
+    return c
+
+
+def rotated90(c: Canvas) -> Canvas:
+    """The canvas turned a quarter clockwise."""
+    out = Canvas(c.height, c.width)
+    for y in range(c.height):
+        for x in range(c.width):
+            out.set(c.height - 1 - y, x, c.get(x, y))
+    return out
+
+
+def mirrored(c: Canvas) -> Canvas:
+    """The canvas mirrored left to right."""
+    out = Canvas(c.width, c.height)
+    for y in range(c.height):
+        for x in range(c.width):
+            out.set(c.width - 1 - x, y, c.get(x, y))
+    return out
+
+
+def gate_tunnel(c: Canvas, y0: int, y1: int) -> None:
+    """Passage of a gate through the stands seen from above, rows y0..y1 of a 64 px wide canvas: a dark floor between
+    two pale walls."""
+    c.rect(0, y0, 63, y1, "night")
+    rng = random.Random(7400 + y0)
+    for _ in range(20):
+        c.set(rng.randrange(8, 56), rng.randrange(y0, y1 + 1), "slate_0")
+    for _ in range(10):
+        c.set(rng.randrange(8, 56), rng.randrange(y0, y1 + 1), "brown_0")
+    c.rect(0, y0, 6, y1, "peach")
+    c.rect(57, y0, 63, y1, "peach")
+    c.rect(6, y0, 6, y1, "clay")
+    c.rect(57, y0, 57, y1, "clay")
+    c.rect(7, y0, 8, y1, "outline")
+
+
+def gate_grate_top(c: Canvas, y0: int) -> None:
+    """The closed portcullis seen from above across a 64 px wide gate, 32 rows from y0: a coping lintel with the bar
+    tops in a dark slot."""
+    c.rect(0, y0, 63, y0 + 31, "peach")
+    c.rect(0, y0 + 31, 63, y0 + 31, "clay")
+    c.rect(6, y0 + 9, 57, y0 + 20, "night")
+    for x in range(9, 56, 5):
+        c.rect(x, y0 + 13, x + 2, y0 + 16, "slate_3")
+        c.set(x, y0 + 13, "slate_5")
+    c.rect(6, y0 + 9, 57, y0 + 9, "outline")
+    for x in (0, 31, 32):
+        c.rect(x, y0, x, y0 + 8, "clay")
+
+
+def colosseum_gate_north() -> Canvas:
+    """North gate, 2 x 4 cells: tunnel through the stands, then the arched front with its closed portcullis on the
+    ring wall cell next to the arena."""
+    c = Canvas(64, 4 * TILE)
+    gate_tunnel(c, 0, 3 * TILE - 1)
+    y0 = 3 * TILE
+    top = 10
+    c.rect(0, y0, 63, y0 + top - 1, "peach")
+    c.rect(0, y0 + top - 1, 63, y0 + top - 1, "cream")
+    c.rect(0, y0 + top, 63, y0 + TILE - 1, "clay")
+    c.rect(0, y0 + top, 63, y0 + top + 2, "red_0")
+    # Arch opening with the bars.
+    for y in range(y0 + top + 4, y0 + TILE):
+        for x in range(8, 56):
+            dy = y - (y0 + top + 12)
+            if dy >= 0 or (x - 31.5) ** 2 / 24.0 ** 2 + dy ** 2 / 8.0 ** 2 <= 1.0:
+                c.set(x, y, "night")
+    for x in range(10, 54, 6):
+        for y in range(y0 + top + 5, y0 + TILE - 1):
+            if c.get(x, y) == "night":
+                c.set(x, y, "slate_1")
+                c.set(x + 1, y, "slate_3")
+    c.rect(8, y0 + top + 15, 55, y0 + top + 15, "slate_3")
+    # Keystone.
+    c.rect(28, y0 + top + 2, 35, y0 + top + 5, "peach")
+    c.rect(28, y0 + top + 5, 35, y0 + top + 5, "skin_0")
+    c.rect(0, y0 + TILE - 2, 7, y0 + TILE - 1, "brown_0")
+    c.rect(56, y0 + TILE - 2, 63, y0 + TILE - 1, "brown_0")
+    return c
+
+
+def colosseum_gate_south() -> Canvas:
+    """South gate, 2 x 4 cells: the portcullis seen from above on the ring wall cell, the tunnel behind it."""
+    c = Canvas(64, 4 * TILE)
+    gate_grate_top(c, 0)
+    gate_tunnel(c, TILE, 4 * TILE - 1)
+    return c
+
+
+def colosseum_gate_west() -> Canvas:
+    """West gate, 4 x 2 cells: the south gate turned so the portcullis sits on the ring wall cell on the right."""
+    return rotated90(colosseum_gate_south())
+
+
+def colosseum_gate_east() -> Canvas:
+    return mirrored(colosseum_gate_west())
+
+
+def fountain() -> Canvas:
+    """Round fountain in the middle of the arena (issue #206, decision N2), radius 2 tiles: a stone basin full of
+    water with its rim face to the south and a column with a bowl spilling water in the centre."""
+    c = Canvas(FOUNTAIN_WIDTH, FOUNTAIN_HEIGHT)
+    cx = FOUNTAIN_WIDTH / 2
+    foot = FOUNTAIN_PAD + FOUNTAIN_WIDTH / 2
+    top = foot - FOUNTAIN_RIM
+    r = FOUNTAIN_WIDTH / 2 - 2
+    rim = 8
+    for y in range(c.height):
+        for x in range(c.width):
+            px, py = x + 0.5, y + 0.5
+            d_top = math.hypot(px - cx, py - top)
+            d_foot = math.hypot(px - cx, py - foot)
+            if d_top <= r:
+                if d_top > r - rim:
+                    angle = math.degrees(math.atan2(py - top, px - cx)) % 360
+                    color = "peach"
+                    if angle % 30 < 3:
+                        color = "clay"
+                    elif d_top > r - 2 and 180 < angle < 300:
+                        color = "cream"
+                    elif d_top < r - rim + 2:
+                        color = "apricot"
+                    c.set(x, y, color)
+                else:
+                    color = "blue_1"
+                    if d_top > r - rim - 4 and py < top:
+                        color = "blue_0"
+                    elif int(d_top) % 9 == 0 and (int(px) + int(py)) % 3:
+                        color = "blue_2"
+                    c.set(x, y, color)
+            elif d_foot <= r and py > top:
+                color = "clay"
+                if py > foot + math.sqrt(max(r * r - (px - cx) ** 2, 0.0)) - 3:
+                    color = "brown_0"
+                elif int(px) % 16 == 0:
+                    color = "skin_0"
+                elif py < top + math.sqrt(max(r * r - (px - cx) ** 2, 0.0)) + 2:
+                    color = "apricot"
+                c.set(x, y, color)
+    # Column with a bowl on top; water spills over its edge into the basin.
+    bowl_y = FOUNTAIN_PAD + 18
+    c.rect(int(cx) - 7, bowl_y, int(cx) + 6, int(top) + 6, "clay")
+    c.rect(int(cx) - 7, bowl_y, int(cx) - 5, int(top) + 6, "peach")
+    c.rect(int(cx) + 4, bowl_y, int(cx) + 6, int(top) + 6, "skin_0")
+    c.ellipse(cx, top + 6, 11.0, 4.0, "white")
+    c.ellipse(cx, top + 6, 8.0, 2.5, "blue_2")
+    c.ellipse(cx, bowl_y, 20.0, 7.0, "peach")
+    c.ellipse(cx, bowl_y + 2, 20.0, 6.0, "clay")
+    c.ellipse(cx, bowl_y - 1, 17.0, 5.0, "blue_1")
+    c.ellipse(cx - 3, bowl_y - 2, 8.0, 2.0, "blue_2")
+    for x in (int(cx) - 19, int(cx) - 18, int(cx) + 17, int(cx) + 18):
+        for y in range(bowl_y + 3, int(top) + 3):
+            c.set(x, y, "blue_2" if (y + x) % 5 else "white")
+    for x, y in ((int(cx) - 22, int(top) + 2), (int(cx) - 16, int(top) + 4), (int(cx) + 15, int(top) + 3),
+                 (int(cx) + 21, int(top) + 1)):
+        c.set(x, y, "white")
+    # Jet out of the bowl.
+    c.rect(int(cx) - 1, bowl_y - 16, int(cx), bowl_y - 3, "blue_2")
+    c.rect(int(cx) - 1, bowl_y - 16, int(cx) - 1, bowl_y - 10, "white")
+    for x, y in ((int(cx) - 4, bowl_y - 14), (int(cx) + 3, bowl_y - 12), (int(cx) - 6, bowl_y - 8),
+                 (int(cx) + 5, bowl_y - 6)):
+        c.set(x, y, "blue_2")
+    c.outline("outline")
+    return c
+
+
+def colosseum_files(files: dict[str, Image.Image]) -> None:
+    """Tiles and sprites of the endless arena (issue #206), under Tiles/Kolosseum/ and Sprites/Level/Kolosseum/."""
+    for variant in range(3):
+        files[f"Tiles/Kolosseum/Floor_{variant}.png"] = arena_sand(variant).to_image()
+    files["Tiles/Kolosseum/Wall_Top.png"] = colosseum_wall_top().to_image()
+    files["Tiles/Kolosseum/Wall_Front.png"] = colosseum_wall_front().to_image()
+    files["Tiles/Kolosseum/Wall_Rack.png"] = colosseum_wall_rack().to_image()
+    files["Tiles/Kolosseum/Stands_H.png"] = colosseum_stands(False).to_image()
+    files["Tiles/Kolosseum/Stands_V.png"] = colosseum_stands(True).to_image()
+    for kind in range(COLOSSEUM_DECORATIONS):
+        files[f"Tiles/Kolosseum/Decor_{kind}.png"] = arena_decoration(kind).to_image()
+    files["Sprites/Level/Kolosseum/Gate_N.png"] = colosseum_gate_north().to_image()
+    files["Sprites/Level/Kolosseum/Gate_S.png"] = colosseum_gate_south().to_image()
+    files["Sprites/Level/Kolosseum/Gate_W.png"] = colosseum_gate_west().to_image()
+    files["Sprites/Level/Kolosseum/Gate_E.png"] = colosseum_gate_east().to_image()
+    files["Sprites/Level/Kolosseum/Fountain.png"] = fountain().to_image()
+
+
+def colosseum_cell(x: int, y: int) -> str:
+    """Kind of a cell of the arena: floor, fountain, wall (the ring next to the floor) or stands."""
+    def dist(cx: int, cy: int) -> float:
+        return math.hypot(cx + 0.5 - COLOSSEUM_CENTER, cy + 0.5 - COLOSSEUM_CENTER)
+    if dist(x, y) < COLOSSEUM_FOUNTAIN_RADIUS:
+        return "fountain"
+    if dist(x, y) < COLOSSEUM_FLOOR_RADIUS:
+        return "floor"
+    for dy in (-1, 0, 1):
+        for dx in (-1, 0, 1):
+            if dist(x + dx, y + dy) < COLOSSEUM_FLOOR_RADIUS:
+                return "wall"
+    return "stands"
+
+
+def colosseum_preview(files: dict[str, Image.Image], path: Path) -> None:
+    """The whole arena as the scene builder lays it out, with gates, weapon slots, fountain and a few characters."""
+    n = COLOSSEUM_GRID
+    sheet = Image.new("RGBA", (n * TILE, n * TILE), (0, 0, 0, 255))
+    racks = {(18, 28), (19, 28), (20, 28)}
+    for y in range(n):
+        for x in range(n):
+            kind = colosseum_cell(x, y)
+            if kind in ("floor", "fountain"):
+                name = f"Floor_{[0, 0, 0, 1, 2][(x * 7 + y * 3) % 5]}"
+            elif kind == "wall":
+                name = "Wall_Rack" if (x, y) in racks else (
+                    "Wall_Front" if colosseum_cell(x, y - 1) == "floor" else "Wall_Top")
+            else:
+                dx, dy = x + 0.5 - COLOSSEUM_CENTER, y + 0.5 - COLOSSEUM_CENTER
+                name = "Stands_H" if abs(dy) >= abs(dx) else "Stands_V"
+            sheet.paste(files[f"Tiles/Kolosseum/{name}.png"], (x * TILE, (n - 1 - y) * TILE))
+    for i, (x, y) in enumerate(((8, 10), (22, 20), (11, 22), (24, 9), (6, 18))):
+        sheet.alpha_composite(files[f"Tiles/Kolosseum/Decor_{i}.png"], (x * TILE, (n - 1 - y) * TILE))
+    # Gates by their lower left cell.
+    for name, (x, y) in (("N", (15, 28)), ("S", (15, 0)), ("W", (0, 15)), ("E", (28, 15))):
+        img = files[f"Sprites/Level/Kolosseum/Gate_{name}.png"]
+        sheet.alpha_composite(img, (x * TILE, (n - y) * TILE - img.height))
+    img = files["Sprites/Level/Kolosseum/Fountain.png"]
+    centre = int(COLOSSEUM_CENTER * TILE)
+    sheet.alpha_composite(img, (centre - img.width // 2, n * TILE - centre - img.height // 2))
+    for key, (x, y) in (("Walker_Walk_SE_0", (12, 22)), ("Runner_Run_SW_1", (21, 12)), ("Boomer_Walk_S_0", (19, 24))):
+        img = files[f"Sprites/Enemies/{key}.png"]
+        sheet.alpha_composite(img, (x * TILE + TILE // 2 - img.width // 2, (n - y) * TILE - img.height + FOOT_MARGIN))
+    player = ART_DIR / "Sprites/Player/Player_Idle_N.png"
+    if player.exists():
+        img = Image.open(player).convert("RGBA")
+        sheet.alpha_composite(img, (16 * TILE - 32, (n - 10) * TILE - 64 + FOOT_MARGIN))
+    sheet.save(path)
+
+
 # --- Output ------------------------------------------------------------------
 
 def palette_image() -> Image.Image:
@@ -3446,6 +3849,7 @@ def outputs() -> dict[str, Image.Image]:
     for variant in range(3):
         files[f"Tiles/Floor_{variant}.png"] = floor(variant).to_image()
     island_files(files)
+    colosseum_files(files)
     player_files(files)
     return files
 
@@ -3589,6 +3993,8 @@ def main() -> None:
         for island in ISLAND_TILESETS:
             island_preview(files, island, args.islands / f"{island}.png")
             print(f"Wrote island preview {args.islands / island}.png")
+        colosseum_preview(files, args.islands / "Kolosseum.png")
+        print(f"Wrote colosseum preview {args.islands / 'Kolosseum.png'}")
 
     if args.animations:
         for name in ANIMATION_PREVIEWS:
