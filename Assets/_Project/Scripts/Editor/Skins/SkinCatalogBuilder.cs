@@ -10,7 +10,7 @@ namespace RushOps.Editor.Skins
 {
     /// <summary>
     /// Creates or updates the skin assets and the <see cref="SkinCatalog"/> (issue #128): the standard skin, one skin
-    /// per level (F-SKN-02) and three milestone skins (F-SKN-03). Names and thresholds of existing assets are kept, so
+    /// per level (F-SKN-02), three milestone skins (F-SKN-03) and three endless skins (issue #211, F-END-09). Names and thresholds of existing assets are kept, so
     /// tuned values survive; the animations are taken from <c>Data/Animations/Skins/&lt;Id&gt;_&lt;Anim&gt;.asset</c>
     /// (issue #129, built from the sprites of <c>Tools/gen_skins.py</c>) and fall back to the standard player
     /// animations.
@@ -58,6 +58,10 @@ namespace RushOps.Editor.Skins
             new Spec("Veteran", "Veteran", SkinUnlockKind.Milestone, "", SkinMilestone.TotalKills, 100),
             new Spec("Zombiejaeger", "Zombiejäger", SkinUnlockKind.Milestone, "", SkinMilestone.TotalKills, 1000),
             new Spec("Goldstern", "Goldstern", SkinUnlockKind.Milestone, "", SkinMilestone.TotalStars, 27),
+            // Endless mode (issue #211, F-END-09): the round an endless run has to reach.
+            new Spec("Gladiator", "Gladiator", SkinUnlockKind.EndlessRound, "", default, 10),
+            new Spec("Zenturio", "Zenturio", SkinUnlockKind.EndlessRound, "", default, 25),
+            new Spec("Imperator", "Imperator", SkinUnlockKind.EndlessRound, "", default, 50),
         };
 
         /// <summary>Ids of all skins in display order.</summary>

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Gladiator_Hit
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 0
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: d3c4e27bedd974050a29739d636bc8fb, type: 3}
+    - {fileID: 21300000, guid: ad11e58612b1b41949b9b38f893e44f1, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 4456e1fba94a44bcdb5233d5f19fcee5, type: 3}
+    - {fileID: 21300000, guid: b9f6cdaecad194fa281485034f4d8d19, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 92c7e5361bbdd4780a5355641088de6b, type: 3}
+    - {fileID: 21300000, guid: 8fa2ebca2cf0a4e199bf0cab8d7da907, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 047b82aa1be0c4c1fa2fe8f2a29ec1d5, type: 3}
+    - {fileID: 21300000, guid: d77a3e80eaf9146b58878b7a9d2240f3, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 456e0dda6435744ec8202b1efd5ebe8d, type: 3}
+    - {fileID: 21300000, guid: 41a5c1a6c5d1f416ca38f82b548f032e, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 28df2739f52ff45f1b55f4a7781f2c35, type: 3}
+    - {fileID: 21300000, guid: ebe2a6c0c95264285bb852669ac33a89, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: d2d2b5c1856d7428ca30b19f26d99bda, type: 3}
+    - {fileID: 21300000, guid: c2e7be7cd93a14dce9a26cfab84b17e1, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: a1be78ba0966f44d1bb0e6ce66bae3d1, type: 3}
+    - {fileID: 21300000, guid: 9969e02aacf514108849b29b915dd3e1, type: 3}

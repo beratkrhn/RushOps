@@ -35,7 +35,7 @@ namespace RushOps.Skins
         [Tooltip("Statistic counted, for Milestone.")]
         [SerializeField] private SkinMilestone _milestone = SkinMilestone.TotalKills;
 
-        [Tooltip("Value the statistic has to reach, for Milestone.")]
+        [Tooltip("Value the statistic has to reach, for Milestone; the round to reach, for EndlessRound.")]
         [SerializeField, Min(0)] private int _threshold = 100;
 
         /// <summary>Stable id in the save game.</summary>

@@ -28,7 +28,9 @@ namespace RushOps.Skins
         /// <summary>Statistic counted for <see cref="SkinUnlockKind.Milestone"/>.</summary>
         public SkinMilestone Milestone { get; }
 
-        /// <summary>Value <see cref="Milestone"/> has to reach.</summary>
+        /// <summary>
+        /// Value <see cref="Milestone"/> has to reach; for <see cref="SkinUnlockKind.EndlessRound"/> the round to reach.
+        /// </summary>
         public int Threshold { get; }
 
         /// <summary>A default skin, available from the start.</summary>
@@ -41,5 +43,9 @@ namespace RushOps.Skins
         /// <summary>A skin unlocked once <paramref name="milestone"/> reaches <paramref name="threshold"/>.</summary>
         public static SkinUnlock AtMilestone(string skinId, SkinMilestone milestone, int threshold) =>
             new SkinUnlock(skinId, SkinUnlockKind.Milestone, null, milestone, threshold);
+
+        /// <summary>A skin unlocked once an endless run reaches <paramref name="round"/> (issue #211).</summary>
+        public static SkinUnlock AtEndlessRound(string skinId, int round) =>
+            new SkinUnlock(skinId, SkinUnlockKind.EndlessRound, null, SkinMilestone.TotalKills, round);
     }
 }

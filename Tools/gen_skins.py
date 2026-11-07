@@ -56,6 +56,10 @@ SKINS = {
     "Veteran": dict(dark="green_0", mid="brown_0", cloak="green_1", light="green_2", accent_0="clay", accent_1="apricot"),
     "Zombiejaeger": dict(dark="night", mid="slate_1", cloak="green_0", light="green_1", accent_0="red_0", accent_1="red_1"),
     "Goldstern": dict(dark="brown_0", mid="brown_1", cloak="orange", light="apricot", accent_0="yellow", accent_1="glow"),
+    # Endlos-Modus (issue #211): Runde 10, 25, 50, colours of the colosseum
+    "Gladiator": dict(dark="brown_0", mid="red_0", cloak="red_1", light="orange", accent_0="brown_1", accent_1="skin_1"),
+    "Zenturio": dict(dark="slate_0", mid="slate_2", cloak="slate_4", light="slate_5", accent_0="red_0", accent_1="red_1"),
+    "Imperator": dict(dark="brown_0", mid="slate_3", cloak="white", light="cream", accent_0="orange", accent_1="yellow"),
 }
 
 PREVIEW_DIRECTIONS = ["S", "SE", "E", "N"]
