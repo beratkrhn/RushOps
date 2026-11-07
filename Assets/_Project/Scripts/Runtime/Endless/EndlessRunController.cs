@@ -23,6 +23,8 @@ namespace RushOps.Endless
         [SerializeField] private Zone _zone;
         [SerializeField] private PlayerHealth _player;
         [SerializeField] private EndlessHud _hud;
+        [Tooltip("The weapons on the arena wall, in the order of the config; locked until their round (F-END-07).")]
+        [SerializeField] private WallWeapon[] _wallWeapons = Array.Empty<WallWeapon>();
         [Tooltip("Starts a run in Start; off for tests that start it themselves.")]
         [SerializeField] private bool _autoStart = true;
 
@@ -31,6 +33,9 @@ namespace RushOps.Endless
         private WaveSequence _sequence;
         private WaveDefinition _wave;
         private int _shownRemaining = -1;
+        private string _notice;
+        private float _noticeRemaining;
+        private bool _shownNotice;
 
         /// <summary>The run in progress, or null before the first <see cref="BeginRun"/>.</summary>
         public EndlessRun Run => _run;
@@ -60,6 +65,11 @@ namespace RushOps.Endless
             CurrentRound = null;
             _sequence = null;
             _shownRemaining = -1;
+            _notice = null;
+            _noticeRemaining = 0f;
+            _shownNotice = false;
+            // Weapons of the rounds before the first one hang unlocked; the first round's own weapon unlocks with it.
+            ApplyWallWeapons(firstRound - 1, false);
             // A run always starts with the pistol, whatever weapon the menu has selected (F-END-07).
             if (_config.StartWeapon != null && _player.TryGetComponent(out PlayerWeapon weapon))
             {
@@ -109,11 +119,18 @@ namespace RushOps.Endless
                 return;
             }
 
+            if (_noticeRemaining > 0f)
+            {
+                _noticeRemaining -= Time.deltaTime;
+            }
+
             int remaining = _sequence.Remaining;
-            if (remaining != _shownRemaining)
+            bool notice = _noticeRemaining > 0f && _notice != null;
+            if (remaining != _shownRemaining || notice != _shownNotice)
             {
                 _shownRemaining = remaining;
-                _hud.SetTracker(EndlessText.Tracker(_run.Round, remaining));
+                _shownNotice = notice;
+                _hud.SetTracker(EndlessText.Tracker(_run.Round, remaining, notice ? _notice : null));
             }
         }
 
@@ -136,7 +153,35 @@ namespace RushOps.Endless
             DestroyWave(previous);
             _sequence = _director.SequenceOf(_zone);
             _shownRemaining = -1;
+            ApplyWallWeapons(round, true);
+            _notice = built.NewWeapon != null ? EndlessText.NewWeapon(built.NewWeapon.DisplayName) : null;
+            _noticeRemaining = _notice != null ? _config.NewWeaponNoticeSeconds : 0f;
             RoundStarted?.Invoke(built);
+        }
+
+        // Locks every wall weapon whose round has not come; with glow, the ones that just became available light up.
+        private void ApplyWallWeapons(int round, bool glow)
+        {
+            foreach (WallWeapon wall in _wallWeapons)
+            {
+                if (wall == null)
+                {
+                    continue;
+                }
+
+                if (!_rules.IsWeaponAvailable(wall.Weapon, round))
+                {
+                    wall.SetLocked(true);
+                }
+                else if (glow)
+                {
+                    wall.Unlock();
+                }
+                else
+                {
+                    wall.SetLocked(false);
+                }
+            }
         }
 
         private void OnRoundCleared(int round, int hearts)

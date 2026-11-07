@@ -54,6 +54,7 @@ namespace RushOps.Editor.Combat
                 ArenaTestSceneBuilder.LoadOrCreateConfig<WallWeaponConfig>(ConfigPath);
             serialized.FindProperty("_player").objectReferenceValue = arena.Player.GetComponent<PlayerWeapon>();
             serialized.FindProperty("_pickupOffset").vector2Value = new Vector2(0f, -1f);
+            serialized.FindProperty("_silhouette").objectReferenceValue = silhouette;
             serialized.FindProperty("_ring").objectReferenceValue = ring;
             SerializedProperty list = serialized.FindProperty("_ringFrames");
             list.arraySize = frames.Length;

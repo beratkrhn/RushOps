@@ -72,6 +72,9 @@ namespace RushOps.Endless
         [Tooltip("Weapons on the arena wall and the round from which each is available (N4).")]
         [SerializeField] private EndlessWeaponRound[] _wallWeapons = Array.Empty<EndlessWeaponRound>();
 
+        [Tooltip("Seconds the mission tracker shows „Neue Waffe: …“ when a wall weapon unlocks (issue #209).")]
+        [SerializeField, Min(0f)] private float _newWeaponNoticeSeconds = 4f;
+
         /// <summary>Seconds of break before every round.</summary>
         public float PauseBetweenRounds => _pauseBetweenRounds;
 
@@ -122,6 +125,9 @@ namespace RushOps.Endless
 
         /// <summary>Weapon every run starts with.</summary>
         public WeaponDefinition StartWeapon => _startWeapon;
+
+        /// <summary>Seconds the tracker shows the notice of a newly unlocked wall weapon.</summary>
+        public float NewWeaponNoticeSeconds => _newWeaponNoticeSeconds;
 
         /// <summary>Weapons on the wall with their rounds.</summary>
         public EndlessWeaponRound[] WallWeapons => _wallWeapons ?? Array.Empty<EndlessWeaponRound>();

@@ -54,3 +54,4 @@ MonoBehaviour:
     _weapon: {fileID: 11400000, guid: 5fac9c0fa3a21464980cbf3dd5d5c92d, type: 2}
   - _round: 15
     _weapon: {fileID: 11400000, guid: 1eb2936e780f54a34a097c4dab00b226, type: 2}
+  _newWeaponNoticeSeconds: 4

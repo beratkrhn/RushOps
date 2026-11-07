@@ -27,6 +27,16 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void NewWeapon_NamesTheWeapon_AndJoinsTheTrackerAsThirdLine()
+        {
+            Assert.AreEqual("Neue Waffe: Schrotflinte", EndlessText.NewWeapon("Schrotflinte"));
+            Assert.AreEqual("Runde 5\nNoch 8 Gegner\nNeue Waffe: Schrotflinte",
+                EndlessText.Tracker(5, 8, EndlessText.NewWeapon("Schrotflinte")));
+            Assert.AreEqual(EndlessText.Tracker(5, 8), EndlessText.Tracker(5, 8, null));
+            Assert.AreEqual(EndlessText.Tracker(5, 8), EndlessText.Tracker(5, 8, string.Empty));
+        }
+
+        [Test]
         public void Start_DefaultsToRoundOne_AndIsConsumedOnce()
         {
             Assert.AreEqual(1, EndlessStart.Consume());
