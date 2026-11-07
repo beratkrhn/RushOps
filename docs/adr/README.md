@@ -16,3 +16,4 @@ Jede größere technische Entscheidung wird als kurzes Dokument festgehalten, da
 | [0010](0010-level-baukasten.md) | Level-Baukasten aus Code-Beschreibungen | angenommen |
 | [0011](0011-waffendaten-und-slots.md) | Waffendaten pro Waffe und zwei Slots | angenommen |
 | [0012](0012-schaden-in-zehnteln.md) | Schaden und Leben in zehnfacher Einheit | vorgeschlagen |
+| [0013](0013-endlos-runden-ueber-wellen.md) | Endlos-Runden über die bestehenden Wellen | vorgeschlagen |
