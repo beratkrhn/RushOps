@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace RushOps.UI
 {
     /// <summary>
-    /// Main menu (issue #125, F-UI-02): Story Mode opens the island map (#127), Spielerauswahl, Einstellungen. Shows
+    /// Main menu (issue #125, F-UI-02): Story Mode opens the island map (#127), Endlos the endless arena (#208), Spielerauswahl, Einstellungen. Shows
     /// the build version and, in development builds only, a button to the test menu. Buttons call <see cref="StartStory"/> and
     /// <see cref="OpenTestMenu"/>.
     /// </summary>
@@ -16,6 +16,8 @@ namespace RushOps.UI
 
         [Tooltip("Scene „Story Mode“ opens: the island map.")]
         [SerializeField] private string _storyScene = "IslandMap";
+        [Tooltip("Scene „Endlos“ opens: the endless arena, available from the start (E7).")]
+        [SerializeField] private string _endlessScene = "Endless_Arena";
         [SerializeField] private string _testMenuScene = "TestMenu";
 
         [Tooltip("Shows the build version, e.g. „v0.5.0“.")]
@@ -28,6 +30,13 @@ namespace RushOps.UI
         public void StartStory()
         {
             Load(_storyScene);
+        }
+
+        /// <summary>Starts an endless run in the arena at round 1.</summary>
+        public void StartEndless()
+        {
+            RushOps.Endless.EndlessStart.Round = 1;
+            Load(_endlessScene);
         }
 
         /// <summary>Opens the developer test menu.</summary>

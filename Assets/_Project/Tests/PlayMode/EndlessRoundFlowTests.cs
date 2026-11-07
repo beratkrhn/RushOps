@@ -144,6 +144,22 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Run_StartsWithThePistol_WhateverWasSelected()
+        {
+            var weapon = _health.GetComponent<PlayerWeapon>();
+            Assert.IsNotNull(_config.StartWeapon);
+            weapon.Slots.Reset(_config.WallWeapons[0].Weapon);
+            Assert.AreNotSame(_config.StartWeapon, weapon.Slots.Selected);
+
+            _controller.BeginRun(1);
+            yield return null;
+
+            Assert.AreSame(_config.StartWeapon, weapon.Slots.Selected, "first slot");
+            Assert.AreSame(_config.StartWeapon, weapon.ActiveWeapon);
+            Assert.IsFalse(weapon.Slots.HasTwo, "no second weapon at the start");
+        }
+
+        [UnityTest]
         public IEnumerator TestStart_BeginsAtTheGivenRound_AndForgetsIt()
         {
             EndlessStart.Round = 5;

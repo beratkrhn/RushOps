@@ -14,7 +14,7 @@ namespace RushOps.Editor.Scenes
 {
     /// <summary>
     /// Builds the <c>MainMenu</c> scene (issue #125, F-UI-02): logo, the player in the standard skin and the buttons
-    /// „Story Mode“, „Spielerauswahl“ and „Einstellungen“ inside the safe area; the version and, in development
+    /// „Story Mode“, „Endlos“, „Spielerauswahl“ and „Einstellungen“ inside the safe area; the version and, in development
     /// builds, a button to the test menu at the bottom. „Spielerauswahl“ opens the skin carousel (#130,
     /// <see cref="SkinSelectionBuilder"/>), „Waffenwahl“ the weapon carousel (#176, <see cref="WeaponSelectionBuilder"/>),
     /// „Einstellungen“ the settings screen (#126, <see cref="SettingsScreenBuilder"/>).
@@ -26,8 +26,8 @@ namespace RushOps.Editor.Scenes
         private const string LogoFile = "Logo_12.png";
         private const float LogoY = 190f;
         private const float FigureY = 40f;
-        private const float FirstButtonY = -90f;
-        private const float ButtonStep = 55f;
+        private const float FirstButtonY = -80f;
+        private const float ButtonStep = 50f;
         private const float FooterY = -295f;
         private static readonly Color PaletteOutline = new Color32(13, 11, 20, 255);
         private static readonly Color PaletteSlate3 = new Color32(107, 106, 128, 255);
@@ -70,9 +70,10 @@ namespace RushOps.Editor.Scenes
             MenuFigure figure = CreateFigure(safeArea);
 
             CreateButton("StoryButton", safeArea, font, "Story Mode", 0, true, true, menu.StartStory);
-            CreateButton("SkinsButton", safeArea, font, "Spielerauswahl", 1, false, true, skins.Open);
-            CreateButton("WeaponsButton", safeArea, font, "Waffenwahl", 2, false, true, weapons.Open);
-            CreateButton("SettingsButton", safeArea, font, "Einstellungen", 3, false, true, settings.Open);
+            CreateButton("EndlessButton", safeArea, font, "Endlos", 1, true, true, menu.StartEndless);
+            CreateButton("SkinsButton", safeArea, font, "Spielerauswahl", 2, false, true, skins.Open);
+            CreateButton("WeaponsButton", safeArea, font, "Waffenwahl", 3, false, true, weapons.Open);
+            CreateButton("SettingsButton", safeArea, font, "Einstellungen", 4, false, true, settings.Open);
 
             Text version = ArenaTestSceneBuilder.CreateText(
                 "Version", safeArea, font, "v0.0.0", 1, new Vector2(140f, FooterY));
@@ -81,6 +82,7 @@ namespace RushOps.Editor.Scenes
 
             var serialized = new SerializedObject(menu);
             serialized.FindProperty("_storyScene").stringValue = IslandMap.SceneName;
+            serialized.FindProperty("_endlessScene").stringValue = EndlessArenaSceneBuilder.SceneName;
             serialized.FindProperty("_testMenuScene").stringValue = TestMenuSceneBuilder.SceneName;
             serialized.FindProperty("_version").objectReferenceValue = version;
             serialized.FindProperty("_testMenuButton").objectReferenceValue = testButton;

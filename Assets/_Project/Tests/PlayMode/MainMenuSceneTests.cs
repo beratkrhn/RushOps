@@ -30,6 +30,33 @@ namespace RushOps.Tests.PlayMode
         }
 
         [Test]
+        public void EndlessButton_SitsUnderStoryMode_AndIsAvailableFromTheStart()
+        {
+            Button story = FindButton("StoryButton");
+            Button endless = FindButton("EndlessButton");
+            Button skins = FindButton("SkinsButton");
+
+            Assert.IsTrue(endless.interactable, "endless mode needs no campaign progress (E7)");
+            Assert.AreEqual("Endlos", endless.GetComponentInChildren<Text>().text);
+            Assert.Greater(story.transform.position.y, endless.transform.position.y);
+            Assert.Greater(endless.transform.position.y, skins.transform.position.y);
+        }
+
+        [UnityTest]
+        public IEnumerator Endless_OpensTheArena_WithTheRunAtRoundOne()
+        {
+            RushOps.Endless.EndlessStart.Round = 7;
+            FindButton("EndlessButton").onClick.Invoke();
+            yield return null;
+            yield return null;
+
+            Assert.AreEqual("Endless_Arena", SceneManager.GetActiveScene().name);
+            var controller = Object.FindAnyObjectByType<RushOps.Endless.EndlessRunController>();
+            Assert.IsNotNull(controller, "no endless run in the arena");
+            Assert.AreEqual(1, controller.Run.Round, "the menu always starts at round 1");
+        }
+
+        [Test]
         public void Menu_HasStoryModeSkinsAndSettings_InThisOrder()
         {
             Button story = FindButton("StoryButton");
