@@ -65,6 +65,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/_Project/Scenes/Stress_Test.unity
     guid: b5584c2770c2544ec8af167260894a2a
+  - enabled: 1
+    path: Assets/_Project/Scenes/Endless_Arena.unity
+    guid: 70578fa1765b342b2b6219f3f4eae127
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0

@@ -24,6 +24,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Island 3: volcano (issue #106).</summary>
         public const string VulkanPath = ThemesDir + "/Vulkan.asset";
 
+        /// <summary>The colosseum of the endless arena (issue #206, decision N10).</summary>
+        public const string KolosseumPath = ThemesDir + "/Kolosseum.asset";
+
         private const string ThemesDir = "Assets/_Project/Data/Islands";
         private const string TilesDir = "Assets/_Project/Art/Tiles";
         private const string DefaultGatePath = "Assets/_Project/Art/Sprites/Level/Gate_Bars.png";
@@ -43,6 +46,8 @@ namespace RushOps.Editor.Scenes
                     return Island(StadtPath, "Düstere Stadt", "Stadt");
                 case VulkanPath:
                     return Island(VulkanPath, "Vulkan", "Vulkan");
+                case KolosseumPath:
+                    return Kolosseum();
                 default:
                     return Default();
             }
@@ -75,6 +80,23 @@ namespace RushOps.Editor.Scenes
             SetSprite(serialized, "_obstacleFront", $"{dir}/Obstacle_Front.png");
             SetSprites(serialized, "_decorations", Numbered($"{dir}/Decor_"));
             SetSprites(serialized, "_gateFrames", Numbered($"{dir}/Gate_"));
+            return Save(theme, serialized, created);
+        }
+
+        // Tiles/Kolosseum/ (gen_pixelart.colosseum_files): no obstacles but the fountain, which has its own sprite, and
+        // no level gates; the arena gates and the stands are placed by EndlessArenaSceneBuilder.
+        private static IslandTheme Kolosseum()
+        {
+            string dir = $"{TilesDir}/Kolosseum";
+            IslandTheme theme = Load(KolosseumPath, out SerializedObject serialized, out bool created);
+            serialized.FindProperty("_displayName").stringValue = "Kolosseum";
+            SetSprites(serialized, "_floor", Numbered($"{dir}/Floor_"));
+            SetSprite(serialized, "_wallTop", $"{dir}/Wall_Top.png");
+            SetSprite(serialized, "_wallFront", $"{dir}/Wall_Front.png");
+            SetSprite(serialized, "_obstacleTop", null);
+            SetSprite(serialized, "_obstacleFront", null);
+            SetSprites(serialized, "_decorations", Numbered($"{dir}/Decor_"));
+            SetSprites(serialized, "_gateFrames", new List<Sprite>());
             return Save(theme, serialized, created);
         }
 
