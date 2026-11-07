@@ -144,6 +144,27 @@ namespace RushOps.Tests.PlayMode
 
         private static Transform Player => GameObject.Find("Player").transform;
 
+        // Issue #201: boss name and bar stay clear of score, multiplier, weapon icon and a two-line mission text.
+        [UnityTest]
+        public IEnumerator BarAndName_KeepClearOfTheOtherHudElements()
+        {
+            yield return EnterArena();
+
+            Transform panel = Bar.transform.Find("Panel");
+            Rect bar = HudRects.OnScreen((RectTransform)panel);
+            Rect name = HudRects.OnScreen((RectTransform)panel.Find("Name"));
+            Rect tracker = HudRects.Tracker(2);
+            foreach (string other in new[] { "Score", "Multiplier", "ActiveWeapon", "PuzzleProgress" })
+            {
+                Rect rect = HudRects.OnScreen(HudRects.Find(other));
+                HudRects.AssertApart("boss name", name, other, rect);
+                HudRects.AssertApart("boss bar", bar, other, rect);
+            }
+
+            HudRects.AssertApart("boss name", name, "two-line MissionTracker", tracker);
+            HudRects.AssertApart("boss bar", bar, "two-line MissionTracker", tracker);
+        }
+
         private static BossHealthBar Bar => Object.FindAnyObjectByType<BossHealthBar>();
 
         private static ArenaDoor Door => Object.FindAnyObjectByType<ArenaDoor>();

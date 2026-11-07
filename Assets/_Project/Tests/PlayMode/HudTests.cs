@@ -145,6 +145,20 @@ namespace RushOps.Tests.PlayMode
             }
         }
 
+        // Issue #201: the weapon icon sits left of the pause icon, clear of the mission text, its bar and the score.
+        [Test]
+        public void ActiveWeapon_KeepsClearOfPauseScoreAndMissionTracker()
+        {
+            Rect weapon = HudRects.OnScreen(HudRects.Find("ActiveWeapon"));
+            Rect pauseIcon = HudRects.OnScreen((RectTransform)HudRects.Find("PauseButton").Find("Icon"));
+            HudRects.AssertApart("ActiveWeapon", weapon, "pause icon", pauseIcon);
+            HudRects.AssertApart("ActiveWeapon", weapon, "two-line MissionTracker", HudRects.Tracker(2));
+            HudRects.AssertApart("ActiveWeapon", "PuzzleProgress");
+            HudRects.AssertApart("ActiveWeapon", "Score");
+            HudRects.AssertApart("ActiveWeapon", "Multiplier");
+            Assert.Greater(weapon.center.y, HudRects.OnScreen(HudRects.Find("MissionTracker")).yMax, "icon above the text");
+        }
+
         private Image[] HeartImages()
         {
             return _hearts.GetComponentsInChildren<Image>();

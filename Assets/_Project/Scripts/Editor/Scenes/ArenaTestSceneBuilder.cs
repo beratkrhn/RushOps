@@ -139,6 +139,8 @@ namespace RushOps.Editor.Scenes
         private const float PerkIconSize = 24f;
         // Touch target of the pause button, larger than its icon.
         private const float PauseButtonSize = 44f;
+        // Space between the active weapon icon and the pause icon to its right (issue #201).
+        private const float ActiveWeaponGap = 4f;
         internal static readonly Vector2 MenuButtonSize = new Vector2(140f, 30f);
         // Palette colors (Art/Palettes/RushOps_Palette.png).
         internal static readonly Color PaletteNight = new Color32(31, 29, 43, 255);
@@ -2178,14 +2180,18 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        // Icon of the active weapon below the pause button (issue #175).
+        // Icon of the active weapon (issue #175) left of the pause icon, centered on the same line, so it stays clear of
+        // the mission tracker below the pause button and of the boss bar (issue #201). It may overlap the transparent
+        // edge of the pause button's touch area; the icon takes no touches.
         private static void CreateActiveWeaponIcon(RectTransform hud, PlayerWeapon weapon)
         {
             var topRight = new Vector2(1f, 1f);
             Image icon = CreateUiImage("ActiveWeapon", hud, "Weapon_Pistol.png", topRight);
-            icon.rectTransform.pivot = topRight;
+            icon.rectTransform.pivot = new Vector2(1f, 0.5f);
             icon.rectTransform.sizeDelta = icon.sprite.rect.size * HudPixelScale;
-            icon.rectTransform.anchoredPosition = new Vector2(-HudMargin, -HudMargin - PauseButtonSize);
+            float pauseCenter = HudMargin * 0.5f + PauseButtonSize * 0.5f;
+            float pauseIconHalf = LoadUiSprite("Pause_Icon.png").rect.width * HudPixelScale * 0.5f;
+            icon.rectTransform.anchoredPosition = new Vector2(-pauseCenter - pauseIconHalf - ActiveWeaponGap, -pauseCenter);
             var view = icon.gameObject.AddComponent<ActiveWeaponIcon>();
             var serialized = new SerializedObject(view);
             serialized.FindProperty("_weapon").objectReferenceValue = weapon;
