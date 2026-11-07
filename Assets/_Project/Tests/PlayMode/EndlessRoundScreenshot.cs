@@ -84,5 +84,36 @@ namespace RushOps.Tests.PlayMode
             yield return StoreScreenshots.Capture("Waffenwand.png", OutputDir);
             SaveGameIsolation.Reset();
         }
+
+        [UnityTest]
+        public IEnumerator Shot_BossRound_KolossInRoundTen()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("no graphics device (-nographics): nothing can render");
+            }
+
+            SaveGameIsolation.Reset();
+            EndlessStart.Round = 10;
+            yield return SceneManager.LoadSceneAsync("Endless_Arena", LoadSceneMode.Single);
+            yield return null;
+            var player = Object.FindAnyObjectByType<PlayerMovement>();
+            player.GetComponent<PlayerMoveInput>().enabled = false;
+            player.GetComponent<PlayerAimInput>().enabled = false;
+            // West of the fountain, so the Koloss coming from the north gate and the fountain are both in view.
+            var at = new Vector2(12.5f, 17f);
+            var body = player.GetComponent<Rigidbody2D>();
+            body.position = at;
+            body.transform.position = at;
+
+            // 4 s break, then the Koloss comes out; let it walk a bit and take some hits for the bar.
+            yield return new WaitForSeconds(5.2f);
+            var controller = Object.FindAnyObjectByType<EndlessRunController>();
+            RushOps.Bosses.Boss boss = controller.CurrentFight.Bodies[0];
+            boss.TakeHit(boss.MaxHealth / 4, Vector2.down);
+            yield return new WaitForSeconds(0.3f);
+            yield return StoreScreenshots.Capture("Bossrunde.png", OutputDir);
+            SaveGameIsolation.Reset();
+        }
     }
 }

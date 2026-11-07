@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using RushOps.Enemies;
 using UnityEngine;
 
@@ -23,6 +24,7 @@ namespace RushOps.Bosses
         [Tooltip("Radius kept clear of walls where a runner appears.")]
         [SerializeField, Min(0f)] private float _birthClearance = 0.3f;
 
+        private readonly List<Enemy> _born = new List<Enemy>();
         private BroodMotherLogic _logic;
 
         /// <summary>Raised when a runner came out of her.</summary>
@@ -46,6 +48,25 @@ namespace RushOps.Bosses
         private float HealthShare => MaxHealth > 0 ? CurrentHealth / (float)MaxHealth : 0f;
 
         private bool HasRoom => _brood != null && (_director == null || _director.FreeSlots > 0);
+
+        /// <summary>
+        /// Kills her runners that are still alive, e.g. when the endless round ends with her death. Returns how many
+        /// died.
+        /// </summary>
+        public int KillBrood()
+        {
+            int killed = 0;
+            foreach (Enemy runner in _born)
+            {
+                if (runner != null && runner.isActiveAndEnabled && runner.Kill())
+                {
+                    killed++;
+                }
+            }
+
+            _born.Clear();
+            return killed;
+        }
 
         /// <inheritdoc />
         protected override void TickBehaviour(float deltaTime)
@@ -90,6 +111,8 @@ namespace RushOps.Bosses
             }
 
             BornCount++;
+            _born.Remove(runner);
+            _born.Add(runner);
             Birthed?.Invoke(this, runner);
         }
     }

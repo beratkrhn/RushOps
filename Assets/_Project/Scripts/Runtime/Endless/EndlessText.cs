@@ -31,5 +31,14 @@ namespace RushOps.Endless
                 ? $"Runde {round}\nNoch 1 Gegner"
                 : $"Runde {round}\nNoch {remaining} Gegner";
         }
+
+        /// <summary>
+        /// Mission tracker during a boss round: „Runde X“ and „Boss besiegen“; a notice takes the second line while it
+        /// shows, so the text keeps two lines and clears the boss health bar below it.
+        /// </summary>
+        public static string BossTracker(int round, string notice)
+        {
+            return string.IsNullOrEmpty(notice) ? $"Runde {round}\nBoss besiegen" : $"Runde {round}\n{notice}";
+        }
     }
 }

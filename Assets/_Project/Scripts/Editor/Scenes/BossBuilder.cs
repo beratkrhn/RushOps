@@ -172,7 +172,8 @@ namespace RushOps.Editor.Scenes
             return door;
         }
 
-        private static BossHealthBar CreateHealthBar(RectTransform hud)
+        /// <summary>The boss health bar across the top of <paramref name="hud"/>, hidden until a fight starts.</summary>
+        public static BossHealthBar CreateHealthBar(RectTransform hud)
         {
             Font font = PixelFontBuilder.Build();
             RectTransform holder = ArenaTestSceneBuilder.CreateUiRect("BossHealthBar", hud, new Vector2(0f, 1f), new Vector2(1f, 1f));

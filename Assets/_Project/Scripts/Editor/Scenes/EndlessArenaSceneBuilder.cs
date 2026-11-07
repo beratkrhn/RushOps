@@ -1,10 +1,12 @@
 using System.Collections.Generic;
+using RushOps.Bosses;
 using RushOps.Combat;
 using RushOps.Editor.Art;
 using RushOps.Editor.Combat;
 using RushOps.Editor.Endless;
 using RushOps.Endless;
 using RushOps.Levels;
+using RushOps.Perks;
 using RushOps.Player;
 using RushOps.Scoring;
 using RushOps.UI;
@@ -42,6 +44,9 @@ namespace RushOps.Editor.Scenes
         // Slightly inside the drawn rim (62 of 64 px), so bodies touch the stone, not the air next to it.
         private const float FountainColliderRadius = 1.9f;
 
+        // Bosses come out north of the fountain, on its axis, so the way to the player in the south leads around it.
+        private static readonly Vector2 BossSpawnOffset = new Vector2(0f, 8f);
+
         [MenuItem("RushOps/Szenen/Endless_Arena erzeugen")]
         public static void Build()
         {
@@ -59,7 +64,7 @@ namespace RushOps.Editor.Scenes
         private static void AddArena(ArenaScene arena)
         {
             RetileWalls(arena.Walls);
-            CreateFountain(arena.Walls.gameObject.layer);
+            CircleCollider2D fountain = CreateFountain(arena.Walls.gameObject.layer);
             CreateGates();
             CreateWeaponSlots();
 
@@ -76,7 +81,90 @@ namespace RushOps.Editor.Scenes
 
             ArenaTestSceneBuilder.AssignZones(arena, new[] { zone });
             WallWeapon[] wall = CreateWallWeapons(arena);
-            CreateRunFlow(arena, zone, wall);
+            EndlessBosses bosses = CreateBosses(arena, fountain);
+            CreateRunFlow(arena, zone, wall, bosses);
+        }
+
+        // One inactive template per boss of the config (issue #210): the boss built as in the campaign, its bodies as
+        // children of a BossFight without zone, door and result screen, sharing one health bar.
+        private static EndlessBosses CreateBosses(ArenaScene arena, CircleCollider2D fountain)
+        {
+            BossHealthBar bar = BossBuilder.CreateHealthBar((RectTransform)arena.Tracker.transform.parent);
+            var spawn = new GameObject("BossSpawn").transform;
+            spawn.position = ColosseumLayout.Center + BossSpawnOffset;
+            var bosses = new GameObject("EndlessBosses").AddComponent<EndlessBosses>();
+            var dropper = Object.FindAnyObjectByType<PerkDropper>();
+            Object loot = dropper != null ? new SerializedObject(dropper).FindProperty("_config").objectReferenceValue : null;
+            LevelScore score = Object.FindAnyObjectByType<LevelScore>();
+
+            BossDefinition[] definitions = EndlessConfigBuilder.Get().Bosses;
+            var templates = new List<BossFight>();
+            foreach (BossDefinition definition in definitions)
+            {
+                if (definition == null || templates.Exists(t => t.FirstBody.Definition == definition))
+                {
+                    continue;
+                }
+
+                templates.Add(CreateTemplate(arena, definition, spawn.position, bar, score, dropper, loot));
+            }
+
+            var serialized = new SerializedObject(bosses);
+            SerializedProperty list = serialized.FindProperty("_templates");
+            list.arraySize = templates.Count;
+            for (int i = 0; i < templates.Count; i++)
+            {
+                list.GetArrayElementAtIndex(i).objectReferenceValue = templates[i];
+            }
+
+            serialized.FindProperty("_spawnPoint").objectReferenceValue = spawn;
+            serialized.FindProperty("_fountain").objectReferenceValue = fountain;
+            serialized.FindProperty("_bar").objectReferenceValue = bar;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return bosses;
+        }
+
+        private static BossFight CreateTemplate(ArenaScene arena, BossDefinition definition, Vector2 position,
+            BossHealthBar bar, LevelScore score, PerkDropper dropper, Object loot)
+        {
+            string path = AssetDatabase.GetAssetPath(definition);
+            Boss boss = path switch
+            {
+                ColossusBuilder.DefinitionPath => ColossusBuilder.Create(arena, definition, position),
+                BroodMotherBuilder.DefinitionPath => BroodMotherBuilder.Create(arena, definition, position),
+                MegaBoomerBuilder.DefinitionPath => MegaBoomerBuilder.Create(arena, definition, position),
+                _ => throw new System.InvalidOperationException($"No builder for the boss at {path}"),
+            };
+
+            var root = new GameObject($"EndlessBoss_{definition.name}");
+            root.transform.position = position;
+            boss.transform.SetParent(root.transform, true);
+            if (boss is MegaBoomer mega)
+            {
+                foreach (MegaBoomer half in mega.Halves)
+                {
+                    half.transform.SetParent(root.transform, true);
+                }
+            }
+
+            var fight = root.AddComponent<BossFight>();
+            var serialized = new SerializedObject(fight);
+            SerializedProperty bodies = serialized.FindProperty("_bodies");
+            bodies.arraySize = 1;
+            bodies.GetArrayElementAtIndex(0).objectReferenceValue = boss;
+            serialized.FindProperty("_bar").objectReferenceValue = bar;
+            serialized.FindProperty("_player").objectReferenceValue = arena.Player;
+            serialized.FindProperty("_score").objectReferenceValue = score;
+            serialized.FindProperty("_dropper").objectReferenceValue = dropper;
+            serialized.FindProperty("_loot").objectReferenceValue = loot;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            if (boss is MegaBoomer)
+            {
+                MegaBoomerBuilder.Connect(boss, fight);
+            }
+
+            root.SetActive(false);
+            return fight;
         }
 
         // The three weapons of the config hang side by side on the slots, locked until their round (issue #209, N4).
@@ -100,7 +188,7 @@ namespace RushOps.Editor.Scenes
         }
 
         // Round flow (issue #207): the HUD parts, the death handler and the controller that plays the rounds in the zone.
-        private static void CreateRunFlow(ArenaScene arena, Zone zone, WallWeapon[] wallWeapons)
+        private static void CreateRunFlow(ArenaScene arena, Zone zone, WallWeapon[] wallWeapons, EndlessBosses bosses)
         {
             var parent = (RectTransform)arena.Tracker.transform.parent;
             Font font = PixelFontBuilder.Build();
@@ -150,6 +238,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_zone").objectReferenceValue = zone;
             serialized.FindProperty("_player").objectReferenceValue = player;
             serialized.FindProperty("_hud").objectReferenceValue = hud;
+            serialized.FindProperty("_bosses").objectReferenceValue = bosses;
             SerializedProperty wall = serialized.FindProperty("_wallWeapons");
             wall.arraySize = wallWeapons.Length;
             for (int i = 0; i < wallWeapons.Length; i++)
@@ -203,7 +292,7 @@ namespace RushOps.Editor.Scenes
             }
         }
 
-        private static void CreateFountain(int wallsLayer)
+        private static CircleCollider2D CreateFountain(int wallsLayer)
         {
             var go = new GameObject("Fountain") { layer = wallsLayer };
             go.transform.position = ColosseumLayout.Center;
@@ -212,7 +301,9 @@ namespace RushOps.Editor.Scenes
             renderer.sortingOrder = ArenaTestSceneBuilder.ActorSortingOrder;
             var body = go.AddComponent<Rigidbody2D>();
             body.bodyType = RigidbodyType2D.Static;
-            go.AddComponent<CircleCollider2D>().radius = FountainColliderRadius;
+            var collider = go.AddComponent<CircleCollider2D>();
+            collider.radius = FountainColliderRadius;
+            return collider;
         }
 
         private static void CreateGates()
