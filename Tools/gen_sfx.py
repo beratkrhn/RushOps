@@ -10,6 +10,7 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   ShotRifle.wav       assault rifle: shorter, sharper, with a metallic crack (issue #174)
   ShotShotgun.wav     shotgun: deep noise boom with a falling thump (issue #174)
   ShotDual.wav        dual pistols: light high tick (issue #174)
+  ShotDrone.wav       combat drone of the companion perk: a thin, short high blip, no noise (issue #245)
   Hit.wav             dull noise thump on an enemy
   Death.wav           falling pulse slide with crunchy noise
   PlayerHurt.wav      harsh two-step down buzz when the player loses a heart
@@ -156,6 +157,15 @@ def shot_dual() -> list[float]:
     length = 0.045
     p = Pulse(0.25)
     return [0.8 * p.sample(slide(2400, 900, t, length)) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
+
+
+def shot_drone() -> list[float]:
+    """Combat drone (issue #245): a thin electronic blip, higher and shorter than the pistol and without the noise
+    click, so it stays under the player's weapon even at the same volume."""
+    length = 0.05
+    p = Pulse(0.125)
+    return [0.7 * p.sample(slide(2200, 1500, t, length)) * decay(t, length)
             for t in (i / RATE for i in frames(length))]
 
 
@@ -348,7 +358,7 @@ def switch_reset() -> list[float]:
 
 
 SOUNDS = {
-    "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
+    "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
     "GateOpen": gate_open, "MissionDone": mission_done,
     "WalkerSpawn": walker_spawn, "WalkerApproach": walker_approach,
     "RunnerSpawn": runner_spawn, "RunnerApproach": runner_approach,

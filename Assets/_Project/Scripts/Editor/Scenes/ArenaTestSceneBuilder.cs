@@ -672,6 +672,7 @@ namespace RushOps.Editor.Scenes
             SfxPlayer sfx = CreateGameFeel(
                 feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, gold, nuke, flash);
             AddClickSounds(sfx.GetComponent<UiClickSound>());
+            CompanionBuilder.Create(target, results, enemyPools, sfx);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
 
             EditorSceneManager.SaveScene(scene, scenePath);

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Perks.PerkDefinition
   _id: companion
   _displayName: Begleiter
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 0fcd92f6e48a845a08c434c5a2ec40c3, type: 3}
   _kind: 1
   _duration: 15
   _weight: 10
