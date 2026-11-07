@@ -51,5 +51,38 @@ namespace RushOps.Tests.PlayMode
             yield return StoreScreenshots.Capture("Runde_Kampf.png", OutputDir);
             SaveGameIsolation.Reset();
         }
+
+        [UnityTest]
+        public IEnumerator Shot_WallWeapons_ShotgunUnlocksInRoundFive()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("no graphics device (-nographics): nothing can render");
+            }
+
+            SaveGameIsolation.Reset();
+            EndlessStart.Round = 5;
+            yield return SceneManager.LoadSceneAsync("Endless_Arena", LoadSceneMode.Single);
+            yield return null;
+            var player = Object.FindAnyObjectByType<PlayerMovement>();
+            player.GetComponent<PlayerMoveInput>().enabled = false;
+            player.GetComponent<PlayerAimInput>().enabled = false;
+            var walls = Object.FindObjectsByType<RushOps.Combat.WallWeapon>(FindObjectsSortMode.None);
+            Vector2 at = walls[0].PickupPoint + new Vector2(0f, -4f);
+            foreach (var wall in walls)
+            {
+                at.x += wall.PickupPoint.x / walls.Length;
+            }
+
+            at.x -= walls[0].PickupPoint.x;
+            var body = player.GetComponent<Rigidbody2D>();
+            body.position = at;
+            body.transform.position = at;
+
+            // 4 s break, then round 5 starts and the shotgun lights up.
+            yield return new WaitForSeconds(4.3f);
+            yield return StoreScreenshots.Capture("Waffenwand.png", OutputDir);
+            SaveGameIsolation.Reset();
+        }
     }
 }

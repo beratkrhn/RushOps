@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using RushOps.Combat;
 using RushOps.Editor.Art;
+using RushOps.Editor.Combat;
 using RushOps.Editor.Endless;
 using RushOps.Endless;
 using RushOps.Levels;
@@ -73,11 +75,32 @@ namespace RushOps.Editor.Scenes
             }
 
             ArenaTestSceneBuilder.AssignZones(arena, new[] { zone });
-            CreateRunFlow(arena, zone);
+            WallWeapon[] wall = CreateWallWeapons(arena);
+            CreateRunFlow(arena, zone, wall);
+        }
+
+        // The three weapons of the config hang side by side on the slots, locked until their round (issue #209, N4).
+        private static WallWeapon[] CreateWallWeapons(ArenaScene arena)
+        {
+            EndlessWeaponRound[] rounds = EndlessConfigBuilder.Get().WallWeapons;
+            if (rounds.Length > ColosseumLayout.WeaponSlotCells.Length)
+            {
+                throw new System.InvalidOperationException(
+                    $"EndlessConfig has {rounds.Length} wall weapons for {ColosseumLayout.WeaponSlotCells.Length} slots");
+            }
+
+            var root = new GameObject("WallWeapons").transform;
+            var weapons = new WallWeapon[rounds.Length];
+            for (int i = 0; i < rounds.Length; i++)
+            {
+                weapons[i] = WallWeaponBuilder.Create(arena, ColosseumLayout.WeaponSlotCells[i], rounds[i].Weapon, root);
+            }
+
+            return weapons;
         }
 
         // Round flow (issue #207): the HUD parts, the death handler and the controller that plays the rounds in the zone.
-        private static void CreateRunFlow(ArenaScene arena, Zone zone)
+        private static void CreateRunFlow(ArenaScene arena, Zone zone, WallWeapon[] wallWeapons)
         {
             var parent = (RectTransform)arena.Tracker.transform.parent;
             Font font = PixelFontBuilder.Build();
@@ -127,6 +150,13 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_zone").objectReferenceValue = zone;
             serialized.FindProperty("_player").objectReferenceValue = player;
             serialized.FindProperty("_hud").objectReferenceValue = hud;
+            SerializedProperty wall = serialized.FindProperty("_wallWeapons");
+            wall.arraySize = wallWeapons.Length;
+            for (int i = 0; i < wallWeapons.Length; i++)
+            {
+                wall.GetArrayElementAtIndex(i).objectReferenceValue = wallWeapons[i];
+            }
+
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
@@ -199,7 +229,7 @@ namespace RushOps.Editor.Scenes
             }
         }
 
-        // Empty markers on the wall cells; the endless wall weapons hang there (issue #209).
+        // Empty markers on the wall cells; the endless wall weapons hang there (issue #209, see CreateWallWeapons).
         private static void CreateWeaponSlots()
         {
             var root = new GameObject("WeaponSlots").transform;
