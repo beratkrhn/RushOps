@@ -27,10 +27,12 @@ namespace RushOps.Editor.Scenes
         private const float CounterY = -95f;
         private const float SelectY = -140f;
         private const float BackY = -200f;
+        private const float ConfirmTextWidth = 150f;
         private static readonly Vector2 ArrowTouchArea = new Vector2(48f, 96f);
         private static readonly Color PaletteYellow = new Color32(246, 208, 77, 255);
 
-        public static void Create(RectTransform parent, Font font, SkinCarousel carousel, MenuFigure menuFigure)
+        public static void Create(RectTransform parent, Font font, SkinCarousel carousel, MenuFigure menuFigure,
+            GoldBalanceView menuBalance)
         {
             RectTransform panel = ArenaTestSceneBuilder.CreateUiRect("SkinsPanel", parent, Vector2.zero, Vector2.one);
             var background = panel.gameObject.AddComponent<Image>();
@@ -60,10 +62,24 @@ namespace RushOps.Editor.Scenes
             counter.color = ArenaTestSceneBuilder.PaletteSlate2;
             Button select = MainMenuSceneBuilder.CreateButton("SelectButton", panel, font, SkinHint.Choose,
                 new Vector2(0f, SelectY), false, true, carousel.Select);
+            Button buy = MainMenuSceneBuilder.CreateButton("BuyButton", panel, font, SkinHint.Buy,
+                new Vector2(0f, SelectY), true, true, carousel.Buy);
+            buy.gameObject.SetActive(false);
+            GoldBalanceView balance = MainMenuSceneBuilder.CreateBalance(panel, font, "SkinsBalance");
             MainMenuSceneBuilder.CreateButton("BackButton", panel, font, "Zurück", new Vector2(0f, BackY), true, true,
                 carousel.Close);
 
+            RectTransform confirm = CreateConfirm(panel, font, carousel, out Text confirmText);
+
             var serialized = new SerializedObject(carousel);
+            serialized.FindProperty("_buy").objectReferenceValue = buy;
+            serialized.FindProperty("_buyLabel").objectReferenceValue = buy.GetComponentInChildren<Text>();
+            serialized.FindProperty("_confirmPanel").objectReferenceValue = confirm.gameObject;
+            serialized.FindProperty("_confirmText").objectReferenceValue = confirmText;
+            SerializedProperty views = serialized.FindProperty("_balanceViews");
+            views.arraySize = 2;
+            views.GetArrayElementAtIndex(0).objectReferenceValue = menuBalance;
+            views.GetArrayElementAtIndex(1).objectReferenceValue = balance;
             serialized.FindProperty("_save").objectReferenceValue =
                 ArenaTestSceneBuilder.LoadOrCreateConfig<SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
             serialized.FindProperty("_catalog").objectReferenceValue = SkinCatalogBuilder.Build();
@@ -83,6 +99,30 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             panel.gameObject.SetActive(false);
+        }
+
+        // Dimmed overlay with the purchase question and „Kaufen“ / „Abbrechen“ (issue #237).
+        private static RectTransform CreateConfirm(RectTransform panel, Font font, SkinCarousel carousel, out Text question)
+        {
+            RectTransform overlay = ArenaTestSceneBuilder.CreateUiRect("ConfirmPanel", panel, Vector2.zero, Vector2.one);
+            var dim = overlay.gameObject.AddComponent<Image>();
+            Color color = ArenaTestSceneBuilder.PaletteNight;
+            color.a = 0.92f;
+            dim.color = color;
+
+            question = ArenaTestSceneBuilder.CreateText("Question", overlay, font, "Skin für 0 Gold kaufen?",
+                ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 40f));
+            // Wraps inside the portrait width instead of running off the screen.
+            question.horizontalOverflow = HorizontalWrapMode.Wrap;
+            question.rectTransform.sizeDelta = new Vector2(ConfirmTextWidth, 60f);
+            question.color = PaletteYellow;
+
+            MainMenuSceneBuilder.CreateButton("ConfirmYesButton", overlay, font, SkinHint.Buy, new Vector2(0f, -30f), true, true,
+                carousel.ConfirmBuy);
+            MainMenuSceneBuilder.CreateButton("ConfirmNoButton", overlay, font, "Abbrechen", new Vector2(0f, -90f), false, true,
+                carousel.CancelBuy);
+            overlay.gameObject.SetActive(false);
+            return overlay;
         }
 
         // Inactive figure the carousel copies for every skin.

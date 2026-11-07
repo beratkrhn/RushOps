@@ -23,16 +23,44 @@ namespace RushOps.Tests.PlayMode
             Assert.IsNotNull(_carousel, "main menu has no SkinCarousel");
         }
 
+        // GameObject.Find skips inactive objects such as the hidden confirm panel or the unused button. Other panels
+        // (weapon selection) reuse names like SelectButton, so only objects below the skin panel count.
+        private static GameObject FindIncludingInactive(string name)
+        {
+            foreach (Transform t in Object.FindObjectsByType<Transform>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (t.name == name && InSkinsPanel(t))
+                {
+                    return t.gameObject;
+                }
+            }
+
+            return GameObject.Find(name);
+        }
+
+        private static bool InSkinsPanel(Transform t)
+        {
+            for (; t != null; t = t.parent)
+            {
+                if (t.name == "SkinsPanel")
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         private static Text Label(string name)
         {
-            GameObject go = GameObject.Find(name);
+            GameObject go = FindIncludingInactive(name);
             Assert.IsNotNull(go, $"no {name}");
             return go.GetComponent<Text>();
         }
 
         private static Button Button(string name)
         {
-            GameObject go = GameObject.Find(name);
+            GameObject go = FindIncludingInactive(name);
             Assert.IsNotNull(go, $"no {name}");
             return go.GetComponent<Button>();
         }
@@ -51,12 +79,12 @@ namespace RushOps.Tests.PlayMode
 
             Assert.IsTrue(_carousel.IsOpen);
             Assert.AreEqual(0, _carousel.Index, "a new game starts at the standard skin");
-            Assert.AreEqual(10, GameObject.Find("Strip").transform.childCount - 1, "one figure per skin besides the template");
+            Assert.AreEqual(11, GameObject.Find("Strip").transform.childCount - 1, "one figure per skin besides the template");
             Assert.AreEqual("Standard", Label("Name").text);
             Assert.AreEqual(SkinHint.Chosen, Button("SelectButton").GetComponentInChildren<Text>().text);
             Assert.IsFalse(Button("SelectButton").interactable);
             Assert.IsFalse(Button("PreviousButton").interactable);
-            Assert.AreEqual("1 / 10", Label("Counter").text);
+            Assert.AreEqual("1 / 11", Label("Counter").text);
         }
 
         [UnityTest]
@@ -111,6 +139,77 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator GoldSkin_ShowsPriceAndBuyButton_ActiveOnlyWithEnoughGold()
+        {
+            _save = SaveGameIsolation.Reset();
+            _save.Data.Gold.Balance = 2499;
+            yield return Load();
+            _carousel.Open();
+            _carousel.Show(10);
+            yield return null;
+
+            Assert.AreEqual("Goldrausch", _carousel.Shown.Id);
+            Assert.AreEqual("2500 Gold", Label("Hint").text);
+            Assert.IsTrue(Button("BuyButton").gameObject.activeSelf);
+            Assert.IsFalse(Button("SelectButton").gameObject.activeSelf);
+            Assert.AreEqual(SkinHint.Buy, Button("BuyButton").GetComponentInChildren<Text>().text);
+            Assert.IsFalse(Button("BuyButton").interactable, "balance is too low");
+            _carousel.Buy();
+            Assert.IsFalse(_carousel.IsConfirming);
+
+            _save.Data.Gold.Balance = 2500;
+            _carousel.Show(10);
+            Assert.IsTrue(Button("BuyButton").interactable);
+        }
+
+        [UnityTest]
+        public IEnumerator BuyingTheGoldSkin_AsksOnce_PaysUnlocksSelectsAndSaves()
+        {
+            _save = SaveGameIsolation.Reset();
+            _save.Data.Gold.Balance = 2500;
+            yield return Load();
+            _carousel.Open();
+            _carousel.Show(10);
+            yield return null;
+            Assert.AreEqual("2500", Label("SkinsBalanceText").text);
+
+            Button("BuyButton").onClick.Invoke();
+            yield return null;
+            Assert.IsTrue(_carousel.IsConfirming);
+            Assert.AreEqual("Goldrausch für 2500 Gold kaufen?", Label("Question").text);
+            Assert.AreEqual(2500, _save.Data.Gold.Balance, "nothing is paid before the answer");
+
+            Button("ConfirmNoButton").onClick.Invoke();
+            Assert.IsFalse(_carousel.IsConfirming);
+            Assert.AreEqual(2500, _save.Data.Gold.Balance);
+
+            Button("BuyButton").onClick.Invoke();
+            Button("ConfirmYesButton").onClick.Invoke();
+            yield return null;
+
+            Assert.IsFalse(_carousel.IsConfirming);
+            Assert.AreEqual(0, _save.Data.Gold.Balance);
+            Assert.AreEqual("Goldrausch", _save.Data.Skins.Current);
+            SaveData saved = new SaveGameStore(SaveGameIsolation.Files, "playmode-tests").Load();
+            Assert.AreEqual(0, saved.Gold.Balance, "saved at once");
+            Assert.AreEqual("Goldrausch", saved.Skins.Current);
+            Assert.AreEqual("0", Label("SkinsBalanceText").text);
+            Assert.AreEqual(SkinHint.Chosen, Button("SelectButton").GetComponentInChildren<Text>().text);
+            Assert.IsFalse(Button("BuyButton").gameObject.activeSelf);
+            Assert.AreEqual("Goldrausch_Idle", GameObject.Find("Player").GetComponent<MenuFigure>().Animation.name);
+        }
+
+        [UnityTest]
+        public IEnumerator MainMenu_ShowsTheGoldBalance()
+        {
+            _save = SaveGameIsolation.Reset();
+            _save.Data.Gold.Balance = 340;
+            yield return Load();
+
+            Assert.AreEqual("340", Object.FindFirstObjectByType<GoldBalanceView>().TextShown);
+        }
+
+        [UnityTest]
         public IEnumerator Menu_StartsWithTheFigureInTheCurrentSkin()
         {
             _save = SaveGameIsolation.Reset();
@@ -135,9 +234,9 @@ namespace RushOps.Tests.PlayMode
             _carousel.Previous();
             Assert.AreEqual(0, _carousel.Index);
             _carousel.Show(99);
-            Assert.AreEqual(9, _carousel.Index);
+            Assert.AreEqual(10, _carousel.Index);
             _carousel.Next();
-            Assert.AreEqual(9, _carousel.Index);
+            Assert.AreEqual(10, _carousel.Index);
             yield return null;
             Assert.IsFalse(Button("NextButton").interactable);
         }
