@@ -1,0 +1,56 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 922b1a655233c46209c2a79c9c798dca, type: 3}
+  m_Name: EndlessConfig
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Endless.EndlessConfig
+  _pauseBetweenRounds: 4
+  _heartsPerRound: 1
+  _enemiesFirstRound: 6
+  _enemiesPerRound: 2
+  _baseEnemy: {fileID: 11400000, guid: c86b4029f7715467683ba46d025777d6, type: 2}
+  _enemyShares:
+  - _enemy: {fileID: 11400000, guid: 076e68c3f3a7e4f79b3a9d6d1ca3b821, type: 2}
+    _firstRound: 3
+    _startShare: 0.15
+    _sharePerRound: 0.02
+    _maxShare: 0.3
+  - _enemy: {fileID: 11400000, guid: f2575c09c119244b0817bdb9d76ef33e, type: 2}
+    _firstRound: 5
+    _startShare: 0.1
+    _sharePerRound: 0.01
+    _maxShare: 0.2
+  - _enemy: {fileID: 11400000, guid: f91660e0468c94e5c88467401a35625f, type: 2}
+    _firstRound: 7
+    _startShare: 0.05
+    _sharePerRound: 0.01
+    _maxShare: 0.15
+  _spawnIntervalFirstRound: 0.8
+  _spawnIntervalStep: 0.05
+  _spawnIntervalMin: 0.3
+  _maxActiveStart: 10
+  _maxActiveStep: 1
+  _maxActiveEveryRounds: 5
+  _maxActiveCap: 20
+  _bossEveryRounds: 10
+  _bosses:
+  - {fileID: 11400000, guid: 9014eb21d56c041e8bdca01cc4e0a694, type: 2}
+  - {fileID: 11400000, guid: 3eb7b03698b704684a288136c99ad57c, type: 2}
+  - {fileID: 11400000, guid: 63c849bc201324c739289fb6187f161c, type: 2}
+  _bossHealthGrowth: 0.25
+  _startWeapon: {fileID: 11400000, guid: baa9f7c5be844d7d85a10599493019dd, type: 2}
+  _wallWeapons:
+  - _round: 5
+    _weapon: {fileID: 11400000, guid: 7f84b7bbd0ecc424393ae7c0f07922b1, type: 2}
+  - _round: 10
+    _weapon: {fileID: 11400000, guid: 5fac9c0fa3a21464980cbf3dd5d5c92d, type: 2}
+  - _round: 15
+    _weapon: {fileID: 11400000, guid: 1eb2936e780f54a34a097c4dab00b226, type: 2}
