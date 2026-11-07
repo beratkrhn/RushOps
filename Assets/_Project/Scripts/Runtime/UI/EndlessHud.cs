@@ -1,4 +1,5 @@
 using RushOps.Endless;
+using RushOps.Loot;
 using RushOps.Player;
 using RushOps.Save;
 using RushOps.Scoring;
@@ -24,6 +25,9 @@ namespace RushOps.UI
         [SerializeField] private GameObject _resultPanel;
         [SerializeField] private Text _resultRound;
         [SerializeField] private Text _resultScore;
+        [Tooltip("„+X Gold“ of the run (F-GLD-05).")]
+        [SerializeField] private Text _resultGold;
+        [SerializeField] private GoldCollector _gold;
         [Tooltip("„Neuer Bestwert!“, shown only when the run beat the best score (issue #211).")]
         [SerializeField] private Text _resultNewBest;
         [SerializeField] private Text _resultRank;
@@ -105,6 +109,11 @@ namespace RushOps.UI
             {
                 int score = recorded ? record.Score : _score != null ? _score.Keeper.Score : 0;
                 _resultScore.text = ResultText.Score(score);
+            }
+
+            if (_resultGold != null)
+            {
+                _resultGold.text = ResultText.Gold(_gold != null ? _gold.Wallet.EarnedThisRun : 0);
             }
 
             ShowRecord(recorded, record);

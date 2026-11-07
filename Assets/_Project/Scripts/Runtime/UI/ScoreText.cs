@@ -15,6 +15,12 @@ namespace RushOps.UI
             return "×" + (multiplier > 1 ? multiplier : 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
         }
 
+        /// <summary>The gold of the level or run in the HUD, e.g. „12“; negative values show as 0.</summary>
+        public static string Gold(int gold)
+        {
+            return (gold > 0 ? gold : 0).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+
         /// <summary>
         /// Scale of the multiplier label <paramref name="elapsed"/> seconds after a rise: <paramref name="peak"/> at the
         /// rise, easing back to 1 over <paramref name="duration"/> seconds.

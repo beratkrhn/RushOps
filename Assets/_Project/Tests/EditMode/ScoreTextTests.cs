@@ -29,5 +29,21 @@ namespace RushOps.Tests.EditMode
         {
             Assert.AreEqual(expected, ScoreText.PulseScale(elapsed, 0.4f, 1.5f), 1e-5f);
         }
+
+        [TestCase(0, "0")]
+        [TestCase(12, "12")]
+        [TestCase(-3, "0")]
+        public void Gold_ShowsTheNumber(int gold, string expected)
+        {
+            Assert.AreEqual(expected, ScoreText.Gold(gold));
+        }
+
+        [TestCase(0, "+0 Gold")]
+        [TestCase(37, "+37 Gold")]
+        [TestCase(-5, "+0 Gold")]
+        public void ResultGold_ShowsPlusAndGold(int gold, string expected)
+        {
+            Assert.AreEqual(expected, ResultText.Gold(gold));
+        }
     }
 }
