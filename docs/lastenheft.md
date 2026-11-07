@@ -151,6 +151,10 @@ Rätsel sind Action-Rätsel: Während sie gelöst werden, spawnen weiterhin Gegn
 | F-PRK-02 | Jeder besiegte Gegner hat eine globale Drop-Chance von **12 %** *(Startwert; nach dem Spieltest v0.3.0 von 8 % erhöht)*. Welcher Perk erscheint, bestimmt ein gewichteter Zufallspool. | Muss |
 | F-PRK-03 | Liegengebliebene Perks verschwinden nach **10 s** *(Startwert)*. In den letzten 3 s blinken sie. | Muss |
 | F-PRK-04 | Aktive zeitlich begrenzte Perks werden im HUD mit ablaufendem Timer angezeigt. Erneutes Aufsammeln setzt die Dauer zurück. | Muss |
+| F-PRK-05 | **Begleiter**: Eine kleine Kampfdrohne folgt dem Spieler *15 s (Startwert)*, kann nicht zerstört werden und schießt auf den nächsten Gegner im Umkreis von *5 Kacheln (Startwert)* mit *halbem Schaden pro Sekunde der Startwaffe (Startwert)*. Erneutes Aufsammeln setzt die Dauer zurück. | Muss |
+| F-PRK-06 | Kills der Drohne zählen wie eigene Kills (Punkte, Kill-Gates, Gold, Perk-Drops). | Muss |
+| F-PRK-07 | **Strohmann**: Er steht am Aufsammelort. *8 s (Startwert)* lang laufen alle normalen Gegner zu ihm statt zum Spieler; Bosse ignorieren ihn. | Muss |
+| F-PRK-08 | Am Ende der Dauer explodiert der Strohmann und verletzt Gegner im Radius, nie den Spieler. Kills zählen wie eigene Kills. | Muss |
 
 | Perk | Typ | Wirkung | Dauer | Gewicht |
 |---|---|---|---|---|
@@ -161,6 +165,8 @@ Rätsel sind Action-Rätsel: Während sie gelöst werden, spawnen weiterhin Gegn
 | Schutzschild | temporär | kein Kontaktschaden, sichtbare Barriere | 8 s | 10 |
 | Insta-Kill | temporär | jeder Treffer tötet (außer Bosse) | 10 s | 7 |
 | Nuke | sofort | tötet alle **sichtbaren** Gegner (außer Bosse) | – | 3 |
+| Begleiter | temporär | Kampfdrohne schießt mit (F-PRK-05) | 15 s | 10 |
+| Strohmann | temporär | lockt normale Gegner an und explodiert (F-PRK-07) | 8 s | 8 |
 
 Alle Werte sind *Startwerte*.
 
@@ -305,7 +311,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 
 - **v1.1.0 Endlos-Modus**: siehe Abschnitt 2.10.
 - **v1.2.0 Beute**: siehe Abschnitt 2.11.
-- **v1.3.0 Begleiter und Strohmann**: Perk Begleiter (Kampfdrohne, schießt mit) und Perk Strohmann (lenkt normale Gegner ab und explodiert am Ende).
+- **v1.3.0 Begleiter und Strohmann**: siehe Abschnitt 2.7 (F-PRK-05 bis F-PRK-08).
 - **v1.4.0 Superwaffen**: Flammenwerfer und Raketenwerfer als seltene Perk-Drops für kurze Zeit.
 - **v1.5.0 Hunde**: Zombiehunde im Rudel mit angekündigtem Sprung; im Endlos-Modus jede 6. Runde eine Hunderunde.
 - **v1.6.0 Rush-Meter**: Kills füllen eine Leiste; voll löst ein Button Zeitlupe für Gegner, Dash ohne Abklingzeit und mehr Schaden aus.
@@ -345,3 +351,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 0.8 | 05.11.2026 | F-PLT-01: nur iOS auf dem iPhone; Android, iPad und Musik nicht in 1.0 (Design-Fragen R1, R2, R10). |
 | 0.9 | 07.11.2026 | Release verschoben, Erweiterungen v1.1.0 bis v1.9.0 in Abschnitt 8; neuer Abschnitt 2.10 Endlos-Modus (F-END-01 bis F-END-09); F-GEG-03 gilt nur in der Kampagne; F-UI-02 mit Bereich Endlos; F-DAT-04 mit Endlos-Bestwerten (Design-Fragen A, E, N). |
 | 1.0 | 07.11.2026 | Neuer Abschnitt 2.11 Beute (F-GLD-01 bis F-GLD-06); F-SKN-01 mit Gold als reiner Spielwährung; F-HUD-04 mit Goldanzeige; F-DAT-03 mit Autosave bei Abbruch und Kauf; F-DAT-04 mit Goldkonto (Design-Fragen B, N1, N11 bis N14). |
+| 1.1 | 08.11.2026 | Abschnitt 2.7 mit Perks Begleiter und Strohmann (F-PRK-05 bis F-PRK-08) und zwei Pool-Zeilen (Design-Fragen K1 bis K8). |
