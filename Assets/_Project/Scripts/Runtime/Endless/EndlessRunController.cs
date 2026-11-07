@@ -57,6 +57,9 @@ namespace RushOps.Endless
         /// <summary>Raised when a round starts, with everything it brings.</summary>
         public event Action<EndlessRound> RoundStarted;
 
+        /// <summary>Raised once when a run ends at 0 hearts, with the round reached (issue #211: autosave).</summary>
+        public event Action<int> RunEnded;
+
         /// <summary>
         /// Starts a new run with the pause before <paramref name="firstRound"/> and drops the one in progress. The player's
         /// hearts at this moment are the hearts of the run.
@@ -236,6 +239,7 @@ namespace RushOps.Endless
             _hud.SetTracker(string.Empty);
             _hud.HideBanner();
             _hud.ReportRound(round);
+            RunEnded?.Invoke(round);
         }
 
         private void OnHealthChanged(int current, int max)

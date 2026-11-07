@@ -6,7 +6,8 @@ namespace RushOps.Skins
 {
     /// <summary>
     /// Unlock and selection rules for skins (issue #128, F-SKN-02, F-SKN-03): default skins are always available,
-    /// level skins once their level was finished, milestone skins once a statistic reaches its threshold. Unlocked
+    /// level skins once their level was finished, milestone skins once a statistic reaches its threshold, endless skins
+    /// once an endless run reached their round (issue #211). Unlocked
     /// skins stay unlocked. Skins are cosmetic only (F-SKN-04); nothing here touches game values.
     /// </summary>
     public static class SkinRules
@@ -24,14 +25,18 @@ namespace RushOps.Skins
             };
         }
 
-        /// <summary>True if the condition of <paramref name="unlock"/> is met by the progress and statistics.</summary>
-        public static bool IsMet(SkinUnlock unlock, ProgressData progress, StatsData stats)
+        /// <summary>
+        /// True if the condition of <paramref name="unlock"/> is met by the progress, the statistics and the endless best
+        /// scores (issue #211).
+        /// </summary>
+        public static bool IsMet(SkinUnlock unlock, ProgressData progress, StatsData stats, EndlessData endless = null)
         {
             return unlock.Kind switch
             {
                 SkinUnlockKind.Default => true,
                 SkinUnlockKind.LevelCompleted => ProgressRules.IsCompleted(progress, unlock.LevelId),
                 SkinUnlockKind.Milestone => MilestoneValue(unlock.Milestone, progress, stats) >= unlock.Threshold,
+                SkinUnlockKind.EndlessRound => endless != null && endless.HighestRound >= unlock.Threshold,
                 _ => false,
             };
         }
@@ -84,7 +89,7 @@ namespace RushOps.Skins
                     continue;
                 }
 
-                if (IsMet(skin, data.Progress, data.Stats))
+                if (IsMet(skin, data.Progress, data.Stats, data.Endless))
                 {
                     data.Skins.Unlocked.Add(skin.SkinId);
                     newlyUnlocked?.Add(i);

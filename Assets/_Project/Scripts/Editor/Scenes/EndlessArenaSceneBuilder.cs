@@ -8,6 +8,7 @@ using RushOps.Endless;
 using RushOps.Levels;
 using RushOps.Perks;
 using RushOps.Player;
+using RushOps.Save;
 using RushOps.Scoring;
 using RushOps.UI;
 using UnityEditor;
@@ -46,6 +47,9 @@ namespace RushOps.Editor.Scenes
 
         // Bosses come out north of the fountain, on its axis, so the way to the player in the south leads around it.
         private static readonly Vector2 BossSpawnOffset = new Vector2(0f, 8f);
+
+        // Centres of the top 10 columns on the result screen (place, score, round, date), in reference units.
+        private static readonly float[] TopColumnX = { -120f, -45f, 35f, 115f };
 
         [MenuItem("RushOps/Szenen/Endless_Arena erzeugen")]
         public static void Build()
@@ -201,16 +205,32 @@ namespace RushOps.Editor.Scenes
                 "RoundBanner", parent, font, EndlessText.Round(1), ArenaTestSceneBuilder.TitlePixelScale, new Vector2(0f, 110f));
             banner.enabled = false;
 
+            // Result screen (issue #211): title, „Neuer Bestwert!“, round, score, place, then the top 10 and the buttons.
             RectTransform result = ArenaTestSceneBuilder.CreateDimPanel("EndlessResultPanel", parent);
             ArenaTestSceneBuilder.CreateText(
-                "Title", result, font, EndlessText.RunOver, ArenaTestSceneBuilder.TitlePixelScale, new Vector2(0f, 80f));
+                "Title", result, font, EndlessText.RunOver, ArenaTestSceneBuilder.TitlePixelScale, new Vector2(0f, 245f));
+            Text newBest = ArenaTestSceneBuilder.CreateText(
+                "NewBest", result, font, EndlessText.NewBest, ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 208f));
+            newBest.color = ArenaTestSceneBuilder.PaletteYellow;
             Text round = ArenaTestSceneBuilder.CreateText(
-                "Round", result, font, EndlessText.Round(1), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 30f));
+                "Round", result, font, EndlessText.Round(1), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 178f));
             Text resultScore = ArenaTestSceneBuilder.CreateText(
-                "Score", result, font, ResultText.Score(0), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 5f));
+                "Score", result, font, ResultText.Score(0), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 154f));
+            Text rank = ArenaTestSceneBuilder.CreateText(
+                "Rank", result, font, EndlessText.Rank(1), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 130f));
+            Text topTitle = ArenaTestSceneBuilder.CreateText(
+                "TopTitle", result, font, EndlessText.TopTitle, ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 94f));
+            var columns = new Text[TopColumnX.Length];
+            for (int i = 0; i < columns.Length; i++)
+            {
+                columns[i] = ArenaTestSceneBuilder.CreateText($"TopColumn{i}", result, font, EndlessText.TopHeadings[i],
+                    ArenaTestSceneBuilder.HudPixelScale, new Vector2(TopColumnX[i], 64f));
+                columns[i].alignment = TextAnchor.UpperCenter;
+            }
+
             float step = ArenaTestSceneBuilder.MenuButtonSize.y + 12f;
-            ArenaTestSceneBuilder.CreateMenuButton("RetryButton", result, font, "Nochmal", new Vector2(0f, -50f), pause.Restart);
-            ArenaTestSceneBuilder.CreateMenuButton("MenuButton", result, font, "Hauptmenü", new Vector2(0f, -50f - step), pause.QuitToMenu);
+            ArenaTestSceneBuilder.CreateMenuButton("RetryButton", result, font, "Nochmal", new Vector2(0f, -190f), pause.Restart);
+            ArenaTestSceneBuilder.CreateMenuButton("MenuButton", result, font, "Hauptmenü", new Vector2(0f, -190f - step), pause.QuitToMenu);
             result.gameObject.SetActive(false);
 
             var hud = parent.gameObject.AddComponent<EndlessHud>();
@@ -224,6 +244,19 @@ namespace RushOps.Editor.Scenes
             serializedHud.FindProperty("_resultScore").objectReferenceValue = resultScore;
             serializedHud.FindProperty("_score").objectReferenceValue = score;
             serializedHud.FindProperty("_pause").objectReferenceValue = pause;
+            serializedHud.FindProperty("_resultNewBest").objectReferenceValue = newBest;
+            serializedHud.FindProperty("_resultRank").objectReferenceValue = rank;
+            serializedHud.FindProperty("_topTitle").objectReferenceValue = topTitle;
+            serializedHud.FindProperty("_highlight").colorValue = ArenaTestSceneBuilder.PaletteYellow;
+            SerializedProperty topColumns = serializedHud.FindProperty("_topColumns");
+            topColumns.arraySize = columns.Length;
+            for (int i = 0; i < columns.Length; i++)
+            {
+                topColumns.GetArrayElementAtIndex(i).objectReferenceValue = columns[i];
+            }
+
+            LevelProgressRecorder recorder = Object.FindAnyObjectByType<LevelProgressRecorder>();
+            serializedHud.FindProperty("_recorder").objectReferenceValue = recorder;
             serializedHud.ApplyModifiedPropertiesWithoutUndo();
 
             // At 0 hearts the run ends with the result screen of the endless mode instead of „Gescheitert“.
@@ -247,6 +280,11 @@ namespace RushOps.Editor.Scenes
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            // Autosave at the end of a run (issue #211): the run goes into the top 10 of the save game.
+            var serializedRecorder = new SerializedObject(recorder);
+            serializedRecorder.FindProperty("_endless").objectReferenceValue = controller;
+            serializedRecorder.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // The theme draws every outer wall as ring wall; here the stands, the weapon boards, the gate openings and the

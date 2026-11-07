@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Gladiator_Idle
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 8
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 5e379d445670040e8882a2de71ac513a, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: d46190daaf65c48968c45490c24203c9, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 9d93967e446864fe695f12a938395499, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 124f47b08d232435eb5e1be6052da3ff, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 2bb3b3c9a13dd47af8077a022f317a57, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 864cd8d5510424a99a4b23309557df97, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 7973168684ccf4b4fa3547d3078d5c08, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: cd212286c4df044b8ad7d543b9a45f7a, type: 3}

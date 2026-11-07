@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888eeded5bb69477890c2c429787ba4d, type: 3}
+  m_Name: Skin_Gladiator
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
+  _id: Gladiator
+  _displayName: Gladiator
+  _idle: {fileID: 11400000, guid: 59c6ff47638fa4c4498db1cc366dff5e, type: 2}
+  _walk: {fileID: 11400000, guid: 1cf2dcc2261764b43bf4310f28ce3cd1, type: 2}
+  _hit: {fileID: 11400000, guid: 1b701b5c62e344963ac9c023c1650436, type: 2}
+  _death: {fileID: 11400000, guid: 5d4bdb3b7b4d5406aa231945372194ba, type: 2}
+  _dash: {fileID: 11400000, guid: 89986b1040594433a91667884a2e0eb6, type: 2}
+  _unlockKind: 3
+  _levelId: 
+  _levelName: 
+  _milestone: 0
+  _threshold: 10

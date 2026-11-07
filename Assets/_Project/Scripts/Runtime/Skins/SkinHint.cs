@@ -15,7 +15,8 @@ namespace RushOps.Skins
         public const string Locked = "Gesperrt";
 
         /// <summary>
-        /// How to get a locked skin, e.g. „Schaffe Level 1-2“ or „Noch 340 Kills“; empty for default skins.
+        /// How to get a locked skin, e.g. „Schaffe Level 1-2“, „Noch 340 Kills“ or „Erreiche Endlos-Runde 10“; empty for
+        /// default skins.
         /// </summary>
         /// <param name="remaining">What is still missing of a milestone (<see cref="SkinRules.Remaining"/>).</param>
         public static string Unlock(SkinUnlock unlock, string levelName, int remaining)
@@ -26,6 +27,8 @@ namespace RushOps.Skins
                     return "Schaffe " + (string.IsNullOrEmpty(levelName) ? unlock.LevelId : levelName);
                 case SkinUnlockKind.Milestone:
                     return Milestone(unlock.Milestone, remaining, unlock.Threshold);
+                case SkinUnlockKind.EndlessRound:
+                    return "Erreiche Endlos-Runde " + unlock.Threshold.ToString(CultureInfo.InvariantCulture);
                 default:
                     return string.Empty;
             }

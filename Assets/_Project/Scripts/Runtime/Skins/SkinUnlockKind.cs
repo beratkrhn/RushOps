@@ -11,5 +11,8 @@ namespace RushOps.Skins
 
         /// <summary>Unlocked once a statistic across all games reaches a threshold (F-SKN-03).</summary>
         Milestone,
+
+        /// <summary>Unlocked once an endless run reaches a certain round (issue #211, F-END-09).</summary>
+        EndlessRound,
     }
 }

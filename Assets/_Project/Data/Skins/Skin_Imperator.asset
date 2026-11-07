@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888eeded5bb69477890c2c429787ba4d, type: 3}
+  m_Name: Skin_Imperator
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
+  _id: Imperator
+  _displayName: Imperator
+  _idle: {fileID: 11400000, guid: 989549717c705422face033c6fe97c44, type: 2}
+  _walk: {fileID: 11400000, guid: 22d77d367bc3d4e6385400a94f54b7a0, type: 2}
+  _hit: {fileID: 11400000, guid: ee70e6dbcd30144a7ae63119d97d1888, type: 2}
+  _death: {fileID: 11400000, guid: ff127b76a03314afe945f5913c27f626, type: 2}
+  _dash: {fileID: 11400000, guid: ab14d67d7da2c4fd6ba3355bad67b85d, type: 2}
+  _unlockKind: 3
+  _levelId: 
+  _levelName: 
+  _milestone: 0
+  _threshold: 50

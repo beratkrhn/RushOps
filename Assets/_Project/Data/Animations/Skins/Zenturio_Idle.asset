@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Zenturio_Idle
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 8
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 4d8b48d7fdd874e91a9fcd52a92f97d8, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 5c404692f912047bfbaee10523fee267, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: e058540fd5ddc4c2cb695967fd3716fa, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: c34e93dc61c994f2e8471a0702272e63, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: e17f1db74b1df40788bda2c12a2aae1b, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 903f0bbd63ae5407d8abaf5aa5505b8e, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: b60eaeb8104c1404db10aa349d0f6163, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 17a0ed53a643e459299123f929171d7d, type: 3}

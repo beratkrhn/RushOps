@@ -13,7 +13,7 @@ namespace RushOps.Save
     public class SaveData
     {
         /// <summary>Format version written by this build.</summary>
-        public const int CurrentVersion = 2;
+        public const int CurrentVersion = 3;
 
         /// <summary>Format version of this save.</summary>
         public int Version = CurrentVersion;
@@ -32,5 +32,8 @@ namespace RushOps.Save
 
         /// <summary>The chosen and the unlocked weapons (issue #176, version 2).</summary>
         public WeaponsData Weapons = new WeaponsData();
+
+        /// <summary>Best scores of the endless mode (issue #211, version 3).</summary>
+        public EndlessData Endless = new EndlessData();
     }
 }

@@ -18,14 +18,15 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void Catalog_HasStandardThreeIslandAndThreeMilestoneSkins()
+        public void Catalog_HasStandardThreeIslandThreeMilestoneAndThreeEndlessSkins()
         {
             IReadOnlyList<SkinDefinition> skins = Load().Skins;
 
-            Assert.AreEqual(7, skins.Count);
+            Assert.AreEqual(10, skins.Count);
             Assert.AreEqual(SkinUnlockKind.Default, skins[0].UnlockKind, "the default skin comes first");
             int levels = 0;
             int milestones = 0;
+            var endlessRounds = new List<int>();
             var ids = new HashSet<string>();
             foreach (SkinDefinition skin in skins)
             {
@@ -40,10 +41,15 @@ namespace RushOps.Tests.EditMode
                 Assert.IsNotNull(skin.Dash, skin.Id);
                 levels += skin.UnlockKind == SkinUnlockKind.LevelCompleted ? 1 : 0;
                 milestones += skin.UnlockKind == SkinUnlockKind.Milestone ? 1 : 0;
+                if (skin.UnlockKind == SkinUnlockKind.EndlessRound)
+                {
+                    endlessRounds.Add(skin.Unlock.Threshold);
+                }
             }
 
             Assert.AreEqual(3, levels, "one skin per island");
             Assert.AreEqual(3, milestones);
+            CollectionAssert.AreEqual(new[] { 10, 25, 50 }, endlessRounds, "F-END-09: rounds 10, 25 and 50");
         }
 
         [Test]
