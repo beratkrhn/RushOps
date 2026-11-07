@@ -28,6 +28,16 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Endless_FullArenaWithMegaBoomer()
+        {
+            var scenario = new StressScenario();
+            yield return scenario.Load(StressScenario.EndlessScene);
+            yield return scenario.EnterEndlessStress(
+                StressScenario.FastestWeapon, "rapid_fire", "speed_boost", "shield");
+            yield return Measure(StressScenario.EndlessScene, scenario);
+        }
+
+        [UnityTest]
         public IEnumerator Level([Values("Level_1-1", "Level_2-1", "Level_3-1")] string scene)
         {
             var scenario = new StressScenario();

@@ -71,3 +71,19 @@ Ein Mittelklasse-iPhone (A13 bis A15) ist auf einem Kern etwa zwei- bis dreimal 
 - Den Verbrauch über 30 Minuten misst der Gesamtspieltest (#195).
 
 **Speicher am Gerät:** Die FPS-Anzeige im Development-Build zeigt jetzt als dritte Zeile „RAM … MB“ (Zähler „System Used Memory“). Im Editor bleibt die Zeile weg, weil sie dort den Editor-Prozess messen würde.
+
+## Endlos-Arena mit 20 Gegnern (Issue #212, F-END-04, N3)
+
+**Szenario:** `PerformanceBudgetTests.EndlessArena_AtTheCap_WithBossAndPerks_NoAllocations_InsideTheFrameBudget` lädt `Endless_Arena` und startet die erste reguläre Runde, in der die Höchstzahl ihre Obergrenze erreicht (mit den Startwerten Runde 51: Höchstzahl 20, 106 Gegner, davon etwa 30 % Runner, 20 % Boomer, 15 % Brutes, Spawn alle 0,3 s). Obendrauf kämpft der Mega-Boomer mit Pfützen (so viele Leben, dass er die Messung übersteht). Das gibt es in einem echten Lauf nicht, weil Bossrunden keine regulären Gegner haben; es ist also schwerer als jeder echte Fall. Der Spieler hält zuerst die Waffe gesenkt, bis alle 20 Gegner in der Arena sind, bekommt dann Schnellfeuer, Tempo und Schild und schießt mit den Dual-Pistolen auf den Boss (Zielhilfe aktiv). Der Test prüft, dass die Arena während der Messung voll ist (20 Gegner), der Boss bis zum Ende kämpft und das Budget hält.
+
+**Messung 07.11.2026** (Apple M3, Batchmode ohne Grafik wie in `Tools/unity-check.sh`, Commit nach `2e1d771`):
+
+| Szene | Gegner (max / Ende) | Spiel-CPU Ø / 1 % (ms) | GC pro Frame (B) | Frames mit GC |
+|---|---|---|---|---|
+| Endless_Arena, Runde 51 + Mega-Boomer | 20 / 20 | 0,10 / 0,21 | 0 | 0 von 20000 |
+| Stress_Test (zum Vergleich, gleicher Lauf) | – / 10 | 0,06 / 0,10 | 0 | 0 von 20000 |
+
+**Befund**
+- Das Budget hält mit großem Abstand (≤ 2 ms im Mittel, ≤ 5 ms im langsamsten 1 %, 0 Byte GC). Die doppelte Gegnerzahl kostet im Mittel etwa 0,04 ms mehr als die Stress-Szene. Die Obergrenze von 20 in `EndlessConfig` bleibt (N3).
+- Ohne Grafikgerät rendert nichts, und die Frames laufen ungebremst: Die 10 s Messung endet nach etwa 4 s an der Grenze von 20000 Frames. Für die CPU-Seite des Spiels reicht das; Draw Calls und Rendern misst nur `Tools/unity-perf.sh` mit Metal (Unity geschlossen). Diesen Lauf gab es für #212 noch nicht, er gehört in den Gesamtspieltest (#195) oder zum nächsten Mal, wenn Unity geschlossen ist; die Arena ist dort als `Endless_Arena` mit drin.
+- Am iPhone wurde nicht gemessen (A3).

@@ -20,6 +20,12 @@ namespace RushOps.Tests.PlayMode
         /// <summary>Weapon with the most shots per second.</summary>
         public const string FastestWeapon = "DualPistols";
 
+        /// <summary>Arena of the endless mode (issue #212).</summary>
+        public const string EndlessScene = "Endless_Arena";
+
+        // So many hit points that the extra boss of the endless stress case outlasts any measurement.
+        private const int EndlessBossHealth = 1000000;
+
         private static readonly Vector2 StressArenaPoint = new Vector2(14f, 22f);
 
         private PlayerHealth _health;
@@ -68,6 +74,77 @@ namespace RushOps.Tests.PlayMode
             yield return null;
             Assert.IsNotNull(Fight, "the stress scene has no boss fight");
             Assert.IsTrue(Fight.IsRunning, "the fight did not start in the arena");
+        }
+
+        /// <summary>
+        /// Turns the loaded <see cref="EndlessScene"/> into its heaviest case (issue #212, F-END-04, N3): starts the
+        /// first regular round at the cap of enemies alive at once, gives the player <paramref name="weapon"/> and the
+        /// perks of <paramref name="perkIds"/>, and on top lets the Mega-Boomer fight with puddles and explosions,
+        /// which no real round does (boss rounds have no regular enemies). The boss cannot fall during a measurement.
+        /// </summary>
+        public IEnumerator EnterEndlessStress(string weapon, params string[] perkIds)
+        {
+            var controller = Object.FindAnyObjectByType<RushOps.Endless.EndlessRunController>();
+            Assert.IsNotNull(controller, "no EndlessRunController in the arena");
+            // The arena started a run of its own in Start; its rules tell the round.
+            RushOps.Endless.EndlessRules rules = controller.Rules;
+            Assert.IsNotNull(rules, "the arena did not start a run");
+            FullRound = FirstRegularRoundAtCap(rules);
+            controller.BeginRun(FullRound);
+            Equip(weapon);
+            float end = Time.realtimeSinceStartup + 30f;
+            while (controller.Run.Phase != RushOps.Endless.EndlessPhase.Running)
+            {
+                Assert.Less(Time.realtimeSinceStartup, end, $"timeout waiting for round {FullRound}");
+                Tick(false);
+                yield return null;
+            }
+
+            BossDefinition mega = null;
+            foreach (BossDefinition boss in rules.Config.Bosses)
+            {
+                if (boss is MegaBoomerDefinition)
+                {
+                    mega = boss;
+                }
+            }
+
+            Assert.IsNotNull(mega, "the endless config has no Mega-Boomer");
+            Fight = Object.FindAnyObjectByType<RushOps.Endless.EndlessBosses>().Spawn(mega, EndlessBossHealth);
+            Assert.IsNotNull(Fight, "no Mega-Boomer template in the arena");
+            Assert.IsTrue(Fight.IsRunning, "the extra boss fight did not start");
+
+            // With the gun lowered the gates fill the arena up to the cap before the measurement starts.
+            var director = Object.FindAnyObjectByType<RushOps.Enemies.WaveDirector>();
+            while (director.AliveCount < director.MaxActive)
+            {
+                Assert.Less(Time.realtimeSinceStartup, end, $"timeout waiting for {director.MaxActive} enemies");
+                Tick(false);
+                yield return null;
+            }
+
+            foreach (string perkId in perkIds)
+            {
+                ApplyPerk(perkId);
+            }
+        }
+
+        /// <summary>The round <see cref="EnterEndlessStress"/> plays: the first regular one at the cap.</summary>
+        public int FullRound { get; private set; }
+
+        private static int FirstRegularRoundAtCap(RushOps.Endless.EndlessRules rules)
+        {
+            int cap = Mathf.Max(rules.Config.MaxActiveCap, rules.Config.MaxActiveStart);
+            for (int round = 1; round < 10000; round++)
+            {
+                if (rules.MaxActive(round) >= cap && !rules.IsBossRound(round) && rules.EnemyCount(round) >= cap)
+                {
+                    return round;
+                }
+            }
+
+            Assert.Fail($"no round reaches the cap of {cap}");
+            return 0;
         }
 
         /// <summary>Moves the player to <paramref name="position"/> (world units).</summary>
