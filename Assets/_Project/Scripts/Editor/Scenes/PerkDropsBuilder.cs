@@ -39,6 +39,8 @@ namespace RushOps.Editor.Scenes
             ("Shield", "shield", "Schutzschild", PerkKind.Timed, 8f, 10f, PerkEffect.Shield, 1f),
             ("InstaKill", "insta_kill", "Insta-Kill", PerkKind.Timed, 10f, 7f, PerkEffect.InstaKill, 1f),
             ("Nuke", "nuke", "Nuke", PerkKind.Instant, 0f, 3f, PerkEffect.Nuke, 1f),
+            ("Companion", "companion", "Begleiter", PerkKind.Timed, 15f, 10f, PerkEffect.Companion, 1f),
+            ("Scarecrow", "scarecrow", "Strohmann", PerkKind.Timed, 8f, 8f, PerkEffect.Scarecrow, 1f),
         };
 
         /// <summary>Number of timed perks, i.e. the most perks that can run at once (one HUD slot each).</summary>

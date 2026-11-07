@@ -26,5 +26,11 @@ namespace RushOps.Perks
 
         /// <summary>Kills all visible enemies, except bosses (issue #27).</summary>
         Nuke = 7,
+
+        /// <summary>A combat drone that fights along (issue #244).</summary>
+        Companion = 8,
+
+        /// <summary>A scarecrow that lures enemies and explodes (issue #244).</summary>
+        Scarecrow = 9,
     }
 }
