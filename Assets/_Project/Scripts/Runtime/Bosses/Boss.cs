@@ -34,7 +34,11 @@ namespace RushOps.Bosses
         private Health _health;
         private Rigidbody2D _body;
         private Collider2D _collider;
+        private CircleCollider2D _circle;
         private Transform _target;
+        private bool _hasObstacle;
+        private Vector2 _obstacleCenter;
+        private float _obstacleRadius;
         private MaterialPropertyBlock _block;
         private float _sinceHit = -1f;
         private float _dyingTime = -1f;
@@ -95,6 +99,27 @@ namespace RushOps.Bosses
             _maxHealth = Mathf.Max(1, health);
             _health = new Health(_maxHealth);
         }
+
+        /// <summary>
+        /// Lets the chase slide around a round obstacle at <paramref name="center"/> with <paramref name="radius"/>
+        /// instead of pressing into it, e.g. the fountain of the endless arena (decision N2).
+        /// </summary>
+        public void SetObstacle(Vector2 center, float radius)
+        {
+            _hasObstacle = radius > 0f;
+            _obstacleCenter = center;
+            _obstacleRadius = Mathf.Max(0f, radius);
+        }
+
+        /// <summary>Radius of the round body that moves, in world units; 0 without circle collider.</summary>
+        public float BodyRadius => _circle != null
+            ? _circle.radius * Mathf.Max(Mathf.Abs(transform.lossyScale.x), Mathf.Abs(transform.lossyScale.y))
+            : 0f;
+
+        /// <summary>Center of the round body that moves; the transform sits at the feet.</summary>
+        public Vector2 BodyCenter => _circle != null
+            ? _body.position + Vector2.Scale(_circle.offset, transform.lossyScale)
+            : _body.position;
 
         /// <summary>Starts the fight: from now on the boss chases <paramref name="target"/>.</summary>
         public void Activate(Transform target)
@@ -167,12 +192,23 @@ namespace RushOps.Bosses
             gameObject.SetActive(false);
         }
 
-        /// <summary>Walks straight at the target at <paramref name="speed"/>, facing the way it goes.</summary>
+        /// <summary>
+        /// Walks straight at the target at <paramref name="speed"/>, facing the way it goes; around the obstacle set
+        /// with <see cref="SetObstacle"/>, if any.
+        /// </summary>
         protected void Chase(float speed)
         {
             Vector2 direction = _target != null
                 ? BossMath.ChaseDirection(_body.position, _target.position, _stopDistance)
                 : Vector2.zero;
+            if (_hasObstacle && direction != Vector2.zero)
+            {
+                // Steer the body's circle, not the feet: the target is shifted by the same offset.
+                Vector2 center = BodyCenter;
+                Vector2 target = (Vector2)_target.position + (center - _body.position);
+                direction = CircleAvoidance.Steer(center, direction, target, _obstacleCenter, _obstacleRadius + BodyRadius);
+            }
+
             _body.linearVelocity = direction * speed;
             if (_view != null && direction != Vector2.zero)
             {
@@ -184,6 +220,7 @@ namespace RushOps.Bosses
         {
             _body = GetComponent<Rigidbody2D>();
             _collider = GetComponent<Collider2D>();
+            _circle = GetComponent<CircleCollider2D>();
             if (_definition != null)
             {
                 _body.mass = _definition.Mass;
