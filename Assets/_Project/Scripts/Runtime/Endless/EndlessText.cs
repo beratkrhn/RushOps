@@ -1,3 +1,9 @@
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using RushOps.Save;
+using RushOps.UI;
+
 namespace RushOps.Endless
 {
     /// <summary>Texts of the endless mode (F-END-03, F-END-08, F-HUD-03).</summary>
@@ -5,6 +11,72 @@ namespace RushOps.Endless
     {
         /// <summary>Title of the result screen at the end of a run.</summary>
         public const string RunOver = "Lauf vorbei";
+
+        /// <summary>Line on the result screen when the run beat the best score (issue #211).</summary>
+        public const string NewBest = "Neuer Bestwert!";
+
+        /// <summary>Heading of the top list on the result screen.</summary>
+        public const string TopTitle = "Top 10";
+
+        /// <summary>Column headings of the top list: place, score, round, date.</summary>
+        public static readonly string[] TopHeadings = { "Platz", "Score", "Runde", "Datum" };
+
+        /// <summary>The run's place on the result screen, e.g. „Platz 3 der Top 10“ or „Nicht in den Top 10“.</summary>
+        public static string Rank(int rank)
+        {
+            return rank > 0 ? $"Platz {rank.ToString(CultureInfo.InvariantCulture)} der Top 10" : "Nicht in den Top 10";
+        }
+
+        /// <summary>Place column of the top list, e.g. „3.“.</summary>
+        public static string Place(int rank)
+        {
+            return rank.ToString(CultureInfo.InvariantCulture) + ".";
+        }
+
+        /// <summary>
+        /// One column of the top list as lines: the heading of <see cref="TopHeadings"/>, then one line per entry. The
+        /// line of place <paramref name="highlightRank"/> is coloured <paramref name="highlightHex"/> (rich text, e.g.
+        /// <c>#f6d04d</c>); 0 highlights nothing.
+        /// </summary>
+        /// <param name="column">0 place, 1 score, 2 round, 3 date.</param>
+        public static string TopColumn(IReadOnlyList<EndlessScore> top, int column, int highlightRank, string highlightHex)
+        {
+            var text = new StringBuilder(TopHeadings[column]);
+            int count = top != null ? top.Count : 0;
+            for (int i = 0; i < count; i++)
+            {
+                EndlessScore entry = top[i];
+                string cell = column switch
+                {
+                    0 => Place(i + 1),
+                    1 => ScoreText.Score(entry != null ? entry.Score : 0),
+                    2 => (entry != null ? entry.Round : 0).ToString(CultureInfo.InvariantCulture),
+                    _ => Date(entry?.Date),
+                };
+                text.Append('\n');
+                if (i + 1 == highlightRank && !string.IsNullOrEmpty(highlightHex))
+                {
+                    text.Append("<color=").Append(highlightHex).Append('>').Append(cell).Append("</color>");
+                }
+                else
+                {
+                    text.Append(cell);
+                }
+            }
+
+            return text.ToString();
+        }
+
+        /// <summary>Date column of the top list: <c>yyyy-MM-dd</c> as „07.11.26“; other text unchanged.</summary>
+        public static string Date(string isoDate)
+        {
+            if (string.IsNullOrEmpty(isoDate) || isoDate.Length != 10 || isoDate[4] != '-' || isoDate[7] != '-')
+            {
+                return isoDate ?? string.Empty;
+            }
+
+            return $"{isoDate.Substring(8, 2)}.{isoDate.Substring(5, 2)}.{isoDate.Substring(2, 2)}";
+        }
 
         /// <summary>The large display before a round and the line on the result screen, e.g. „Runde 3“.</summary>
         public static string Round(int round)

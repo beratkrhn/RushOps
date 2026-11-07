@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RushOps.Combat;
+using RushOps.Endless;
 using RushOps.Levels;
 using RushOps.Scoring;
 using RushOps.Skins;
@@ -14,7 +15,8 @@ namespace RushOps.Save
     /// records the level with stars and score; on „Gescheitert“ it counts a death; both times, when the app goes to
     /// the background and when the level is left, it adds kills, play time and best combo to the statistics and saves.
     /// After the level and on death it also unlocks the skins now earned (issue #128). No state inside the level is
-    /// saved (F-DAT-02).
+    /// saved (F-DAT-02). In the endless arena the end of a run counts a death, sorts the run into the endless top 10 and
+    /// unlocks the endless skins (issue #211).
     /// </summary>
     public class LevelProgressRecorder : MonoBehaviour
     {
@@ -26,6 +28,8 @@ namespace RushOps.Save
         [SerializeField] private SkinCatalog _skins;
         [Tooltip("Weapons unlocked by beating a boss (issue #176).")]
         [SerializeField] private WeaponCatalog _weapons;
+        [Tooltip("The endless run of the arena; its end is recorded as a best score (issue #211). Empty in the campaign.")]
+        [SerializeField] private EndlessRunController _endless;
 
         private readonly LevelStatsTracker _stats = new LevelStatsTracker();
         private readonly List<SkinDefinition> _newSkins = new List<SkinDefinition>();
@@ -37,12 +41,29 @@ namespace RushOps.Save
         /// <summary>Raised after „Level geschafft!“ with the weapons the level unlocked (issue #176).</summary>
         public event Action<IReadOnlyList<WeaponDefinition>> WeaponsUnlocked;
 
+        /// <summary>Raised after an endless run was recorded and saved (issue #211).</summary>
+        public event Action<EndlessRecord> EndlessRecorded;
+
+        /// <summary>The record of the last endless run; only valid while <see cref="HasEndlessRecord"/>.</summary>
+        public EndlessRecord LastEndlessRecord { get; private set; }
+
+        /// <summary>True once an endless run was recorded in this scene.</summary>
+        public bool HasEndlessRecord { get; private set; }
+
+        /// <summary>The endless best scores of the save game; null without a save.</summary>
+        public EndlessData EndlessData => _save != null ? _save.Data.Endless : null;
+
         private void OnEnable()
         {
             if (_results != null)
             {
                 _results.Completed += OnCompleted;
                 _results.Failed += OnFailed;
+            }
+
+            if (_endless != null)
+            {
+                _endless.RunEnded += OnRunEnded;
             }
         }
 
@@ -52,6 +73,11 @@ namespace RushOps.Save
             {
                 _results.Completed -= OnCompleted;
                 _results.Failed -= OnFailed;
+            }
+
+            if (_endless != null)
+            {
+                _endless.RunEnded -= OnRunEnded;
             }
         }
 
@@ -88,6 +114,27 @@ namespace RushOps.Save
             CommitStats(data);
             UnlockSkins(data);
             _save.Save();
+        }
+
+        // Autosave at the end of an endless run (F-DAT-03, F-END-08): a death, the run in the top 10, the skins it earned.
+        private void OnRunEnded(int round)
+        {
+            if (_save == null)
+            {
+                return;
+            }
+
+            SaveData data = _save.Data;
+            data.Stats.Deaths++;
+            CommitStats(data);
+            data.Endless ??= new EndlessData();
+            int score = _score != null ? _score.Keeper.Score : 0;
+            string date = DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+            LastEndlessRecord = EndlessRecords.Record(data.Endless, score, round, date);
+            HasEndlessRecord = true;
+            UnlockSkins(data);
+            _save.Save();
+            EndlessRecorded?.Invoke(LastEndlessRecord);
         }
 
         private void OnApplicationPause(bool paused)

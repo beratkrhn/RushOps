@@ -86,6 +86,45 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Shot_ResultScreen_NewBestInTheTopTen()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("no graphics device (-nographics): nothing can render");
+            }
+
+            // Earlier runs (issue #211), so the top 10 is nearly full and the new run comes out on top.
+            RushOps.Save.SaveGameService save = SaveGameIsolation.Reset();
+            int[] scores = { 4210, 3870, 3105, 2650, 2240, 1980, 1415, 960, 515 };
+            for (int i = 0; i < scores.Length; i++)
+            {
+                RushOps.Save.EndlessRecords.Record(save.Data.Endless, scores[i], 14 - i, $"2026-11-0{1 + i % 6}");
+            }
+
+            EndlessStart.Round = 16;
+            yield return SceneManager.LoadSceneAsync("Endless_Arena", LoadSceneMode.Single);
+            yield return null;
+            var player = Object.FindAnyObjectByType<PlayerMovement>();
+            player.GetComponent<PlayerMoveInput>().enabled = false;
+            player.GetComponent<PlayerAimInput>().enabled = false;
+            yield return new WaitForSeconds(0.5f);
+            Object.FindAnyObjectByType<RushOps.Scoring.LevelScore>().Keeper.AddPoints(5340);
+            var health = player.GetComponent<PlayerHealth>();
+            health.TakeDamage(health.Max);
+            var hud = Object.FindAnyObjectByType<RushOps.UI.EndlessHud>();
+            float end = Time.realtimeSinceStartup + 10f;
+            while (!hud.ShowsResult && Time.realtimeSinceStartup < end)
+            {
+                yield return null;
+            }
+
+            Assert.IsTrue(hud.ShowsResult, "the result screen");
+            yield return StoreScreenshots.Capture("Ergebnis.png", OutputDir);
+            Time.timeScale = 1f;
+            SaveGameIsolation.Reset();
+        }
+
+        [UnityTest]
         public IEnumerator Shot_BossRound_KolossInRoundTen()
         {
             if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)

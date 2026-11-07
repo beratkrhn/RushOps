@@ -133,6 +133,34 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator Death_SavesTheRunInTheTopTen_AndUnlocksTheRoundTenSkin()
+        {
+            RushOps.Save.SaveGameService save = SaveGameIsolation.Service;
+            Assume.That(save, Is.Not.Null, "needs the save game service of the editor");
+            RushOps.Save.EndlessRecords.Record(save.Data.Endless, 99999, 30, "2026-01-01");
+            var score = Object.FindAnyObjectByType<RushOps.Scoring.LevelScore>();
+            _controller.BeginRun(10);
+            yield return WaitFor(() => _controller.Run.Phase == EndlessPhase.Running, "round 10 to start");
+            score.Keeper.AddPoints(1500);
+
+            _health.TakeDamage(_health.Max);
+            yield return WaitFor(() => _hud.ShowsResult, "the result screen");
+
+            Assert.IsTrue(SaveGameIsolation.Files.Exists(System.IO.Path.Combine("playmode-tests", "save.json")), "autosave");
+            var loaded = new RushOps.Save.SaveGameStore(SaveGameIsolation.Files, "playmode-tests").Load();
+            Assert.AreEqual(2, loaded.Endless.Runs);
+            Assert.AreEqual(30, loaded.Endless.HighestRound);
+            Assert.AreEqual(2, loaded.Endless.Top.Count);
+            Assert.AreEqual(1500, loaded.Endless.Top[1].Score);
+            Assert.AreEqual(10, loaded.Endless.Top[1].Round);
+            CollectionAssert.Contains(loaded.Skins.Unlocked, "Gladiator", "round 10 reached");
+            Assert.AreEqual("Platz 2 der Top 10", _hud.RankText);
+            Assert.IsFalse(_hud.ShowsNewBest, "99999 is still the best");
+            StringAssert.Contains("1500", _hud.TopColumnText(1));
+            StringAssert.Contains("99999", _hud.TopColumnText(1));
+        }
+
+        [UnityTest]
         public IEnumerator Cap_ComesFromTheRound_NotFromTheSpawnerConfig()
         {
             _controller.BeginRun(25);
