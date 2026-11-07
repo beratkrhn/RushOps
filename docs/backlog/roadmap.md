@@ -22,6 +22,10 @@ Mündungsfeuer, Treffer, Explosionen, Perk-Leuchten, Zonen- und Rätsel-Licht, T
 ### Soundeffekte final (#41)
 Alle Platzhalter-Sounds ersetzen, einheitlicher Retro-Klang, Audio-Mixer mit Gruppen Musik und Effekte.
 
+### v1.3.0 – Begleiter und Strohmann
+
+In Stories zerlegt: [`v1.3.0.md`](v1.3.0.md) (#244 bis #247, Epic #215). Entscheidungen K1 bis K8, Lastenheft F-PRK-05 bis F-PRK-08.
+
 ### Musik (#42)
 Ein Menütrack und je ein loopbarer Action-Track pro Insel.
 *Offen:* selbst erzeugt oder lizenzfreie Packs.
