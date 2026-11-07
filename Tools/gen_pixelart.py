@@ -60,6 +60,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
   Sprites/Pickups/Gold_<0-3>.png           16x16 gold coin, 4 spin frames (issue #234)
+  Sprites/Pickups/Perk_Companion.png       24x24 perk icon of the combat drone (issue #245)
+  Sprites/Companion/Drone_<0-3>.png        20x16 combat drone of the companion perk, 4 hover frames (issue #245)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
   Sprites/UI/Heart_Empty.png               12x11 HUD heart, lost
   Sprites/UI/Pause_Icon.png                12x12 pause symbol
@@ -1883,6 +1885,15 @@ PERK_GLYPHS = {
         "..#o#o#o#o..",
         "..########..",
     ],
+    # Small combat drone seen from the front: two rotors, a body with a lens and a gun underneath (issue #245).
+    "Companion": [
+        "####....####",
+        ".##.####.##.",
+        "..########..",
+        "..##oooooo##",
+        "....####....",
+        ".....++.....",
+    ],
 }
 
 # Badge (shadow, base, light) and glyph (main, accent, detail) colors per perk.
@@ -1894,9 +1905,10 @@ PERK_COLORS = {
     "Shield": (("blue_0", "blue_1", "blue_2"), ("slate_5", "white", "outline")),
     "InstaKill": (("night", "slate_1", "slate_3"), ("white", "white", "outline")),
     "Nuke": (("orange", "yellow", "glow"), ("outline", "outline", "outline")),
+    "Companion": (("slate_1", "slate_3", "slate_4"), ("white", "yellow", "outline")),
 }
 
-PERK_IDS = ["SpeedBoost", "Medkit", "DoubleDamage", "RapidFire", "Shield", "InstaKill", "Nuke"]
+PERK_IDS = ["SpeedBoost", "Medkit", "DoubleDamage", "RapidFire", "Shield", "InstaKill", "Nuke", "Companion"]
 
 
 def perk_badge(shadow: str, base: str, light: str) -> Canvas:
@@ -2528,6 +2540,46 @@ def gold_coin(frame: int) -> Canvas:
         c.rect(7, 3, 8, 12, "yellow")
     c.outline()
     return c
+
+
+# --- Companion drone (issue #245) ----------------------------------------------
+
+DRONE_W, DRONE_H = 20, 16
+DRONE_FRAMES = 4
+DRONE_ROTOR_HALF = [4, 3, 4, 3]  # the rotor blades blur wide and narrow
+DRONE_BOB = [0, -1, 0, 1]  # hover: up and down by one pixel
+
+
+def drone_frame(frame: int) -> Canvas:
+    """Small combat drone, front view: round hull, blue lens, a gun below, two rotors on short arms. Hovers by
+    bobbing one pixel and blurring its rotors; the yellow light on top blinks."""
+    c = Canvas(DRONE_W, DRONE_H)
+    f = frame % DRONE_FRAMES
+    # Arms and rotor hubs.
+    c.rect(4, 6, 6, 7, "slate_1")
+    c.rect(13, 6, 15, 7, "slate_1")
+    c.rect(3, 5, 4, 5, "slate_2")
+    c.rect(15, 5, 16, 5, "slate_2")
+    half = DRONE_ROTOR_HALF[f]
+    for cx in (4, 15):
+        c.rect(cx - half + 1, 3, cx + half, 3, "slate_5" if f % 2 == 0 else "white")
+    # Hull.
+    c.ellipse(10.0, 8.5, 5.5, 4.0, "slate_3")
+    c.rect(6, 10, 13, 11, "slate_2")
+    for x, y in [(7, 6), (8, 5), (9, 5), (6, 7)]:
+        c.set(x, y, "slate_5")
+    # Lens.
+    c.ellipse(10.0, 8.5, 2.5, 1.8, "blue_1")
+    c.ellipse(9.5, 8.0, 1.2, 0.9, "blue_2")
+    c.set(9, 7, "glow")
+    # Gun.
+    c.rect(9, 12, 10, 13, "slate_1")
+    c.set(9, 14, "yellow" if f in (1, 2) else "orange")
+    c.set(10, 14, "yellow" if f in (1, 2) else "orange")
+    # Blinking light.
+    c.set(10, 4, "yellow" if f % 2 == 0 else "red_1")
+    c.outline()
+    return shifted(c, 0, DRONE_BOB[f])
 
 
 # --- Touch controls ----------------------------------------------------------
@@ -3821,6 +3873,8 @@ def outputs() -> dict[str, Image.Image]:
     }
     for perk in PERK_IDS:
         files[f"Sprites/Pickups/Perk_{perk}.png"] = perk_icon(perk).to_image()
+    for f in range(DRONE_FRAMES):
+        files[f"Sprites/Companion/Drone_{f}.png"] = drone_frame(f).to_image()
     for d, name in enumerate(DIRECTIONS):
         for frame in range(len(HIT_POSES)):
             files[f"Sprites/Enemies/Walker_Hit_{name}_{frame}.png"] = walker_hit(d, frame).to_image()
