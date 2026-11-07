@@ -17,6 +17,7 @@ MonoBehaviour:
   _contactDamage: 1
   _deathDuration: 0.25
   _points: 15
+  _gold: 1
   _isBoss: 0
   _spawnClip: {fileID: 8300000, guid: 7f1ca4352e6a44f2683be5bbb2667b58, type: 3}
   _approachClip: {fileID: 8300000, guid: f659a3369161248c28bfe096edd5e778, type: 3}

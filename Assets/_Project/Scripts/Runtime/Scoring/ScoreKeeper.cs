@@ -77,6 +77,30 @@ namespace RushOps.Scoring
             ScoreChanged?.Invoke(Score);
         }
 
+        /// <summary>
+        /// Adds picked-up gold worth <paramref name="points"/> times the current multiplier (F-SCO-02). It takes no step
+        /// towards the next multiplier. With <paramref name="restartWindow"/> it restarts the window of a running combo;
+        /// an already ended combo stays ended.
+        /// </summary>
+        /// <returns>The points added.</returns>
+        public int RegisterGold(int points, bool restartWindow)
+        {
+            if (points <= 0)
+            {
+                return 0;
+            }
+
+            int awarded = points * Multiplier;
+            Score += awarded;
+            ScoreChanged?.Invoke(Score);
+            if (restartWindow && ComboKills > 0)
+            {
+                ComboRemaining = _comboWindow;
+            }
+
+            return awarded;
+        }
+
         /// <summary>Ends the combo, e.g. when the player takes a hit.</summary>
         public void BreakCombo()
         {
