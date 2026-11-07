@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using RushOps.Levels;
+using RushOps.Loot;
 using RushOps.Perks;
 using RushOps.Scoring;
 using RushOps.UI;
@@ -28,6 +29,8 @@ namespace RushOps.Bosses
         [Tooltip("Drops the perks; its loot config lists the perks to pick from.")]
         [SerializeField] private PerkDropper _dropper;
         [SerializeField] private LootConfig _loot;
+        [Tooltip("Drops the boss's gold coins when it is beaten (F-GLD-01); none if empty.")]
+        [SerializeField] private GoldDropper _gold;
 
         private readonly List<Boss> _all = new List<Boss>();
         private BossPerkThresholds _thresholds;
@@ -247,6 +250,11 @@ namespace RushOps.Bosses
             if (_score != null && Main != null && Main.Definition != null)
             {
                 _score.Keeper.AddPoints(Main.Definition.Points);
+            }
+
+            if (_gold != null && Main != null && Main.Definition != null)
+            {
+                _gold.Drop(body.transform.position, Main.Definition.Gold);
             }
 
             _victoryTime = 0f;

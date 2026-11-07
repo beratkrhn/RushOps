@@ -43,6 +43,8 @@ namespace RushOps.Feel
         [SerializeField, Range(0f, 1f)] private float _enemyApproachVolume = 0.5f;
         [Tooltip("Volume of the sound when the player collects a perk.")]
         [SerializeField, Range(0f, 1f)] private float _perkPickupVolume = 0.7f;
+        [Tooltip("Volume of the sound when the player collects a gold coin.")]
+        [SerializeField, Range(0f, 1f)] private float _goldPickupVolume = 0.5f;
         [Tooltip("Volume of the sound when the player loses a heart.")]
         [SerializeField, Range(0f, 1f)] private float _playerHurtVolume = 0.8f;
         [Tooltip("Volume of the dash sound.")]
@@ -92,6 +94,9 @@ namespace RushOps.Feel
 
         /// <summary>Volume of the perk pickup sound.</summary>
         public float PerkPickupVolume => _perkPickupVolume;
+
+        /// <summary>Volume of the gold pickup sound.</summary>
+        public float GoldPickupVolume => _goldPickupVolume;
 
         /// <summary>Volume of the sound when the player loses a heart.</summary>
         public float PlayerHurtVolume => _playerHurtVolume;

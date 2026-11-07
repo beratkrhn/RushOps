@@ -2,6 +2,7 @@ using System.Collections;
 using NUnit.Framework;
 using RushOps.App;
 using RushOps.Enemies;
+using RushOps.Loot;
 using UnityEngine;
 using UnityEngine.TestTools;
 
@@ -42,6 +43,13 @@ namespace RushOps.Tests.PlayMode
             var director = Object.FindAnyObjectByType<WaveDirector>();
             int cap = director.MaxActive;
             int most = 0;
+            // A boss death drops 25 coins at once on top of the coins of every kill; the magnet pulls them in.
+            var gold = Object.FindAnyObjectByType<GoldDropper>();
+            var coins = Object.FindAnyObjectByType<GoldPickupPool>();
+            int dropped = 0;
+            coins.Dropped += _ => dropped++;
+            Vector2 player = GameObject.Find("Player").transform.position;
+            gold.Drop(player + Vector2.right * 0.8f, 25);
             FrameSample sample = null;
             IEnumerator measure = FrameSampler.Measure(
                 StressScenario.EndlessScene, scenario, WarmUpSeconds, MeasureSeconds, s => sample = s);
@@ -51,7 +59,8 @@ namespace RushOps.Tests.PlayMode
                 yield return measure.Current;
             }
 
-            Debug.Log($"[Perf] round {scenario.FullRound}, cap {cap}, most alive {most}");
+            Debug.Log($"[Perf] round {scenario.FullRound}, cap {cap}, most alive {most}, coins dropped {dropped}");
+            Assert.GreaterOrEqual(dropped, 25, "the coins of the boss death should have dropped");
             Assert.AreEqual(20, cap, $"round {scenario.FullRound} should play at the cap of 20 (F-END-04)");
             Assert.AreEqual(cap, most, "the arena should fill up to the cap while measuring");
             Assert.GreaterOrEqual(sample.enemiesAlive, cap / 2, "the arena should stay busy while measuring");

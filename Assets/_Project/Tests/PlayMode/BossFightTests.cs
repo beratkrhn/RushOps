@@ -2,6 +2,7 @@ using System.Collections;
 using NUnit.Framework;
 using RushOps.Bosses;
 using RushOps.Enemies;
+using RushOps.Loot;
 using RushOps.Perks;
 using RushOps.Player;
 using RushOps.Scoring;
@@ -103,6 +104,18 @@ namespace RushOps.Tests.PlayMode
             }
 
             Assert.AreEqual(BossMath.Fill(_boss.CurrentHealth, max), Bar.Fill, 1e-4f);
+        }
+
+        [UnityTest]
+        public IEnumerator BeatingTheBoss_DropsItsGoldAsCoins()
+        {
+            yield return EnterArena();
+            var coins = Object.FindAnyObjectByType<GoldPickupPool>();
+
+            _boss.TakeHit(_boss.MaxHealth, Vector2.up);
+
+            Assert.AreEqual(25, _boss.Definition.Gold);
+            Assert.AreEqual(25, coins.CountActive, "a beaten boss drops 25 coins");
         }
 
         [UnityTest]

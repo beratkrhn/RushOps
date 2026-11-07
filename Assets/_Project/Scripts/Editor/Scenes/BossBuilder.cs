@@ -58,6 +58,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_dropper").objectReferenceValue = dropper;
             serialized.FindProperty("_loot").objectReferenceValue =
                 dropper != null ? new SerializedObject(dropper).FindProperty("_config").objectReferenceValue : null;
+            serialized.FindProperty("_gold").objectReferenceValue = Object.FindAnyObjectByType<RushOps.Loot.GoldDropper>();
             serialized.ApplyModifiedPropertiesWithoutUndo();
             spec.Connect?.Invoke(boss, fight);
             return fight;

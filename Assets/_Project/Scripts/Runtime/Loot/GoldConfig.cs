@@ -15,6 +15,12 @@ namespace RushOps.Loot
         [Tooltip("Seconds before the end during which a coin blinks.")]
         [SerializeField, Min(0f)] private float _blinkDuration = 2f;
 
+        [Tooltip("Seconds per on or off phase while a coin blinks.")]
+        [SerializeField, Min(0.01f)] private float _blinkInterval = 0.1f;
+
+        [Tooltip("Seconds per frame of the spin animation.")]
+        [SerializeField, Min(0.01f)] private float _spinFrameDuration = 0.1f;
+
         [Tooltip("Distance in units (tiles) within which a coin flies to the player.")]
         [SerializeField, Min(0f)] private float _magnetRange = 1f;
 
@@ -35,6 +41,12 @@ namespace RushOps.Loot
 
         /// <summary>Seconds before the end during which a coin blinks.</summary>
         public float BlinkDuration => _blinkDuration;
+
+        /// <summary>Seconds per on or off phase while blinking.</summary>
+        public float BlinkInterval => _blinkInterval;
+
+        /// <summary>Seconds per spin frame.</summary>
+        public float SpinFrameDuration => _spinFrameDuration;
 
         /// <summary>Magnet range in units.</summary>
         public float MagnetRange => _magnetRange;

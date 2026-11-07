@@ -161,6 +161,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_score").objectReferenceValue = score;
             serialized.FindProperty("_dropper").objectReferenceValue = dropper;
             serialized.FindProperty("_loot").objectReferenceValue = loot;
+            serialized.FindProperty("_gold").objectReferenceValue = Object.FindAnyObjectByType<RushOps.Loot.GoldDropper>();
             serialized.ApplyModifiedPropertiesWithoutUndo();
             if (boss is MegaBoomer)
             {
