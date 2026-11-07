@@ -21,6 +21,15 @@ namespace RushOps.Perks
         [Tooltip("Speed in tiles per second with which the drone follows the player.")]
         [SerializeField, Min(0f)] private float _followSpeed = 6f;
 
+        [Tooltip("Height in tiles at which the drone floats above the floor.")]
+        [SerializeField, Min(0f)] private float _hoverHeight = 0.9f;
+
+        [Tooltip("Hover animation frames per second.")]
+        [SerializeField, Min(0.1f)] private float _frameRate = 8f;
+
+        [Tooltip("Volume of the drone's shot sound, 0 to 1; below the player's weapon.")]
+        [SerializeField, Range(0f, 1f)] private float _shotVolume = 0.35f;
+
         /// <summary>Seconds the drone stays.</summary>
         public float Duration => _duration;
 
@@ -35,5 +44,14 @@ namespace RushOps.Perks
 
         /// <summary>Follow speed in tiles per second.</summary>
         public float FollowSpeed => _followSpeed;
+
+        /// <summary>Height in tiles above the floor.</summary>
+        public float HoverHeight => _hoverHeight;
+
+        /// <summary>Hover animation frames per second.</summary>
+        public float FrameRate => _frameRate;
+
+        /// <summary>Volume of the shot sound.</summary>
+        public float ShotVolume => _shotVolume;
     }
 }

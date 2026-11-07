@@ -94,6 +94,20 @@ namespace RushOps.Perks
         }
 
         /// <summary>
+        /// Moves the drone from <paramref name="current"/> towards <paramref name="target"/> smoothly: it covers a
+        /// share of the distance per second (<paramref name="speed"/>), so it eases in and never overshoots.
+        /// </summary>
+        public static Vector2 Follow(Vector2 current, Vector2 target, float speed, float deltaTime)
+        {
+            if (speed <= 0f || deltaTime <= 0f)
+            {
+                return current;
+            }
+
+            return Vector2.Lerp(current, target, 1f - Mathf.Exp(-speed * deltaTime));
+        }
+
+        /// <summary>
         /// Single-projectile shots per second that give <paramref name="damageShare"/> of the weapon's damage per
         /// second (K3), with every shot dealing the weapon's damage per projectile. 0 for a weapon without damage.
         /// </summary>
