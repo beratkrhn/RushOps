@@ -145,6 +145,15 @@ namespace RushOps.Tests.PlayMode
         // Renders the main camera and every overlay canvas into one texture of store size and writes it as PNG.
         private static IEnumerator Capture(string file)
         {
+            return Capture(file, OutputDir);
+        }
+
+        /// <summary>
+        /// Renders the main camera and every overlay canvas at store size and writes the PNG <paramref name="file"/> to
+        /// <paramref name="outputDir"/> (relative to the project), e.g. for screenshots in a pull request.
+        /// </summary>
+        internal static IEnumerator Capture(string file, string outputDir)
+        {
             HideDebugUi();
             Camera camera = Camera.main != null ? Camera.main : Object.FindAnyObjectByType<Camera>();
             Assert.IsNotNull(camera, "no camera");
@@ -179,13 +188,13 @@ namespace RushOps.Tests.PlayMode
             RenderTexture.active = previous;
             camera.targetTexture = null;
 
-            string dir = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", OutputDir);
+            string dir = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", outputDir);
             Directory.CreateDirectory(dir);
             File.WriteAllBytes(Path.Combine(dir, file), image.EncodeToPNG());
             Object.Destroy(image);
             target.Release();
             Object.Destroy(target);
-            Debug.Log($"[StoreScreenshots] {OutputDir}/{file}");
+            Debug.Log($"[StoreScreenshots] {outputDir}/{file}");
         }
 
         // The FPS display and the test menu button exist only in development builds; the store shows the release.

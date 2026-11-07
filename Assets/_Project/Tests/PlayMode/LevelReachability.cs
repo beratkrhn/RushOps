@@ -60,6 +60,22 @@ namespace RushOps.Tests.PlayMode
             }
 
             Assert.Greater(goals.Count, 20);
+            AssertCovered(walls, reached, goals);
+        }
+
+        /// <summary>Fails the test if one of <paramref name="goals"/> cannot be reached from the player.</summary>
+        public static void AssertReachable(IEnumerable<(string name, Vector3 position)> goals)
+        {
+            Tilemap walls = GameObject.Find("Walls").GetComponent<Tilemap>();
+            Vector3Int start = walls.WorldToCell(GameObject.Find("Player").transform.position);
+            HashSet<Vector2Int> reached = ReachableSquares(walls, (Vector2Int)start);
+            Assert.IsNotEmpty(reached, "the player stands in a wall");
+            AssertCovered(walls, reached, goals);
+        }
+
+        private static void AssertCovered(
+            Tilemap walls, HashSet<Vector2Int> reached, IEnumerable<(string name, Vector3 position)> goals)
+        {
             foreach ((string name, Vector3 position) in goals)
             {
                 Vector2Int cell = (Vector2Int)walls.WorldToCell(position);
