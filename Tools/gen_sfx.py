@@ -27,6 +27,7 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   BoomerApproach.wav  warning: fast high two-tone alarm over a fizzing fuse, unlike any other enemy (F-AUD-03)
   Explosion.wav       noise boom with a falling rumble
   PerkPickup.wav      bright upward arpeggio
+  GoldPickup.wav      two short bright notes (coin)
   Nuke.wav            rising charge, a crack and a long low boom
   PuzzleSolved.wav    unlock click and a warm two-note chord
   SwitchOn.wav        plate click with a confirm blip
@@ -302,6 +303,13 @@ def perk_pickup() -> list[float]:
             for t in (i / RATE for i in frames(length))]
 
 
+def gold_pickup() -> list[float]:
+    length = 0.14
+    p = Pulse(0.25)
+    return [0.8 * p.sample(notes(t, [1319, 1760], 0.05)) * decay(t, length, 0.002)
+            for t in (i / RATE for i in frames(length))]
+
+
 def nuke() -> list[float]:
     charge_length, boom_length = 0.5, 1.4
     p, n, tri = Pulse(0.5), Noise(), Triangle()
@@ -346,7 +354,7 @@ SOUNDS = {
     "RunnerSpawn": runner_spawn, "RunnerApproach": runner_approach,
     "BruteSpawn": brute_spawn, "BruteApproach": brute_approach,
     "BoomerSpawn": boomer_spawn, "BoomerApproach": boomer_approach,
-    "Explosion": explosion, "PerkPickup": perk_pickup, "Nuke": nuke,
+    "Explosion": explosion, "PerkPickup": perk_pickup, "GoldPickup": gold_pickup, "Nuke": nuke,
     "PuzzleSolved": puzzle_solved, "SwitchOn": switch_on, "SwitchReset": switch_reset,
 }
 

@@ -59,6 +59,7 @@ Output (under Assets/_Project/Art/):
   Sprites/UI/Star_Empty.png                16x16 missing star on the result screen (issue #35)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
+  Sprites/Pickups/Gold_<0-3>.png           16x16 gold coin, 4 spin frames (issue #234)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
   Sprites/UI/Heart_Empty.png               12x11 HUD heart, lost
   Sprites/UI/Pause_Icon.png                12x12 pause symbol
@@ -2508,6 +2509,27 @@ def perk_glow() -> Canvas:
     return c
 
 
+GOLD_COIN = 16
+GOLD_SPIN_HALF_WIDTHS = [6.5, 4.5, 1.5, 4.5]
+
+
+def gold_coin(frame: int) -> Canvas:
+    """Small gold coin spinning around its vertical axis: full face, narrowing to the edge, narrowing back."""
+    c = Canvas(GOLD_COIN, GOLD_COIN)
+    rx = GOLD_SPIN_HALF_WIDTHS[frame % len(GOLD_SPIN_HALF_WIDTHS)]
+    c.ellipse(8.0, 8.0, rx, 6.5, "orange")
+    if rx > 3.0:
+        c.ellipse(7.5, 7.5, rx - 1.0, 5.5, "yellow")
+        for y in range(5, 11):
+            c.set(8, y, "orange")  # embossed slot in the middle
+        for x, y in [(5, 4), (4, 5)] if rx > 5.0 else [(6, 4)]:
+            c.set(x, y, "glow")
+    else:
+        c.rect(7, 3, 8, 12, "yellow")
+    c.outline()
+    return c
+
+
 # --- Touch controls ----------------------------------------------------------
 
 def stick_base() -> Canvas:
@@ -3795,6 +3817,7 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/UI/Perk_Slot.png": perk_slot().to_image(),
         "Sprites/UI/Perk_Timer.png": perk_timer().to_image(),
         "Sprites/Pickups/Perk_Glow.png": perk_glow().to_image(),
+        **{f"Sprites/Pickups/Gold_{f}.png": gold_coin(f).to_image() for f in range(len(GOLD_SPIN_HALF_WIDTHS))},
     }
     for perk in PERK_IDS:
         files[f"Sprites/Pickups/Perk_{perk}.png"] = perk_icon(perk).to_image()
@@ -3892,6 +3915,8 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
         x, y = (8 + i % 4) * TILE, (1 + i // 4 * 2) * TILE
         sheet.alpha_composite(files["Sprites/Pickups/Perk_Glow.png"], (x, y + 24))
         sheet.alpha_composite(files[f"Sprites/Pickups/Perk_{perk}.png"], (x + 4, y + 4))
+    for i in range(len(GOLD_SPIN_HALF_WIDTHS)):
+        sheet.alpha_composite(files[f"Sprites/Pickups/Gold_{i}.png"], (8 * TILE + 4 + i * 18, 5 * TILE + 4 + 16))
     pal = files["Palettes/RushOps_Palette.png"].resize((len(PALETTE) * 6, 6), Image.NEAREST)
     sheet.paste(pal, (4, 4))
     sheet.resize((sheet.width * scale, sheet.height * scale), Image.NEAREST).save(path)

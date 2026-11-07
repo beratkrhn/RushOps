@@ -10,6 +10,7 @@ using RushOps.Audio;
 using RushOps.Enemies;
 using RushOps.Feel;
 using RushOps.Levels;
+using RushOps.Loot;
 using RushOps.Navigation;
 using RushOps.Perks;
 using RushOps.Player;
@@ -658,12 +659,13 @@ namespace RushOps.Editor.Scenes
             CreateGameEffects(LoadOrCreateEffectsConfig(), target, pool, enemyPools);
             SpriteEffectPool explosionEffects = CreateEffectPool("ExplosionEffectPool", CreateOrUpdateExplosionEffectPrefab(), 4, 16);
             PerkPickupPool perks = PerkDropsBuilder.Create(enemyPools, navigator);
+            GoldPickupPool gold = GoldBuilder.Create(enemyPools, navigator, target, score, perks.Config);
             var playerPerks = new SerializedObject(target.GetComponent<PlayerPerks>());
             playerPerks.FindProperty("_pickups").objectReferenceValue = perks;
             playerPerks.ApplyModifiedPropertiesWithoutUndo();
             NukeSystem nuke = CreateNukeSystem(target.GetComponent<PlayerPerks>(), cameraFollow, enemyPools);
             SfxPlayer sfx = CreateGameFeel(
-                feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, nuke, flash);
+                feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, gold, nuke, flash);
             AddClickSounds(sfx.GetComponent<UiClickSound>());
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
 
@@ -1449,7 +1451,7 @@ namespace RushOps.Editor.Scenes
 
         private static SfxPlayer CreateGameFeel(
             FeelConfig config, Transform player, EnemyPool[] enemies, CameraFollow camera, PauseController pause,
-            ExplosionSystem explosions, SpriteEffectPool explosionEffects, PerkPickupPool perks, NukeSystem nuke,
+            ExplosionSystem explosions, SpriteEffectPool explosionEffects, PerkPickupPool perks, GoldPickupPool gold, NukeSystem nuke,
             ScreenFlash flash)
         {
             var go = new GameObject("GameFeel");
@@ -1474,6 +1476,8 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_explosionEffects").objectReferenceValue = explosionEffects;
             serialized.FindProperty("_perks").objectReferenceValue = perks;
             serialized.FindProperty("_perkPickupClip").objectReferenceValue = LoadClip("PerkPickup.wav");
+            serialized.FindProperty("_gold").objectReferenceValue = gold;
+            serialized.FindProperty("_goldPickupClip").objectReferenceValue = LoadClip("GoldPickup.wav");
             serialized.FindProperty("_nuke").objectReferenceValue = nuke;
             serialized.FindProperty("_flash").objectReferenceValue = flash;
             serialized.FindProperty("_nukeClip").objectReferenceValue = LoadClip("Nuke.wav");

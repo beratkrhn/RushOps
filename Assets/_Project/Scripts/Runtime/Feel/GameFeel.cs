@@ -2,6 +2,7 @@ using RushOps.Audio;
 using RushOps.Cameras;
 using RushOps.Combat;
 using RushOps.Enemies;
+using RushOps.Loot;
 using RushOps.Perks;
 using RushOps.Player;
 using RushOps.UI;
@@ -28,6 +29,7 @@ namespace RushOps.Feel
         [SerializeField] private ExplosionSystem _explosions;
         [SerializeField] private SpriteEffectPool _explosionEffects;
         [SerializeField] private PerkPickupPool _perks;
+        [SerializeField] private GoldPickupPool _gold;
         [SerializeField] private NukeSystem _nuke;
         [SerializeField] private ScreenFlash _flash;
         [SerializeField] private AudioClip _nukeClip;
@@ -38,6 +40,7 @@ namespace RushOps.Feel
         [SerializeField] private AudioClip _hitClip;
         [SerializeField] private AudioClip _deathClip;
         [SerializeField] private AudioClip _perkPickupClip;
+        [SerializeField] private AudioClip _goldPickupClip;
         [Tooltip("Sound when the player loses a heart (issue #108).")]
         [SerializeField] private AudioClip _playerHurtClip;
         [Tooltip("Sound of the dash (issue #108).")]
@@ -45,6 +48,7 @@ namespace RushOps.Feel
 
         private int _hearts = -1;
         private int _deathSoundFrame = -1;
+        private int _goldSoundFrame = -1;
 
         private void OnEnable()
         {
@@ -71,6 +75,11 @@ namespace RushOps.Feel
             if (_perks != null)
             {
                 _perks.Collected += OnPerkCollected;
+            }
+
+            if (_gold != null)
+            {
+                _gold.Collected += OnGoldCollected;
             }
 
             if (_nuke != null)
@@ -115,6 +124,11 @@ namespace RushOps.Feel
             if (_perks != null)
             {
                 _perks.Collected -= OnPerkCollected;
+            }
+
+            if (_gold != null)
+            {
+                _gold.Collected -= OnGoldCollected;
             }
 
             if (_nuke != null)
@@ -215,6 +229,16 @@ namespace RushOps.Feel
             }
 
             Play(explosion.Clip, explosion.Volume);
+        }
+
+        private void OnGoldCollected(GoldPickup coin)
+        {
+            // Several coins can land in one frame; one sound is enough.
+            if (_goldSoundFrame != Time.frameCount)
+            {
+                _goldSoundFrame = Time.frameCount;
+                Play(_goldPickupClip, _config != null ? _config.GoldPickupVolume : 0f);
+            }
         }
 
         private void OnPerkCollected(PerkPickup pickup)
