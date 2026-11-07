@@ -89,6 +89,10 @@ Entscheidungen A1 bis A5, B, K, W11 bis W15, H, E, RM, T, CH, Z und N1 bis N10 i
 
 In Stories zerlegt: [`v1.1.0.md`](v1.1.0.md) (#205 bis #212, Epic #213). Die Epics der folgenden Versionen sind #214 bis #220; v1.9.0 enthält Musik (#42).
 
+### v1.2.0 – Beute
+
+In Stories zerlegt: [`v1.2.0.md`](v1.2.0.md) (#233 bis #237, Epic #214). Entscheidungen B1 bis B5, N1 und N11 bis N14, Lastenheft Abschnitt 2.11.
+
 ### Musik (#42)
 
 Ein Menütrack, je ein loopbarer Action-Track pro Insel und einer für die Arena, per Skript erzeugt (G11, G12). Teil von v1.9.0.

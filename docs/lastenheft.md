@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Version** | 0.9 |
+| **Version** | 1.0 |
 | **Stand** | 07.11.2026 |
 | **Status** | Entwurf, nicht final |
 | **Autor** | Berat Karahan |
@@ -176,7 +176,7 @@ Alle Werte sind *Startwerte*.
 
 | ID | Anforderung | Prio |
 |---|---|---|
-| F-SKN-01 | Es gibt keine In-App-Käufe und keine Premium-Währung. | Muss |
+| F-SKN-01 | Es gibt keine In-App-Käufe und keine Premium-Währung. Gold (2.11) wird nur im Spiel verdient. | Muss |
 | F-SKN-02 | Jede abgeschlossene Insel (ihr letztes Level) schaltet einen fest definierten Skin frei. | Muss |
 | F-SKN-03 | Zusätzliche Skins werden über spielübergreifende Meilensteine freigeschaltet (z. B. 100 Kills insgesamt). | Muss |
 | F-SKN-04 | Skins sind in Version 1.0 **rein kosmetisch**. | Muss |
@@ -196,6 +196,19 @@ Neben dem Story Mode gibt es einen Endlos-Modus (Design-Fragen E1 bis E10, N2 bi
 | F-END-07 | Der Lauf startet mit der Pistole. **Alle 5 Runden** wird an der Arenawand eine weitere Waffe verfügbar; die Waffen hängen nebeneinander *(Startwert: Runde 5 Schrotflinte, 10 Sturmgewehr, 15 Dual-Pistolen)*. | Muss |
 | F-END-08 | Der Lauf endet bei 0 Herzen; es gibt keinen Zwischenstand. Score und erreichte Runde werden als lokale **Top 10** gespeichert. | Muss |
 | F-END-09 | Skins werden für das Erreichen von Runde 10, 25 und 50 freigeschaltet. | Soll |
+
+### 2.11 Beute (Gold)
+
+Zombies lassen Gold fallen. Gold gibt Punkte und ist eine Währung, die nur im Spiel verdient wird (Design-Fragen B1 bis B5, N1, N11 bis N14, Backlog [`v1.2.0.md`](backlog/v1.2.0.md)). Gilt in der Kampagne und im Endlos-Modus (A4).
+
+| ID | Anforderung | Prio |
+|---|---|---|
+| F-GLD-01 | Jeder besiegte Gegner lässt Gold fallen, auch bei Kills durch Nuke und Explosionen. Es gibt nur eine Sorte Münze; die Menge hängt vom Gegnertyp ab *(Startwert: Walker 1, Runner 1, Boomer 2, Brute 3, Boss 25)*. | Muss |
+| F-GLD-02 | **Magnet**: Liegt Gold näher als *1 Kachel (Startwert)* am Spieler, fliegt es zu ihm. Berührung sammelt es ein. | Muss |
+| F-GLD-03 | Liegengebliebenes Gold verschwindet nach *8 s (Startwert)* und blinkt in den letzten *2 s (Startwert)*. | Muss |
+| F-GLD-04 | Jede Münze gibt *25 Punkte (Startwert)* mal Kombo-Multiplikator. Aufsammeln setzt das Kombo-Fenster zurück, erhöht den Multiplikator aber nicht. | Soll |
+| F-GLD-05 | Eingesammeltes Gold kommt sofort aufs Konto und bleibt auch bei Tod und Abbruch erhalten. Das HUD zeigt das Gold des laufenden Levels oder Laufs. | Muss |
+| F-GLD-06 | Im Skin-Karussell kann der Skin **„Goldrausch“** für *2500 Gold (Startwert)* gekauft werden. Hauptmenü und Karussell zeigen den Kontostand. | Muss |
 
 ---
 
@@ -225,7 +238,7 @@ Neben dem Story Mode gibt es einen Endlos-Modus (Design-Fragen E1 bis E10, N2 bi
 | F-HUD-01 | Herzen | oben links | blinken rot bei Schaden | Muss |
 | F-HUD-02 | Aktive Perks | unter den Herzen | Icon mit kreisförmigem Timer | Muss |
 | F-HUD-03 | Missions-Tracker | oben rechts | z. B. „Tor gesperrt: 4/10 Kills“; bei Rätseln Fortschrittsbalken oder Countdown | Muss |
-| F-HUD-04 | Score und Multiplikator | oben mittig | | Soll |
+| F-HUD-04 | Score und Multiplikator | oben mittig | darunter das Gold des Levels oder Laufs (F-GLD-05) | Soll |
 | F-HUD-05 | Boss-Lebensleiste | oben, über die Breite | nur in Bosskämpfen | Muss |
 | F-HUD-06 | Pause-Button | obere Ecke | öffnet Overlay: Fortsetzen, Neustart, Hauptmenü | Muss |
 | F-HUD-07 | Sticks und Dash-Button | unten | siehe 2.1 | Muss |
@@ -242,8 +255,8 @@ Neben dem Story Mode gibt es einen Endlos-Modus (Design-Fragen E1 bis E10, N2 bi
 |---|---|---|
 | F-DAT-01 | Gespeichert wird lokal als JSON-Datei im App-Speicher (`Application.persistentDataPath`). | Muss |
 | F-DAT-02 | Es gibt kein manuelles Speichern und keinen Speicherstand innerhalb eines Levels. | Muss |
-| F-DAT-03 | **Autosave** bei: Level geschafft, Tod der Spielfigur (Statistiken), Änderung der Einstellungen. | Muss |
-| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08). | Muss |
+| F-DAT-03 | **Autosave** bei: Level geschafft, Tod der Spielfigur (Statistiken), Abbruch eines Levels oder Laufs, Kauf eines Skins, Änderung der Einstellungen. | Muss |
+| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08), Goldkontostand und Gold insgesamt (F-GLD-05). | Muss |
 | F-DAT-05 | Das Speicherformat hat eine Versionsnummer, damit spätere Versionen alte Spielstände migrieren können. | Muss |
 | F-DAT-06 | Ein beschädigter Spielstand führt nicht zum Absturz. Es wird ein Backup geladen oder ein neuer Spielstand angelegt. | Muss |
 
@@ -291,7 +304,7 @@ Seit 06.11.2026 wird erst nach den Erweiterungen aus Abschnitt 8 veröffentlicht
 Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs/backlog/design-fragen.md`). Anforderungs-IDs kommen hinzu, sobald die jeweilige Version in Stories zerlegt wird.
 
 - **v1.1.0 Endlos-Modus**: siehe Abschnitt 2.10.
-- **v1.2.0 Beute**: Zombies lassen Gold fallen (eine Sorte, Magnet, verschwindet nach 8 s). Gold gibt Punkte und ist eine Währung im Spiel; ein Goldskin ist damit kaufbar. F-SKN-01 wird dann zu „keine In-App-Käufe, keine Premium-Währung; Gold wird nur im Spiel verdient“.
+- **v1.2.0 Beute**: siehe Abschnitt 2.11.
 - **v1.3.0 Begleiter und Strohmann**: Perk Begleiter (Kampfdrohne, schießt mit) und Perk Strohmann (lenkt normale Gegner ab und explodiert am Ende).
 - **v1.4.0 Superwaffen**: Flammenwerfer und Raketenwerfer als seltene Perk-Drops für kurze Zeit.
 - **v1.5.0 Hunde**: Zombiehunde im Rudel mit angekündigtem Sprung; im Endlos-Modus jede 6. Runde eine Hunderunde.
@@ -331,3 +344,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 0.7 | 04.11.2026 | F-LVL-03: Kill-Gates können ab Betreten ihrer Zone zählen (Design-Frage P1, Issue #147). |
 | 0.8 | 05.11.2026 | F-PLT-01: nur iOS auf dem iPhone; Android, iPad und Musik nicht in 1.0 (Design-Fragen R1, R2, R10). |
 | 0.9 | 07.11.2026 | Release verschoben, Erweiterungen v1.1.0 bis v1.9.0 in Abschnitt 8; neuer Abschnitt 2.10 Endlos-Modus (F-END-01 bis F-END-09); F-GEG-03 gilt nur in der Kampagne; F-UI-02 mit Bereich Endlos; F-DAT-04 mit Endlos-Bestwerten (Design-Fragen A, E, N). |
+| 1.0 | 07.11.2026 | Neuer Abschnitt 2.11 Beute (F-GLD-01 bis F-GLD-06); F-SKN-01 mit Gold als reiner Spielwährung; F-HUD-04 mit Goldanzeige; F-DAT-03 mit Autosave bei Abbruch und Kauf; F-DAT-04 mit Goldkonto (Design-Fragen B, N1, N11 bis N14). |

@@ -227,3 +227,12 @@ Entschieden am 06.11.2026 (Notion-Seite „Design-Fragen ab v1.0.0“). „V“ 
 | N8 | Mehr Schaden im Rush? | ×1,5, mit Doppelschaden ×3 | V |
 | N9 | Hinweise für Zombie-Rätsel? | Symbol am Rätsel und beim ersten Mal Text im Missions-Tracker | V |
 | N10 | Tileset der Arena? | Eigenes Kolosseum-Tileset aus der gemeinsamen Palette | V |
+
+Beim Zerlegen von v1.2.0 am 07.11.2026 nachgefragt:
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| N11 | Wie viel Gold lassen Gegner fallen? | Jeder Kill je nach Typ: Walker 1, Runner 1, Boomer 2, Brute 3, Boss 25 | V |
+| N12 | Gold bei Tod oder Abbruch? | Bleibt immer; wird beim Aufsammeln sofort gutgeschrieben, auch im Endlos-Modus | V |
+| N13 | Wo wird der Goldskin gekauft? | Im Skin-Karussell mit Button „Kaufen“; Kontostand im Hauptmenü und im Karussell; kein eigener Shop | V |
+| N14 | Punkte pro Münze (B2)? | 10 Punkte | **25 Punkte** mal Multiplikator |
