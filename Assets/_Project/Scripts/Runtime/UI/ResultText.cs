@@ -17,6 +17,12 @@ namespace RushOps.UI
             return "Score: " + ScoreText.Score(score);
         }
 
+        /// <summary>Gold line of the result screens (F-GLD-04), e.g. „+12 Gold“.</summary>
+        public static string Gold(int gold)
+        {
+            return "+" + (gold > 0 ? gold : 0).ToString(CultureInfo.InvariantCulture) + " Gold";
+        }
+
         /// <summary>Kills line, e.g. „Kills: 42“.</summary>
         public static string Kills(int kills)
         {

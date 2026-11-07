@@ -217,15 +217,18 @@ namespace RushOps.Editor.Scenes
                 "Round", result, font, EndlessText.Round(1), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 178f));
             Text resultScore = ArenaTestSceneBuilder.CreateText(
                 "Score", result, font, ResultText.Score(0), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 154f));
+            Text resultGold = ArenaTestSceneBuilder.CreateText(
+                "Gold", result, font, ResultText.Gold(0), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 130f));
+            resultGold.color = ArenaTestSceneBuilder.PaletteYellow;
             Text rank = ArenaTestSceneBuilder.CreateText(
-                "Rank", result, font, EndlessText.Rank(1), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 130f));
+                "Rank", result, font, EndlessText.Rank(1), ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 106f));
             Text topTitle = ArenaTestSceneBuilder.CreateText(
-                "TopTitle", result, font, EndlessText.TopTitle, ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 94f));
+                "TopTitle", result, font, EndlessText.TopTitle, ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 78f));
             var columns = new Text[TopColumnX.Length];
             for (int i = 0; i < columns.Length; i++)
             {
                 columns[i] = ArenaTestSceneBuilder.CreateText($"TopColumn{i}", result, font, EndlessText.TopHeadings[i],
-                    ArenaTestSceneBuilder.HudPixelScale, new Vector2(TopColumnX[i], 64f));
+                    ArenaTestSceneBuilder.HudPixelScale, new Vector2(TopColumnX[i], 50f));
                 columns[i].alignment = TextAnchor.UpperCenter;
             }
 
@@ -243,6 +246,8 @@ namespace RushOps.Editor.Scenes
             serializedHud.FindProperty("_resultPanel").objectReferenceValue = result.gameObject;
             serializedHud.FindProperty("_resultRound").objectReferenceValue = round;
             serializedHud.FindProperty("_resultScore").objectReferenceValue = resultScore;
+            serializedHud.FindProperty("_resultGold").objectReferenceValue = resultGold;
+            serializedHud.FindProperty("_gold").objectReferenceValue = Object.FindAnyObjectByType<RushOps.Loot.GoldCollector>();
             serializedHud.FindProperty("_score").objectReferenceValue = score;
             serializedHud.FindProperty("_pause").objectReferenceValue = pause;
             serializedHud.FindProperty("_resultNewBest").objectReferenceValue = newBest;

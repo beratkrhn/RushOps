@@ -1,5 +1,6 @@
 using System;
 using RushOps.Levels;
+using RushOps.Loot;
 using RushOps.Player;
 using RushOps.Scoring;
 using UnityEngine;
@@ -20,6 +21,8 @@ namespace RushOps.UI
         [SerializeField] private LevelExit _exit;
         [SerializeField] private LevelScore _score;
         [SerializeField] private LevelKills _kills;
+        [Tooltip("Gold of this level for the „+X Gold“ lines (F-GLD-04); none shows 0.")]
+        [SerializeField] private GoldCollector _gold;
         [SerializeField] private PauseController _pause;
         [Tooltip("Scene „Weiter“ leads to: the island map (#127).")]
         [SerializeField] private string _continueScene = "IslandMap";
@@ -28,6 +31,7 @@ namespace RushOps.UI
         [SerializeField] private GameObject _donePanel;
         [SerializeField] private Text _doneScore;
         [SerializeField] private Text _doneKills;
+        [SerializeField] private Text _doneGold;
         [SerializeField] private Text _doneTime;
         [Tooltip("Shows the score needed for the next star.")]
         [SerializeField] private Text _doneNextStar;
@@ -40,6 +44,7 @@ namespace RushOps.UI
         [Header("Gescheitert")]
         [SerializeField] private GameObject _failedPanel;
         [SerializeField] private Text _failedScore;
+        [SerializeField] private Text _failedGold;
 
         /// <summary>Raised when „Level geschafft!“ appears, with the stars and the score (issue #123).</summary>
         public event Action<int, int> Completed;
@@ -59,6 +64,8 @@ namespace RushOps.UI
         /// <summary>Extra line shown on the done screen; empty if none.</summary>
         public string MessageShown => _doneMessage != null && _doneMessage.gameObject.activeSelf ? _doneMessage.text : string.Empty;
 
+        private int EarnedGold => _gold != null ? _gold.Wallet.EarnedThisRun : 0;
+
         /// <summary>The level this scene plays.</summary>
         public LevelDefinition Level => _level;
 
@@ -74,6 +81,7 @@ namespace RushOps.UI
             StarsShown = _level != null ? _level.StarsFor(score) : 1;
             SetText(_doneScore, ResultText.Score(score));
             SetText(_doneKills, ResultText.Kills(_kills != null ? _kills.Counter.Count : 0));
+            SetText(_doneGold, ResultText.Gold(EarnedGold));
             SetText(_doneTime, ResultText.Time(Time.timeSinceLevelLoad));
             SetText(_doneNextStar, _level != null
                 ? ResultText.NextStar(StarsShown, _level.TwoStarScore, _level.ThreeStarScore)
@@ -107,6 +115,7 @@ namespace RushOps.UI
             }
 
             SetText(_failedScore, ResultText.Score(_score != null ? _score.Keeper.Score : 0));
+            SetText(_failedGold, ResultText.Gold(EarnedGold));
             Freeze();
             _failedPanel.SetActive(true);
             Failed?.Invoke();

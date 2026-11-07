@@ -191,6 +191,9 @@ namespace RushOps.Editor.Scenes
         // score is centered in its 30 units high label (center at 15) and font lines are 20 units high at the HUD scale,
         // so the multiplier sits one line under the score.
         private const float ScoreRowOffset = 35f;
+        private const float GoldRowOffset = 62f;
+        private const float GoldIconSize = 16f;
+        private const float GoldIconGap = 14f;
         private const string NukeConfigPath = "Assets/_Project/Data/Perks/NukeConfig.asset";
         internal const string CarryConfigPath = "Assets/_Project/Data/Puzzles/CarryConfig.asset";
         // In front of the right hand of the 64x64 figure, pivoted at its feet.
@@ -660,6 +663,8 @@ namespace RushOps.Editor.Scenes
             SpriteEffectPool explosionEffects = CreateEffectPool("ExplosionEffectPool", CreateOrUpdateExplosionEffectPrefab(), 4, 16);
             PerkPickupPool perks = PerkDropsBuilder.Create(enemyPools, navigator);
             GoldPickupPool gold = GoldBuilder.Create(enemyPools, navigator, target, score, perks.Config);
+            CreateGoldView(
+                (RectTransform)scoreView.transform.parent, LoadOrCreateConfig<HudConfig>(HudConfigPath), PixelFontBuilder.Build(), results);
             var playerPerks = new SerializedObject(target.GetComponent<PlayerPerks>());
             playerPerks.FindProperty("_pickups").objectReferenceValue = perks;
             playerPerks.ApplyModifiedPropertiesWithoutUndo();
@@ -1851,6 +1856,47 @@ namespace RushOps.Editor.Scenes
             return view;
         }
 
+        // Coin icon and the gold of the level below score and multiplier (F-GLD-04, issue #235); wired to the collector
+        // that GoldBuilder created, which also feeds the „+X Gold“ lines of the result screens.
+        private static void CreateGoldView(RectTransform parent, HudConfig config, Font font, LevelResults results)
+        {
+            var collector = Object.FindAnyObjectByType<GoldCollector>();
+            var top = new Vector2(0.5f, 1f);
+            RectTransform row = CreateUiRect("GoldView", parent, top, top);
+            row.pivot = top;
+            row.anchoredPosition = new Vector2(0f, -HudMargin - GoldRowOffset);
+            row.sizeDelta = Vector2.zero;
+
+            Sprite coin = AssetDatabase.LoadAssetAtPath<Sprite>("Assets/_Project/Art/Sprites/Pickups/Gold_0.png");
+            float iconSize = GoldIconSize;
+            RectTransform icon = CreateUiRect("Icon", row, new Vector2(0.5f, 0.5f), new Vector2(0.5f, 0.5f));
+            icon.sizeDelta = new Vector2(iconSize, iconSize);
+            icon.anchoredPosition = new Vector2(-GoldIconGap, 0f);
+            var image = icon.gameObject.AddComponent<Image>();
+            image.sprite = coin;
+            image.preserveAspect = true;
+            image.raycastTarget = false;
+
+            Text label = CreateText("Gold", row, font, ScoreText.Gold(0), HudPixelScale, Vector2.zero);
+            label.rectTransform.anchorMin = new Vector2(0.5f, 0.5f);
+            label.rectTransform.anchorMax = new Vector2(0.5f, 0.5f);
+            label.rectTransform.pivot = new Vector2(0f, 0.5f);
+            label.rectTransform.anchoredPosition = new Vector2(-GoldIconGap + iconSize * 0.5f + 4f, 0f);
+            label.alignment = TextAnchor.MiddleLeft;
+            label.color = PaletteYellow;
+
+            var view = row.gameObject.AddComponent<GoldView>();
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_collector").objectReferenceValue = collector;
+            serialized.FindProperty("_label").objectReferenceValue = label;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            var serializedResults = new SerializedObject(results);
+            serializedResults.FindProperty("_gold").objectReferenceValue = collector;
+            serializedResults.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         private static LevelScore CreateLevelScore(EnemyPool[] pools, PlayerHealth player, ScoreView view)
         {
             var score = new GameObject("LevelScore").AddComponent<LevelScore>();
@@ -1942,26 +1988,32 @@ namespace RushOps.Editor.Scenes
 
             Text score = CreateText("Score", done, font, ResultText.Score(0), HudPixelScale, new Vector2(0f, 25f));
             Text kills = CreateText("Kills", done, font, ResultText.Kills(0), HudPixelScale, new Vector2(0f, 0f));
-            Text time = CreateText("Time", done, font, ResultText.Time(0f), HudPixelScale, new Vector2(0f, -25f));
-            Text nextStar = CreateText("NextStar", done, font, string.Empty, HudPixelScale, new Vector2(0f, -50f));
+            Text gold = CreateText("Gold", done, font, ResultText.Gold(0), HudPixelScale, new Vector2(0f, -25f));
+            gold.color = PaletteYellow;
+            Text time = CreateText("Time", done, font, ResultText.Time(0f), HudPixelScale, new Vector2(0f, -50f));
+            Text nextStar = CreateText("NextStar", done, font, string.Empty, HudPixelScale, new Vector2(0f, -75f));
             // Between title and stars (C12); LevelResults hides it for levels without a message.
             Text message = CreateText("Message", done, font, string.Empty, HudPixelScale, new Vector2(0f, 102f));
             message.color = PaletteYellow;
             message.gameObject.SetActive(false);
-            CreateMenuButton("RetryButton", done, font, "Nochmal", new Vector2(0f, -85f), results.Retry);
-            CreateMenuButton("ContinueButton", done, font, "Weiter", new Vector2(0f, -85f - MenuButtonSize.y - 12f), results.Continue);
+            CreateMenuButton("RetryButton", done, font, "Nochmal", new Vector2(0f, -110f), results.Retry);
+            CreateMenuButton("ContinueButton", done, font, "Weiter", new Vector2(0f, -110f - MenuButtonSize.y - 12f), results.Continue);
             CreateUnlockedSkin(parent, done, font);
             CreateUnlockedWeapon(parent, done, font);
 
             RectTransform failed = CreateDimPanel("FailedPanel", parent);
             CreateText("Title", failed, font, ResultText.Failed, TitlePixelScale, new Vector2(0f, 60f));
             Text failedScore = CreateText("Score", failed, font, ResultText.Score(0), HudPixelScale, new Vector2(0f, 10f));
-            CreateMenuButton("RestartButton", failed, font, "Neustart", new Vector2(0f, -50f), results.Retry);
+            Text failedGold = CreateText("Gold", failed, font, ResultText.Gold(0), HudPixelScale, new Vector2(0f, -15f));
+            failedGold.color = PaletteYellow;
+            CreateMenuButton("RestartButton", failed, font, "Neustart", new Vector2(0f, -60f), results.Retry);
 
             var serialized = new SerializedObject(results);
             serialized.FindProperty("_donePanel").objectReferenceValue = done.gameObject;
             serialized.FindProperty("_doneScore").objectReferenceValue = score;
             serialized.FindProperty("_doneKills").objectReferenceValue = kills;
+            serialized.FindProperty("_doneGold").objectReferenceValue = gold;
+            serialized.FindProperty("_failedGold").objectReferenceValue = failedGold;
             serialized.FindProperty("_doneTime").objectReferenceValue = time;
             serialized.FindProperty("_doneNextStar").objectReferenceValue = nextStar;
             serialized.FindProperty("_doneMessage").objectReferenceValue = message;
