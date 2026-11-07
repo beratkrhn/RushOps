@@ -124,5 +124,27 @@ namespace RushOps.Tests.EditMode
             rules.Clear();
             Assert.IsFalse(rules.IsActive);
         }
+
+        [Test]
+        public void Follow_MovesTowardsTargetWithoutOvershooting()
+        {
+            Vector2 position = CompanionRules.Follow(Vector2.zero, new Vector2(4f, 0f), 6f, 0.1f);
+            Assert.Greater(position.x, 0f);
+            Assert.Less(position.x, 4f);
+        }
+
+        [Test]
+        public void Follow_ALongStepNeverPassesTheTarget()
+        {
+            Vector2 position = CompanionRules.Follow(Vector2.zero, new Vector2(4f, 0f), 6f, 100f);
+            Assert.AreEqual(4f, position.x, 0.001f);
+        }
+
+        [Test]
+        public void Follow_WithoutSpeedOrTime_StaysPut()
+        {
+            Assert.AreEqual(Vector2.one, CompanionRules.Follow(Vector2.one, new Vector2(4f, 0f), 0f, 0.1f));
+            Assert.AreEqual(Vector2.one, CompanionRules.Follow(Vector2.one, new Vector2(4f, 0f), 6f, 0f));
+        }
     }
 }
