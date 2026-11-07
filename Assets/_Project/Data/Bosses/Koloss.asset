@@ -17,6 +17,7 @@ MonoBehaviour:
   _moveSpeed: 1.4
   _contactDamage: 1
   _points: 1000
+  _gold: 25
   _perkThresholds:
   - 0.66
   - 0.33

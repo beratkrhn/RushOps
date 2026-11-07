@@ -22,6 +22,9 @@ namespace RushOps.Enemies
         [Tooltip("Score points for a kill (counted from v0.2.0).")]
         [SerializeField, Min(0)] private int _points = 10;
 
+        [Tooltip("Gold a kill drops (F-GLD-01).")]
+        [SerializeField, Min(0)] private int _gold = 1;
+
         [Tooltip("Bosses do not count towards the limit of enemies alive at once (F-GEG-03).")]
         [SerializeField] private bool _isBoss;
 
@@ -63,6 +66,9 @@ namespace RushOps.Enemies
 
         /// <summary>Score points for a kill.</summary>
         public int Points => _points;
+
+        /// <summary>Gold a kill drops.</summary>
+        public int Gold => _gold;
 
         /// <summary>True for bosses, which do not count towards the enemy limit.</summary>
         public bool IsBoss => _isBoss;

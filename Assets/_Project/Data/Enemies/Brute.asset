@@ -17,6 +17,7 @@ MonoBehaviour:
   _contactDamage: 2
   _deathDuration: 0.4
   _points: 50
+  _gold: 3
   _isBoss: 0
   _mass: 5
   _knockbackScale: 0.15

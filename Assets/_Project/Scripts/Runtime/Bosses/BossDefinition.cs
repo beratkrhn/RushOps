@@ -21,6 +21,9 @@ namespace RushOps.Bosses
         [Tooltip("Score points for beating the boss, without combo multiplier (C10).")]
         [SerializeField, Min(0)] private int _points = 1000;
 
+        [Tooltip("Gold the boss drops when beaten (F-GLD-01).")]
+        [SerializeField, Min(0)] private int _gold = 25;
+
         [Tooltip("Share of health left at which one random perk drops, from high to low (C9).")]
         [SerializeField] private float[] _perkThresholds = { 0.66f, 0.33f };
 
@@ -47,6 +50,9 @@ namespace RushOps.Bosses
 
         /// <summary>Score points for beating the boss.</summary>
         public int Points => _points;
+
+        /// <summary>Gold dropped when the boss is beaten.</summary>
+        public int Gold => _gold;
 
         /// <summary>Health shares (0..1) at which a perk drops, from high to low.</summary>
         public float[] PerkThresholds => _perkThresholds ?? System.Array.Empty<float>();
