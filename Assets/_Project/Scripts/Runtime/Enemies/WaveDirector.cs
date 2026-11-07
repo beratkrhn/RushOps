@@ -40,6 +40,7 @@ namespace RushOps.Enemies
         private int _announcedCount;
         private int _announcedBosses;
         private Func<SpawnRequest, bool> _canPlace;
+        private int _maxActiveOverride = -1;
         private Rect _view;
         private Vector2 _playerPosition;
 
@@ -77,12 +78,27 @@ namespace RushOps.Enemies
         }
 
         /// <summary>
-        /// Enemies that may still appear before the cap of <see cref="SpawnerConfig.MaxActive"/> is reached, counting
+        /// Most non-boss enemies alive or announced at once: the value set with <see cref="SetMaxActive"/>, otherwise
+        /// <see cref="SpawnerConfig.MaxActive"/>; 0 without config.
+        /// </summary>
+        public int MaxActive => _maxActiveOverride >= 0 ? _maxActiveOverride : (_config != null ? _config.MaxActive : 0);
+
+        /// <summary>
+        /// Enemies that may still appear before the cap of <see cref="MaxActive"/> is reached, counting
         /// living and announced non-boss enemies; 0 without config. Bosses that spawn enemies themselves check it too.
         /// </summary>
         public int FreeSlots => _config != null
-            ? SpawnRules.FreeSlots(_config.MaxActive, AliveCount, _announcedCount - _announcedBosses)
+            ? SpawnRules.FreeSlots(MaxActive, AliveCount, _announcedCount - _announcedBosses)
             : 0;
+
+        /// <summary>
+        /// Replaces the cap of <see cref="SpawnerConfig.MaxActive"/> from now on, e.g. with the value of an endless round
+        /// (F-GEG-03, F-END-04). A negative value goes back to the config.
+        /// </summary>
+        public void SetMaxActive(int maxActive)
+        {
+            _maxActiveOverride = maxActive >= 0 ? maxActive : -1;
+        }
 
         /// <summary>
         /// Runs <paramref name="waves"/> in <paramref name="zone"/> from now on instead of its current waves, e.g. faster

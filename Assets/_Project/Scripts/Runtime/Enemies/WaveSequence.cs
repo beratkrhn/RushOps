@@ -49,6 +49,9 @@ namespace RushOps.Enemies
         /// <summary>Enemies handed out by this sequence that have not died yet.</summary>
         public int Outstanding { get; private set; }
 
+        /// <summary>Enemies of the running wave that still have to come or are alive; 0 when idle or finished.</summary>
+        public int Remaining => Phase == WavePhase.Spawning || Phase == WavePhase.Clearing ? _remaining + Outstanding : 0;
+
         /// <summary>Raised for every enemy the current wave asks for.</summary>
         public event Action<EnemyDefinition> SpawnRequested;
 

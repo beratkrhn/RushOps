@@ -1,3 +1,4 @@
+using RushOps.Endless;
 using RushOps.Levels;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -12,6 +13,9 @@ namespace RushOps.UI
     {
         [SerializeField] private LevelDefinition[] _levels = System.Array.Empty<LevelDefinition>();
 
+        /// <summary>Scene of the endless arena.</summary>
+        public const string EndlessScene = "Endless_Arena";
+
         /// <summary>The listed levels.</summary>
         public LevelDefinition[] Levels => _levels;
 
@@ -25,6 +29,14 @@ namespace RushOps.UI
 
             Time.timeScale = 1f;
             SceneManager.LoadScene(_levels[index].SceneName);
+        }
+
+        /// <summary>Starts an endless run at <paramref name="round"/> (issue #207).</summary>
+        public void LoadEndless(int round)
+        {
+            EndlessStart.Round = round;
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(EndlessScene);
         }
     }
 }
