@@ -12,5 +12,8 @@ namespace RushOps.Save
 
         /// <summary>Ids of the skins unlocked by playing; default skins are not listed.</summary>
         public List<string> Unlocked = new List<string>();
+
+        /// <summary>Ids of the skins bought with gold (issue #236, version 4); they stay owned.</summary>
+        public List<string> Purchased = new List<string>();
     }
 }

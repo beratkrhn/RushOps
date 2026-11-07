@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using RushOps.Combat;
 using RushOps.Endless;
 using RushOps.Levels;
+using RushOps.Loot;
 using RushOps.Scoring;
 using RushOps.Skins;
 using RushOps.UI;
@@ -28,9 +29,12 @@ namespace RushOps.Save
         [SerializeField] private SkinCatalog _skins;
         [Tooltip("Weapons unlocked by beating a boss (issue #176).")]
         [SerializeField] private WeaponCatalog _weapons;
+        [Tooltip("The gold of the level (issue #236). Found once at start if empty, so older scenes keep working.")]
+        [SerializeField] private GoldCollector _gold;
         [Tooltip("The endless run of the arena; its end is recorded as a best score (issue #211). Empty in the campaign.")]
         [SerializeField] private EndlessRunController _endless;
 
+        private GoldWallet _wallet;
         private readonly LevelStatsTracker _stats = new LevelStatsTracker();
         private readonly List<SkinDefinition> _newSkins = new List<SkinDefinition>();
         private readonly List<WeaponDefinition> _newWeapons = new List<WeaponDefinition>();
@@ -52,6 +56,27 @@ namespace RushOps.Save
 
         /// <summary>The endless best scores of the save game; null without a save.</summary>
         public EndlessData EndlessData => _save != null ? _save.Data.Endless : null;
+
+        private void Awake()
+        {
+            // Awake runs before every OnEnable, so the wallet holds the saved gold before the HUD reads it.
+            if (_save == null)
+            {
+                return;
+            }
+
+            if (_gold == null)
+            {
+                _gold = FindAnyObjectByType<GoldCollector>();
+            }
+
+            if (_gold != null)
+            {
+                // Kept as a plain object: on scene unload the collector may be destroyed before OnDestroy runs here.
+                _wallet = _gold.Wallet;
+                GoldSaveRules.Load(_save.Data.Gold, _wallet);
+            }
+        }
 
         private void OnEnable()
         {
@@ -179,9 +204,10 @@ namespace RushOps.Save
 
         private bool CommitStats(SaveData data)
         {
+            bool goldChanged = _wallet != null && GoldSaveRules.Commit(data.Gold, _wallet);
             int kills = _kills != null ? _kills.Counter.Count : 0;
             int bestCombo = _score != null ? _score.Keeper.BestMultiplier : 1;
-            return _stats.CommitTo(data.Stats, kills, Time.timeSinceLevelLoad, bestCombo);
+            return _stats.CommitTo(data.Stats, kills, Time.timeSinceLevelLoad, bestCombo) || goldChanged;
         }
     }
 }

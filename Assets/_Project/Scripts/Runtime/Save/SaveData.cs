@@ -13,7 +13,7 @@ namespace RushOps.Save
     public class SaveData
     {
         /// <summary>Format version written by this build.</summary>
-        public const int CurrentVersion = 3;
+        public const int CurrentVersion = 4;
 
         /// <summary>Format version of this save.</summary>
         public int Version = CurrentVersion;
@@ -35,5 +35,8 @@ namespace RushOps.Save
 
         /// <summary>Best scores of the endless mode (issue #211, version 3).</summary>
         public EndlessData Endless = new EndlessData();
+
+        /// <summary>The gold account (issue #236, version 4).</summary>
+        public GoldData Gold = new GoldData();
     }
 }

@@ -42,6 +42,21 @@ namespace RushOps.Loot
             BalanceChanged?.Invoke(Balance);
         }
 
+        /// <summary>
+        /// Sets balance and total to the saved values (below 0 counts as 0). Raises <see cref="BalanceChanged"/> only if
+        /// the balance differs; the gold of the run is untouched.
+        /// </summary>
+        public void Restore(int balance, int totalEarned)
+        {
+            int old = Balance;
+            Balance = Math.Max(0, balance);
+            TotalEarned = Math.Max(0, totalEarned);
+            if (Balance != old)
+            {
+                BalanceChanged?.Invoke(Balance);
+            }
+        }
+
         /// <summary>True if the balance covers <paramref name="amount"/>.</summary>
         public bool CanAfford(int amount) => amount >= 0 && Balance >= amount;
 
