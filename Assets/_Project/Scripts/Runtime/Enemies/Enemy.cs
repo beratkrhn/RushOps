@@ -19,7 +19,7 @@ namespace RushOps.Enemies
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
     [RequireComponent(typeof(EnemyMovement))]
-    public class Enemy : MonoBehaviour, IDamageable, IContactDamage, IExplosionTarget, IKnockbackable
+    public class Enemy : MonoBehaviour, IAreaTarget, IContactDamage, IExplosionTarget, IKnockbackable
     {
         [SerializeField] private EnemyDefinition _definition;
         [SerializeField] private FeelConfig _feel;
@@ -76,6 +76,9 @@ namespace RushOps.Enemies
 
         /// <inheritdoc />
         public Vector2 ExplosionPoint => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
+
+        /// <inheritdoc />
+        public bool CanBeHit => _health != null && !_health.IsDead && isActiveAndEnabled;
 
         /// <inheritdoc />
         public bool CanBeHitByExplosion => _health != null && !_health.IsDead && isActiveAndEnabled;

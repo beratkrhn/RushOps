@@ -37,12 +37,30 @@ namespace RushOps.Player
         private DirectionalSpriteAnimator _view;
         private ShotModifiers _modifiers = ShotModifiers.None;
         private int _shotCount;
+        private bool _holstered;
 
         /// <summary>Shots fired so far; alternating weapons pick their muzzle from it.</summary>
         public int ShotCount => _shotCount;
 
         /// <summary>Raised once per shot with its direction, e.g. for the shot sound.</summary>
         public event Action<Vector2> Fired;
+
+        /// <summary>
+        /// True while a super weapon is in the hands instead (F-PRK-09, issue #254): the weapon does not fire, the slots
+        /// stay as they are.
+        /// </summary>
+        public bool Holstered
+        {
+            get => _holstered;
+            set
+            {
+                _holstered = value;
+                if (value)
+                {
+                    _timer.Reset();
+                }
+            }
+        }
 
         /// <summary>Shared weapon settings; replacing it starts over with its start weapon, e.g. in tests.</summary>
         public WeaponConfig Config
@@ -112,7 +130,7 @@ namespace RushOps.Player
         private void Update()
         {
             WeaponDefinition weapon = ActiveWeapon;
-            if (weapon == null || _pool == null)
+            if (weapon == null || _pool == null || _holstered)
             {
                 return;
             }

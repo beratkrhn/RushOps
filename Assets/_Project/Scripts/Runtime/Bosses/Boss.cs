@@ -15,7 +15,7 @@ namespace RushOps.Bosses
     /// <see cref="TickBehaviour"/>. The <see cref="BossFight"/> runs health bar, perk drops and victory.
     /// </summary>
     [RequireComponent(typeof(Rigidbody2D))]
-    public class Boss : MonoBehaviour, IDamageable, IContactDamage
+    public class Boss : MonoBehaviour, IAreaTarget, IContactDamage
     {
         [SerializeField] private BossDefinition _definition;
         [SerializeField] private FeelConfig _feel;
@@ -77,6 +77,9 @@ namespace RushOps.Bosses
 
         /// <summary>The chased target, set by <see cref="Activate"/>.</summary>
         public Transform Target => _target;
+
+        /// <inheritdoc />
+        public bool CanBeHit => IsActive && IsInFight && isActiveAndEnabled;
 
         /// <summary>Center of the body, where shots should go; the transform sits at the feet.</summary>
         public Vector2 AimPoint => _hurtbox != null ? (Vector2)_hurtbox.bounds.center
