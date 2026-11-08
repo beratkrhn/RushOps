@@ -62,6 +62,9 @@ Output (under Assets/_Project/Art/):
   Sprites/Pickups/Gold_<0-3>.png           16x16 gold coin, 4 spin frames (issue #234)
   Sprites/Pickups/Perk_Companion.png       24x24 perk icon of the combat drone (issue #245)
   Sprites/Companion/Drone_<0-3>.png        20x16 combat drone of the companion perk, 4 hover frames (issue #245)
+  Sprites/Pickups/Perk_Scarecrow.png       24x24 perk icon of the scarecrow (issue #246)
+  Sprites/Scarecrow/Scarecrow_<0-1>.png    26x38 scarecrow with dynamite, 2 sway frames, pivot at the pole's foot (issue #246)
+  Sprites/Scarecrow/Scarecrow_Warning.png  26x38 the same with lit dynamite, blinks in the last second (issue #246)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
   Sprites/UI/Heart_Empty.png               12x11 HUD heart, lost
   Sprites/UI/Pause_Icon.png                12x12 pause symbol
@@ -1894,6 +1897,18 @@ PERK_GLYPHS = {
         "....####....",
         ".....++.....",
     ],
+    # Scarecrow: straw hat, sack head, red shirt with the arms out, straw sticking out below (issue #246).
+    "Scarecrow": [
+        "....####....",
+        "..########..",
+        "....oooo....",
+        "....oooo....",
+        "#++++++++++#",
+        "#++++++++++#",
+        "....++++....",
+        "....++++....",
+        "....#..#....",
+    ],
 }
 
 # Badge (shadow, base, light) and glyph (main, accent, detail) colors per perk.
@@ -1906,9 +1921,10 @@ PERK_COLORS = {
     "InstaKill": (("night", "slate_1", "slate_3"), ("white", "white", "outline")),
     "Nuke": (("orange", "yellow", "glow"), ("outline", "outline", "outline")),
     "Companion": (("slate_1", "slate_3", "slate_4"), ("white", "yellow", "outline")),
+    "Scarecrow": (("brown_0", "brown_1", "clay"), ("yellow", "red_1", "apricot")),
 }
 
-PERK_IDS = ["SpeedBoost", "Medkit", "DoubleDamage", "RapidFire", "Shield", "InstaKill", "Nuke", "Companion"]
+PERK_IDS = ["SpeedBoost", "Medkit", "DoubleDamage", "RapidFire", "Shield", "InstaKill", "Nuke", "Companion", "Scarecrow"]
 
 
 def perk_badge(shadow: str, base: str, light: str) -> Canvas:
@@ -2580,6 +2596,88 @@ def drone_frame(frame: int) -> Canvas:
     c.set(10, 4, "yellow" if f % 2 == 0 else "red_1")
     c.outline()
     return shifted(c, 0, DRONE_BOB[f])
+
+
+# --- Scarecrow (issue #246) ----------------------------------------------------
+
+SCARECROW_W, SCARECROW_H = 26, 38
+SCARECROW_FRAMES = 2  # sway: the straw tufts and the fuse spark move
+
+
+def scarecrow_frame(frame: int, warning: bool = False) -> Canvas:
+    """Scarecrow on a pole, front view: straw hat, sack head with stitched face, blue plaid shirt on a crossbar with
+    straw sticking out of the sleeves and a bundle of dynamite strapped to the chest. The warning frame (last second
+    before the blast) lights the dynamite and the spark. Pivot at the foot of the pole (bottom center)."""
+    c = Canvas(SCARECROW_W, SCARECROW_H)
+    f = frame % SCARECROW_FRAMES
+    sway = 1 if f == 1 else 0
+    # Mound of earth and the pole.
+    c.ellipse(13.0, 36.5, 5.0, 1.6, "brown_0")
+    c.rect(12, 24, 13, 36, "brown_1")
+    c.rect(13, 24, 13, 36, "brown_0")
+    # Crossbar under the sleeves.
+    c.rect(2, 16, 23, 17, "brown_1")
+    # Straw out of the sleeve ends, swaying.
+    for x, y in [(0, 15 + sway), (1, 16), (0, 18 - sway), (1, 18), (2, 19)]:
+        c.set(x, y, "yellow")
+    for x, y in [(25, 15 + sway), (24, 16), (25, 18 - sway), (24, 18), (23, 19)]:
+        c.set(x, y, "yellow")
+    c.set(1, 17, "orange")
+    c.set(24, 17, "orange")
+    # Shirt: sleeves along the crossbar and a body, blue with a dark plaid, so the red dynamite stands out.
+    c.rect(3, 14, 22, 18, "blue_1")
+    c.rect(7, 13, 18, 25, "blue_1")
+    for x in (5, 9, 16, 20):
+        c.rect(x, 14, x, 18, "blue_0")
+    for x in (8, 17):
+        c.rect(x, 13, x, 25, "blue_0")
+    c.rect(3, 16, 22, 16, "blue_0")
+    c.rect(7, 24, 18, 24, "blue_0")
+    c.set(7, 13, "blue_2")
+    c.set(4, 14, "blue_2")
+    # Straw out of the shirt hem.
+    for x, y in [(8, 26), (10, 27 - sway), (12, 26), (14, 27), (16, 26 + sway), (17, 27)]:
+        c.set(x, y, "yellow")
+    for x, y in [(9, 26), (15, 26)]:
+        c.set(x, y, "orange")
+    # Sack head with a stitched face.
+    c.ellipse(13.0, 9.0, 4.6, 4.4, "apricot")
+    c.ellipse(14.0, 10.0, 3.8, 3.4, "clay")
+    c.ellipse(12.4, 8.4, 3.4, 3.2, "apricot")
+    for ex in (9, 14):  # stitched X eyes, 3x3
+        for dx, dy in ((0, 0), (2, 0), (1, 1), (0, 2), (2, 2)):
+            c.set(ex + dx, 6 + dy, "outline")
+    for x in (10, 12, 14, 16):
+        c.set(x, 11, "brown_0")
+    c.rect(10, 11, 16, 11, "brown_0")
+    for x in (11, 13, 15):
+        c.set(x, 12, "brown_0")
+    c.rect(11, 13, 14, 13, "brown_1")  # neck tie
+    # Straw hat: brim and crown with a band.
+    c.rect(5, 5, 20, 5, "orange")
+    c.rect(6, 5, 19, 5, "yellow")
+    c.rect(9, 1, 16, 4, "yellow")
+    c.rect(9, 3, 16, 3, "brown_1")
+    c.set(16, 1, "orange")
+    c.set(16, 2, "orange")
+    # Dynamite: three sticks on the chest, tied with a cord; the fuse runs up to the left.
+    stick, stick_dark = ("orange", "yellow") if warning else ("red_1", "red_0")
+    for i, x in enumerate((10, 12, 14)):
+        c.rect(x, 18, x + 1, 23, stick)
+        c.rect(x + 1, 18, x + 1, 23, stick_dark if not warning else "orange")
+        c.set(x, 18, "white" if warning else "peach")
+    c.rect(10, 20, 15, 20, "slate_1")
+    c.set(9, 17, "slate_2")
+    c.set(8, 16, "slate_2")
+    if warning:
+        for x, y in [(7, 15), (6, 14), (8, 14), (7, 13), (6, 16), (8, 15)]:
+            c.set(x, y, "glow")
+        c.set(7, 14, "white")
+    else:
+        c.set(7, 15, "yellow" if f == 0 else "orange")
+        c.set(7 + (1 if f == 0 else -1), 14, "orange" if f == 0 else "yellow")
+    c.outline()
+    return c
 
 
 # --- Touch controls ----------------------------------------------------------
@@ -3875,6 +3973,9 @@ def outputs() -> dict[str, Image.Image]:
         files[f"Sprites/Pickups/Perk_{perk}.png"] = perk_icon(perk).to_image()
     for f in range(DRONE_FRAMES):
         files[f"Sprites/Companion/Drone_{f}.png"] = drone_frame(f).to_image()
+    for f in range(SCARECROW_FRAMES):
+        files[f"Sprites/Scarecrow/Scarecrow_{f}.png"] = scarecrow_frame(f).to_image()
+    files["Sprites/Scarecrow/Scarecrow_Warning.png"] = scarecrow_frame(0, warning=True).to_image()
     for d, name in enumerate(DIRECTIONS):
         for frame in range(len(HIT_POSES)):
             files[f"Sprites/Enemies/Walker_Hit_{name}_{frame}.png"] = walker_hit(d, frame).to_image()

@@ -15,11 +15,12 @@ namespace RushOps.Editor.Art
         /// <summary>Pixels per unit: one 32x32 tile equals one Unity unit.</summary>
         public const int PixelsPerUnit = 32;
 
-        // Character sprites are pivoted bottom center so they can be sorted by their feet.
+        // Character sprites are pivoted bottom center so they can be sorted by their feet; so is the scarecrow on its pole.
         private static readonly string[] FootPivotFolders =
         {
             ArtRoot + "Sprites/Player/",
             ArtRoot + "Sprites/Enemies/",
+            ArtRoot + "Sprites/Scarecrow/",
         };
 
         /// <summary>Returns true if the asset at <paramref name="assetPath"/> must use the pixel art import settings.</summary>
