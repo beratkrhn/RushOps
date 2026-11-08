@@ -32,5 +32,11 @@ namespace RushOps.Perks
 
         /// <summary>A scarecrow that lures enemies and explodes (issue #244).</summary>
         Scarecrow = 9,
+
+        /// <summary>Replaces the weapon with a flamethrower for a while (issue #253).</summary>
+        Flamethrower = 10,
+
+        /// <summary>Replaces the weapon with a rocket launcher for a while (issue #253).</summary>
+        RocketLauncher = 11,
     }
 }
