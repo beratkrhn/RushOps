@@ -138,6 +138,9 @@ namespace RushOps.Editor.Scenes
         private const float PerkRowGap = 4f;
         private const float PerkSlotSpacing = 2f;
         private const float PerkIconSize = 24f;
+        // Name flash on pickup (issue #247): pixel scale and height as a fraction of the safe area.
+        private const int PerkNoticeScale = 3;
+        private const float PerkNoticeHeight = 0.7f;
         // Touch target of the pause button, larger than its icon.
         private const float PauseButtonSize = 44f;
         // Space between the active weapon icon and the pause icon to its right (issue #201).
@@ -250,6 +253,7 @@ namespace RushOps.Editor.Scenes
             Zone zone = CreateZone(arena, "Zone", null, area, SpawnCells, waves, null);
             AssignZones(arena, new[] { zone });
             CreateWeaponSwitch(arena);
+            CreatePerkSpawn(arena);
             CreateTestWallWeapon(arena);
         }
 
@@ -298,6 +302,34 @@ namespace RushOps.Editor.Scenes
             var serialized = new SerializedObject(weaponSwitch);
             serialized.FindProperty("_weapon").objectReferenceValue = arena.Player.GetComponent<PlayerWeapon>();
             SetArray(serialized.FindProperty("_weapons"), weapons);
+            serialized.FindProperty("_label").objectReferenceValue = label;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Debug button above the weapon button (issue #247): every tap drops the next perk of the loot pool.
+        private static void CreatePerkSpawn(ArenaScene arena)
+        {
+            var hud = (RectTransform)arena.Tracker.transform.parent;
+            var bottom = new Vector2(0.5f, 0f);
+            RectTransform rect = CreateUiRect("DebugPerkSpawn", hud, bottom, bottom);
+            rect.pivot = bottom;
+            rect.sizeDelta = new Vector2(MenuButtonSize.x, WeaponSwitchHeight);
+            rect.anchoredPosition = new Vector2(0f, HudMargin + WeaponSwitchOffset + WeaponSwitchHeight + PerkRowGap);
+            var image = rect.gameObject.AddComponent<Image>();
+            Color back = PaletteSlate2;
+            back.a = 0.7f;
+            image.color = back;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            Text label = CreateText("Label", rect, PixelFontBuilder.Build(), "Perk: -", HudPixelScale, Vector2.zero);
+            label.rectTransform.sizeDelta = new Vector2(MenuButtonSize.x, WeaponSwitchHeight) / HudPixelScale;
+
+            var spawn = rect.gameObject.AddComponent<DebugPerkSpawn>();
+            UnityEventTools.AddPersistentListener(button.onClick, spawn.Spawn);
+            UnityEventTools.AddPersistentListener(button.onClick, arena.Sfx.GetComponent<UiClickSound>().Play);
+            var serialized = new SerializedObject(spawn);
+            serialized.FindProperty("_pickups").objectReferenceValue = Object.FindAnyObjectByType<PerkPickupPool>();
+            serialized.FindProperty("_player").objectReferenceValue = arena.Player;
             serialized.FindProperty("_label").objectReferenceValue = label;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
@@ -1647,6 +1679,7 @@ namespace RushOps.Editor.Scenes
             safeArea.gameObject.AddComponent<SafeAreaFitter>();
             float heartsHeight = CreateHearts(safeArea, config, player);
             CreateActivePerks(safeArea, perks, HudMargin + heartsHeight + PerkRowGap);
+            CreatePerkNameNotice(safeArea, config, perks, font);
             CreatePauseButton(safeArea, pause);
             scoreView = CreateScoreView(safeArea, config, font);
             CreateFpsCounter(safeArea, font);
@@ -1780,6 +1813,24 @@ namespace RushOps.Editor.Scenes
             SetArray(serialized.FindProperty("_slots"), slots);
             SetArray(serialized.FindProperty("_icons"), icons);
             SetArray(serialized.FindProperty("_timers"), timers);
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Short name of a collected perk, centered in the upper third; fades out (issue #247).
+        private static void CreatePerkNameNotice(RectTransform parent, HudConfig config, PlayerPerks perks, Font font)
+        {
+            Text label = CreateText("PerkNameNotice", parent, font, string.Empty, PerkNoticeScale, Vector2.zero);
+            var anchor = new Vector2(0.5f, PerkNoticeHeight);
+            label.rectTransform.anchorMin = anchor;
+            label.rectTransform.anchorMax = anchor;
+            label.rectTransform.anchoredPosition = Vector2.zero;
+            label.enabled = false;
+
+            var notice = label.gameObject.AddComponent<PerkNameNotice>();
+            var serialized = new SerializedObject(notice);
+            serialized.FindProperty("_perks").objectReferenceValue = perks;
+            serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_label").objectReferenceValue = label;
             serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
