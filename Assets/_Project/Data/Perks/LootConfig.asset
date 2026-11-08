@@ -21,6 +21,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 618d584c0c00c4e0b9602221388d2c7a, type: 2}
   - {fileID: 11400000, guid: b57c78f2eeb014c94935cfeb35e684b4, type: 2}
   - {fileID: 11400000, guid: 14d70d0047c54457f90c5f0793118228, type: 2}
+  - {fileID: 11400000, guid: 3673f044ce304e66a8df16a4cff8b4dc, type: 2}
+  - {fileID: 11400000, guid: ebcbc9d573b04b3580f59beeac0d3043, type: 2}
   _placementRadius: 3
   _lifetime: 10
   _blinkDuration: 3

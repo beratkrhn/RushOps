@@ -30,6 +30,9 @@ namespace RushOps.UI
         [Tooltip("Scale of the multiplier at the start of the light-up; it eases back to 1.")]
         [SerializeField, Min(1f)] private float _multiplierFlashScale = 1.5f;
 
+        [Tooltip("Seconds the name of a collected perk shows on screen, fading out (issue #247).")]
+        [SerializeField, Min(0f)] private float _perkNoticeDuration = 1.2f;
+
         /// <summary>Seconds the hearts blink red after a lost heart.</summary>
         public float HeartFlashDuration => _heartFlashDuration;
 
@@ -53,5 +56,8 @@ namespace RushOps.UI
 
         /// <summary>Scale of the multiplier at the start of the light-up.</summary>
         public float MultiplierFlashScale => _multiplierFlashScale;
+
+        /// <summary>Seconds the name of a collected perk shows on screen.</summary>
+        public float PerkNoticeDuration => _perkNoticeDuration;
     }
 }
