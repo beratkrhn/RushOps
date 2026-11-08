@@ -65,6 +65,12 @@ Output (under Assets/_Project/Art/):
   Sprites/Pickups/Perk_Scarecrow.png       24x24 perk icon of the scarecrow (issue #246)
   Sprites/Scarecrow/Scarecrow_<0-1>.png    26x38 scarecrow with dynamite, 2 sway frames, pivot at the pole's foot (issue #246)
   Sprites/Scarecrow/Scarecrow_Warning.png  26x38 the same with lit dynamite, blinks in the last second (issue #246)
+  Sprites/Pickups/Perk_Flamethrower.png    24x24 perk icon of the flamethrower (issue #254)
+  Sprites/Flamethrower/Hand_<DIR>.png      64x64 flamethrower in the player's hand per direction, laid over the
+                                           player sprite, pivot bottom centre (issue #254)
+  Sprites/Flamethrower/Flamethrower_Muzzles.json  nozzle of the flamethrower per direction in units from the feet
+  Sprites/Effects/Flame_<0-3>.png          112x48 flame jet pointing right from the left edge, 4 loop frames (issue #254)
+  Sprites/Effects/Burn_<0-3>.png           16x16 small flames licking up a burning enemy, 4 frames (issue #254)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
   Sprites/UI/Heart_Empty.png               12x11 HUD heart, lost
   Sprites/UI/Pause_Icon.png                12x12 pause symbol
@@ -1440,6 +1446,157 @@ def player_files(files: dict[str, Image.Image]) -> None:
             files[f"Sprites/Player/Player_Dash_{name}_{frame}.png"] = c.to_image()
 
 
+# --- Flamethrower (issue #254) --------------------------------------------------------
+# The super weapon is not drawn into the player frames: it is a separate sprite per direction laid over the figure
+# while the weapon is active, held at the pistol's grip anchor, so every skin and animation keeps working. The barrel
+# points in the facing direction (shortened towards and away from the viewer, as in the 3/4 view), a red fuel tank
+# hangs under it near the hand, and a pilot light glows under the nozzle.
+FLAMETHROWER_MUZZLES_PATH = ART_DIR / "Sprites/Flamethrower/Flamethrower_Muzzles.json"
+# Screen direction (x right, y down) and barrel length in pixels per direction.
+FLAMETHROWER_AIM = {
+    "E": ((1.0, 0.0), 15), "NE": ((0.8, -0.6), 12), "N": ((0.0, -1.0), 9), "NW": ((-0.8, -0.6), 12),
+    "W": ((-1.0, 0.0), 15), "SW": ((-0.8, 0.6), 12), "S": ((0.0, 1.0), 9), "SE": ((0.8, 0.6), 12),
+}
+FLAME_LENGTH = 112
+FLAME_HEIGHT = 48
+FLAME_FRAMES = 4
+BURN = 16
+BURN_FRAMES = 4
+
+
+def flamethrower_hand(direction: str) -> tuple[Canvas, tuple[int, int]]:
+    """The flamethrower held in the player's hand facing direction, and the canvas cell of its nozzle."""
+    (vx, vy), length = FLAMETHROWER_AIM[direction]
+    _, (ax, ay) = PISTOL_POSES[direction]
+    # The barrel runs where the pistol's slide is, a little above the grip anchor.
+    bx, by = ax + 0.5, ay - 1.0
+    c = Canvas(CHARACTER, CHARACTER)
+    # Tank first, so the barrel lies over it: a red bottle hanging under the hand.
+    tx, ty = bx + vx * 2.5, by + 4.5
+    c.ellipse(tx, ty, 4.0, 3.4, "red_0")
+    c.ellipse(tx - 0.5, ty - 0.6, 3.0, 2.4, "red_1")
+    c.set(math.floor(tx - 1.5), math.floor(ty - 1.8), "orange")
+    c.set(math.floor(tx - 0.5), math.floor(ty - 1.8), "orange")
+    # Barrel three pixels thick: the side facing up is lit, the other in shadow; the nozzle end widens to a dark bell.
+    px, py = -vy, vx
+    if py > 0 or (py == 0 and px < 0):
+        px, py = -px, -py
+    for i in range(-6, length * 2 + 1):
+        t = i / 2.0
+        cx, cy = bx + vx * t, by + vy * t
+        bell = t >= length - 2.5
+        width = 2 if bell else 1
+        for k in range(-width, width + 1):
+            x, y = math.floor(cx + px * k), math.floor(cy + py * k)
+            if bell:
+                color = "slate_1" if k > 0 else "night"
+            else:
+                color = "slate_5" if k > 0 else ("slate_3" if k == 0 else "slate_1")
+            c.set(x, y, color)
+    nx, ny = math.floor(bx + vx * length), math.floor(by + vy * length)
+    # Pilot light on the shadow side just behind the bell.
+    c.set(math.floor(bx + vx * (length - 4) - px * 2), math.floor(by + vy * (length - 4) - py * 2), "yellow")
+    c.outline()
+    # The hand stays in front of the weapon, as with the pistol.
+    hand = player_source(direction)
+    for y in range(c.height):
+        for x in range(c.width):
+            if hand.get(x, y) in HAND_COLOURS and abs(x - ax) <= 2 and abs(y - ay) <= 2:
+                c.set(x, y, None)
+    return c, (nx, ny)
+
+
+def write_flamethrower_muzzles() -> None:
+    """Nozzle of the flamethrower per direction in units from the feet, in the order of DIRECTIONS; the flame starts
+    there."""
+    muzzles = []
+    for name in DIRECTIONS:
+        _, (mx, my) = flamethrower_hand(name)
+        muzzles.append({"direction": name, "x": (mx + 0.5 - CHARACTER / 2) / TILE,
+                        "y": (CHARACTER - (my + 0.5)) / TILE})
+    FLAMETHROWER_MUZZLES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    FLAMETHROWER_MUZZLES_PATH.write_text(json.dumps({"muzzles": muzzles}, indent=2) + "\n")
+    print(f"Wrote {FLAMETHROWER_MUZZLES_PATH.relative_to(ROOT)}")
+
+
+def flame_frame(frame: int) -> Canvas:
+    """Flame jet pointing right from the middle of the left edge, where the nozzle is: narrow and white hot at the
+    nozzle, widening into yellow and orange, fraying into red tongues of different length at the far end. The frames
+    shift the waves along, so playing them in a loop makes the fire roll forward. The game stretches it to the
+    configured range."""
+    c = Canvas(FLAME_LENGTH, FLAME_HEIGHT)
+    mid = FLAME_HEIGHT / 2
+    phase = frame / FLAME_FRAMES * 2 * math.pi
+    rng = random.Random(5400 + frame)
+    for y in range(FLAME_HEIGHT):
+        dy = y + 0.5 - mid
+        # Each row ends at its own length, so the end breaks into tongues instead of a straight edge.
+        reach = FLAME_LENGTH * (0.86 + 0.08 * math.sin(dy * 0.45 - phase) + 0.05 * math.sin(dy * 1.3 + 2 * phase))
+        for x in range(FLAME_LENGTH):
+            d = (x + 0.5) / FLAME_LENGTH
+            wobble = 0.8 + 0.13 * math.sin(x * 0.21 - phase) + 0.07 * math.sin(x * 0.53 + 2 * phase)
+            half = (2.0 + 21.0 * d ** 0.8) * wobble
+            # The jet rounds off towards the end of its row.
+            tip = (reach - x) / (0.25 * FLAME_LENGTH)
+            if tip <= 0:
+                continue
+            if tip < 1:
+                half *= math.sqrt(tip * (2 - tip))
+            if abs(dy) > half:
+                continue
+            r = abs(dy) / max(half, 1e-6)
+            e = x / reach
+            if e < 0.25 and r < 0.45:
+                color = "white" if e < 0.1 else "glow"
+            elif r < 0.5 and e < 0.65:
+                color = "yellow"
+            elif r < 0.8 and e < 0.85:
+                color = "orange"
+            elif e < 0.95:
+                color = "red_1"
+            else:
+                color = "red_0"
+            c.set(x, y, color)
+    # Embers flying off the edges.
+    for _ in range(10):
+        x = rng.randrange(FLAME_LENGTH // 3, FLAME_LENGTH - 8)
+        d = x / FLAME_LENGTH
+        side = rng.choice((-1, 1))
+        y = int(mid + side * (4 + 21 * d ** 0.8) * rng.uniform(0.85, 1.05))
+        if c.get(x, y) is None:
+            c.set(x, y, rng.choice(("orange", "yellow", "red_1")))
+    return c
+
+
+def burn_frame(frame: int) -> Canvas:
+    """Small flames licking up a burning enemy (issue #254): three tongues that rise and flicker, then die down."""
+    c = Canvas(BURN, BURN)
+    heights = [(5, 7, 4), (7, 9, 6), (6, 8, 7), (3, 5, 4)][frame]
+    for (cx, h) in zip((4.5, 8.0, 11.5), heights):
+        base = 13.0
+        for i in range(h):
+            y = base - i
+            w = max(0.6, 2.2 * (1 - i / h))
+            sway = 0.6 * math.sin(i * 0.9 + frame * 1.7 + cx)
+            for x in range(BURN):
+                dx = abs(x + 0.5 - (cx + sway))
+                if dx <= w:
+                    hot = dx < w * 0.45 and i < h * 0.6
+                    c.set(x, int(y), "yellow" if hot else ("orange" if i < h * 0.8 else "red_1"))
+    return c
+
+
+def flamethrower_files(files: dict[str, Image.Image]) -> None:
+    for f in range(FLAME_FRAMES):
+        files[f"Sprites/Effects/Flame_{f}.png"] = flame_frame(f).to_image()
+    for f in range(BURN_FRAMES):
+        files[f"Sprites/Effects/Burn_{f}.png"] = burn_frame(f).to_image()
+    if not (PLAYER_SOURCE_DIR / "Player_Idle_S.png").exists():
+        return
+    for name in DIRECTIONS:
+        files[f"Sprites/Flamethrower/Hand_{name}.png"] = flamethrower_hand(name)[0].to_image()
+
+
 # --- Projectile and effects --------------------------------------------------------
 
 def bullet() -> Canvas:
@@ -1911,6 +2068,19 @@ PERK_GLYPHS = {
     ],
 }
 
+# Flamethrower: a nozzle with a burst of fire, the tank hanging below (issue #254).
+PERK_GLYPHS["Flamethrower"] = [
+    "...........+.",
+    "........+.+++",
+    "#########++++",
+    "##########+++",
+    "#########++++",
+    "...oooo..+.+.",
+    "..oooooo.....",
+    "..oooooo.....",
+    "...oooo......",
+]
+
 # Badge (shadow, base, light) and glyph (main, accent, detail) colors per perk.
 PERK_COLORS = {
     "SpeedBoost": (("green_0", "green_1", "green_2"), ("yellow", "glow", "outline")),
@@ -1922,9 +2092,11 @@ PERK_COLORS = {
     "Nuke": (("orange", "yellow", "glow"), ("outline", "outline", "outline")),
     "Companion": (("slate_1", "slate_3", "slate_4"), ("white", "yellow", "outline")),
     "Scarecrow": (("brown_0", "brown_1", "clay"), ("yellow", "red_1", "apricot")),
+    "Flamethrower": (("red_0", "red_1", "orange"), ("slate_5", "yellow", "night")),
 }
 
-PERK_IDS = ["SpeedBoost", "Medkit", "DoubleDamage", "RapidFire", "Shield", "InstaKill", "Nuke", "Companion", "Scarecrow"]
+PERK_IDS = ["SpeedBoost", "Medkit", "DoubleDamage", "RapidFire", "Shield", "InstaKill", "Nuke", "Companion", "Scarecrow",
+            "Flamethrower"]
 
 
 def perk_badge(shadow: str, base: str, light: str) -> Canvas:
@@ -3976,6 +4148,7 @@ def outputs() -> dict[str, Image.Image]:
     for f in range(SCARECROW_FRAMES):
         files[f"Sprites/Scarecrow/Scarecrow_{f}.png"] = scarecrow_frame(f).to_image()
     files["Sprites/Scarecrow/Scarecrow_Warning.png"] = scarecrow_frame(0, warning=True).to_image()
+    flamethrower_files(files)
     for d, name in enumerate(DIRECTIONS):
         for frame in range(len(HIT_POSES)):
             files[f"Sprites/Enemies/Walker_Hit_{name}_{frame}.png"] = walker_hit(d, frame).to_image()
@@ -4154,6 +4327,7 @@ def main() -> None:
         print(f"Wrote {out.relative_to(ROOT)}")
     if (PLAYER_SOURCE_DIR / "Player_Idle_S.png").exists():
         write_player_muzzles()
+        write_flamethrower_muzzles()
 
     sheet_path = ROOT / "docs/art/palette.png"
     sheet_path.parent.mkdir(parents=True, exist_ok=True)

@@ -188,7 +188,7 @@ namespace RushOps.Editor.Scenes
         // Projectiles fly at gun height, so they draw above walls and characters instead of sorting by Y.
         private const int ProjectileSortingOrder = 3;
         // Blasts cover the characters they hit.
-        private const int EffectSortingOrder = 4;
+        internal const int EffectSortingOrder = 4;
         private const string ScoreConfigPath = "Assets/_Project/Data/Score/ScoreConfig.asset";
         // Distance from the top of the score label to the center of the multiplier below it, in reference units. The
         // score is centered in its 30 units high label (center at 15) and font lines are 20 units high at the HUD scale,
@@ -705,6 +705,7 @@ namespace RushOps.Editor.Scenes
                 feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, gold, nuke, flash);
             AddClickSounds(sfx.GetComponent<UiClickSound>());
             CompanionBuilder.Create(target, results, enemyPools, sfx);
+            FlamethrowerBuilder.Create(target, results, pause, sfx);
             ScarecrowBuilder.Create(target, results, navigator, explosions, perks);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
 
@@ -1068,7 +1069,16 @@ namespace RushOps.Editor.Scenes
         // is in each direction.
         private static Vector2[] LoadPlayerMuzzles()
         {
-            var table = JsonUtility.FromJson<MuzzleTable>(File.ReadAllText(PlayerMuzzlesPath));
+            return LoadMuzzles(PlayerMuzzlesPath);
+        }
+
+        /// <summary>
+        /// Reads a muzzle table written by Tools/gen_pixelart.py: one point per direction in units from the feet,
+        /// indexed by <see cref="Direction8"/>.
+        /// </summary>
+        internal static Vector2[] LoadMuzzles(string path)
+        {
+            var table = JsonUtility.FromJson<MuzzleTable>(File.ReadAllText(path));
             var muzzles = new Vector2[Direction8Math.Count];
             foreach (MuzzleEntry entry in table.muzzles)
             {
@@ -1375,7 +1385,7 @@ namespace RushOps.Editor.Scenes
         }
 
         // Rebuilt on every run; a light radius of 0 means no light.
-        private static SpriteEffect CreateOrUpdateEffectPrefab(
+        internal static SpriteEffect CreateOrUpdateEffectPrefab(
             string name, string prefabPath, Color lightColor, float lightRadius, float lightIntensity)
         {
             var go = new GameObject(name);
@@ -1411,7 +1421,7 @@ namespace RushOps.Editor.Scenes
             return light;
         }
 
-        private static SpriteEffectPool CreateEffectPool(string name, SpriteEffect prefab, int capacity, int maxSize)
+        internal static SpriteEffectPool CreateEffectPool(string name, SpriteEffect prefab, int capacity, int maxSize)
         {
             var pool = new GameObject(name).AddComponent<SpriteEffectPool>();
             var serialized = new SerializedObject(pool);

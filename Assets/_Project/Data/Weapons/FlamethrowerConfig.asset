@@ -18,3 +18,7 @@ MonoBehaviour:
   _damagePerSecond: 90
   _afterburnDuration: 1.5
   _afterburnDamagePerSecond: 30
+  _tickInterval: 0.2
+  _flameFrameRate: 16
+  _burnFrameDuration: 0.06
+  _soundVolume: 0.45

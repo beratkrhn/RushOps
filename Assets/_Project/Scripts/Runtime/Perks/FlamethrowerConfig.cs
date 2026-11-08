@@ -24,6 +24,18 @@ namespace RushOps.Perks
         [Tooltip("Damage per second while an enemy burns after the flame.")]
         [SerializeField, Min(0f)] private float _afterburnDamagePerSecond = 30f;
 
+        [Tooltip("Seconds between two damage ticks; the damage per second is paid out in whole points at this rhythm (issue #254).")]
+        [SerializeField, Min(0.02f)] private float _tickInterval = 0.2f;
+
+        [Tooltip("Frames per second of the flame loop.")]
+        [SerializeField, Min(1f)] private float _flameFrameRate = 16f;
+
+        [Tooltip("Seconds per frame of the small fire on a burning enemy.")]
+        [SerializeField, Min(0.01f)] private float _burnFrameDuration = 0.06f;
+
+        [Tooltip("Volume of the looping flame sound.")]
+        [SerializeField, Range(0f, 1f)] private float _soundVolume = 0.45f;
+
         /// <summary>Seconds the flamethrower stays in the hands.</summary>
         public float Duration => _duration;
 
@@ -41,5 +53,17 @@ namespace RushOps.Perks
 
         /// <summary>Damage per second of the afterburn.</summary>
         public float AfterburnDamagePerSecond => _afterburnDamagePerSecond;
+
+        /// <summary>Seconds between two damage ticks.</summary>
+        public float TickInterval => _tickInterval;
+
+        /// <summary>Frames per second of the flame loop.</summary>
+        public float FlameFrameRate => _flameFrameRate;
+
+        /// <summary>Seconds per frame of the fire on a burning enemy.</summary>
+        public float BurnFrameDuration => _burnFrameDuration;
+
+        /// <summary>Volume of the looping flame sound.</summary>
+        public float SoundVolume => _soundVolume;
     }
 }
