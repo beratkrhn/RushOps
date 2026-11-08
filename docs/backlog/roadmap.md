@@ -26,6 +26,10 @@ Alle Platzhalter-Sounds ersetzen, einheitlicher Retro-Klang, Audio-Mixer mit Gru
 
 In Stories zerlegt: [`v1.3.0.md`](v1.3.0.md) (#244 bis #247, Epic #215). Entscheidungen K1 bis K8, Lastenheft F-PRK-05 bis F-PRK-08.
 
+### v1.4.0 – Superwaffen
+
+In Stories zerlegt: [`v1.4.0.md`](v1.4.0.md) (#253 bis #256, Epic #216). Entscheidungen W11 bis W15, Lastenheft F-PRK-09 bis F-PRK-12.
+
 ### Musik (#42)
 Ein Menütrack und je ein loopbarer Action-Track pro Insel.
 *Offen:* selbst erzeugt oder lizenzfreie Packs.
