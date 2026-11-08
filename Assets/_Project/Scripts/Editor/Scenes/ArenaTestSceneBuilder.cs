@@ -673,6 +673,7 @@ namespace RushOps.Editor.Scenes
                 feelConfig, target, enemyPools, cameraFollow, pause, explosions, explosionEffects, perks, gold, nuke, flash);
             AddClickSounds(sfx.GetComponent<UiClickSound>());
             CompanionBuilder.Create(target, results, enemyPools, sfx);
+            ScarecrowBuilder.Create(target, results, navigator, explosions, perks);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
 
             EditorSceneManager.SaveScene(scene, scenePath);

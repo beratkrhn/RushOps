@@ -6,6 +6,8 @@ namespace RushOps.Navigation
 {
     /// <summary>
     /// Runs one <see cref="FlowField"/> towards the target (the player) for all enemies (ADR 0003, F-GEG-01).
+    /// A lure (<see cref="SetLure"/>, e.g. the scarecrow, ADR 0014) overrides the goal for every enemy that steers
+    /// through this navigator until <see cref="ClearLure"/>; bosses move on their own and are not affected.
     /// Cells with a tile on the obstacle tilemap are blocked, as are cells of closed gates (<see cref="SetBlocked"/>). The field is recomputed when the target changes
     /// cell, at most every <see cref="NavigationConfig.RecomputeInterval"/>. Enemies register themselves and ask
     /// <see cref="Steer"/> for their move direction, which adds separation from the other registered enemies.
@@ -24,6 +26,9 @@ namespace RushOps.Navigation
         private Vector3Int _origin;
         private Vector2Int _targetCell;
         private float _lastCompute = float.NegativeInfinity;
+        private bool _hasLure;
+        private Vector2 _lure;
+        private float _lureHoldRadius;
 
         /// <summary>The field, e.g. for tests and debugging; null without obstacle tilemap.</summary>
         public FlowField Field => _field;
@@ -34,6 +39,12 @@ namespace RushOps.Navigation
             get => _target;
             set => _target = value;
         }
+
+        /// <summary>True while a lure overrides the target (<see cref="SetLure"/>).</summary>
+        public bool HasLure => _hasLure;
+
+        /// <summary>Position of the lure; only meaningful while <see cref="HasLure"/>.</summary>
+        public Vector2 LurePosition => _lure;
 
         /// <summary>Number of computations so far.</summary>
         public int ComputeCount { get; private set; }
@@ -51,6 +62,32 @@ namespace RushOps.Navigation
         public void Unregister(Transform agent)
         {
             _agents.Remove(agent);
+        }
+
+        /// <summary>
+        /// Lets all enemies walk to <paramref name="position"/> instead of the target, e.g. to a scarecrow (ADR 0014).
+        /// Enemies within <paramref name="holdRadius"/> of it stop and only keep their separation, so they stand
+        /// around it. The field is computed once towards the lure, which does not move; setting a new lure replaces
+        /// the old one.
+        /// </summary>
+        public void SetLure(Vector2 position, float holdRadius)
+        {
+            _hasLure = true;
+            _lure = position;
+            _lureHoldRadius = Mathf.Max(0f, holdRadius);
+            Recompute();
+        }
+
+        /// <summary>Ends the lure: the enemies chase the target again.</summary>
+        public void ClearLure()
+        {
+            if (!_hasLure)
+            {
+                return;
+            }
+
+            _hasLure = false;
+            Recompute();
         }
 
         /// <summary>Grid cell of a world position.</summary>
@@ -113,12 +150,17 @@ namespace RushOps.Navigation
         /// </summary>
         public Vector2 PathDirection(Vector2 position)
         {
-            if (_target == null)
+            if (!_hasLure && _target == null)
             {
                 return Vector2.zero;
             }
 
-            Vector2 toTarget = (Vector2)_target.position - position;
+            Vector2 toTarget = Goal - position;
+            if (_hasLure && toTarget.sqrMagnitude <= _lureHoldRadius * _lureHoldRadius)
+            {
+                return Vector2.zero;
+            }
+
             if (_field == null)
             {
                 return toTarget.normalized;
@@ -200,7 +242,8 @@ namespace RushOps.Navigation
 
         private void Update()
         {
-            if (_field == null || _target == null)
+            // A lure stands still, so its field never needs a recompute.
+            if (_field == null || _target == null || _hasLure)
             {
                 return;
             }
@@ -234,15 +277,23 @@ namespace RushOps.Navigation
             }
         }
 
+        // Where the enemies walk to: the lure while there is one, else the target.
+        private Vector2 Goal => _hasLure ? _lure : (Vector2)_target.position;
+
         private void Recompute()
         {
-            if (_field == null || _target == null)
+            if (_field == null || (!_hasLure && _target == null))
             {
                 return;
             }
 
-            _targetCell = CellOf(_target.position);
-            _field.Compute(_targetCell);
+            // Noted under a lure too, so Update compares against a fresh cell once the chase resumes.
+            if (_target != null)
+            {
+                _targetCell = CellOf(_target.position);
+            }
+
+            _field.Compute(_hasLure ? CellOf(_lure) : _targetCell);
             _lastCompute = Time.time;
             ComputeCount++;
         }

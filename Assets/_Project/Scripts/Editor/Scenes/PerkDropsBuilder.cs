@@ -112,10 +112,7 @@ namespace RushOps.Editor.Scenes
                     serialized.FindProperty("_magnitude").floatValue = values.Magnitude;
                 }
 
-                // The scarecrow icon comes with its own story (#246); until then it has none.
-                serialized.FindProperty("_icon").objectReferenceValue =
-                    AssetDatabase.LoadAssetAtPath<Sprite>($"{IconsDir}/Perk_{values.Asset}.png")
-                    ?? (values.Effect == PerkEffect.Scarecrow ? null : LoadSprite($"{IconsDir}/Perk_{values.Asset}.png"));
+                serialized.FindProperty("_icon").objectReferenceValue = LoadSprite($"{IconsDir}/Perk_{values.Asset}.png");
                 serialized.ApplyModifiedPropertiesWithoutUndo();
                 EditorUtility.SetDirty(perk);
                 perks[i] = perk;

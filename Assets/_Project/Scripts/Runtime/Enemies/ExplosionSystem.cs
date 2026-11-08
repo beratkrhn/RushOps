@@ -44,7 +44,7 @@ namespace RushOps.Enemies
             try
             {
                 HitPlayer(center, definition);
-                HitEnemies(center, definition);
+                HitEnemies(center, definition.Radius, definition.EnemyDamage);
             }
             finally
             {
@@ -53,6 +53,31 @@ namespace RushOps.Enemies
             }
 
             Exploded?.Invoke(center, definition);
+        }
+
+        /// <summary>
+        /// Sets off a blast that hits only enemies (e.g. the scarecrow, K6): <paramref name="enemyDamage"/> to every
+        /// enemy within <paramref name="radius"/> of <paramref name="center"/>, never the player. Shake, sound and
+        /// effect come from <paramref name="feedback"/>, whose own damage values are not used. Killed explosive
+        /// enemies blow up after their chain delay as usual.
+        /// </summary>
+        public void ExplodeEnemiesOnly(Vector2 center, float radius, int enemyDamage, ExplosionDefinition feedback)
+        {
+            _dealingDamage = true;
+            try
+            {
+                HitEnemies(center, radius, enemyDamage);
+            }
+            finally
+            {
+                _dealingDamage = false;
+                _targets.Clear();
+            }
+
+            if (feedback != null)
+            {
+                Exploded?.Invoke(center, feedback);
+            }
         }
 
         private void Awake()
@@ -119,9 +144,9 @@ namespace RushOps.Enemies
             }
         }
 
-        private void HitEnemies(Vector2 center, ExplosionDefinition definition)
+        private void HitEnemies(Vector2 center, float radius, int damage)
         {
-            if (definition.EnemyDamage <= 0)
+            if (damage <= 0)
             {
                 return;
             }
@@ -131,7 +156,7 @@ namespace RushOps.Enemies
             {
                 if (pool != null)
                 {
-                    ExplosionTargeting.Collect(center, definition.Radius, pool.Active, _targets);
+                    ExplosionTargeting.Collect(center, radius, pool.Active, _targets);
                 }
             }
 
@@ -139,7 +164,7 @@ namespace RushOps.Enemies
             {
                 Enemy enemy = _targets[i];
                 Vector2 away = enemy.ExplosionPoint - center;
-                enemy.TakeHit(definition.EnemyDamage, away.sqrMagnitude > 1e-6f ? away : Vector2.up);
+                enemy.TakeHit(damage, away.sqrMagnitude > 1e-6f ? away : Vector2.up);
             }
         }
     }
