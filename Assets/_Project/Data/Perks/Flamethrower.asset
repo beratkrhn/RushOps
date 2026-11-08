@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Perks.PerkDefinition
   _id: flamethrower
   _displayName: Flammenwerfer
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 88018ffec38d14112ae486ddd57ba728, type: 3}
   _kind: 1
   _duration: 12
   _weight: 4
