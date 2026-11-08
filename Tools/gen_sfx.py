@@ -11,6 +11,7 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   ShotShotgun.wav     shotgun: deep noise boom with a falling thump (issue #174)
   ShotDual.wav        dual pistols: light high tick (issue #174)
   ShotDrone.wav       combat drone of the companion perk: a thin, short high blip, no noise (issue #245)
+  FlameLoop.wav       flamethrower: a seamless roaring hiss with a slow flutter, played as a loop (issue #254)
   Hit.wav             dull noise thump on an enemy
   Death.wav           falling pulse slide with crunchy noise
   PlayerHurt.wav      harsh two-step down buzz when the player loses a heart
@@ -299,6 +300,19 @@ def boomer_approach() -> list[float]:
     return out
 
 
+def flame_loop() -> list[float]:
+    """Flamethrower (issue #254): a low noise roar under a thin hiss, fluttering four times a second. No envelope and
+    only modulation periods that divide the length, so the end joins the start and the file loops without a click."""
+    length = 1.0
+    roar, hiss = Noise(), Noise()
+    out = []
+    for t in (i / RATE for i in frames(length)):
+        flutter = 0.8 + 0.2 * math.sin(2 * math.pi * 4 * t / length)
+        swell = 0.9 + 0.1 * math.sin(2 * math.pi * t / length)
+        out.append((0.7 * roar.sample(700 * swell) + 0.3 * hiss.sample(9000)) * flutter)
+    return out
+
+
 def explosion() -> list[float]:
     length = 0.9
     n, tri = Noise(), Triangle()
@@ -358,7 +372,7 @@ def switch_reset() -> list[float]:
 
 
 SOUNDS = {
-    "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
+    "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "FlameLoop": flame_loop, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
     "GateOpen": gate_open, "MissionDone": mission_done,
     "WalkerSpawn": walker_spawn, "WalkerApproach": walker_approach,
     "RunnerSpawn": runner_spawn, "RunnerApproach": runner_approach,

@@ -23,6 +23,8 @@ namespace RushOps.Tests.EditMode
         [TestCase("Assets/_Project/Art/Sprites/Player/Player_Idle_S.png", true)]
         [TestCase("Assets/_Project/Art/Sprites/Enemies/Walker_Walk_N_0.png", true)]
         [TestCase("Assets/_Project/Art/Sprites/Scarecrow/Scarecrow_0.png", true)]
+        [TestCase("Assets/_Project/Art/Sprites/Flamethrower/Hand_E.png", true)]
+        [TestCase("Assets/_Project/Art/Sprites/Effects/Flame_0.png", false)]
         [TestCase("Assets/_Project/Art/Sprites/Projectiles/Bullet.png", false)]
         [TestCase("Assets/_Project/Art/Tiles/Wall_Front.png", false)]
         [TestCase("Assets/_Project/Art/Sprites/Player/Notes.txt", false)]
