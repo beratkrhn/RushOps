@@ -155,6 +155,10 @@ Rätsel sind Action-Rätsel: Während sie gelöst werden, spawnen weiterhin Gegn
 | F-PRK-06 | Kills der Drohne zählen wie eigene Kills (Punkte, Kill-Gates, Gold, Perk-Drops). | Muss |
 | F-PRK-07 | **Strohmann**: Er steht am Aufsammelort. *8 s (Startwert)* lang laufen alle normalen Gegner zu ihm statt zum Spieler; Bosse ignorieren ihn. | Muss |
 | F-PRK-08 | Am Ende der Dauer explodiert der Strohmann und verletzt Gegner im Radius, nie den Spieler. Kills zählen wie eigene Kills. | Muss |
+| F-PRK-09 | **Superwaffen** ersetzen beim Aufsammeln die aktive Waffe für *12 s (Startwert)*; erneutes Aufsammeln setzt die Dauer zurück, danach ist die vorherige Waffe wieder aktiv. Bosse nehmen die volle Wirkung. | Muss |
+| F-PRK-10 | **Flammenwerfer**: Feuer im Kegel auf kurze Reichweite; getroffene Gegner brennen *1,5 s (Startwert)* nach. | Muss |
+| F-PRK-11 | **Raketenwerfer**: Raketen explodieren am ersten Treffer und verletzen alle Gegner im Radius. | Muss |
+| F-PRK-12 | Die Explosion der Rakete verletzt nie den Spieler. Kills von Superwaffen zählen wie eigene Kills. | Muss |
 
 | Perk | Typ | Wirkung | Dauer | Gewicht |
 |---|---|---|---|---|
@@ -167,6 +171,8 @@ Rätsel sind Action-Rätsel: Während sie gelöst werden, spawnen weiterhin Gegn
 | Nuke | sofort | tötet alle **sichtbaren** Gegner (außer Bosse) | – | 3 |
 | Begleiter | temporär | Kampfdrohne schießt mit (F-PRK-05) | 15 s | 10 |
 | Strohmann | temporär | lockt normale Gegner an und explodiert (F-PRK-07) | 8 s | 8 |
+| Flammenwerfer | temporär | ersetzt die Waffe, brennt im Kegel (F-PRK-10) | 12 s | 4 |
+| Raketenwerfer | temporär | ersetzt die Waffe, explosive Raketen (F-PRK-11) | 12 s | 4 |
 
 Alle Werte sind *Startwerte*.
 
@@ -312,7 +318,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.1.0 Endlos-Modus**: siehe Abschnitt 2.10.
 - **v1.2.0 Beute**: siehe Abschnitt 2.11.
 - **v1.3.0 Begleiter und Strohmann**: siehe Abschnitt 2.7 (F-PRK-05 bis F-PRK-08).
-- **v1.4.0 Superwaffen**: Flammenwerfer und Raketenwerfer als seltene Perk-Drops für kurze Zeit.
+- **v1.4.0 Superwaffen**: siehe Abschnitt 2.7 (F-PRK-09 bis F-PRK-12).
 - **v1.5.0 Hunde**: Zombiehunde im Rudel mit angekündigtem Sprung; im Endlos-Modus jede 6. Runde eine Hunderunde.
 - **v1.6.0 Rush-Meter**: Kills füllen eine Leiste; voll löst ein Button Zeitlupe für Gegner, Dash ohne Abklingzeit und mehr Schaden aus.
 - **v1.7.0 Endlos-Upgrades und Tageslauf**: Upgrade-Wahl nach jeder dritten Runde; täglicher Lauf mit dem Datum als Zufalls-Seed.
@@ -352,3 +358,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 0.9 | 07.11.2026 | Release verschoben, Erweiterungen v1.1.0 bis v1.9.0 in Abschnitt 8; neuer Abschnitt 2.10 Endlos-Modus (F-END-01 bis F-END-09); F-GEG-03 gilt nur in der Kampagne; F-UI-02 mit Bereich Endlos; F-DAT-04 mit Endlos-Bestwerten (Design-Fragen A, E, N). |
 | 1.0 | 07.11.2026 | Neuer Abschnitt 2.11 Beute (F-GLD-01 bis F-GLD-06); F-SKN-01 mit Gold als reiner Spielwährung; F-HUD-04 mit Goldanzeige; F-DAT-03 mit Autosave bei Abbruch und Kauf; F-DAT-04 mit Goldkonto (Design-Fragen B, N1, N11 bis N14). |
 | 1.1 | 08.11.2026 | Abschnitt 2.7 mit Perks Begleiter und Strohmann (F-PRK-05 bis F-PRK-08) und zwei Pool-Zeilen (Design-Fragen K1 bis K8). |
+| 1.2 | 08.11.2026 | Abschnitt 2.7 mit Superwaffen Flammenwerfer und Raketenwerfer (F-PRK-09 bis F-PRK-12) und zwei Pool-Zeilen (Design-Fragen W11 bis W15). |
