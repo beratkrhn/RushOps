@@ -47,6 +47,25 @@ namespace RushOps.Perks
             return isAlive && radius >= 0f && (enemyPosition - center).sqrMagnitude <= radius * radius;
         }
 
+        /// <summary>
+        /// True if the scarecrow shows its lit warning look with <paramref name="remaining"/> seconds left: only within
+        /// the last <paramref name="warningTime"/> seconds, alternating every <paramref name="blinkInterval"/>, lit first.
+        /// </summary>
+        public static bool IsWarningLit(float remaining, float warningTime, float blinkInterval)
+        {
+            if (remaining <= 0f || remaining > warningTime)
+            {
+                return false;
+            }
+
+            if (blinkInterval <= 0f)
+            {
+                return true;
+            }
+
+            return (int)((warningTime - remaining) / blinkInterval) % 2 == 0;
+        }
+
         /// <summary>Damage the explosion deals to the player: always 0 (K6).</summary>
         public static int PlayerDamage => 0;
     }

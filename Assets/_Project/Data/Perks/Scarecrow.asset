@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Perks.PerkDefinition
   _id: scarecrow
   _displayName: Strohmann
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 4cbc103129add43b29e2bc1cd5a514e6, type: 3}
   _kind: 1
   _duration: 8
   _weight: 8

@@ -16,3 +16,8 @@ MonoBehaviour:
   _explosionRadius: 3
   _explosionDamage: 100
   _placementSearchRadius: 3
+  _gatherRadius: 1.2
+  _warningTime: 1
+  _blinkInterval: 0.1
+  _frameRate: 3
+  _explosionFeedback: {fileID: 11400000, guid: 89731610141134c75be933c2d8da632a, type: 2}

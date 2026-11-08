@@ -78,5 +78,23 @@ namespace RushOps.Tests.EditMode
         {
             Assert.AreEqual(0, ScarecrowRules.PlayerDamage);
         }
+
+        [TestCase(8f, false)]   // standing, long before the blast
+        [TestCase(1.01f, false)] // just before the warning
+        [TestCase(1f, true)]    // warning starts lit
+        [TestCase(0.95f, true)]
+        [TestCase(0.85f, false)] // second interval: normal look
+        [TestCase(0.75f, true)]  // third interval: lit again
+        [TestCase(0f, false)]   // exploded
+        public void IsWarningLit_BlinksInTheLastSecond(float remaining, bool expected)
+        {
+            Assert.AreEqual(expected, ScarecrowRules.IsWarningLit(remaining, 1f, 0.1f));
+        }
+
+        [Test]
+        public void IsWarningLit_WithoutInterval_StaysLit()
+        {
+            Assert.IsTrue(ScarecrowRules.IsWarningLit(0.5f, 1f, 0f));
+        }
     }
 }
