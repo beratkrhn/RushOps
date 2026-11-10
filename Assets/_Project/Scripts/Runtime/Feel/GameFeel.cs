@@ -93,6 +93,8 @@ namespace RushOps.Feel
                 {
                     pool.EnemySpawned += OnEnemySpawned;
                     pool.EnemyApproached += OnEnemyApproached;
+                    pool.EnemyCrouched += OnEnemyCrouched;
+                    pool.EnemyLunged += OnEnemyLunged;
                     pool.EnemyHit += OnEnemyHit;
                     pool.EnemyDied += OnEnemyDied;
                 }
@@ -142,6 +144,8 @@ namespace RushOps.Feel
                 {
                     pool.EnemySpawned -= OnEnemySpawned;
                     pool.EnemyApproached -= OnEnemyApproached;
+                    pool.EnemyCrouched -= OnEnemyCrouched;
+                    pool.EnemyLunged -= OnEnemyLunged;
                     pool.EnemyHit -= OnEnemyHit;
                     pool.EnemyDied -= OnEnemyDied;
                 }
@@ -189,6 +193,24 @@ namespace RushOps.Feel
             if (enemy.Definition != null)
             {
                 Play(enemy.Definition.ApproachClip, _config != null ? _config.EnemyApproachVolume : 0f);
+            }
+        }
+
+        private void OnEnemyCrouched(Enemy enemy)
+        {
+            DogConfig dog = enemy.Definition != null ? enemy.Definition.Dog : null;
+            if (dog != null)
+            {
+                Play(dog.GrowlClip, _config != null ? _config.DogGrowlVolume : 0f);
+            }
+        }
+
+        private void OnEnemyLunged(Enemy enemy)
+        {
+            DogConfig dog = enemy.Definition != null ? enemy.Definition.Dog : null;
+            if (dog != null)
+            {
+                Play(dog.LungeClip, _config != null ? _config.DogLungeVolume : 0f);
             }
         }
 

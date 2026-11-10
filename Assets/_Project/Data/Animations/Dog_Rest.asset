@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Dog_Rest
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 4
+  _loops: 1
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 3d3d26250e7e24c3c8236b37fe7d38ce, type: 3}
+    - {fileID: 21300000, guid: 69b4bbc0d1f5b481399b5a1ddf7013a8, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 0d74544e36b31461b9a53a4b8a3f52e6, type: 3}
+    - {fileID: 21300000, guid: 71d145872b2c04cffaf2ed9f58e790ff, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 2d6bdb4c9782843a9b6dface135e3c54, type: 3}
+    - {fileID: 21300000, guid: 65bea74909d8a4b4593f35d86208b3a7, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: e00072191e1694fb888a32ad78414e58, type: 3}
+    - {fileID: 21300000, guid: f7f9d1f95be214665a2d173653905df4, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 80e47f991d4df44b493b45567de4e2ef, type: 3}
+    - {fileID: 21300000, guid: d056578f08e914014a774d02b118cb8b, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 9b66aa3f09c6a4790884a0d882671a80, type: 3}
+    - {fileID: 21300000, guid: 8a20eae612e854778b8dff6e6bfe0c57, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 33b52a6681c0c43cbaff295f2458a40d, type: 3}
+    - {fileID: 21300000, guid: c233559c87916403e8bc4bc902226216, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: a7ea77a02101f4e11b43f93648ed8c30, type: 3}
+    - {fileID: 21300000, guid: ac9f86c71128e4a36a090cca58788197, type: 3}

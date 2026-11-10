@@ -62,7 +62,7 @@ namespace RushOps.Editor.Scenes
             }
 
             ArenaTestSceneBuilder.BuildScene(
-                ScenePath, ColosseumLayout.Layout, false, AddArena, DisplayName, null, IslandThemes.KolosseumPath);
+                ScenePath, ColosseumLayout.Layout, false, AddArena, DisplayName, null, IslandThemes.KolosseumPath, true);
         }
 
         private static void AddArena(ArenaScene arena)

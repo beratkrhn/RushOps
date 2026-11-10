@@ -24,6 +24,7 @@ namespace RushOps.Editor.Scenes
             Level3_3SceneBuilder.Build();
             BossTestSceneBuilder.Build();
             StressTestSceneBuilder.Build();
+            DogTestSceneBuilder.Build();
             IslandTestScenesBuilder.BuildStadt();
             IslandTestScenesBuilder.BuildVulkan();
             EndlessArenaSceneBuilder.Build();

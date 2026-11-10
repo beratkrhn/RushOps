@@ -33,6 +33,12 @@ namespace RushOps.Enemies
         /// <summary>Raised when a spawned enemy first comes close to the player (<see cref="Enemy.Approached"/>).</summary>
         public event Action<Enemy> EnemyApproached;
 
+        /// <summary>Raised when a spawned dog starts to crouch before its lunge (issue #263).</summary>
+        public event Action<Enemy> EnemyCrouched;
+
+        /// <summary>Raised when a spawned dog leaps (issue #263).</summary>
+        public event Action<Enemy> EnemyLunged;
+
         /// <summary>Raised when a spawned enemy takes a hit, including the killing one.</summary>
         public event Action<Enemy> EnemyHit;
 
@@ -91,6 +97,12 @@ namespace RushOps.Enemies
             enemy.Died += OnEnemyDied;
             enemy.Hit += OnEnemyHit;
             enemy.Approached += OnEnemyApproached;
+            if (enemy.TryGetComponent(out Dog dog))
+            {
+                dog.Crouched += OnDogCrouched;
+                dog.Lunged += OnDogLunged;
+            }
+
             return enemy;
         }
 
@@ -107,6 +119,16 @@ namespace RushOps.Enemies
         private void OnEnemyApproached(Enemy enemy)
         {
             EnemyApproached?.Invoke(enemy);
+        }
+
+        private void OnDogCrouched(Dog dog)
+        {
+            EnemyCrouched?.Invoke(dog.Enemy);
+        }
+
+        private void OnDogLunged(Dog dog)
+        {
+            EnemyLunged?.Invoke(dog.Enemy);
         }
 
         private void OnGet(Enemy enemy)
@@ -128,6 +150,12 @@ namespace RushOps.Enemies
                 enemy.Died -= OnEnemyDied;
                 enemy.Hit -= OnEnemyHit;
                 enemy.Approached -= OnEnemyApproached;
+                if (enemy.TryGetComponent(out Dog dog))
+                {
+                    dog.Crouched -= OnDogCrouched;
+                    dog.Lunged -= OnDogLunged;
+                }
+
                 Destroy(enemy.gameObject);
             }
         }

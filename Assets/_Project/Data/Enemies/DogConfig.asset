@@ -19,3 +19,5 @@ MonoBehaviour:
   _lungeDistance: 3
   _lungeDuration: 0.3
   _recoveryDuration: 1.5
+  _growlClip: {fileID: 8300000, guid: 3047b6aaf9a0244acb7bf561f977ab6d, type: 3}
+  _lungeClip: {fileID: 8300000, guid: 400265cabe30848d6b91ccdfe3457617, type: 3}

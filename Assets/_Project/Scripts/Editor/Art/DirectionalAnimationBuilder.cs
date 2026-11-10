@@ -67,6 +67,24 @@ namespace RushOps.Editor.Art
         /// <summary>Asset path of the boomer's walk animation.</summary>
         public const string BoomerWalkPath = AnimationsDir + "/Boomer_Walk.asset";
 
+        /// <summary>Asset path of the dog's gallop (issue #263).</summary>
+        public const string DogRunPath = AnimationsDir + "/Dog_Run.asset";
+
+        /// <summary>Asset path of the dog's crouch before a lunge (issue #263).</summary>
+        public const string DogCrouchPath = AnimationsDir + "/Dog_Crouch.asset";
+
+        /// <summary>Asset path of the dog's lunge (issue #263).</summary>
+        public const string DogLungePath = AnimationsDir + "/Dog_Lunge.asset";
+
+        /// <summary>Asset path of the dog's rest after a lunge (issue #263).</summary>
+        public const string DogRestPath = AnimationsDir + "/Dog_Rest.asset";
+
+        /// <summary>Asset path of the dog's hit reaction (issue #263).</summary>
+        public const string DogHitPath = AnimationsDir + "/Dog_Hit.asset";
+
+        /// <summary>Asset path of the dog's death (issue #263).</summary>
+        public const string DogDeathPath = AnimationsDir + "/Dog_Death.asset";
+
         public const string KolossWalkPath = AnimationsDir + "/Koloss_Walk.asset";
 
         public const string KolossWindupPath = AnimationsDir + "/Koloss_Windup.asset";
@@ -109,6 +127,11 @@ namespace RushOps.Editor.Art
         private const float MegaBoomerSplitFramesPerSecond = 6f;
         private const float MegaBoomerWalkFramesPerSecond = 6f;
         private const float PlayerWalkFramesPerSecond = 10f;
+        // The dog gallops fast; its crouch trembles over the 0.4 s, the two lunge frames fill about 0.3 s (issue #263).
+        private const float DogRunFramesPerSecond = 12f;
+        private const float DogCrouchFramesPerSecond = 10f;
+        private const float DogLungeFramesPerSecond = 8f;
+        private const float DogRestFramesPerSecond = 4f;
         // Only the order of the frames matters: the animator stretches the somersault to the dash time.
         private const float PlayerDashFramesPerSecond = 30f;
         private const string SpritesDir = "Assets/_Project/Art/Sprites";
@@ -127,6 +150,12 @@ namespace RushOps.Editor.Art
             CreateOrUpdate(RunnerRunPath, SpritesDir + "/Enemies", "Runner_Run");
             CreateOrUpdate(RunnerHitPath, SpritesDir + "/Enemies", "Runner_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(RunnerDeathPath, SpritesDir + "/Enemies", "Runner_Death", false, DeathFramesPerSecond);
+            CreateOrUpdate(DogRunPath, SpritesDir + "/Enemies", "Dog_Run", true, DogRunFramesPerSecond);
+            CreateOrUpdate(DogCrouchPath, SpritesDir + "/Enemies", "Dog_Crouch", true, DogCrouchFramesPerSecond);
+            CreateOrUpdate(DogLungePath, SpritesDir + "/Enemies", "Dog_Lunge", true, DogLungeFramesPerSecond);
+            CreateOrUpdate(DogRestPath, SpritesDir + "/Enemies", "Dog_Rest", true, DogRestFramesPerSecond);
+            CreateOrUpdate(DogHitPath, SpritesDir + "/Enemies", "Dog_Hit", false, HitFramesPerSecond);
+            CreateOrUpdate(DogDeathPath, SpritesDir + "/Enemies", "Dog_Death", false, DeathFramesPerSecond);
             CreateOrUpdate(BruteWalkPath, SpritesDir + "/Enemies", "Brute_Walk");
             CreateOrUpdate(BruteHitPath, SpritesDir + "/Enemies", "Brute_Hit", false, HitFramesPerSecond);
             CreateOrUpdate(BruteDeathPath, SpritesDir + "/Enemies", "Brute_Death", false, DeathFramesPerSecond);
