@@ -17,7 +17,7 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Runner_Run_<DIR>_<F>.png  64x64, 8 directions x 4 frames (issue #20)
   Sprites/Enemies/Runner_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames, recoil (issue #100)
   Sprites/Enemies/Runner_Death_<DIR>_<F>.png 64x64, 8 directions x 5 frames, pitches forward (issue #100)
-  Sprites/Enemies/Dog_<STATE>_<DIR>_<F>.png 64x64, zombie dog: Run 4, Crouch 2, Lunge 2, Hit 2, Death 5 (issue #263)
+  Sprites/Enemies/Dog_<STATE>_<DIR>_<F>.png 64x64, zombie dog: Run 4, Crouch 2, Lunge 2, Rest 2, Hit 2, Death 5 (issue #263)
   Sprites/Enemies/Brute_Walk_<DIR>_<F>.png  96x96, 8 directions x 4 frames (issue #21)
   Sprites/Enemies/Brute_Hit_<DIR>_<F>.png   96x96, 8 directions x 2 frames (issue #101)
   Sprites/Enemies/Brute_Death_<DIR>_<F>.png 96x96, 8 directions x 5 frames, slams face down (issue #101)
@@ -1142,9 +1142,10 @@ def runner_death(direction: int, frame: int) -> Canvas:
 # A low, long four-legged body in mangy brown fur with bare pale ribs and a raw red wound on the flank, red eyes and
 # a gaping snout, so it reads apart from the upright runner at a glance. States: "run" (4 frames gallop), "crouch"
 # (2 frames: front low, hind legs bunched, trembling; the announced lunge), "lunge" (2 frames: stretched out in the
-# air) and the hit and death frames. The death frames lay the body down sideways instead of tipping it over.
+# air), "rest" (2 frames: standing and panting during the recovery) and the hit and death frames. The death frames lay the body down sideways instead of tipping it over.
 DOG_CROUCH_FRAMES = 2
 DOG_LUNGE_FRAMES = 2
+DOG_REST_FRAMES = 2
 DOG_DEATH_SINK = [0.25, 0.55, 0.8, 1.0, 1.0]
 DOG_DEATH_STAIN = [0.0, 0.0, 0.0, 7.0, 10.0]
 # Pixels every dog frame is drawn higher than other characters (see dog_frame).
@@ -1186,6 +1187,12 @@ def dog_frame(direction: int, frame: int, mode: str = "run", pose: Pose = UPRIGH
         front_reach, back_reach = 3.0, 4.0
         head_dz, head_df = -6.0 - tremble, 1.0
         jaw = 2.0
+    elif mode == "rest":
+        # Standing after the lunge, head hanging, panting with the jaws open; frame 1 breathes in.
+        breath = frame % 2
+        chest_z -= 0.5 * breath
+        head_dz, head_df = -3.0 - breath, 0.0
+        jaw = 2.0 + breath
     elif mode == "lunge":
         # Airborne and stretched: front legs reach far ahead, hind legs kick out behind, jaws wide open.
         air = 5.0 + frame
@@ -4462,6 +4469,8 @@ def outputs() -> dict[str, Image.Image]:
             files[f"Sprites/Enemies/Dog_Crouch_{name}_{frame}.png"] = dog_frame(d, frame, mode="crouch").to_image()
         for frame in range(DOG_LUNGE_FRAMES):
             files[f"Sprites/Enemies/Dog_Lunge_{name}_{frame}.png"] = dog_frame(d, frame, mode="lunge").to_image()
+        for frame in range(DOG_REST_FRAMES):
+            files[f"Sprites/Enemies/Dog_Rest_{name}_{frame}.png"] = dog_frame(d, frame, mode="rest").to_image()
         for frame in range(len(HIT_POSES)):
             files[f"Sprites/Enemies/Dog_Hit_{name}_{frame}.png"] = dog_hit(d, frame).to_image()
         for frame, c in enumerate(death_frames(dog_death, d, len(DOG_DEATH_SINK))):
@@ -4535,7 +4544,7 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
 ANIMATION_PREVIEWS = {
     "Walker": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Runner": [("Run", 8, 3), ("Hit", 12, 1), ("Death", 10, 1)],
-    "Dog": [("Run", 12, 3), ("Crouch", 10, 4), ("Lunge", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
+    "Dog": [("Run", 12, 3), ("Crouch", 10, 4), ("Lunge", 8, 2), ("Rest", 4, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Brute": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Boomer": [("Walk", 8, 2), ("Hit", 12, 1), ("Swell", 12, 4), ("Death", 10, 1)],
     "Koloss": [("Walk", 8, 2), ("Windup", 8, 3), ("Charge", 12, 2), ("Stun", 6, 3), ("Hit", 12, 1), ("Death", 10, 1)],
