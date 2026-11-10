@@ -227,6 +227,19 @@ Zombies lassen Gold fallen. Gold gibt Punkte und ist eine Währung, die nur im S
 | F-GLD-05 | Eingesammeltes Gold kommt sofort aufs Konto und bleibt auch bei Tod und Abbruch erhalten. Das HUD zeigt das Gold des laufenden Levels oder Laufs. | Muss |
 | F-GLD-06 | Im Skin-Karussell kann der Skin **„Goldrausch“** für *2500 Gold (Startwert)* gekauft werden. Hauptmenü und Karussell zeigen den Kontostand. | Muss |
 
+### 2.12 Rush-Meter
+
+Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (Design-Fragen RM1 bis RM6, N8, N15 bis N18, Backlog [`v1.6.0.md`](backlog/v1.6.0.md)). Gilt in der Kampagne und im Endlos-Modus (RM5).
+
+| ID | Anforderung | Prio |
+|---|---|---|
+| F-RSH-01 | Jeder Kill füllt die Rush-Leiste um den aktuellen Kombo-Multiplikator (F-SCO-02); bei *25 (Startwert)* ist sie voll. Ein erlittener Treffer leert sie nicht. | Muss |
+| F-RSH-02 | Nur eine volle Leiste lässt sich über den Rush-Button (F-HUD-09) auslösen. Das leert sie und startet den Rush für *5 s (Startwert)*; währenddessen füllt sie sich nicht. | Muss |
+| F-RSH-03 | Während des Rush laufen normale Gegner mit *50 % (Startwert)*, Bosse mit *75 % (Startwert)* Tempo, einschließlich ihrer Angriffs-Zeitgeber. Die Spielfigur wird nicht verlangsamt. | Muss |
+| F-RSH-04 | Während des Rush hat der Dash keine Abklingzeit; die i-Frames bleiben unverändert (F-STE-04). | Muss |
+| F-RSH-05 | Während des Rush zählt jeder Spielerschaden *×1,5 (Startwert)*, mit Doppelschaden ×3: Waffen, Superwaffen, Drohne und Strohmann. Insta-Kill und Nuke bleiben unverändert. | Muss |
+| F-RSH-06 | Die Leiste ist zu Beginn jedes Levels und jedes Endlos-Laufs leer und bleibt im Endlos-Modus über die Runden erhalten; sie wird nicht gespeichert. Tod und Levelende beenden den Rush. | Muss |
+
 ---
 
 ## 3. Benutzeroberfläche
@@ -259,6 +272,7 @@ Zombies lassen Gold fallen. Gold gibt Punkte und ist eine Währung, die nur im S
 | F-HUD-05 | Boss-Lebensleiste | oben, über die Breite | nur in Bosskämpfen | Muss |
 | F-HUD-06 | Pause-Button | obere Ecke | öffnet Overlay: Fortsetzen, Neustart, Hauptmenü | Muss |
 | F-HUD-07 | Sticks und Dash-Button | unten | siehe 2.1 | Muss |
+| F-HUD-09 | Rush-Button | oben links, unter den aktiven Perks | runder Button, der sich als Ring füllt; leuchtet, wenn voll; ein Tipp löst den Rush aus (2.12) | Muss |
 
 | ID | Anforderung | Prio |
 |---|---|---|
@@ -325,7 +339,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.3.0 Begleiter und Strohmann**: siehe Abschnitt 2.7 (F-PRK-05 bis F-PRK-08).
 - **v1.4.0 Superwaffen**: siehe Abschnitt 2.7 (F-PRK-09 bis F-PRK-12).
 - **v1.5.0 Hunde**: siehe Abschnitt 2.3 (F-GEG-05 bis F-GEG-07) und 2.10 (F-END-10).
-- **v1.6.0 Rush-Meter**: Kills füllen eine Leiste; voll löst ein Button Zeitlupe für Gegner, Dash ohne Abklingzeit und mehr Schaden aus.
+- **v1.6.0 Rush-Meter**: siehe Abschnitt 2.12 (F-RSH-01 bis F-RSH-06) und 3.3 (F-HUD-09).
 - **v1.7.0 Endlos-Upgrades und Tageslauf**: Upgrade-Wahl nach jeder dritten Runde; täglicher Lauf mit dem Datum als Zufalls-Seed.
 - **v1.8.0 Herausforderungen und Rätsel mit Zombies**: Abzeichen pro Level; Druckplatte (nur Brute) und rissige Wand (nur Boomer) mit Hinweisen, nur in der Kampagne.
 - **v1.9.0 Feinschliff**: Musik, Vibration (Haptik) bei Treffern und Explosionen, Balancing, Sterne-Schwellen neu.
@@ -365,3 +379,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.1 | 08.11.2026 | Abschnitt 2.7 mit Perks Begleiter und Strohmann (F-PRK-05 bis F-PRK-08) und zwei Pool-Zeilen (Design-Fragen K1 bis K8). |
 | 1.2 | 08.11.2026 | Abschnitt 2.7 mit Superwaffen Flammenwerfer und Raketenwerfer (F-PRK-09 bis F-PRK-12) und zwei Pool-Zeilen (Design-Fragen W11 bis W15). |
 | 1.3 | 10.11.2026 | Abschnitt 2.3 mit Zombiehunden (F-GEG-05 bis F-GEG-07) und Zeile in der Gegnertabelle; Abschnitt 2.10 mit Hunderunde (F-END-10) (Design-Fragen H1 bis H6, N6, N7). |
+| 1.4 | 10.11.2026 | Neuer Abschnitt 2.12 Rush-Meter (F-RSH-01 bis F-RSH-06); Abschnitt 3.3 mit Rush-Button (F-HUD-09) (Design-Fragen RM1 bis RM6, N8, N15 bis N18). |

@@ -34,6 +34,10 @@ In Stories zerlegt: [`v1.4.0.md`](v1.4.0.md) (#253 bis #256, Epic #216). Entsche
 
 In Stories zerlegt: [`v1.5.0.md`](v1.5.0.md) (#262 bis #264, Epic #217). Entscheidungen H1 bis H6, N6, N7, Lastenheft F-GEG-05 bis F-GEG-07 und F-END-10.
 
+### v1.6.0 – Rush-Meter
+
+In Stories zerlegt: [`v1.6.0.md`](v1.6.0.md) (#269 bis #271, Epic #218). Entscheidungen RM1 bis RM6, N8, N15 bis N18, Lastenheft F-RSH-01 bis F-RSH-06 und F-HUD-09.
+
 ### Musik (#42)
 Ein Menütrack und je ein loopbarer Action-Track pro Insel.
 *Offen:* selbst erzeugt oder lizenzfreie Packs.
