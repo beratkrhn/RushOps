@@ -80,6 +80,9 @@ Alle Gegner verursachen ausschließlich **Kontaktschaden**. Es gibt keine Fernka
 | F-GEG-02 | Gegner spawnen **wellenweise pro Zone** an **festen Spawnpunkten**. Spawnpunkte im direkten Sichtbereich nahe am Spieler werden übersprungen. | Muss |
 | F-GEG-03 | Höchstens **10 Gegner** *(Startwert)* gleichzeitig. Bosse zählen nicht dazu. Gilt in der Kampagne; im Endlos-Modus siehe F-END-04. | Muss |
 | F-GEG-04 | Gegner sind über ScriptableObjects konfigurierbar (Gesundheit, Tempo, Schaden, Größe, Punkte). | Muss |
+| F-GEG-05 | **Zombiehunde** kommen im **Rudel von 3** *(Startwert)* und spawnen gemeinsam an einem normalen Spawnpunkt. Ein Rudel zählt mit 3 zur Höchstzahl gleichzeitiger Gegner. | Muss |
+| F-GEG-06 | Ein Hund in Reichweite duckt sich *0,4 s (Startwert)* sichtbar und hörbar und springt dann in gerader Linie zur Position, an der der Spieler beim Ducken stand. Seitliches Ausweichen lässt den Sprung ins Leere gehen. | Muss |
+| F-GEG-07 | Hunde gibt es nur im Endlos-Modus (F-END-10); in der Kampagne erst mit neuen Zonen ab v1.8.0. | Muss |
 
 **Gegnertypen**
 
@@ -89,6 +92,7 @@ Alle Gegner verursachen ausschließlich **Kontaktschaden**. Es gibt keine Fernka
 | Runner | gering | sehr hoch | 1 Herz | zwingt zum Priorisieren und Ausweichen |
 | Brute | sehr hoch | langsam | 2 Herzen | größere Hitbox, blockiert Engpässe, schirmt andere ab |
 | Boomer | mittel | mittel | 2 Herzen (Explosion) | pulsierend, explodiert bei Tod oder Kontakt; Flächenschaden trifft Spieler **und** Zombies |
+| Hund | gering | sehr hoch | 1 Herz | Rudel von 3, angekündigter Sprung (F-GEG-05, F-GEG-06) |
 
 ### 2.4 Bosse
 
@@ -208,6 +212,7 @@ Neben dem Story Mode gibt es einen Endlos-Modus (Design-Fragen E1 bis E10, N2 bi
 | F-END-07 | Der Lauf startet mit der Pistole. **Alle 5 Runden** wird an der Arenawand eine weitere Waffe verfügbar; die Waffen hängen nebeneinander *(Startwert: Runde 5 Schrotflinte, 10 Sturmgewehr, 15 Dual-Pistolen)*. | Muss |
 | F-END-08 | Der Lauf endet bei 0 Herzen; es gibt keinen Zwischenstand. Score und erreichte Runde werden als lokale **Top 10** gespeichert. | Muss |
 | F-END-09 | Skins werden für das Erreichen von Runde 10, 25 und 50 freigeschaltet. | Soll |
+| F-END-10 | Jede **6. Runde** *(Startwert)* ist eine **Hunderunde**, in der nur Hunde kommen; die Pause davor kündigt sie an. Fällt sie auf eine Bossrunde, geht der Boss vor und die Hunderunde folgt eine Runde später. | Muss |
 
 ### 2.11 Beute (Gold)
 
@@ -319,7 +324,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.2.0 Beute**: siehe Abschnitt 2.11.
 - **v1.3.0 Begleiter und Strohmann**: siehe Abschnitt 2.7 (F-PRK-05 bis F-PRK-08).
 - **v1.4.0 Superwaffen**: siehe Abschnitt 2.7 (F-PRK-09 bis F-PRK-12).
-- **v1.5.0 Hunde**: Zombiehunde im Rudel mit angekündigtem Sprung; im Endlos-Modus jede 6. Runde eine Hunderunde.
+- **v1.5.0 Hunde**: siehe Abschnitt 2.3 (F-GEG-05 bis F-GEG-07) und 2.10 (F-END-10).
 - **v1.6.0 Rush-Meter**: Kills füllen eine Leiste; voll löst ein Button Zeitlupe für Gegner, Dash ohne Abklingzeit und mehr Schaden aus.
 - **v1.7.0 Endlos-Upgrades und Tageslauf**: Upgrade-Wahl nach jeder dritten Runde; täglicher Lauf mit dem Datum als Zufalls-Seed.
 - **v1.8.0 Herausforderungen und Rätsel mit Zombies**: Abzeichen pro Level; Druckplatte (nur Brute) und rissige Wand (nur Boomer) mit Hinweisen, nur in der Kampagne.
@@ -359,3 +364,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.0 | 07.11.2026 | Neuer Abschnitt 2.11 Beute (F-GLD-01 bis F-GLD-06); F-SKN-01 mit Gold als reiner Spielwährung; F-HUD-04 mit Goldanzeige; F-DAT-03 mit Autosave bei Abbruch und Kauf; F-DAT-04 mit Goldkonto (Design-Fragen B, N1, N11 bis N14). |
 | 1.1 | 08.11.2026 | Abschnitt 2.7 mit Perks Begleiter und Strohmann (F-PRK-05 bis F-PRK-08) und zwei Pool-Zeilen (Design-Fragen K1 bis K8). |
 | 1.2 | 08.11.2026 | Abschnitt 2.7 mit Superwaffen Flammenwerfer und Raketenwerfer (F-PRK-09 bis F-PRK-12) und zwei Pool-Zeilen (Design-Fragen W11 bis W15). |
+| 1.3 | 10.11.2026 | Abschnitt 2.3 mit Zombiehunden (F-GEG-05 bis F-GEG-07) und Zeile in der Gegnertabelle; Abschnitt 2.10 mit Hunderunde (F-END-10) (Design-Fragen H1 bis H6, N6, N7). |
