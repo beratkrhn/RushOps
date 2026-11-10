@@ -30,6 +30,12 @@ namespace RushOps.Scoring
         /// <summary>Raised when <see cref="Multiplier"/> changes, with the new multiplier.</summary>
         public event Action<int> MultiplierChanged;
 
+        /// <summary>
+        /// Raised for every kill before it counts, with the multiplier the kill is made at, e.g. for the rush meter
+        /// (F-RSH-01). Listeners need not care in which order they and the score see the kill.
+        /// </summary>
+        public event Action<int> KillRegistered;
+
         /// <summary>Points since level start.</summary>
         public int Score { get; private set; }
 
@@ -49,6 +55,7 @@ namespace RushOps.Scoring
         /// <returns>The points added, i.e. <paramref name="points"/> times the multiplier before this kill.</returns>
         public int RegisterKill(int points)
         {
+            KillRegistered?.Invoke(Multiplier);
             int awarded = points > 0 ? points * Multiplier : 0;
             if (awarded > 0)
             {
