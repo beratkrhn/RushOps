@@ -236,3 +236,12 @@ Beim Zerlegen von v1.2.0 am 07.11.2026 nachgefragt:
 | N12 | Gold bei Tod oder Abbruch? | Bleibt immer; wird beim Aufsammeln sofort gutgeschrieben, auch im Endlos-Modus | V |
 | N13 | Wo wird der Goldskin gekauft? | Im Skin-Karussell mit Button „Kaufen“; Kontostand im Hauptmenü und im Karussell; kein eigener Shop | V |
 | N14 | Punkte pro Münze (B2)? | 10 Punkte | **25 Punkte** mal Multiplikator |
+
+Beim Zerlegen von v1.6.0 am 10.11.2026 nachgefragt:
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| N15 | Wie füllt der Multiplikator die Leiste schneller (RM4)? | Jeder Kill zählt mit dem aktuellen Multiplikator (bei ×3 füllt ein Kill 3 von 25) | V |
+| N16 | Bleibt die Füllung zwischen Levels erhalten? | Nein, leer zu Beginn jedes Levels und Laufs; im Endlos-Modus über die Runden erhalten; nicht gespeichert | V |
+| N17 | Worauf wirkt der Schaden ×1,5 (N8)? | Jeder Spielerschaden: Waffen, Superwaffen, Drohne, Strohmann; Insta-Kill und Nuke unverändert | V |
+| N18 | Wo genau sitzt der Button links oben (RM3)? | Runder Button unter der Perk-Reihe, der sich als Ring füllt (Button und Leiste zugleich) | V |
