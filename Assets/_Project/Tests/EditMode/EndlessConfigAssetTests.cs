@@ -75,6 +75,17 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void DogRounds_EverySixthRound_Dogs()
+        {
+            EndlessConfig config = Load();
+
+            Assert.AreEqual(6, config.DogRoundEveryRounds);
+            Assert.IsNotNull(config.DogEnemy, "run RushOps → Daten → Endlos-Konfiguration erzeugen");
+            Assert.AreEqual("Dog", config.DogEnemy.name);
+            Assert.AreEqual(3, config.DogEnemy.PackSize);
+        }
+
+        [Test]
         public void Weapons_PistolThenShotgunRifleDualPistols()
         {
             EndlessConfig config = Load();

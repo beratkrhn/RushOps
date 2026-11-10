@@ -51,6 +51,8 @@ namespace RushOps.Editor.Endless
                 Load<BossDefinition>($"{BossesDir}/Brutmutter.asset"),
                 Load<BossDefinition>($"{BossesDir}/MegaBoomer.asset"),
             }, exists ? config.BossHealthGrowth : 0.25f);
+            // Dog rounds came with v1.5.0 (F-END-10); the field starts at 6 in older assets too.
+            config.ConfigureDogRounds(config.DogRoundEveryRounds, DogDataBuilder.GetDog());
             config.ConfigureWeapons(Load<WeaponDefinition>(WeaponCatalogBuilder.PistolPath), new[]
             {
                 new EndlessWeaponRound(5, Load<WeaponDefinition>(WeaponCatalogBuilder.ShotgunPath)),
