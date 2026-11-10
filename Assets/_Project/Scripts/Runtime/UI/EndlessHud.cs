@@ -9,8 +9,8 @@ using UnityEngine.UI;
 namespace RushOps.UI
 {
     /// <summary>
-    /// The endless mode's own HUD parts (F-END-03, F-HUD-03, F-END-08): the large „Runde X“ in the break between two
-    /// rounds, the mission tracker line during a round and the simple result screen at the end of a run. It is the death
+    /// The endless mode's own HUD parts (F-END-03, F-HUD-03, F-END-08): the large „Runde X“ (with „Hunderunde!“ below it before a
+    /// dog round) in the break between two rounds, the mission tracker line during a round and the simple result screen at the end of a run. It is the death
     /// handler of the <see cref="LevelRestarter"/>, so the result screen appears after the death moment. The buttons of
     /// the result screen call <see cref="PauseController.Restart"/> and <see cref="PauseController.QuitToMenu"/>. With the
     /// run recorded by the <see cref="LevelProgressRecorder"/>, the result screen also shows the place in the top 10,
@@ -20,6 +20,8 @@ namespace RushOps.UI
     {
         [Tooltip("Large text in the middle of the screen for „Runde X“.")]
         [SerializeField] private Text _banner;
+        [Tooltip("Smaller line below the banner, e.g. „Hunderunde!“ (F-END-10); hidden when there is none.")]
+        [SerializeField] private Text _bannerSubtitle;
         [Tooltip("Top right below the pause button; the label of the mission tracker, which stays empty in the arena.")]
         [SerializeField] private Text _tracker;
         [SerializeField] private GameObject _resultPanel;
@@ -47,19 +49,32 @@ namespace RushOps.UI
         /// <summary>Text of the large display; empty while hidden.</summary>
         public string BannerText => _banner != null && _banner.enabled ? _banner.text : string.Empty;
 
+        /// <summary>Text of the line below the large display; empty while hidden.</summary>
+        public string BannerSubtitleText =>
+            _bannerSubtitle != null && _bannerSubtitle.enabled ? _bannerSubtitle.text : string.Empty;
+
         /// <summary>Text of the mission tracker line; empty while hidden.</summary>
         public string TrackerText => _tracker != null && _tracker.enabled ? _tracker.text : string.Empty;
 
         /// <summary>True while the result screen shows.</summary>
         public bool ShowsResult => _resultPanel != null && _resultPanel.activeSelf;
 
-        /// <summary>Shows <paramref name="text"/> large in the middle.</summary>
-        public void ShowBanner(string text)
+        /// <summary>
+        /// Shows <paramref name="text"/> large in the middle and <paramref name="subtitle"/> below it; without a subtitle
+        /// the line below stays hidden.
+        /// </summary>
+        public void ShowBanner(string text, string subtitle = null)
         {
             if (_banner != null)
             {
                 _banner.text = text;
                 _banner.enabled = true;
+            }
+
+            if (_bannerSubtitle != null)
+            {
+                _bannerSubtitle.text = subtitle ?? string.Empty;
+                _bannerSubtitle.enabled = !string.IsNullOrEmpty(subtitle);
             }
         }
 
@@ -69,6 +84,11 @@ namespace RushOps.UI
             if (_banner != null)
             {
                 _banner.enabled = false;
+            }
+
+            if (_bannerSubtitle != null)
+            {
+                _bannerSubtitle.enabled = false;
             }
         }
 

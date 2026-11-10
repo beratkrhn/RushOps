@@ -205,6 +205,11 @@ namespace RushOps.Editor.Scenes
             Text banner = ArenaTestSceneBuilder.CreateText(
                 "RoundBanner", parent, font, EndlessText.Round(1), ArenaTestSceneBuilder.TitlePixelScale, new Vector2(0f, 110f));
             banner.enabled = false;
+            // „Hunderunde!“ below it before a dog round (F-END-10).
+            Text bannerSubtitle = ArenaTestSceneBuilder.CreateText("RoundBannerSubtitle", parent, font, EndlessText.DogRound,
+                ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, 78f));
+            bannerSubtitle.color = ArenaTestSceneBuilder.PaletteYellow;
+            bannerSubtitle.enabled = false;
 
             // Result screen (issue #211): title, „Neuer Bestwert!“, round, score, place, then the top 10 and the buttons.
             RectTransform result = ArenaTestSceneBuilder.CreateDimPanel("EndlessResultPanel", parent);
@@ -243,6 +248,7 @@ namespace RushOps.Editor.Scenes
             serializedHud.FindProperty("_tracker").objectReferenceValue =
                 new SerializedObject(arena.Tracker).FindProperty("_label").objectReferenceValue;
             serializedHud.FindProperty("_banner").objectReferenceValue = banner;
+            serializedHud.FindProperty("_bannerSubtitle").objectReferenceValue = bannerSubtitle;
             serializedHud.FindProperty("_resultPanel").objectReferenceValue = result.gameObject;
             serializedHud.FindProperty("_resultRound").objectReferenceValue = round;
             serializedHud.FindProperty("_resultScore").objectReferenceValue = resultScore;

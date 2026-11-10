@@ -84,6 +84,9 @@ namespace RushOps.Endless
             return $"Runde {round}";
         }
 
+        /// <summary>Line below „Runde X“ in the break before a dog round (F-END-10).</summary>
+        public const string DogRound = "Hunderunde!";
+
         /// <summary>Notice in the mission tracker when a wall weapon unlocks, e.g. „Neue Waffe: Schrotflinte“.</summary>
         public static string NewWeapon(string weaponName)
         {
@@ -102,6 +105,18 @@ namespace RushOps.Endless
             return remaining == 1
                 ? $"Runde {round}\nNoch 1 Gegner"
                 : $"Runde {round}\nNoch {remaining} Gegner";
+        }
+
+        /// <summary>
+        /// Mission tracker during a dog round: the round and the dogs still to beat, e.g. „Runde 6\nNoch 9 Hunde“, with
+        /// the notice <paramref name="notice"/> as a third line, if there is one.
+        /// </summary>
+        public static string DogTracker(int round, int remaining, string notice = null)
+        {
+            string text = remaining == 1
+                ? $"Runde {round}\nNoch 1 Hund"
+                : $"Runde {round}\nNoch {remaining} Hunde";
+            return string.IsNullOrEmpty(notice) ? text : $"{text}\n{notice}";
         }
 
         /// <summary>
