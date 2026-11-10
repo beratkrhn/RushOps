@@ -245,3 +245,12 @@ Beim Zerlegen von v1.6.0 am 10.11.2026 nachgefragt:
 | N16 | Bleibt die Füllung zwischen Levels erhalten? | Nein, leer zu Beginn jedes Levels und Laufs; im Endlos-Modus über die Runden erhalten; nicht gespeichert | V |
 | N17 | Worauf wirkt der Schaden ×1,5 (N8)? | Jeder Spielerschaden: Waffen, Superwaffen, Drohne, Strohmann; Insta-Kill und Nuke unverändert | V |
 | N18 | Wo genau sitzt der Button links oben (RM3)? | Runder Button unter der Perk-Reihe, der sich als Ring füllt (Button und Leiste zugleich) | V |
+
+Beim Zerlegen von v1.7.0 am 11.11.2026 nachgefragt:
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| N19 | Welche 12 Upgrades (T1)? | Abpraller, +1 Herz, Längere Perks, Gold-Magnet, Feuerspur, Begleiter dauerhaft, Schnelle Füße, Feuerrate +15 %, Schaden +15 %, Perk-Glück, Schneller Rush, Kurzer Dash; Zahlenwerte stapeln bis zu einer Höchststufe, Feuerspur und Begleiter nur einmal | V |
+| N20 | Ablauf der Wahl (T2)? | Spiel hält an, 3 Karten ohne ausgereizte Upgrades, Pflichtwahl, danach die Pause „Runde X“; auch nach Bossrunden | V |
+| N21 | Was legt der Tages-Seed fest? | Alles Zufällige im Lauf: Upgrade-Angebote, Spawns, Perk- und Gold-Drops, Boss-Reihenfolge | V |
+| N22 | Wertung und Start des Tageslaufs? | Button „Tageslauf“ im Bereich „Endlos“, Bestwert pro Tag, Anzeige der letzten 7 Tage, nicht in der Top 10; Gold und Skins zählen | V |
