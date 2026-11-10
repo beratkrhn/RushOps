@@ -88,6 +88,10 @@ Output (under Assets/_Project/Art/):
   Sprites/UI/Dash_Cooldown.png             24x24 disc covering the button during the cooldown
   Sprites/UI/Perk_Slot.png                 28x28 HUD slot of an active perk: dark disc with an empty ring (issue #24)
   Sprites/UI/Perk_Timer.png                28x28 ring over the slot, filled radially with the remaining time (issue #24)
+  Sprites/UI/Rush_Button.png               32x32 rush button while it fills: dark disc, empty ring track, dim bolt (issue #271)
+  Sprites/UI/Rush_Button_Full.png          32x32 rush button when full: lit orange disc with a bright bolt (issue #271)
+  Sprites/UI/Rush_Ring.png                 32x32 orange ring over the button, filled radially with the meter (issue #271)
+  Sprites/UI/Rush_Ring_Active.png          32x32 yellow ring, runs down while the rush lasts (issue #271)
   Sprites/UI/Logo_<F>.png                  RUSHOPS logo, 13 frames: letters slam in, then a light sweep (issue #124)
   Sprites/UI/Button[_Primary][_Pressed].png 112x22 menu button with a 3 px lip; pressed sinks in (issue #125)
   Sprites/UI/Button_Disabled.png           112x22 greyed-out menu button (issue #125)
@@ -3265,6 +3269,70 @@ def perk_timer() -> Canvas:
     return c
 
 
+RUSH_BUTTON = 32
+RUSH_RING = (12.5, 15.5)
+# Lightning bolt of the rush button, 10x16, drawn centered.
+RUSH_BOLT = [
+    ".....####.",
+    "....####..",
+    "....###...",
+    "...####...",
+    "...###....",
+    "..####....",
+    "..########",
+    ".########.",
+    "########..",
+    "....###...",
+    "...###....",
+    "...##.....",
+    "..##......",
+    "..#.......",
+    ".#........",
+    ".#........",
+]
+
+
+def rush_bolt(c: Canvas, color: str) -> None:
+    x0 = (RUSH_BUTTON - len(RUSH_BOLT[0])) // 2
+    y0 = (RUSH_BUTTON - len(RUSH_BOLT)) // 2
+    for y, row in enumerate(RUSH_BOLT):
+        for x, cell in enumerate(row):
+            if cell == "#":
+                c.set(x0 + x, y0 + y, color)
+
+
+def rush_button(full: bool) -> Canvas:
+    """HUD rush button (issue #271): a dark disc with the empty ring track and a dim bolt while it fills; when full the
+    disc lights up orange around a bright bolt."""
+    c = Canvas(RUSH_BUTTON, RUSH_BUTTON)
+    half = RUSH_BUTTON / 2.0
+    c.ellipse(half, half, half, half, "night")
+    if full:
+        c.ellipse(half, half, RUSH_RING[0], RUSH_RING[0], "orange")
+        c.ellipse(half, half - 1.0, RUSH_RING[0] - 2.0, RUSH_RING[0] - 2.0, "apricot")
+    for x, y in ring_mask(RUSH_BUTTON, *RUSH_RING):
+        c.set(x, y, "yellow" if full else "slate_1")
+    if full:
+        # A dark one-pixel rim keeps the bright bolt readable on the lit disc.
+        x0 = (RUSH_BUTTON - len(RUSH_BOLT[0])) // 2
+        y0 = (RUSH_BUTTON - len(RUSH_BOLT)) // 2
+        bolt = {(x0 + x, y0 + y) for y, row in enumerate(RUSH_BOLT) for x, cell in enumerate(row) if cell == "#"}
+        for x, y in bolt:
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                if (x + dx, y + dy) not in bolt:
+                    c.set(x + dx, y + dy, "brown_0")
+    rush_bolt(c, "glow" if full else "slate_3")
+    return c
+
+
+def rush_ring(color: str) -> Canvas:
+    """Ring on the rush button's track; the HUD fills it radially with the meter or the time left of the rush."""
+    c = Canvas(RUSH_BUTTON, RUSH_BUTTON)
+    for x, y in ring_mask(RUSH_BUTTON, *RUSH_RING):
+        c.set(x, y, color)
+    return c
+
+
 # --- Tiles ---------------------------------------------------------------------
 
 def floor(variant: int) -> Canvas:
@@ -4414,6 +4482,10 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/UI/Dash_Cooldown.png": dash_cooldown().to_image(),
         "Sprites/UI/Perk_Slot.png": perk_slot().to_image(),
         "Sprites/UI/Perk_Timer.png": perk_timer().to_image(),
+        "Sprites/UI/Rush_Button.png": rush_button(False).to_image(),
+        "Sprites/UI/Rush_Button_Full.png": rush_button(True).to_image(),
+        "Sprites/UI/Rush_Ring.png": rush_ring("orange").to_image(),
+        "Sprites/UI/Rush_Ring_Active.png": rush_ring("yellow").to_image(),
         "Sprites/Pickups/Perk_Glow.png": perk_glow().to_image(),
         **{f"Sprites/Pickups/Gold_{f}.png": gold_coin(f).to_image() for f in range(len(GOLD_SPIN_HALF_WIDTHS))},
     }

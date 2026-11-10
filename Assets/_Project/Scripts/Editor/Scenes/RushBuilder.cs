@@ -22,6 +22,13 @@ namespace RushOps.Editor.Scenes
         // Width of the edge frame in reference pixels of the 360×640 canvas.
         private const float EdgeWidth = 6f;
 
+        private const string SpriteDir = "Assets/_Project/Art/Sprites/UI";
+
+        // Size of the rush button sprite and of its touch area in reference pixels; the perk slots are 28 px tall.
+        private const float ButtonSize = 32f;
+        private const float ButtonHitSize = 44f;
+        private const float PerkSlotSize = 28f;
+
         public static PlayerRush Create(Transform player, LevelResults results, EnemyPool[] enemies, LevelScore score,
             SfxPlayer sfx, RectTransform canvas)
         {
@@ -67,7 +74,73 @@ namespace RushOps.Editor.Scenes
             }
 
             serializedOverlay.ApplyModifiedPropertiesWithoutUndo();
+            CreateButton((RectTransform)canvas.Find("SafeArea"), rush, sfx);
             return rush;
+        }
+
+        // Round button below the row of active perks (F-HUD-09, N18): a transparent touch area of ButtonHitSize around
+        // the 32 px disc, so it is easy to hit. It does not move with the perks.
+        private static void CreateButton(RectTransform safeArea, PlayerRush rush, SfxPlayer sfx)
+        {
+            var perks = (RectTransform)safeArea.Find("ActivePerks");
+            float perksTop = perks != null ? -perks.anchoredPosition.y : 32f;
+            float top = perksTop + PerkSlotSize + ArenaTestSceneBuilder.PerkRowGap;
+            float inset = (ButtonHitSize - ButtonSize) / 2f;
+            var topLeft = new Vector2(0f, 1f);
+
+            RectTransform hit = ArenaTestSceneBuilder.CreateUiRect("RushButton", safeArea, topLeft, topLeft);
+            hit.pivot = topLeft;
+            hit.sizeDelta = new Vector2(ButtonHitSize, ButtonHitSize);
+            hit.anchoredPosition = new Vector2(ArenaTestSceneBuilder.HudMargin - inset, -(top - inset));
+            var hitImage = hit.gameObject.AddComponent<Image>();
+            hitImage.color = new Color(1f, 1f, 1f, 0f);
+            var button = hit.gameObject.AddComponent<Button>();
+            button.transition = Selectable.Transition.None;
+            button.targetGraphic = hitImage;
+
+            var center = new Vector2(0.5f, 0.5f);
+            RectTransform visual = ArenaTestSceneBuilder.CreateUiRect("Visual", hit, center, center);
+            visual.sizeDelta = new Vector2(ButtonSize, ButtonSize);
+            Sprite empty = LoadSprite("Rush_Button.png");
+            var background = visual.gameObject.AddComponent<Image>();
+            background.sprite = empty;
+            background.raycastTarget = false;
+            RectTransform ringRect = ArenaTestSceneBuilder.CreateUiRect("Ring", visual, Vector2.zero, Vector2.one);
+            var ring = ringRect.gameObject.AddComponent<Image>();
+            Sprite fillRing = LoadSprite("Rush_Ring.png");
+            ring.sprite = fillRing;
+            ring.raycastTarget = false;
+            ring.type = Image.Type.Filled;
+            ring.fillMethod = Image.FillMethod.Radial360;
+            ring.fillOrigin = (int)Image.Origin360.Top;
+            ring.fillClockwise = true;
+            ring.fillAmount = 0f;
+
+            var view = hit.gameObject.AddComponent<RushButtonView>();
+            UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, view.Tap);
+            var click = sfx != null ? sfx.GetComponent<UiClickSound>() : null;
+            if (click != null)
+            {
+                UnityEditor.Events.UnityEventTools.AddPersistentListener(button.onClick, click.Play);
+            }
+            var serialized = new SerializedObject(view);
+            serialized.FindProperty("_rush").objectReferenceValue = rush;
+            serialized.FindProperty("_background").objectReferenceValue = background;
+            serialized.FindProperty("_ring").objectReferenceValue = ring;
+            serialized.FindProperty("_visual").objectReferenceValue = visual;
+            serialized.FindProperty("_emptySprite").objectReferenceValue = empty;
+            serialized.FindProperty("_fullSprite").objectReferenceValue = LoadSprite("Rush_Button_Full.png");
+            serialized.FindProperty("_fillRing").objectReferenceValue = fillRing;
+            serialized.FindProperty("_activeRing").objectReferenceValue = LoadSprite("Rush_Ring_Active.png");
+            serialized.FindProperty("_sfx").objectReferenceValue = sfx;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static Sprite LoadSprite(string file)
+        {
+            string path = $"{SpriteDir}/{file}";
+            return AssetDatabase.LoadAssetAtPath<Sprite>(path)
+                ?? throw new System.InvalidOperationException($"Sprite not found at {path}; run Tools/gen_pixelart.py");
         }
 
         private static Image CreateImage(RectTransform rect, RushConfig config)
@@ -114,6 +187,12 @@ namespace RushOps.Editor.Scenes
             if (start.objectReferenceValue == null)
             {
                 start.objectReferenceValue = ArenaTestSceneBuilder.LoadClip("RushStart.wav");
+            }
+
+            SerializedProperty full = serialized.FindProperty("_fullClip");
+            if (full.objectReferenceValue == null)
+            {
+                full.objectReferenceValue = ArenaTestSceneBuilder.LoadClip("RushFull.wav");
             }
 
             if (end.objectReferenceValue == null)

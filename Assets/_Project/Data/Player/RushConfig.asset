@@ -24,5 +24,9 @@ MonoBehaviour:
   _blinkInterval: 0.1
   _startClip: {fileID: 8300000, guid: 933cef53787b344a4822be1662683a9b, type: 3}
   _endClip: {fileID: 8300000, guid: 7550dd83f4f0948d487599d1e66aa0eb, type: 3}
+  _fullClip: {fileID: 8300000, guid: c60745668c14e43dcad03063fbe33aaa, type: 3}
+  _fullVolume: 0.6
+  _pulseScale: 1.12
+  _pulsePeriod: 0.6
   _startVolume: 0.8
   _endVolume: 0.6

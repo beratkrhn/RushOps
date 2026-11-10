@@ -139,9 +139,9 @@ namespace RushOps.Editor.Scenes
         // Weapon icon on the swap button (issue #175), in reference units.
         private const float SwapIconWidth = 34f;
         private const float WeaponSwitchOffset = 22f;
-        private const float HudMargin = 8f;
+        internal const float HudMargin = 8f;
         private const float HeartSpacing = 2f;
-        private const float PerkRowGap = 4f;
+        internal const float PerkRowGap = 4f;
         private const float PerkSlotSpacing = 2f;
         private const float PerkIconSize = 24f;
         // Name flash on pickup (issue #247): pixel scale and height as a fraction of the safe area.
