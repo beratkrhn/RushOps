@@ -168,6 +168,7 @@ namespace RushOps.Editor.Scenes
                 MegaBoomerBuilder.Connect(boss, fight);
             }
 
+            RushBuilder.AddBossFight(fight);
             root.SetActive(false);
             return fight;
         }

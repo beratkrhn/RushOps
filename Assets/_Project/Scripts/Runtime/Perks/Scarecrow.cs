@@ -1,4 +1,5 @@
 using System;
+using RushOps.Combat;
 using RushOps.Enemies;
 using RushOps.Navigation;
 using RushOps.Player;
@@ -29,6 +30,8 @@ namespace RushOps.Perks
         [SerializeField] private FlowFieldNavigator _navigator;
         [Tooltip("Deals the blast damage and plays its feedback.")]
         [SerializeField] private ExplosionSystem _explosions;
+        [Tooltip("Its damage factor (e.g. the rush, F-RSH-05) also scales the explosion; full damage if empty.")]
+        [SerializeField] private PlayerWeapon _weapon;
         [SerializeField] private SpriteRenderer _renderer;
         [Tooltip("Sway frames in playback order.")]
         [SerializeField] private Sprite[] _frames = Array.Empty<Sprite>();
@@ -175,7 +178,8 @@ namespace RushOps.Perks
             Refresh();
             if (_explosions != null)
             {
-                _explosions.ExplodeEnemiesOnly(center, _config.ExplosionRadius, _config.ExplosionDamage, _config.ExplosionFeedback);
+                int damage = WeaponMath.ShotDamage(_config.ExplosionDamage, _weapon != null ? _weapon.DamageFactor : 1f);
+                _explosions.ExplodeEnemiesOnly(center, _config.ExplosionRadius, damage, _config.ExplosionFeedback);
             }
 
             Detonated?.Invoke(center);

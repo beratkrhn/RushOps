@@ -61,6 +61,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_gold").objectReferenceValue = Object.FindAnyObjectByType<RushOps.Loot.GoldDropper>();
             serialized.ApplyModifiedPropertiesWithoutUndo();
             spec.Connect?.Invoke(boss, fight);
+            RushBuilder.AddBossFight(fight);
             return fight;
         }
 

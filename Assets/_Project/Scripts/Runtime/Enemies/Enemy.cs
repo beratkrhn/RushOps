@@ -61,6 +61,22 @@ namespace RushOps.Enemies
         /// <summary>Navigator the enemy chases with, e.g. to see a scarecrow's lure; null without one.</summary>
         public FlowFieldNavigator Navigator => _navigator;
 
+        /// <summary>
+        /// Factor on the enemy's speed and its own timers (e.g. the dog's crouch and lunge), 0.5 during the rush
+        /// (F-RSH-03); every spawn starts at 1.
+        /// </summary>
+        public float TimeFactor
+        {
+            get => _movement != null ? _movement.TimeFactor : 1f;
+            set
+            {
+                if (_movement != null)
+                {
+                    _movement.TimeFactor = value;
+                }
+            }
+        }
+
         /// <summary>True while the enemy shows the white hit flash.</summary>
         public bool IsFlashing => _sinceHit >= 0f;
 
@@ -122,6 +138,7 @@ namespace RushOps.Enemies
             _navigator = navigator;
             _target = navigator != null ? navigator.Target : null;
             _approach.Reset(_definition != null ? _definition.ApproachDistance : 0f);
+            _movement.TimeFactor = 1f;
             _movement.Begin(
                 navigator, _definition != null ? _definition.MoveSpeed : 0f, _definition != null ? _definition.SeparationScale : 1f);
         }

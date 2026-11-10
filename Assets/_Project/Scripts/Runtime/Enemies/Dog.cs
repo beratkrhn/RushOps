@@ -103,7 +103,7 @@ namespace RushOps.Enemies
             bool lured = _enemy.Navigator != null && _enemy.Navigator.HasLure;
             if (!(lured && _logic.State == DogState.Chase))
             {
-                _logic.Tick(Time.fixedDeltaTime, _body.position, target.position);
+                _logic.Tick(Time.fixedDeltaTime * _enemy.TimeFactor, _body.position, target.position);
             }
 
             if (_logic.State == DogState.Chase)

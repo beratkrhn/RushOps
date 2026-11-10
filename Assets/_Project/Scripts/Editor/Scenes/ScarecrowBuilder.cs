@@ -47,6 +47,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_results").objectReferenceValue = results;
             serialized.FindProperty("_navigator").objectReferenceValue = navigator;
             serialized.FindProperty("_explosions").objectReferenceValue = explosions;
+            serialized.FindProperty("_weapon").objectReferenceValue = player.GetComponent<PlayerWeapon>();
             serialized.FindProperty("_renderer").objectReferenceValue = renderer;
             SerializedProperty list = serialized.FindProperty("_frames");
             list.arraySize = FrameCount;

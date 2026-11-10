@@ -39,6 +39,8 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   PuzzleSolved.wav    unlock click and a warm two-note chord
   SwitchOn.wav        plate click with a confirm blip
   SwitchReset.wav     three falling buzzer pulses
+  RushStart.wav       rush (issue #270): a fast rising sweep that lands on a bright power chord over a low throb
+  RushEnd.wav         rush (issue #270): a short falling sweep that winds the power down
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -429,6 +431,26 @@ def switch_reset() -> list[float]:
     return out
 
 
+def rush_start() -> list[float]:
+    """Rush start (issue #270): a quick sweep up into a bright two-note power chord, a low triangle throb under it."""
+    sweep_length, chord_length = 0.18, 0.42
+    p, q, tri, n = Pulse(0.25), Pulse(0.5), Triangle(), Noise()
+    sweep = [(0.6 * p.sample(slide(220, 1760, t, sweep_length)) + 0.3 * n.sample(slide(1000, 8000, t, sweep_length)))
+             * (0.4 + 0.6 * t / sweep_length) for t in (i / RATE for i in frames(sweep_length))]
+    chord = [(0.4 * p.sample(notes(t, [880, 1175], 0.07)) + 0.3 * q.sample(587)
+              + 0.5 * tri.sample(110 if int(t * 16) % 2 == 0 else 98)) * decay(t, chord_length, 0.002)
+             for t in (i / RATE for i in frames(chord_length))]
+    return sweep + chord
+
+
+def rush_end() -> list[float]:
+    """Rush end (issue #270): a short sweep down with a soft noise tail, the power winding down."""
+    length = 0.34
+    p, n = Pulse(0.5), Noise()
+    return [(0.7 * p.sample(slide(1320, 165, t, length)) + 0.2 * n.sample(slide(4000, 300, t, length)))
+            * decay(t, length, 0.002) for t in (i / RATE for i in frames(length))]
+
+
 SOUNDS = {
     "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "FlameLoop": flame_loop, "RocketLaunch": rocket_launch, "RocketBlast": rocket_blast, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
     "GateOpen": gate_open, "MissionDone": mission_done,
@@ -439,6 +461,7 @@ SOUNDS = {
     "BoomerSpawn": boomer_spawn, "BoomerApproach": boomer_approach,
     "Explosion": explosion, "PerkPickup": perk_pickup, "GoldPickup": gold_pickup, "Nuke": nuke,
     "PuzzleSolved": puzzle_solved, "SwitchOn": switch_on, "SwitchReset": switch_reset,
+    "RushStart": rush_start, "RushEnd": rush_end,
 }
 
 

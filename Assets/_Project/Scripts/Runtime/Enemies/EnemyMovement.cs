@@ -25,6 +25,17 @@ namespace RushOps.Enemies
         private float _knockbackDuration;
         private bool _driven;
         private Vector2 _drivenVelocity;
+        private float _timeFactor = 1f;
+
+        /// <summary>
+        /// Factor on the chase and on driven moves, e.g. 0.5 during the rush (F-RSH-03); 1 by default. Knockbacks come
+        /// from the player and stay at full speed.
+        /// </summary>
+        public float TimeFactor
+        {
+            get => _timeFactor;
+            set => _timeFactor = value > 0f ? value : 0f;
+        }
 
         /// <summary>Velocity set in the last physics step.</summary>
         public Vector2 Velocity => _body != null ? _body.linearVelocity : Vector2.zero;
@@ -128,7 +139,7 @@ namespace RushOps.Enemies
 
             if (_driven)
             {
-                _body.linearVelocity = _drivenVelocity;
+                _body.linearVelocity = _drivenVelocity * _timeFactor;
                 if (_view != null && _drivenVelocity.sqrMagnitude > 0f)
                 {
                     _view.SetFacing(_drivenVelocity);
@@ -140,7 +151,7 @@ namespace RushOps.Enemies
             // Navigate with the body center; the transform sits at the feet below it.
             Vector2 center = (Vector2)transform.position + (_collider != null ? _collider.offset : Vector2.zero);
             Vector2 direction = _navigator.Steer(transform, center, _separationScale);
-            _body.linearVelocity = direction * _speed;
+            _body.linearVelocity = direction * (_speed * _timeFactor);
             if (_view != null)
             {
                 _view.SetFacing(direction);

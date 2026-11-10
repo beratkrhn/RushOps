@@ -260,6 +260,7 @@ namespace RushOps.Editor.Scenes
             AssignZones(arena, new[] { zone });
             CreateWeaponSwitch(arena);
             CreatePerkSpawn(arena);
+            CreateRushButton(arena);
             CreateTestWallWeapon(arena);
         }
 
@@ -338,6 +339,30 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_player").objectReferenceValue = arena.Player;
             serialized.FindProperty("_label").objectReferenceValue = label;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Debug button above the perk button (issue #270): fills the rush meter and triggers the rush at once.
+        private static void CreateRushButton(ArenaScene arena)
+        {
+            var hud = (RectTransform)arena.Tracker.transform.parent;
+            var bottom = new Vector2(0.5f, 0f);
+            RectTransform rect = CreateUiRect("DebugRush", hud, bottom, bottom);
+            rect.pivot = bottom;
+            rect.sizeDelta = new Vector2(MenuButtonSize.x, WeaponSwitchHeight);
+            rect.anchoredPosition =
+                new Vector2(0f, HudMargin + WeaponSwitchOffset + 2f * (WeaponSwitchHeight + PerkRowGap));
+            var image = rect.gameObject.AddComponent<Image>();
+            Color back = PaletteSlate2;
+            back.a = 0.7f;
+            image.color = back;
+            var button = rect.gameObject.AddComponent<Button>();
+            button.targetGraphic = image;
+            Text label = CreateText("Label", rect, PixelFontBuilder.Build(), "Rush!", HudPixelScale, Vector2.zero);
+            label.rectTransform.sizeDelta = new Vector2(MenuButtonSize.x, WeaponSwitchHeight) / HudPixelScale;
+
+            var key = arena.Player.GetComponent<RushOps.Rush.DebugRushKey>();
+            UnityEventTools.AddPersistentListener(button.onClick, key.FillAndTrigger);
+            UnityEventTools.AddPersistentListener(button.onClick, arena.Sfx.GetComponent<UiClickSound>().Play);
         }
 
         /// <summary>
@@ -722,6 +747,7 @@ namespace RushOps.Editor.Scenes
             FlamethrowerBuilder.Create(target, results, pause, sfx);
             RocketLauncherBuilder.Create(target, results, sfx);
             ScarecrowBuilder.Create(target, results, navigator, explosions, perks);
+            RushBuilder.Create(target, results, enemyPools, score, sfx, (RectTransform)flash.transform.parent);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
 
             EditorSceneManager.SaveScene(scene, scenePath);

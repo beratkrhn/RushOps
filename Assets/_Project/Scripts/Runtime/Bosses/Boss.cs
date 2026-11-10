@@ -44,6 +44,7 @@ namespace RushOps.Bosses
         private float _dyingTime = -1f;
         private float _deathAnimationTime;
         private int _maxHealth;
+        private float _timeFactor = 1f;
 
         /// <summary>Raised on every hit that counted, including the killing one.</summary>
         public event Action<Boss> Hit;
@@ -87,6 +88,16 @@ namespace RushOps.Bosses
 
         /// <summary>Physics body; behaviours set its velocity.</summary>
         protected Rigidbody2D Body => _body;
+
+        /// <summary>
+        /// Factor on the boss's speed and its timers (attacks, phases, births), 0.75 during the rush (F-RSH-03, RM6);
+        /// 1 by default.
+        /// </summary>
+        public float TimeFactor
+        {
+            get => _timeFactor;
+            set => _timeFactor = value > 0f ? value : 0f;
+        }
 
         /// <summary>The animator, or null.</summary>
         protected DirectionalSpriteAnimator View => _view;
@@ -212,7 +223,7 @@ namespace RushOps.Bosses
                 direction = CircleAvoidance.Steer(center, direction, target, _obstacleCenter, _obstacleRadius + BodyRadius);
             }
 
-            _body.linearVelocity = direction * speed;
+            _body.linearVelocity = direction * (speed * _timeFactor);
             if (_view != null && direction != Vector2.zero)
             {
                 _view.SetFacing(direction);
@@ -234,7 +245,7 @@ namespace RushOps.Bosses
         {
             if (IsActive && !IsDead)
             {
-                TickBehaviour(Time.fixedDeltaTime);
+                TickBehaviour(Time.fixedDeltaTime * _timeFactor);
             }
         }
 

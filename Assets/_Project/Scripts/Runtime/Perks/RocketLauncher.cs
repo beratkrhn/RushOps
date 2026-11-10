@@ -111,7 +111,7 @@ namespace RushOps.Perks
             }
 
             float radius = _config.ExplosionRadius;
-            float multiplier = _weapon != null ? _weapon.Modifiers.DamageMultiplier : 1f;
+            float multiplier = _weapon != null ? _weapon.DamageMultiplier : 1f;
             bool lethal = _weapon != null && _weapon.Modifiers.InstaKill;
             _struck.Clear();
             int count = Physics2D.OverlapCircle(center, radius, _filter, _hits);

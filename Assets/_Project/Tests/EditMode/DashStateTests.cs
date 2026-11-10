@@ -146,6 +146,22 @@ namespace RushOps.Tests.EditMode
             Assert.IsTrue(state.CanDash);
         }
 
+        [Test]
+        public void ClearCooldown_KeepsDashAndIFrames_ReadyRightAfter()
+        {
+            // The rush starts mid-cooldown (issue #270, F-RSH-04).
+            var state = new DashState();
+            state.TryStart(Duration, IFrames, Cooldown);
+
+            state.ClearCooldown();
+
+            Assert.IsTrue(state.IsDashing);
+            Assert.IsTrue(state.IsInvulnerable);
+            Assert.AreEqual(1f, state.CooldownProgress, 1e-5f);
+            Tick(state, 100);
+            Assert.IsTrue(state.CanDash);
+        }
+
         private static void Tick(DashState state, int steps)
         {
             for (int i = 0; i < steps; i++)

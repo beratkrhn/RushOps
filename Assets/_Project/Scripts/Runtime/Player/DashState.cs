@@ -72,6 +72,12 @@ namespace RushOps.Player
             _cooldownRemaining = 0f;
         }
 
+        /// <summary>Ends a running cooldown at once, e.g. when the rush starts (F-RSH-04). Dash and i-frames stay.</summary>
+        public void ClearCooldown()
+        {
+            _cooldownRemaining = 0f;
+        }
+
         /// <summary>Forbids starting a dash until <paramref name="source"/> calls <see cref="Unlock"/>. A running dash continues.</summary>
         public void Lock(object source)
         {
