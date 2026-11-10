@@ -25,6 +25,9 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   WalkerApproach.wav  slow two-note moan
   RunnerSpawn.wav     raspy rising shriek
   RunnerApproach.wav  fast panting noise bursts
+  DogSpawn.wav        two short hoarse barks (issue #263)
+  DogGrowl.wav        low rattling growl over the 0.4 s crouch, the lunge warning (issue #263)
+  DogLunge.wav        sharp snarl sliding down as the dog leaps (issue #263)
   BruteSpawn.wav      deep growl with a heavy noise rumble
   BruteApproach.wav   two heavy stomps
   BoomerSpawn.wav     low bubbling gurgle
@@ -302,6 +305,36 @@ def boomer_approach() -> list[float]:
     return out
 
 
+def dog_bark(length: float = 0.12) -> list[float]:
+    p, n = Pulse(0.25), Noise()
+    return [(0.55 * p.sample(slide(520, 300, t, length)) + 0.45 * n.sample(2500)) * decay(t, length, 0.008)
+            for t in (i / RATE for i in frames(length))]
+
+
+def dog_spawn() -> list[float]:
+    return dog_bark() + silence(0.08) + dog_bark(0.15)
+
+
+def dog_growl() -> list[float]:
+    """The warning of the lunge: a low rumble rattled at 28 Hz that swells over the crouch, unlike any other enemy."""
+    length = 0.4
+    tri, n = Triangle(), Noise()
+    out = []
+    for i in frames(length):
+        t = i / RATE
+        rattle = 0.45 + 0.55 * (1.0 if (t * 28) % 1.0 < 0.5 else 0.0)
+        swell = 0.5 + 0.5 * t / length
+        out.append((0.6 * tri.sample(slide(75, 95, t, length)) + 0.4 * n.sample(900)) * rattle * swell)
+    return out
+
+
+def dog_lunge() -> list[float]:
+    length = 0.25
+    p, n = Pulse(0.125), Noise()
+    return [(0.5 * p.sample(slide(900, 260, t, length)) + 0.5 * n.sample(slide(6000, 1500, t, length)))
+            * decay(t, length, 0.005) for t in (i / RATE for i in frames(length))]
+
+
 def flame_loop() -> list[float]:
     """Flamethrower (issue #254): a low noise roar under a thin hiss, fluttering four times a second. No envelope and
     only modulation periods that divide the length, so the end joins the start and the file loops without a click."""
@@ -401,6 +434,7 @@ SOUNDS = {
     "GateOpen": gate_open, "MissionDone": mission_done,
     "WalkerSpawn": walker_spawn, "WalkerApproach": walker_approach,
     "RunnerSpawn": runner_spawn, "RunnerApproach": runner_approach,
+    "DogSpawn": dog_spawn, "DogGrowl": dog_growl, "DogLunge": dog_lunge,
     "BruteSpawn": brute_spawn, "BruteApproach": brute_approach,
     "BoomerSpawn": boomer_spawn, "BoomerApproach": boomer_approach,
     "Explosion": explosion, "PerkPickup": perk_pickup, "GoldPickup": gold_pickup, "Nuke": nuke,
