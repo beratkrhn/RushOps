@@ -44,6 +44,7 @@ namespace RushOps.Enemies
         private MaterialPropertyBlock _block;
         private readonly ApproachTrigger _approach = new ApproachTrigger();
         private Transform _target;
+        private FlowFieldNavigator _navigator;
 
         /// <summary>Raised on every hit that counted, including the killing one (then <see cref="IsDead"/> is true).</summary>
         public event Action<Enemy> Hit;
@@ -53,6 +54,12 @@ namespace RushOps.Enemies
 
         /// <summary>Raised once per life when the enemy first comes within <see cref="EnemyDefinition.ApproachDistance"/> of its target.</summary>
         public event Action<Enemy> Approached;
+
+        /// <summary>The transform the enemy chases, usually the player; null without navigator.</summary>
+        public Transform Target => _target;
+
+        /// <summary>Navigator the enemy chases with, e.g. to see a scarecrow's lure; null without one.</summary>
+        public FlowFieldNavigator Navigator => _navigator;
 
         /// <summary>True while the enemy shows the white hit flash.</summary>
         public bool IsFlashing => _sinceHit >= 0f;
@@ -112,6 +119,7 @@ namespace RushOps.Enemies
                 _view.PlayLoop();
             }
 
+            _navigator = navigator;
             _target = navigator != null ? navigator.Target : null;
             _approach.Reset(_definition != null ? _definition.ApproachDistance : 0f);
             _movement.Begin(
@@ -181,6 +189,15 @@ namespace RushOps.Enemies
 
             _movement.Knockback(velocity, duration);
             return true;
+        }
+
+        /// <summary>Shows the white flash of a hit without damage, e.g. the dog announcing its lunge (issue #263).</summary>
+        public void Flash()
+        {
+            if (!IsDead)
+            {
+                SetFlash(0f);
+            }
         }
 
         /// <summary>Kills the enemy at once, whatever its health, e.g. when a boomer touches the player.</summary>

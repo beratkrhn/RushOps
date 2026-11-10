@@ -41,6 +41,10 @@ namespace RushOps.Feel
         [SerializeField, Range(0f, 1f)] private float _enemySpawnVolume = 0.4f;
         [Tooltip("Volume of an enemy type's approach sound (EnemyDefinition).")]
         [SerializeField, Range(0f, 1f)] private float _enemyApproachVolume = 0.5f;
+        [Tooltip("Volume of the dog's growl when it crouches before a lunge (DogConfig, issue #263).")]
+        [SerializeField, Range(0f, 1f)] private float _dogGrowlVolume = 0.6f;
+        [Tooltip("Volume of the dog's snarl when it leaps (DogConfig, issue #263).")]
+        [SerializeField, Range(0f, 1f)] private float _dogLungeVolume = 0.5f;
         [Tooltip("Volume of the sound when the player collects a perk.")]
         [SerializeField, Range(0f, 1f)] private float _perkPickupVolume = 0.7f;
         [Tooltip("Volume of the sound when the player collects a gold coin.")]
@@ -91,6 +95,12 @@ namespace RushOps.Feel
 
         /// <summary>Volume of an enemy's approach sound.</summary>
         public float EnemyApproachVolume => _enemyApproachVolume;
+
+        /// <summary>Volume of the dog's growl before a lunge.</summary>
+        public float DogGrowlVolume => _dogGrowlVolume;
+
+        /// <summary>Volume of the dog's snarl when it leaps.</summary>
+        public float DogLungeVolume => _dogLungeVolume;
 
         /// <summary>Volume of the perk pickup sound.</summary>
         public float PerkPickupVolume => _perkPickupVolume;

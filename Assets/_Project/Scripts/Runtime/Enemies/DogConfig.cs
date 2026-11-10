@@ -33,6 +33,13 @@ namespace RushOps.Enemies
         [Tooltip("Seconds the dog stands still after a lunge before it chases again.")]
         [SerializeField, Min(0f)] private float _recoveryDuration = 1.5f;
 
+        [Header("Sound")]
+        [Tooltip("Growl when the dog starts to crouch, the audible warning of the lunge (F-GEG-06); none if empty.")]
+        [SerializeField] private AudioClip _growlClip;
+
+        [Tooltip("Snarl when the dog leaps; none if empty.")]
+        [SerializeField] private AudioClip _lungeClip;
+
         /// <summary>Dogs per pack, at least 1.</summary>
         public int PackSize => Math.Max(1, _packSize);
 
@@ -56,6 +63,12 @@ namespace RushOps.Enemies
 
         /// <summary>Seconds of standing still after a lunge.</summary>
         public float RecoveryDuration => _recoveryDuration;
+
+        /// <summary>Growl when the dog starts to crouch; may be null.</summary>
+        public AudioClip GrowlClip => _growlClip;
+
+        /// <summary>Snarl when the dog leaps; may be null.</summary>
+        public AudioClip LungeClip => _lungeClip;
 
         /// <summary>Sets the pack values, for editor scripts and tests.</summary>
         public void ConfigurePack(int packSize, float packSpread)
