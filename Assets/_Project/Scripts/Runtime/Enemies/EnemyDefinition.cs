@@ -38,6 +38,10 @@ namespace RushOps.Enemies
         [Tooltip("How much this enemy steers away from nearby enemies: 1 = full separation, 0 = walks straight through the crowd.")]
         [SerializeField, Range(0f, 1f)] private float _separationScale = 1f;
 
+        [Header("Pack and lunge")]
+        [Tooltip("Comes in packs and lunges at the player (dog, issue #262); none for other enemies.")]
+        [SerializeField] private DogConfig _dog;
+
         [Header("Explosion")]
         [Tooltip("Blows up when it dies or touches the player (boomer, issue #22); none if empty.")]
         [SerializeField] private ExplosionDefinition _explosion;
@@ -81,6 +85,15 @@ namespace RushOps.Enemies
 
         /// <summary>Share of the separation from nearby enemies this enemy follows, 0..1.</summary>
         public float SeparationScale => _separationScale;
+
+        /// <summary>Pack and lunge values of a dog; null for enemies that neither come in packs nor lunge.</summary>
+        public DogConfig Dog => _dog;
+
+        /// <summary>Enemies of this type that spawn together; 1 for all but the dog.</summary>
+        public int PackSize => _dog != null ? _dog.PackSize : 1;
+
+        /// <summary>Distance of the pack members from their common spawn point; 0 without pack.</summary>
+        public float PackSpread => _dog != null ? _dog.PackSpread : 0f;
 
         /// <summary>Explosion on death and on touching the player; null for enemies that do not explode.</summary>
         public ExplosionDefinition Explosion => _explosion;

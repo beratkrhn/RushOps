@@ -23,6 +23,8 @@ namespace RushOps.Enemies
         private Vector2 _knockback;
         private float _knockbackElapsed = -1f;
         private float _knockbackDuration;
+        private bool _driven;
+        private Vector2 _drivenVelocity;
 
         /// <summary>Velocity set in the last physics step.</summary>
         public Vector2 Velocity => _body != null ? _body.linearVelocity : Vector2.zero;
@@ -60,6 +62,26 @@ namespace RushOps.Enemies
         /// <summary>True while a knockback overrides the chase.</summary>
         public bool IsKnockedBack => _knockbackElapsed >= 0f;
 
+        /// <summary>True while <see cref="Drive"/> overrides the chase.</summary>
+        public bool IsDriven => _driven;
+
+        /// <summary>
+        /// Moves the enemy with <paramref name="velocity"/> instead of chasing until <see cref="ResumeChase"/>, e.g. a dog
+        /// standing still while it crouches or flying straight in its lunge (issue #262). A knockback still goes first.
+        /// </summary>
+        public void Drive(Vector2 velocity)
+        {
+            _driven = true;
+            _drivenVelocity = velocity;
+        }
+
+        /// <summary>Ends <see cref="Drive"/>; the enemy follows the flow field again.</summary>
+        public void ResumeChase()
+        {
+            _driven = false;
+            _drivenVelocity = Vector2.zero;
+        }
+
         /// <summary>Stops moving and leaves the separation.</summary>
         public void Stop()
         {
@@ -70,6 +92,8 @@ namespace RushOps.Enemies
 
             _moving = false;
             _knockbackElapsed = -1f;
+            _driven = false;
+            _drivenVelocity = Vector2.zero;
             if (_body != null)
             {
                 _body.linearVelocity = Vector2.zero;
@@ -100,6 +124,17 @@ namespace RushOps.Enemies
                 }
 
                 _knockbackElapsed = -1f;
+            }
+
+            if (_driven)
+            {
+                _body.linearVelocity = _drivenVelocity;
+                if (_view != null && _drivenVelocity.sqrMagnitude > 0f)
+                {
+                    _view.SetFacing(_drivenVelocity);
+                }
+
+                return;
             }
 
             // Navigate with the body center; the transform sits at the feet below it.

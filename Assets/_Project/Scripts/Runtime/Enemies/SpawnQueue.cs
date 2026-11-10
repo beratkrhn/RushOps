@@ -3,8 +3,8 @@ using System;
 namespace RushOps.Enemies
 {
     /// <summary>
-    /// Spawns waiting for a free slot or a usable spawn point (F-GEG-03), oldest first. Allocates only when it
-    /// has to grow.
+    /// Spawns waiting for a free slot or a usable spawn point (F-GEG-03), oldest first. Members of a pack asked for one
+    /// after the other join one request (F-GEG-05). Allocates only when it has to grow.
     /// </summary>
     public class SpawnQueue
     {
@@ -16,9 +16,22 @@ namespace RushOps.Enemies
         /// <summary>The waiting spawn at <paramref name="index"/>, 0 being the oldest.</summary>
         public SpawnRequest this[int index] => _items[index];
 
-        /// <summary>Adds a spawn at the end.</summary>
+        /// <summary>
+        /// Adds a spawn at the end. A single enemy of a pack type joins the newest request instead if that one is of the
+        /// same zone and type and its pack is not full yet.
+        /// </summary>
         public void Enqueue(SpawnRequest request)
         {
+            if (Count > 0 && request.Count == 1)
+            {
+                SpawnRequest last = _items[Count - 1];
+                if (last.CanGrow && last.Owner == request.Owner && last.Enemy == request.Enemy)
+                {
+                    _items[Count - 1] = last.Grow();
+                    return;
+                }
+            }
+
             EnsureCapacity();
             _items[Count++] = request;
         }
@@ -66,14 +79,15 @@ namespace RushOps.Enemies
 
         /// <summary>
         /// Index of the oldest spawn that may happen now, or -1: bosses always may, other enemies only while
-        /// <paramref name="freeSlots"/> is above zero; in both cases <paramref name="canPlace"/> must accept it.
+        /// <paramref name="freeSlots"/> holds all of them, a pack of 3 needs 3 (H4); in both cases
+        /// <paramref name="canPlace"/> must accept it.
         /// </summary>
         public int FindReady(int freeSlots, Func<SpawnRequest, bool> canPlace)
         {
             for (int i = 0; i < Count; i++)
             {
                 SpawnRequest request = _items[i];
-                if ((request.IsBoss || freeSlots > 0) && (canPlace == null || canPlace(request)))
+                if ((request.IsBoss || (freeSlots > 0 && freeSlots >= request.SlotCost)) && (canPlace == null || canPlace(request)))
                 {
                     return i;
                 }

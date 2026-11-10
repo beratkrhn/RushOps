@@ -52,7 +52,7 @@ namespace RushOps.Enemies
         /// <summary>Enemies of the running wave that still have to come or are alive; 0 when idle or finished.</summary>
         public int Remaining => Phase == WavePhase.Spawning || Phase == WavePhase.Clearing ? _remaining + Outstanding : 0;
 
-        /// <summary>Raised for every enemy the current wave asks for.</summary>
+        /// <summary>Raised for every enemy the current wave asks for; for the members of a pack right after one another.</summary>
         public event Action<EnemyDefinition> SpawnRequested;
 
         /// <summary>Raised when a wave starts, with its index.</summary>
@@ -170,7 +170,7 @@ namespace RushOps.Enemies
             Phase = WavePhase.Pause;
         }
 
-        // Takes the entries in turn, so mixed waves alternate between enemy types.
+        // Takes the entries in turn, so mixed waves alternate between enemy types; one call hands out a whole pack.
         private void HandOutNext()
         {
             WaveEntry[] entries = _definition.Waves[WaveIndex].Entries;
@@ -182,11 +182,18 @@ namespace RushOps.Enemies
                     continue;
                 }
 
-                _handedOut[e]++;
+                // A pack comes as a whole (F-GEG-05): all its members in one go, the last pack possibly smaller.
+                EnemyDefinition enemy = entries[e].Enemy;
+                int members = Math.Min(enemy.PackSize, entries[e].Count - _handedOut[e]);
                 _cursor = e + 1;
-                _remaining--;
-                Outstanding++;
-                SpawnRequested?.Invoke(entries[e].Enemy);
+                for (int m = 0; m < members; m++)
+                {
+                    _handedOut[e]++;
+                    _remaining--;
+                    Outstanding++;
+                    SpawnRequested?.Invoke(enemy);
+                }
+
                 return;
             }
 

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using RushOps.Combat;
 using RushOps.Levels;
+using RushOps.Perks;
 using UnityEngine;
 
 namespace RushOps.Enemies
@@ -38,7 +39,9 @@ namespace RushOps.Enemies
         private WaveSequence[] _announcedSequence;
         private int[] _candidates;
         private int _announcedCount;
-        private int _announcedBosses;
+        private int _announcedSlots;
+        private readonly IRandomSource _random = new SystemRandomSource();
+        private Vector2[] _packPositions = new Vector2[4];
         private Func<SpawnRequest, bool> _canPlace;
         private int _maxActiveOverride = -1;
         private Rect _view;
@@ -85,10 +88,11 @@ namespace RushOps.Enemies
 
         /// <summary>
         /// Enemies that may still appear before the cap of <see cref="MaxActive"/> is reached, counting
-        /// living and announced non-boss enemies; 0 without config. Bosses that spawn enemies themselves check it too.
+        /// living and announced non-boss enemies, every member of an announced pack (H4); 0 without config. Bosses that
+        /// spawn enemies themselves check it too.
         /// </summary>
         public int FreeSlots => _config != null
-            ? SpawnRules.FreeSlots(MaxActive, AliveCount, _announcedCount - _announcedBosses)
+            ? SpawnRules.FreeSlots(MaxActive, AliveCount, _announcedSlots)
             : 0;
 
         /// <summary>
@@ -329,10 +333,7 @@ namespace RushOps.Enemies
                 _announcedRequest[i] = default;
                 _announcedSequence[i] = null;
                 _announcedCount--;
-                if (request.IsBoss)
-                {
-                    _announcedBosses--;
-                }
+                _announcedSlots -= request.SlotCost;
 
                 point.SetMarkerVisible(false);
                 // The zone was completed while the marker blinked: its enemies are no longer wanted.
@@ -353,15 +354,38 @@ namespace RushOps.Enemies
                     continue;
                 }
 
-                Enemy enemy = PoolFor(request.Enemy).Spawn(point.Position);
+                SpawnAt(point, request, sequence);
+            }
+        }
+
+        // Spawns all enemies of the request at the point, a pack with a small offset each (H5); the ones the pool could
+        // not give go back to the front of the queue.
+        private void SpawnAt(SpawnPoint point, SpawnRequest request, WaveSequence sequence)
+        {
+            if (_packPositions.Length < request.Count)
+            {
+                _packPositions = new Vector2[request.Count];
+            }
+
+            int count = PackRules.Offsets(point.Position, request.Enemy.PackSpread, request.Count, _random, _packPositions);
+            EnemyPool pool = PoolFor(request.Enemy);
+            int spawned = 0;
+            while (spawned < count)
+            {
+                Enemy enemy = pool.Spawn(_packPositions[spawned]);
                 if (enemy == null)
                 {
-                    _queue.PushFront(request);
-                    continue;
+                    break;
                 }
 
+                spawned++;
                 _owners[enemy] = sequence;
                 Spawned?.Invoke(enemy, point);
+            }
+
+            if (spawned < request.Count)
+            {
+                _queue.PushFront(new SpawnRequest(request.Owner, request.Enemy, request.Count - spawned));
             }
         }
 
@@ -387,10 +411,7 @@ namespace RushOps.Enemies
                 _announcedRequest[point] = request;
                 _announcedSequence[point] = _sequences[request.Owner];
                 _announcedCount++;
-                if (request.IsBoss)
-                {
-                    _announcedBosses++;
-                }
+                _announcedSlots += request.SlotCost;
             }
         }
 
