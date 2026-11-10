@@ -128,6 +128,26 @@ namespace RushOps.Perks
             return false;
         }
 
+        /// <summary>
+        /// Ends every running super weapon perk except <paramref name="id"/>, without raising <see cref="Expired"/>
+        /// (issue #256): only one super weapon is in the hands, so only its timer may show in the HUD.
+        /// </summary>
+        /// <returns>Number of perks ended.</returns>
+        public int EndOtherSuperWeapons(string id)
+        {
+            int ended = 0;
+            for (int i = _perks.Count - 1; i >= 0; i--)
+            {
+                if (_perks[i].Id != id && SuperWeaponState.KindOf(_perks[i].Effect) != SuperWeaponKind.None)
+                {
+                    _perks.RemoveAt(i);
+                    ended++;
+                }
+            }
+
+            return ended;
+        }
+
         /// <summary>Ends all perks at once without raising <see cref="Expired"/>.</summary>
         public void Clear()
         {

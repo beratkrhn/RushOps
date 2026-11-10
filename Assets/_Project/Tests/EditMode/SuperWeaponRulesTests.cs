@@ -10,6 +10,15 @@ namespace RushOps.Tests.EditMode
         private const float Cone = 60f;
 
         [Test]
+        public void KindOf_MapsOnlyTheSuperWeaponPerks()
+        {
+            Assert.AreEqual(SuperWeaponKind.Flamethrower, SuperWeaponState.KindOf(PerkEffect.Flamethrower));
+            Assert.AreEqual(SuperWeaponKind.RocketLauncher, SuperWeaponState.KindOf(PerkEffect.RocketLauncher));
+            Assert.AreEqual(SuperWeaponKind.None, SuperWeaponState.KindOf(PerkEffect.RapidFire));
+            Assert.AreEqual(SuperWeaponKind.None, SuperWeaponState.KindOf(PerkEffect.Companion));
+        }
+
+        [Test]
         public void State_StartsInactive()
         {
             var state = new SuperWeaponState();
