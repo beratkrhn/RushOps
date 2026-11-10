@@ -40,6 +40,7 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   SwitchOn.wav        plate click with a confirm blip
   SwitchReset.wav     three falling buzzer pulses
   RushStart.wav       rush (issue #270): a fast rising sweep that lands on a bright power chord over a low throb
+  RushFull.wav        rush (issue #271): a short bright two-note chime when the meter is full
   RushEnd.wav         rush (issue #270): a short falling sweep that winds the power down
 
 Usage:
@@ -443,6 +444,14 @@ def rush_start() -> list[float]:
     return sweep + chord
 
 
+def rush_full() -> list[float]:
+    """Rush meter full (issue #271): two quick bright notes a fifth apart, the button is ready."""
+    length = 0.22
+    p = Pulse(0.125)
+    return [0.8 * p.sample(notes(t, [1175, 1760], 0.07)) * decay(t, length, 0.002)
+            for t in (i / RATE for i in frames(length))]
+
+
 def rush_end() -> list[float]:
     """Rush end (issue #270): a short sweep down with a soft noise tail, the power winding down."""
     length = 0.34
@@ -461,7 +470,7 @@ SOUNDS = {
     "BoomerSpawn": boomer_spawn, "BoomerApproach": boomer_approach,
     "Explosion": explosion, "PerkPickup": perk_pickup, "GoldPickup": gold_pickup, "Nuke": nuke,
     "PuzzleSolved": puzzle_solved, "SwitchOn": switch_on, "SwitchReset": switch_reset,
-    "RushStart": rush_start, "RushEnd": rush_end,
+    "RushStart": rush_start, "RushEnd": rush_end, "RushFull": rush_full,
 }
 
 

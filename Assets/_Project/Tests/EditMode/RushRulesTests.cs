@@ -102,5 +102,21 @@ namespace RushOps.Tests.EditMode
         {
             Assert.IsFalse(RushRules.IsTintVisible(0f, 1f, 0.1f));
         }
+
+        [Test]
+        public void Pulse_StartsAtOne_PeaksHalfway_ReturnsAfterAPeriod()
+        {
+            Assert.AreEqual(1f, RushRules.PulseScale(0f, 0.6f, 1.12f), 1e-5f);
+            Assert.AreEqual(1.12f, RushRules.PulseScale(0.3f, 0.6f, 1.12f), 1e-5f);
+            Assert.AreEqual(1f, RushRules.PulseScale(0.6f, 0.6f, 1.12f), 1e-4f);
+            Assert.AreEqual(1.06f, RushRules.PulseScale(0.75f, 0.6f, 1.12f), 1e-4f);
+        }
+
+        [Test]
+        public void Pulse_WithoutPeriodOrGrowth_StaysOne()
+        {
+            Assert.AreEqual(1f, RushRules.PulseScale(0.3f, 0f, 1.12f));
+            Assert.AreEqual(1f, RushRules.PulseScale(0.3f, 0.6f, 1f));
+        }
     }
 }

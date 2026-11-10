@@ -52,6 +52,22 @@ namespace RushOps.Rush
         }
 
         /// <summary>
+        /// Scale of the full rush button <paramref name="time"/> seconds into its pulse: 1 at the start of every
+        /// <paramref name="period"/>, <paramref name="maxScale"/> halfway, eased in and out.
+        /// </summary>
+        public static float PulseScale(float time, float period, float maxScale)
+        {
+            if (period <= 0f || maxScale <= 1f)
+            {
+                return 1f;
+            }
+
+            float phase = time / period;
+            phase -= (float)System.Math.Floor(phase);
+            return 1f + (maxScale - 1f) * 0.5f * (1f - (float)System.Math.Cos(2.0 * System.Math.PI * phase));
+        }
+
+        /// <summary>
         /// True if the rush tint shows with <paramref name="remaining"/> seconds left: always, until the last
         /// <paramref name="warningTime"/> seconds, in which it blinks every <paramref name="interval"/> seconds.
         /// </summary>

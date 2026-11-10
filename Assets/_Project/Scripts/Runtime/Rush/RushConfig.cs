@@ -48,6 +48,18 @@ namespace RushOps.Rush
         [Tooltip("Sound when the rush ends; none if empty.")]
         [SerializeField] private AudioClip _endClip;
 
+        [Tooltip("Sound once when the meter becomes full; none if empty.")]
+        [SerializeField] private AudioClip _fullClip;
+
+        [SerializeField, Range(0f, 1f)] private float _fullVolume = 0.6f;
+
+        [Header("Button")]
+        [Tooltip("Largest scale of the full rush button while it pulses.")]
+        [SerializeField, Min(1f)] private float _pulseScale = 1.12f;
+
+        [Tooltip("Seconds of one pulse of the full rush button.")]
+        [SerializeField, Min(0.01f)] private float _pulsePeriod = 0.6f;
+
         [SerializeField, Range(0f, 1f)] private float _startVolume = 0.8f;
         [SerializeField, Range(0f, 1f)] private float _endVolume = 0.6f;
 
@@ -86,6 +98,18 @@ namespace RushOps.Rush
 
         /// <summary>Sound when the rush ends.</summary>
         public AudioClip EndClip => _endClip;
+
+        /// <summary>Sound once when the meter becomes full.</summary>
+        public AudioClip FullClip => _fullClip;
+
+        /// <summary>Volume of <see cref="FullClip"/>.</summary>
+        public float FullVolume => _fullVolume;
+
+        /// <summary>Largest scale of the full rush button while it pulses.</summary>
+        public float PulseScale => _pulseScale;
+
+        /// <summary>Seconds of one pulse of the full rush button.</summary>
+        public float PulsePeriod => _pulsePeriod;
 
         /// <summary>Volume of <see cref="StartClip"/>.</summary>
         public float StartVolume => _startVolume;
