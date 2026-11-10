@@ -29,7 +29,7 @@ namespace RushOps.Editor.Scenes
 
             ArenaTestSceneBuilder.BuildScene(
                 blueprint.ScenePath, blueprint.Layout, false, arena => AddObjects(blueprint, arena), blueprint.DisplayName,
-                blueprint.StarScores, blueprint.ThemePath);
+                blueprint.StarScores, blueprint.ThemePath, blueprint.Dogs);
             SetCompletionMessage(blueprint);
             AddToCampaign(blueprint);
         }

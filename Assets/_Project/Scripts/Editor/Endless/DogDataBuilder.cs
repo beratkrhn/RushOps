@@ -31,8 +31,18 @@ namespace RushOps.Editor.Endless
                 config.ConfigurePack(3, 0.5f);
                 config.ConfigureLunge(3f, 0.4f, 3f, 0.3f, 1.5f);
                 EditorUtility.SetDirty(config);
-                AssetDatabase.SaveAssets();
             }
+
+            // Growl and snarl of the lunge (issue #263), unless already set.
+            var serialized = new SerializedObject(config);
+            AssignMissing(serialized.FindProperty("_growlClip"), "DogGrowl.wav");
+            AssignMissing(serialized.FindProperty("_lungeClip"), "DogLunge.wav");
+            if (serialized.ApplyModifiedPropertiesWithoutUndo())
+            {
+                EditorUtility.SetDirty(config);
+            }
+
+            AssetDatabase.SaveAssets();
 
             return config;
         }
@@ -56,12 +66,22 @@ namespace RushOps.Editor.Endless
                 serialized.FindProperty("_approachDistance").floatValue = runner.ApproachDistance;
             }
 
+            AssignMissing(serialized.FindProperty("_spawnClip"), "DogSpawn.wav");
+
             // The dog is a dog by its pack and lunge values; always linked.
             serialized.FindProperty("_dog").objectReferenceValue = config;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(dog);
             AssetDatabase.SaveAssets();
             return dog;
+        }
+
+        private static void AssignMissing(SerializedProperty clip, string file)
+        {
+            if (clip.objectReferenceValue == null)
+            {
+                clip.objectReferenceValue = ArenaTestSceneBuilder.LoadClip(file);
+            }
         }
     }
 }

@@ -42,6 +42,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Island theme asset path.</summary>
         public string ThemePath { get; set; } = IslandThemes.DefaultPath;
 
+        /// <summary>True if the level has a pool of zombie dogs (issue #263); the campaign has none (A4).</summary>
+        public bool Dogs { get; set; }
+
         /// <summary>Scores for two and three stars of a new level definition.</summary>
         public Vector2Int StarScores { get; set; } = new Vector2Int(1500, 3000);
 

@@ -5,6 +5,7 @@ using RushOps.Characters;
 using RushOps.Combat;
 using RushOps.Editor.Art;
 using RushOps.Editor.Audio;
+using RushOps.Editor.Endless;
 using RushOps.Editor.Skins;
 using RushOps.Audio;
 using RushOps.Enemies;
@@ -71,6 +72,7 @@ namespace RushOps.Editor.Scenes
         private const string BrutePrefabPath = "Assets/_Project/Prefabs/Enemies/Brute.prefab";
         internal const string BoomerDefinitionPath = "Assets/_Project/Data/Enemies/Boomer.asset";
         private const string BoomerPrefabPath = "Assets/_Project/Prefabs/Enemies/Boomer.prefab";
+        private const string DogPrefabPath = "Assets/_Project/Prefabs/Enemies/Dog.prefab";
         private const string BoomerExplosionPath = "Assets/_Project/Data/Enemies/BoomerExplosion.asset";
         private const string ExplosionFramesPrefix = "Assets/_Project/Art/Sprites/Effects/Explosion_";
         private const int ExplosionFrameCount = 6;
@@ -108,6 +110,10 @@ namespace RushOps.Editor.Scenes
         // The brute's broad body makes a bigger target and shields the enemies behind it. It stays below half a tile,
         // so it passes the paths along walls and corners that the flow field leads it on (docs/level-design.md).
         private const float BruteColliderRadius = 0.45f;
+        // The dog is low and long: its body sits around the middle of the four paws, which its sprites draw 8 px
+        // above the feet of the other characters (issue #263).
+        private const float DogColliderRadius = 0.26f;
+        private static readonly Vector2 DogColliderOffset = new Vector2(0f, 0.4f);
         // The boomer's swollen belly makes it wider than the walker.
         private const float BoomerColliderRadius = 0.32f;
         private static readonly Vector2 BoomerColliderOffset = new Vector2(0f, 0.35f);
@@ -600,7 +606,7 @@ namespace RushOps.Editor.Scenes
         /// </summary>
         internal static void BuildScene(
             string scenePath, ArenaLayout layout, bool firstInBuild, System.Action<ArenaScene> extend, string displayName,
-            Vector2Int? starScores = null, string themePath = IslandThemes.DefaultPath)
+            Vector2Int? starScores = null, string themePath = IslandThemes.DefaultPath, bool dogs = false)
         {
             // Create the scene first: NewScene unloads assets loaded before it, which would drop the references below.
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -667,14 +673,22 @@ namespace RushOps.Editor.Scenes
                 "Boomer", BoomerPrefabPath, new EnemyAnimations(boomerWalk, boomerHit, boomerDeath, boomerSwell), LoadOrCreateBoomer(), feelConfig, flashMaterial, enemyBody,
                 BoomerColliderRadius,
                 BoomerColliderOffset);
+            Enemy dogPrefab = CreateOrUpdateDogPrefab(feelConfig, flashMaterial, enemyBody);
             FlowFieldNavigator navigator = CreateNavigator(LoadOrCreateConfig<NavigationConfig>(NavigationConfigPath), walls, target);
-            var enemyPools = new[]
+            var enemyPoolList = new List<EnemyPool>
             {
                 CreateEnemyPool("EnemyPool_Walker", walkerPrefab, navigator),
                 CreateEnemyPool("EnemyPool_Runner", runnerPrefab, navigator),
                 CreateEnemyPool("EnemyPool_Brute", brutePrefab, navigator),
                 CreateEnemyPool("EnemyPool_Boomer", boomerPrefab, navigator),
             };
+            // Dogs only where they can come (A4, F-GEG-07): the endless arena and the dog test scene.
+            if (dogs)
+            {
+                enemyPoolList.Add(CreateEnemyPool("EnemyPool_Dog", dogPrefab, navigator));
+            }
+
+            EnemyPool[] enemyPools = enemyPoolList.ToArray();
             WaveDirector director = CreateWaveDirector(LoadOrCreateConfig<SpawnerConfig>(SpawnerConfigPath), enemyPools, target);
             LevelKills kills = CreateLevelKills(enemyPools);
             LevelScore score = CreateLevelScore(enemyPools, target.GetComponent<PlayerHealth>(), scoreView);
@@ -1210,10 +1224,37 @@ namespace RushOps.Editor.Scenes
             }
         }
 
+        // The zombie dog (issue #263): an enemy prefab with the Dog component that runs its lunge.
+        private static Enemy CreateOrUpdateDogPrefab(FeelConfig feel, Material flashMaterial, PhysicsMaterial2D bodyMaterial)
+        {
+            var run = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.DogRunPath);
+            var crouch = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.DogCrouchPath);
+            var lunge = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.DogLungePath);
+            var rest = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.DogRestPath);
+            var hit = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.DogHitPath);
+            var death = AssetDatabase.LoadAssetAtPath<DirectionalAnimation>(DirectionalAnimationBuilder.DogDeathPath);
+            int walls = 1 << RequireLayer(WallsLayer);
+            return CreateOrUpdateEnemyPrefab(
+                "Dog", DogPrefabPath, new EnemyAnimations(run, hit, death), DogDataBuilder.GetDog(), feel, flashMaterial,
+                bodyMaterial, DogColliderRadius, DogColliderOffset, go =>
+                {
+                    var dog = go.AddComponent<Dog>();
+                    var serialized = new SerializedObject(dog);
+                    serialized.FindProperty("_view").objectReferenceValue = go.GetComponent<DirectionalSpriteAnimator>();
+                    serialized.FindProperty("_run").objectReferenceValue = run;
+                    serialized.FindProperty("_crouch").objectReferenceValue = crouch;
+                    serialized.FindProperty("_lunge").objectReferenceValue = lunge;
+                    serialized.FindProperty("_rest").objectReferenceValue = rest;
+                    serialized.FindProperty("_wallLayers").intValue = walls;
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                });
+        }
+
         // Rebuilt on every run, so the prefab stays reproducible from code.
         private static Enemy CreateOrUpdateEnemyPrefab(
             string name, string prefabPath, EnemyAnimations animations, EnemyDefinition definition, FeelConfig feel,
-            Material flashMaterial, PhysicsMaterial2D bodyMaterial, float colliderRadius, Vector2 colliderOffset)
+            Material flashMaterial, PhysicsMaterial2D bodyMaterial, float colliderRadius, Vector2 colliderOffset,
+            System.Action<GameObject> extend = null)
         {
             DirectionalSpriteAnimator view = CreateCharacter(name, null, Vector2Int.zero, animations.Walk, Direction8.S);
             var serializedView = new SerializedObject(view);
@@ -1254,6 +1295,7 @@ namespace RushOps.Editor.Scenes
             serializedEnemy.FindProperty("_view").objectReferenceValue = view;
             serializedEnemy.FindProperty("_hurtbox").objectReferenceValue = hurtbox;
             serializedEnemy.ApplyModifiedPropertiesWithoutUndo();
+            extend?.Invoke(go);
 
             EnsureFolder(Path.GetDirectoryName(prefabPath).Replace('\\', '/'));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(go, prefabPath);

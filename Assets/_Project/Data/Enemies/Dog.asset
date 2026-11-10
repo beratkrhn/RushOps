@@ -24,6 +24,6 @@ MonoBehaviour:
   _separationScale: 1
   _dog: {fileID: 11400000, guid: 80a754ee48a5b473fb970e629189b2ce, type: 2}
   _explosion: {fileID: 0}
-  _spawnClip: {fileID: 0}
+  _spawnClip: {fileID: 8300000, guid: e907abe37158a46818ff725b5ad464b5, type: 3}
   _approachClip: {fileID: 0}
   _approachDistance: 4
