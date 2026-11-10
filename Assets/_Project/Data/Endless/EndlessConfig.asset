@@ -46,6 +46,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 3eb7b03698b704684a288136c99ad57c, type: 2}
   - {fileID: 11400000, guid: 63c849bc201324c739289fb6187f161c, type: 2}
   _bossHealthGrowth: 0.25
+  _dogRoundEveryRounds: 6
+  _dogEnemy: {fileID: 11400000, guid: ef5f9a8467b1a401196ce9d46f0f9d65, type: 2}
   _startWeapon: {fileID: 11400000, guid: baa9f7c5be844d7d85a10599493019dd, type: 2}
   _wallWeapons:
   - _round: 5

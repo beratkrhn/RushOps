@@ -10,8 +10,9 @@ namespace RushOps.Endless
     {
         /// <summary>Creates a round; used by <see cref="EndlessRules"/>.</summary>
         public EndlessRound(int number, WaveEntry[] enemies, float spawnInterval, int maxActive, BossDefinition boss,
-            float bossHealthFactor, WeaponDefinition[] weapons, WeaponDefinition newWeapon)
+            float bossHealthFactor, WeaponDefinition[] weapons, WeaponDefinition newWeapon, bool isDogRound = false)
         {
+            IsDogRound = isDogRound;
             Number = number;
             Enemies = enemies ?? Array.Empty<WaveEntry>();
             SpawnInterval = spawnInterval;
@@ -51,6 +52,9 @@ namespace RushOps.Endless
 
         /// <summary>Whether this is a boss round.</summary>
         public bool IsBossRound => Boss != null;
+
+        /// <summary>Whether this is a dog round with dogs only (F-END-10).</summary>
+        public bool IsDogRound { get; }
 
         /// <summary>The boss of this round, or null.</summary>
         public BossDefinition Boss { get; }

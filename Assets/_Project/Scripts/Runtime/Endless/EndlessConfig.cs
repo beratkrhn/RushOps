@@ -7,7 +7,7 @@ using UnityEngine;
 namespace RushOps.Endless
 {
     /// <summary>
-    /// Balancing values of the endless mode (F-END-03 to F-END-07, decisions E3 to E6, N3 to N5). All are start values;
+    /// Balancing values of the endless mode (F-END-03 to F-END-07, F-END-10, decisions E3 to E6, N3 to N6). All are start values;
     /// <see cref="EndlessRules"/> turns them into the values of one round.
     /// </summary>
     [CreateAssetMenu(fileName = "EndlessConfig", menuName = "RushOps/Endless Config")]
@@ -64,6 +64,13 @@ namespace RushOps.Endless
 
         [Tooltip("Health added per further boss appearance in the run, as share of the boss's health: 0.25 = +25 %.")]
         [SerializeField, Min(0f)] private float _bossHealthGrowth = 0.25f;
+
+        [Header("Dogs")]
+        [Tooltip("Every how many rounds a dog round with dogs only comes (F-END-10); 0 = never. A boss round goes first and moves it one round on (N6).")]
+        [SerializeField, Min(0)] private int _dogRoundEveryRounds = 6;
+
+        [Tooltip("The only enemy of a dog round; it comes in packs (H1, H4).")]
+        [SerializeField] private EnemyDefinition _dogEnemy;
 
         [Header("Weapons")]
         [Tooltip("Weapon every run starts with (F-END-07).")]
@@ -123,6 +130,12 @@ namespace RushOps.Endless
         /// <summary>Health added per further boss appearance, as share.</summary>
         public float BossHealthGrowth => _bossHealthGrowth;
 
+        /// <summary>Every how many rounds a dog round comes; 0 = never.</summary>
+        public int DogRoundEveryRounds => Math.Max(0, _dogRoundEveryRounds);
+
+        /// <summary>The only enemy of a dog round; null = no dog rounds.</summary>
+        public EnemyDefinition DogEnemy => _dogEnemy;
+
         /// <summary>Weapon every run starts with.</summary>
         public WeaponDefinition StartWeapon => _startWeapon;
 
@@ -167,6 +180,13 @@ namespace RushOps.Endless
             _bossEveryRounds = Math.Max(1, everyRounds);
             _bosses = bosses ?? Array.Empty<BossDefinition>();
             _bossHealthGrowth = Mathf.Max(0f, healthGrowth);
+        }
+
+        /// <summary>Sets the dog rounds, for editor scripts and tests.</summary>
+        public void ConfigureDogRounds(int everyRounds, EnemyDefinition dog)
+        {
+            _dogRoundEveryRounds = Math.Max(0, everyRounds);
+            _dogEnemy = dog;
         }
 
         /// <summary>Sets the weapons, for editor scripts and tests.</summary>

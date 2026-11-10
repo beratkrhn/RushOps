@@ -8,8 +8,8 @@ using UnityEngine;
 namespace RushOps.Endless
 {
     /// <summary>
-    /// The rules of the endless mode (F-END-03 to F-END-07): turns the values of an <see cref="EndlessConfig"/> into
-    /// enemies, spawn interval, limit, boss and weapons of one round. Rounds count from 1; lower numbers count as 1.
+    /// The rules of the endless mode (F-END-03 to F-END-07, F-END-10): turns the values of an <see cref="EndlessConfig"/> into
+    /// enemies, dog rounds, spawn interval, limit, boss and weapons of one round. Rounds count from 1; lower numbers count as 1.
     /// A round is played as a <see cref="WaveDefinition"/> with exactly one wave (ADR 0013).
     /// </summary>
     public class EndlessRules
@@ -74,7 +74,37 @@ namespace RushOps.Endless
             return (int)Math.Max(1, Math.Min(int.MaxValue, Math.Round(health, MidpointRounding.AwayFromZero)));
         }
 
-        /// <summary>Number of regular enemies in <paramref name="round"/>: first round plus a step per round; 0 in a boss round.</summary>
+        /// <summary>
+        /// Whether <paramref name="round"/> is a dog round with dogs only (F-END-10): every n-th round, if a dog is set. A
+        /// boss round never is one; if it falls on a dog round, the following round is the dog round instead (N6).
+        /// </summary>
+        public bool IsDogRound(int round)
+        {
+            int every = _config.DogRoundEveryRounds;
+            if (_config.DogEnemy == null || every <= 0)
+            {
+                return false;
+            }
+
+            round = Clamp(round);
+            if (IsBossRound(round))
+            {
+                return false;
+            }
+
+            if (round % every == 0)
+            {
+                return true;
+            }
+
+            int previous = round - 1;
+            return previous >= 1 && previous % every == 0 && IsBossRound(previous);
+        }
+
+        /// <summary>
+        /// Number of regular enemies in <paramref name="round"/>: first round plus a step per round, in a dog round
+        /// rounded up to full packs; 0 in a boss round.
+        /// </summary>
         public int EnemyCount(int round)
         {
             if (IsBossRound(round))
@@ -83,7 +113,8 @@ namespace RushOps.Endless
             }
 
             long count = _config.EnemiesFirstRound + (long)_config.EnemiesPerRound * (Clamp(round) - 1);
-            return (int)Math.Min(int.MaxValue, count);
+            int regular = (int)Math.Min(int.MaxValue, count);
+            return IsDogRound(round) ? PackRules.RoundUpToPacks(regular, _config.DogEnemy.PackSize) : regular;
         }
 
         /// <summary>
@@ -106,7 +137,8 @@ namespace RushOps.Endless
         /// <summary>
         /// The regular enemies of <paramref name="round"/> by type and number, base type first, then the heavier types in
         /// the order of the table (F-END-04). Every heavier type that has joined brings at least one enemy; the base type
-        /// fills up the rest. Empty in a boss round. Allocates; call once per round, not per frame.
+        /// fills up the rest. A dog round has dogs only. Empty in a boss round. Allocates; call once per round, not per
+        /// frame.
         /// </summary>
         public WaveEntry[] EnemyMix(int round)
         {
@@ -114,6 +146,11 @@ namespace RushOps.Endless
             if (total <= 0)
             {
                 return Array.Empty<WaveEntry>();
+            }
+
+            if (IsDogRound(round))
+            {
+                return new[] { new WaveEntry(_config.DogEnemy, total) };
             }
 
             EndlessEnemyShare[] shares = _config.EnemyShares;
@@ -257,7 +294,7 @@ namespace RushOps.Endless
         {
             round = Clamp(round);
             return new EndlessRound(round, EnemyMix(round), SpawnInterval(round), MaxActive(round), Boss(round),
-                BossHealthFactor(round), AvailableWeapons(round), NewWeapon(round));
+                BossHealthFactor(round), AvailableWeapons(round), NewWeapon(round), IsDogRound(round));
         }
 
         /// <summary>
