@@ -26,6 +26,31 @@ namespace RushOps.Rush
         [Tooltip("Factor on every damage the player deals during the rush; multiplies with double damage (N8, N17).")]
         [SerializeField, Min(1f)] private float _damageFactor = 1.5f;
 
+        [Header("Feedback")]
+        [Tooltip("Colour of the screen tint while the rush runs; a palette colour.")]
+        [SerializeField] private Color _tintColor = new Color32(232, 134, 47, 255);
+
+        [Tooltip("Opacity of the screen tint while the rush runs.")]
+        [SerializeField, Range(0f, 1f)] private float _tintAlpha = 0.16f;
+
+        [Tooltip("Opacity of the frame along the screen edges while the rush runs, so the rush reads at a glance.")]
+        [SerializeField, Range(0f, 1f)] private float _edgeAlpha = 0.6f;
+
+        [Tooltip("Last seconds of the rush in which the tint blinks as a warning.")]
+        [SerializeField, Min(0f)] private float _warningTime = 1f;
+
+        [Tooltip("Seconds per on or off phase of the warning blink.")]
+        [SerializeField, Min(0.01f)] private float _blinkInterval = 0.1f;
+
+        [Tooltip("Sound when the rush starts; none if empty.")]
+        [SerializeField] private AudioClip _startClip;
+
+        [Tooltip("Sound when the rush ends; none if empty.")]
+        [SerializeField] private AudioClip _endClip;
+
+        [SerializeField, Range(0f, 1f)] private float _startVolume = 0.8f;
+        [SerializeField, Range(0f, 1f)] private float _endVolume = 0.6f;
+
         /// <summary>Fill at which the meter is full, at least 1.</summary>
         public int KillsToFill => Mathf.Max(1, _killsToFill);
 
@@ -40,5 +65,32 @@ namespace RushOps.Rush
 
         /// <summary>Factor on the player's damage during the rush.</summary>
         public float DamageFactor => _damageFactor;
+
+        /// <summary>Colour of the screen tint while the rush runs.</summary>
+        public Color TintColor => _tintColor;
+
+        /// <summary>Opacity of the screen tint while the rush runs.</summary>
+        public float TintAlpha => _tintAlpha;
+
+        /// <summary>Opacity of the frame along the screen edges while the rush runs.</summary>
+        public float EdgeAlpha => _edgeAlpha;
+
+        /// <summary>Last seconds of the rush in which the tint blinks.</summary>
+        public float WarningTime => _warningTime;
+
+        /// <summary>Seconds per on or off phase of the warning blink.</summary>
+        public float BlinkInterval => _blinkInterval;
+
+        /// <summary>Sound when the rush starts.</summary>
+        public AudioClip StartClip => _startClip;
+
+        /// <summary>Sound when the rush ends.</summary>
+        public AudioClip EndClip => _endClip;
+
+        /// <summary>Volume of <see cref="StartClip"/>.</summary>
+        public float StartVolume => _startVolume;
+
+        /// <summary>Volume of <see cref="EndClip"/>.</summary>
+        public float EndVolume => _endVolume;
     }
 }

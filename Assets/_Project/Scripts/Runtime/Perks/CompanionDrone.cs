@@ -205,10 +205,12 @@ namespace RushOps.Perks
                 direction = Vector2.up;
             }
 
+            // The rush makes every player damage stronger, the drone's too (F-RSH-05, N17).
+            int damage = WeaponMath.ShotDamage(weapon.Damage, _weapon.DamageFactor);
             for (int i = 0; i < shots; i++)
             {
                 _projectiles.Launch(origin, direction, weapon.ProjectileSpeed, _config.Range + 1f, _obstacles,
-                    weapon.Damage, false, ShotLook.Normal, weapon.ProjectileSprite);
+                    damage, false, ShotLook.Normal, weapon.ProjectileSprite);
                 Fired?.Invoke(direction);
             }
 

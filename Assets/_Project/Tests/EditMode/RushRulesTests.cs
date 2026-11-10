@@ -81,5 +81,26 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(15, WeaponMath.ShotDamage(10, RushRules.DamageMultiplier(true, 1.5f)));
             Assert.AreEqual(30, WeaponMath.ShotDamage(10, RushRules.DamageMultiplier(true, 1.5f, 2f)));
         }
+
+        [Test]
+        public void Tint_SteadyUntilTheLastSecond()
+        {
+            Assert.IsTrue(RushRules.IsTintVisible(5f, 1f, 0.1f));
+            Assert.IsTrue(RushRules.IsTintVisible(1.01f, 1f, 0.1f));
+        }
+
+        [Test]
+        public void Tint_BlinksInTheLastSecond()
+        {
+            Assert.IsTrue(RushRules.IsTintVisible(0.95f, 1f, 0.1f), "first blink phase is on");
+            Assert.IsFalse(RushRules.IsTintVisible(0.85f, 1f, 0.1f), "second blink phase is off");
+            Assert.IsTrue(RushRules.IsTintVisible(0.75f, 1f, 0.1f));
+        }
+
+        [Test]
+        public void Tint_HiddenWithoutRush()
+        {
+            Assert.IsFalse(RushRules.IsTintVisible(0f, 1f, 0.1f));
+        }
     }
 }

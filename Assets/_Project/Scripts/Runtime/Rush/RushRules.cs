@@ -52,6 +52,20 @@ namespace RushOps.Rush
         }
 
         /// <summary>
+        /// True if the rush tint shows with <paramref name="remaining"/> seconds left: always, until the last
+        /// <paramref name="warningTime"/> seconds, in which it blinks every <paramref name="interval"/> seconds.
+        /// </summary>
+        public static bool IsTintVisible(float remaining, float warningTime, float interval)
+        {
+            if (remaining <= 0f)
+            {
+                return false;
+            }
+
+            return remaining > warningTime || !BlinkMath.IsVisible(warningTime - remaining, interval);
+        }
+
+        /// <summary>
         /// <paramref name="modifiers"/> with the rush factor on the damage; fire rate and insta-kill stay as they are.
         /// </summary>
         public static ShotModifiers Apply(ShotModifiers modifiers, bool rushActive, float damageFactor)

@@ -61,7 +61,7 @@ namespace RushOps.Bosses
                     Chase(Definition != null ? Definition.MoveSpeed : 0f);
                     break;
                 case ColossusPhase.Charge:
-                    float speed = Values != null ? Values.ChargeSpeed : 0f;
+                    float speed = (Values != null ? Values.ChargeSpeed : 0f) * TimeFactor;
                     Body.linearVelocity = Logic.ChargeDirection * speed;
                     CheckBlocked(deltaTime, speed);
                     break;

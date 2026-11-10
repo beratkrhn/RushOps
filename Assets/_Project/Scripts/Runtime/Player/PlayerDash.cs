@@ -1,4 +1,5 @@
 using System;
+using RushOps.Rush;
 using UnityEngine;
 
 namespace RushOps.Player
@@ -19,6 +20,7 @@ namespace RushOps.Player
         private PlayerMovement _movement;
         private PlayerAim _aim;
         private bool _overriding;
+        private bool _cooldownFree;
 
         /// <summary>Raised when a dash starts, with its direction.</summary>
         public event Action<Vector2> Dashed;
@@ -41,6 +43,23 @@ namespace RushOps.Player
         /// <summary>Cooldown progress for the dash button: 0 right after a dash, 1 when ready.</summary>
         public float CooldownProgress => _state.CooldownProgress;
 
+        /// <summary>
+        /// True while the dash has no cooldown, e.g. during the rush (F-RSH-04); setting it ends a running cooldown. The
+        /// i-frames stay as they are.
+        /// </summary>
+        public bool CooldownFree
+        {
+            get => _cooldownFree;
+            set
+            {
+                _cooldownFree = value;
+                if (value)
+                {
+                    _state.ClearCooldown();
+                }
+            }
+        }
+
         /// <summary>Starts a dash if possible.</summary>
         /// <returns>True if a dash started.</returns>
         public bool TryDash()
@@ -53,7 +72,8 @@ namespace RushOps.Player
 
             Vector2 direction = PlayerDashMath.Direction(_movement.MoveInput, _aim.FacingDirection);
             if (direction == Vector2.zero
-                || !_state.TryStart(config.DashDuration, config.DashInvulnerability, config.DashCooldown))
+                || !_state.TryStart(config.DashDuration, config.DashInvulnerability,
+                    RushRules.DashCooldown(_cooldownFree, config.DashCooldown)))
             {
                 return false;
             }

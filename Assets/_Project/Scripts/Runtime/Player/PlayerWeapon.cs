@@ -36,6 +36,7 @@ namespace RushOps.Player
         private AimAssist _assist;
         private DirectionalSpriteAnimator _view;
         private ShotModifiers _modifiers = ShotModifiers.None;
+        private float _damageFactor = 1f;
         private int _shotCount;
         private bool _holstered;
 
@@ -88,6 +89,19 @@ namespace RushOps.Player
             set => _modifiers = value;
         }
 
+        /// <summary>
+        /// Extra factor on every damage of the player's weapons, e.g. ×1.5 during the rush (F-RSH-05); 1 by default. It
+        /// multiplies with the damage of <see cref="Modifiers"/> but does not change the look of the shots.
+        /// </summary>
+        public float DamageFactor
+        {
+            get => _damageFactor;
+            set => _damageFactor = value > 0f ? value : 1f;
+        }
+
+        /// <summary>Total damage factor: perks (<see cref="Modifiers"/>) times <see cref="DamageFactor"/>.</summary>
+        public float DamageMultiplier => _modifiers.DamageMultiplier * _damageFactor;
+
         /// <summary>Shots per second of the active weapon with the current <see cref="Modifiers"/>; 0 without weapon.</summary>
         public float FireRate
         {
@@ -104,7 +118,7 @@ namespace RushOps.Player
             get
             {
                 WeaponDefinition weapon = ActiveWeapon;
-                return weapon != null ? WeaponMath.ShotDamage(weapon.Damage, _modifiers.DamageMultiplier) : 0;
+                return weapon != null ? WeaponMath.ShotDamage(weapon.Damage, DamageMultiplier) : 0;
             }
         }
 

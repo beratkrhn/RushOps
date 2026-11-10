@@ -33,6 +33,7 @@ namespace RushOps.Bosses
         [SerializeField] private GoldDropper _gold;
 
         private readonly List<Boss> _all = new List<Boss>();
+        private float _timeFactor = 1f;
         private BossPerkThresholds _thresholds;
         private PerkPool _perks;
         private IRandomSource _random;
@@ -56,6 +57,26 @@ namespace RushOps.Bosses
 
         /// <summary>All bodies of the boss so far.</summary>
         public IReadOnlyList<Boss> Bodies => _all;
+
+        /// <summary>
+        /// Factor on the speed and timers of all bodies, also of bodies that join later, e.g. 0.75 during the rush
+        /// (F-RSH-03, RM6); 1 by default.
+        /// </summary>
+        public float TimeFactor
+        {
+            get => _timeFactor;
+            set
+            {
+                _timeFactor = value;
+                foreach (Boss body in _all)
+                {
+                    if (body != null)
+                    {
+                        body.TimeFactor = value;
+                    }
+                }
+            }
+        }
 
         /// <summary>Health of all living bodies.</summary>
         public int CurrentHealth
@@ -196,6 +217,7 @@ namespace RushOps.Bosses
             }
 
             _all.Add(body);
+            body.TimeFactor = _timeFactor;
             body.Hit += OnBodyHit;
             body.Died += OnBodyDied;
         }

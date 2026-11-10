@@ -266,7 +266,7 @@ namespace RushOps.Perks
             }
         }
 
-        private float DamageMultiplier => _weapon != null ? Mathf.Max(0f, _weapon.Modifiers.DamageMultiplier) : 1f;
+        private float DamageMultiplier => _weapon != null ? Mathf.Max(0f, _weapon.DamageMultiplier) : 1f;
 
         private void ShowHand(bool visible, Direction8 facing)
         {
