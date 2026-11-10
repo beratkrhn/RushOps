@@ -12,6 +12,8 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   ShotDual.wav        dual pistols: light high tick (issue #174)
   ShotDrone.wav       combat drone of the companion perk: a thin, short high blip, no noise (issue #245)
   FlameLoop.wav       flamethrower: a seamless roaring hiss with a slow flutter, played as a loop (issue #254)
+  RocketLaunch.wav    rocket launcher: a hollow thump followed by a rising whoosh of the motor (issue #255)
+  RocketBlast.wav     rocket explosion: a short, punchy blast, tighter than the boomer's (issue #255)
   Hit.wav             dull noise thump on an enemy
   Death.wav           falling pulse slide with crunchy noise
   PlayerHurt.wav      harsh two-step down buzz when the player loses a heart
@@ -313,6 +315,29 @@ def flame_loop() -> list[float]:
     return out
 
 
+def rocket_launch() -> list[float]:
+    """Rocket launcher (issue #255): a deep triangle thump as the rocket leaves the tube, under a noise whoosh that
+    rises in pitch while the motor ignites and fades out."""
+    length = 0.35
+    n, tri = Noise(), Triangle()
+    out = []
+    for t in (i / RATE for i in frames(length)):
+        thump = 0.6 * tri.sample(slide(160, 50, t, 0.12)) * decay(t, 0.12) if t < 0.12 else 0.0
+        whoosh = 0.45 * n.sample(slide(1500, 6000, t, length)) * min(1.0, t / 0.04) * decay(t, length)
+        out.append(thump + whoosh)
+    return out
+
+
+def rocket_blast() -> list[float]:
+    """Rocket explosion (issue #255): like the boomer blast but shorter and with more crack at the start, so several
+    rockets in a row stay apart."""
+    length = 0.55
+    n, crack, tri = Noise(), Noise(short=True), Triangle()
+    return [(0.65 * n.sample(slide(4000, 180, t, length)) + 0.3 * crack.sample(3000) * (t < 0.03)
+             + 0.4 * tri.sample(slide(110, 40, t, length))) * decay(t, length)
+            for t in (i / RATE for i in frames(length))]
+
+
 def explosion() -> list[float]:
     length = 0.9
     n, tri = Noise(), Triangle()
@@ -372,7 +397,7 @@ def switch_reset() -> list[float]:
 
 
 SOUNDS = {
-    "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "FlameLoop": flame_loop, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
+    "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "FlameLoop": flame_loop, "RocketLaunch": rocket_launch, "RocketBlast": rocket_blast, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
     "GateOpen": gate_open, "MissionDone": mission_done,
     "WalkerSpawn": walker_spawn, "WalkerApproach": walker_approach,
     "RunnerSpawn": runner_spawn, "RunnerApproach": runner_approach,

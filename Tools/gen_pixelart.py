@@ -71,6 +71,12 @@ Output (under Assets/_Project/Art/):
   Sprites/Flamethrower/Flamethrower_Muzzles.json  nozzle of the flamethrower per direction in units from the feet
   Sprites/Effects/Flame_<0-3>.png          112x48 flame jet pointing right from the left edge, 4 loop frames (issue #254)
   Sprites/Effects/Burn_<0-3>.png           16x16 small flames licking up a burning enemy, 4 frames (issue #254)
+  Sprites/Pickups/Perk_RocketLauncher.png  24x24 perk icon of the rocket launcher (issue #255)
+  Sprites/RocketLauncher/Hand_<DIR>.png    64x64 rocket launcher in the player's hand per direction, laid over the
+                                           player sprite, pivot bottom centre (issue #255)
+  Sprites/RocketLauncher/RocketLauncher_Muzzles.json  muzzle of the launcher per direction in units from the feet
+  Sprites/Projectiles/Rocket.png           24x16 rocket pointing right with its exhaust flame, rotates freely (issue #255)
+  Sprites/Effects/RocketBlast_<0-5>.png    104x104, 6 frames of the rocket blast, radius 1.6 tiles (issue #255)
   Sprites/UI/Heart_Full.png                12x11 HUD heart
   Sprites/UI/Heart_Empty.png               12x11 HUD heart, lost
   Sprites/UI/Pause_Icon.png                12x12 pause symbol
@@ -1596,6 +1602,112 @@ def flamethrower_files(files: dict[str, Image.Image]) -> None:
     for name in DIRECTIONS:
         files[f"Sprites/Flamethrower/Hand_{name}.png"] = flamethrower_hand(name)[0].to_image()
 
+# --- Rocket launcher (issue #255) ------------------------------------------------------
+# Like the flamethrower a separate sprite per direction laid over the figure, held at the pistol's grip anchor: a thick
+# olive tube that reaches a little behind the hand, with a dark rear opening, a sight on top and the red warhead of the
+# next rocket peeking out of the muzzle.
+ROCKET_LAUNCHER_MUZZLES_PATH = ART_DIR / "Sprites/RocketLauncher/RocketLauncher_Muzzles.json"
+# Barrel length in front of the hand per direction (shortened towards and away from the viewer).
+ROCKET_LAUNCHER_AIM = {
+    "E": ((1.0, 0.0), 13), "NE": ((0.8, -0.6), 10), "N": ((0.0, -1.0), 7), "NW": ((-0.8, -0.6), 10),
+    "W": ((-1.0, 0.0), 13), "SW": ((-0.8, 0.6), 10), "S": ((0.0, 1.0), 7), "SE": ((0.8, 0.6), 10),
+}
+ROCKET_BLAST = 104
+ROCKET_BLAST_FRAMES = 6
+
+
+def rocket_launcher_hand(direction: str) -> tuple[Canvas, tuple[int, int]]:
+    """The rocket launcher held in the player's hand facing direction, and the canvas cell of its muzzle."""
+    (vx, vy), length = ROCKET_LAUNCHER_AIM[direction]
+    _, (ax, ay) = PISTOL_POSES[direction]
+    bx, by = ax + 0.5, ay - 1.5
+    c = Canvas(CHARACTER, CHARACTER)
+    # Perpendicular pointing up on screen: that side is lit.
+    px, py = -vy, vx
+    if py > 0 or (py == 0 and px < 0):
+        px, py = -px, -py
+    rear = -max(3, length // 2)
+    for i in range(rear * 2, length * 2 + 1):
+        t = i / 2.0
+        cx, cy = bx + vx * t, by + vy * t
+        for k in (-2, -1, 0, 1, 2):
+            x, y = math.floor(cx + px * k), math.floor(cy + py * k)
+            if t <= rear + 0.5:
+                color = "slate_0" if abs(k) < 2 else "night"
+            elif t >= length - 1.0:
+                color = "night" if abs(k) == 2 else ("red_1" if k >= 0 else "red_0")
+            elif k >= 2:
+                color = "green_2"
+            elif k >= 0:
+                color = "green_1"
+            else:
+                color = "green_0"
+            c.set(x, y, color)
+    # Sight on the lit side, a third along the tube.
+    sx, sy = bx + vx * (length * 0.35) + px * 3, by + vy * (length * 0.35) + py * 3
+    c.set(math.floor(sx), math.floor(sy), "slate_3")
+    c.set(math.floor(sx + vx), math.floor(sy + vy), "slate_3")
+    # Yellow stripe around the tube near the muzzle.
+    for k in (-1, 0, 1):
+        t = length - 3.0
+        c.set(math.floor(bx + vx * t + px * k), math.floor(by + vy * t + py * k), "yellow")
+    nx, ny = math.floor(bx + vx * length), math.floor(by + vy * length)
+    c.outline()
+    hand = player_source(direction)
+    for y in range(c.height):
+        for x in range(c.width):
+            if hand.get(x, y) in HAND_COLOURS and abs(x - ax) <= 2 and abs(y - ay) <= 2:
+                c.set(x, y, None)
+    return c, (nx, ny)
+
+
+def write_rocket_launcher_muzzles() -> None:
+    """Muzzle of the rocket launcher per direction in units from the feet, in the order of DIRECTIONS; rockets
+    start there."""
+    muzzles = []
+    for name in DIRECTIONS:
+        _, (mx, my) = rocket_launcher_hand(name)
+        muzzles.append({"direction": name, "x": (mx + 0.5 - CHARACTER / 2) / TILE,
+                        "y": (CHARACTER - (my + 0.5)) / TILE})
+    ROCKET_LAUNCHER_MUZZLES_PATH.parent.mkdir(parents=True, exist_ok=True)
+    ROCKET_LAUNCHER_MUZZLES_PATH.write_text(json.dumps({"muzzles": muzzles}, indent=2) + "\n")
+    print(f"Wrote {ROCKET_LAUNCHER_MUZZLES_PATH.relative_to(ROOT)}")
+
+
+def rocket() -> Canvas:
+    """A rocket pointing right (issue #255): red warhead, pale body with an olive band, dark fins and a short exhaust
+    flame behind. Rotated freely by the game."""
+    c = Canvas(24, 16)
+    # Exhaust flame.
+    c.rect(1, 7, 2, 8, "orange")
+    c.rect(3, 6, 5, 9, "yellow")
+    c.rect(4, 7, 6, 8, "glow")
+    # Fins.
+    c.rect(7, 4, 9, 5, "slate_1")
+    c.rect(7, 10, 9, 11, "slate_1")
+    # Body.
+    c.rect(7, 6, 17, 9, "slate_4")
+    c.rect(8, 6, 17, 6, "slate_5")
+    c.rect(12, 6, 13, 9, "green_1")
+    c.rect(7, 9, 17, 9, "slate_3")
+    # Warhead.
+    c.rect(18, 6, 19, 9, "red_1")
+    c.rect(20, 7, 21, 8, "red_1")
+    c.rect(18, 9, 20, 9, "red_0")
+    c.set(18, 6, "orange")
+    c.outline()
+    return c
+
+
+def rocket_files(files: dict[str, Image.Image]) -> None:
+    files["Sprites/Projectiles/Rocket.png"] = rocket().to_image()
+    for f in range(ROCKET_BLAST_FRAMES):
+        files[f"Sprites/Effects/RocketBlast_{f}.png"] = explosion_frame(f, ROCKET_BLAST, 7300).to_image()
+    if not (PLAYER_SOURCE_DIR / "Player_Idle_S.png").exists():
+        return
+    for name in DIRECTIONS:
+        files[f"Sprites/RocketLauncher/Hand_{name}.png"] = rocket_launcher_hand(name)[0].to_image()
+
 
 # --- Projectile and effects --------------------------------------------------------
 
@@ -1873,33 +1985,36 @@ EXPLOSION = 160
 EXPLOSION_FRAMES = 6
 
 
-def explosion_frame(frame: int) -> Canvas:
-    """Frame 0..5 of the boomer blast on a 160x160 canvas (radius 2.5 tiles = 80 px): a white flash, a fireball
-    that swells and breaks up, a shock ring that runs out to the damage radius, then drifting smoke."""
-    rng = random.Random(220 + frame)
-    c = Canvas(EXPLOSION, EXPLOSION)
-    cx = cy = EXPLOSION / 2
-    edge = EXPLOSION / 2 - 1.0
+def explosion_frame(frame: int, size: int = EXPLOSION, seed: int = 220) -> Canvas:
+    """Frame 0..5 of a blast on a size x size canvas, the edge at the damage radius: the boomer blast is 160x160
+    (radius 2.5 tiles = 80 px), the rocket blast 104x104 (radius 1.6 tiles, issue #255). A white flash, a fireball
+    that swells and breaks up, a shock ring that runs out to the damage radius, then drifting smoke. All distances are
+    drawn for 160 px and scaled to the size."""
+    rng = random.Random(seed + frame)
+    c = Canvas(size, size)
+    cx = cy = size / 2
+    edge = size / 2 - 1.0
+    k = size / EXPLOSION
 
     def disc(r: float, color: str, rough: float = 0.0) -> None:
-        for y in range(EXPLOSION):
-            for x in range(EXPLOSION):
+        for y in range(size):
+            for x in range(size):
                 d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
-                if d <= r - rough * rng.random():
+                if d <= r * k - rough * k * rng.random():
                     c.set(x, y, color)
 
     def ring(r: float, width: float, color: str, gaps: float = 0.0) -> None:
-        for y in range(EXPLOSION):
-            for x in range(EXPLOSION):
+        for y in range(size):
+            for x in range(size):
                 d = math.hypot(x + 0.5 - cx, y + 0.5 - cy)
-                if r - width <= d <= r and rng.random() >= gaps:
+                if r * k - max(1.0, width * k) <= d <= r * k and rng.random() >= gaps:
                     c.set(x, y, color)
 
-    def puffs(count: int, dist: tuple, size: tuple, colors: tuple) -> None:
+    def puffs(count: int, dist: tuple, size_range: tuple, colors: tuple) -> None:
         for _ in range(count):
             a = rng.uniform(0, 2 * math.pi)
-            d = rng.uniform(*dist)
-            r = rng.uniform(*size)
+            d = rng.uniform(*dist) * k
+            r = max(1.5, rng.uniform(*size_range) * k)
             px, py = cx + math.cos(a) * d, cy + math.sin(a) * d
             c.ellipse(px, py, r, r, colors[0])
             c.ellipse(px - r * 0.25, py - r * 0.25, r * 0.6, r * 0.6, colors[1])
@@ -1923,13 +2038,13 @@ def explosion_frame(frame: int) -> Canvas:
         disc(34, "orange", 5)
         disc(22, "yellow", 4)
     elif frame == 3:
-        ring(edge, 3, "orange", 0.15)
+        ring(edge / k, 3, "orange", 0.15)
         puffs(12, (30, 56), (6, 11), ("slate_1", "slate_2"))
         puffs(8, (14, 36), (6, 10), ("red_0", "red_1"))
         disc(22, "orange", 6)
         disc(12, "yellow", 4)
     elif frame == 4:
-        ring(edge, 2, "red_0", 0.5)
+        ring(edge / k, 2, "red_0", 0.5)
         puffs(14, (20, 60), (6, 12), ("slate_0", "slate_2"))
         puffs(5, (4, 22), (5, 8), ("red_0", "orange"))
     else:
@@ -2081,6 +2196,17 @@ PERK_GLYPHS["Flamethrower"] = [
     "...oooo......",
 ]
 
+# Rocket launcher: a rocket flying right with its exhaust flame (issue #255).
+PERK_GLYPHS["RocketLauncher"] = [
+    "...##........",
+    "...###.......",
+    "+..#######oo.",
+    "++.########ooo",
+    "+..#######oo.",
+    "...###.......",
+    "...##........",
+]
+
 # Badge (shadow, base, light) and glyph (main, accent, detail) colors per perk.
 PERK_COLORS = {
     "SpeedBoost": (("green_0", "green_1", "green_2"), ("yellow", "glow", "outline")),
@@ -2093,10 +2219,11 @@ PERK_COLORS = {
     "Companion": (("slate_1", "slate_3", "slate_4"), ("white", "yellow", "outline")),
     "Scarecrow": (("brown_0", "brown_1", "clay"), ("yellow", "red_1", "apricot")),
     "Flamethrower": (("red_0", "red_1", "orange"), ("slate_5", "yellow", "night")),
+    "RocketLauncher": (("green_0", "green_1", "green_2"), ("slate_5", "yellow", "red_1")),
 }
 
 PERK_IDS = ["SpeedBoost", "Medkit", "DoubleDamage", "RapidFire", "Shield", "InstaKill", "Nuke", "Companion", "Scarecrow",
-            "Flamethrower"]
+            "Flamethrower", "RocketLauncher"]
 
 
 def perk_badge(shadow: str, base: str, light: str) -> Canvas:
@@ -4149,6 +4276,7 @@ def outputs() -> dict[str, Image.Image]:
         files[f"Sprites/Scarecrow/Scarecrow_{f}.png"] = scarecrow_frame(f).to_image()
     files["Sprites/Scarecrow/Scarecrow_Warning.png"] = scarecrow_frame(0, warning=True).to_image()
     flamethrower_files(files)
+    rocket_files(files)
     for d, name in enumerate(DIRECTIONS):
         for frame in range(len(HIT_POSES)):
             files[f"Sprites/Enemies/Walker_Hit_{name}_{frame}.png"] = walker_hit(d, frame).to_image()
@@ -4328,6 +4456,7 @@ def main() -> None:
     if (PLAYER_SOURCE_DIR / "Player_Idle_S.png").exists():
         write_player_muzzles()
         write_flamethrower_muzzles()
+        write_rocket_launcher_muzzles()
 
     sheet_path = ROOT / "docs/art/palette.png"
     sheet_path.parent.mkdir(parents=True, exist_ok=True)
