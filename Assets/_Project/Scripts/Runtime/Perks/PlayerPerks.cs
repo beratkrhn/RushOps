@@ -65,6 +65,12 @@ namespace RushOps.Perks
             if (perk.Kind == PerkKind.Timed)
             {
                 _definitions[perk.Id] = perk;
+                if (SuperWeaponState.KindOf(perk.Effect) != SuperWeaponKind.None)
+                {
+                    // The new super weapon replaces the old one in the hands (PlayerSuperWeapon), so its timer goes.
+                    _active.EndOtherSuperWeapons(perk.Id);
+                }
+
                 _active.Activate(perk.Id, perk.Effect, perk.Magnitude, perk.Duration);
                 ApplyModifiers();
             }

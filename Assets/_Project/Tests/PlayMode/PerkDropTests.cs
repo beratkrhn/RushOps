@@ -17,8 +17,8 @@ namespace RushOps.Tests.PlayMode
         private static readonly Vector2 FreeSpot = new Vector2(34.5f, 18.5f);
         // A cell of the outer wall ring.
         private static readonly Vector2 WallSpot = new Vector2(0.5f, 18.5f);
-        // Weights of the Lastenheft (F-PRK-02, F-PRK-05 to F-PRK-08) in the order of LootConfig, companion and scarecrow last.
-        private static readonly float[] Weights = { 25f, 20f, 20f, 15f, 10f, 7f, 3f, 10f, 8f };
+        // Weights of the Lastenheft (F-PRK-02, F-PRK-05 to F-PRK-12) in the order of LootConfig, the super weapons last.
+        private static readonly float[] Weights = { 25f, 20f, 20f, 15f, 10f, 7f, 3f, 10f, 8f, 4f, 4f };
 
         private PerkDropper _dropper;
         private PerkPickupPool _pickups;

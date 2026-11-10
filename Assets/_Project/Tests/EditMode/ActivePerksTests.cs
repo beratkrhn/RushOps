@@ -232,5 +232,30 @@ namespace RushOps.Tests.EditMode
 
             Assert.AreEqual(8f, _perks.RemainingOf(PerkEffect.Shield), 1e-4f);
         }
+
+        [Test]
+        public void EndOtherSuperWeapons_LeavesOnlyTheNewSuperWeapon_KeepsOtherPerks()
+        {
+            _perks.Activate("speed_boost", PerkEffect.SpeedBoost, 1.5f, 15f);
+            _perks.Activate("flamethrower", PerkEffect.Flamethrower, 1f, 12f);
+
+            Assert.AreEqual(1, _perks.EndOtherSuperWeapons("rocket_launcher"));
+            _perks.Activate("rocket_launcher", PerkEffect.RocketLauncher, 1f, 12f);
+
+            Assert.AreEqual(2, _perks.Count);
+            Assert.IsTrue(_perks.IsActive("speed_boost"));
+            Assert.IsFalse(_perks.IsActive("flamethrower"));
+            Assert.IsTrue(_perks.IsActive("rocket_launcher"));
+            CollectionAssert.IsEmpty(_expired);
+        }
+
+        [Test]
+        public void EndOtherSuperWeapons_SameSuperWeapon_KeepsIt()
+        {
+            _perks.Activate("flamethrower", PerkEffect.Flamethrower, 1f, 12f);
+
+            Assert.AreEqual(0, _perks.EndOtherSuperWeapons("flamethrower"));
+            Assert.IsTrue(_perks.IsActive("flamethrower"));
+        }
     }
 }

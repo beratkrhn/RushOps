@@ -10,6 +10,17 @@ namespace RushOps.Perks
     {
         private readonly PerkTimer _timer = new PerkTimer();
 
+        /// <summary>The super weapon a perk effect puts into the hands; <see cref="SuperWeaponKind.None"/> for other perks.</summary>
+        public static SuperWeaponKind KindOf(PerkEffect effect)
+        {
+            return effect switch
+            {
+                PerkEffect.Flamethrower => SuperWeaponKind.Flamethrower,
+                PerkEffect.RocketLauncher => SuperWeaponKind.RocketLauncher,
+                _ => SuperWeaponKind.None,
+            };
+        }
+
         /// <summary>The super weapon in the player's hands; <see cref="SuperWeaponKind.None"/> when there is none.</summary>
         public SuperWeaponKind Kind { get; private set; }
 
