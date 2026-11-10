@@ -30,6 +30,10 @@ In Stories zerlegt: [`v1.3.0.md`](v1.3.0.md) (#244 bis #247, Epic #215). Entsche
 
 In Stories zerlegt: [`v1.4.0.md`](v1.4.0.md) (#253 bis #256, Epic #216). Entscheidungen W11 bis W15, Lastenheft F-PRK-09 bis F-PRK-12.
 
+### v1.5.0 – Hunde
+
+In Stories zerlegt: [`v1.5.0.md`](v1.5.0.md) (#262 bis #264, Epic #217). Entscheidungen H1 bis H6, N6, N7, Lastenheft F-GEG-05 bis F-GEG-07 und F-END-10.
+
 ### Musik (#42)
 Ein Menütrack und je ein loopbarer Action-Track pro Insel.
 *Offen:* selbst erzeugt oder lizenzfreie Packs.
