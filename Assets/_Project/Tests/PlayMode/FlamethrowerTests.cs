@@ -83,6 +83,8 @@ namespace RushOps.Tests.PlayMode
                 yield return null;
             }
 
+            // The weapon hides its hand in its next update, which may come after the timer's in this frame.
+            yield return null;
             Assert.IsFalse(_superWeapon.IsActive, "the flamethrower stayed after 12 s");
             Assert.IsFalse(_weapon.Holstered, "the old weapon does not fire again");
             Assert.AreSame(old, _weapon.ActiveWeapon, "the old weapon is not active again");
