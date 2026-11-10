@@ -38,6 +38,10 @@ In Stories zerlegt: [`v1.5.0.md`](v1.5.0.md) (#262 bis #264, Epic #217). Entsche
 
 In Stories zerlegt: [`v1.6.0.md`](v1.6.0.md) (#269 bis #271, Epic #218). Entscheidungen RM1 bis RM6, N8, N15 bis N18, Lastenheft F-RSH-01 bis F-RSH-06 und F-HUD-09.
 
+### v1.7.0 – Endlos-Upgrades und Tageslauf
+
+In Stories zerlegt: [`v1.7.0.md`](v1.7.0.md) (#276 bis #280, Epic #219). Entscheidungen T1 bis T4, N19 bis N22, Lastenheft F-END-11 bis F-END-14.
+
 ### Musik (#42)
 Ein Menütrack und je ein loopbarer Action-Track pro Insel.
 *Offen:* selbst erzeugt oder lizenzfreie Packs.

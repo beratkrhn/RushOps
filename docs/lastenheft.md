@@ -213,6 +213,27 @@ Neben dem Story Mode gibt es einen Endlos-Modus (Design-Fragen E1 bis E10, N2 bi
 | F-END-08 | Der Lauf endet bei 0 Herzen; es gibt keinen Zwischenstand. Score und erreichte Runde werden als lokale **Top 10** gespeichert. | Muss |
 | F-END-09 | Skins werden für das Erreichen von Runde 10, 25 und 50 freigeschaltet. | Soll |
 | F-END-10 | Jede **6. Runde** *(Startwert)* ist eine **Hunderunde**, in der nur Hunde kommen; die Pause davor kündigt sie an. Fällt sie auf eine Bossrunde, geht der Boss vor und die Hunderunde folgt eine Runde später. | Muss |
+| F-END-11 | Nach jeder **3. geschafften Runde** *(Startwert)* und nach jeder Bossrunde hält das Spiel an und bietet **3 verschiedene Upgrades** *(Startwert)* zur Wahl; eines muss gewählt werden. Ausgereizte Upgrades werden nicht mehr angeboten. | Muss |
+| F-END-12 | Upgrades wirken nur im laufenden Endlos-Lauf und werden nicht gespeichert; es gibt 12 Upgrades mit Stufen (Tabelle unten). | Muss |
+| F-END-13 | Der **Tageslauf** nutzt das lokale Datum als Seed für alles Zufällige im Lauf; an einem Tag beginnt er immer gleich. Versuche sind beliebig viele, die Uhr des Geräts gilt. | Muss |
+| F-END-14 | Der beste Tageslauf jedes Tages wird gespeichert; der Bereich „Endlos“ zeigt die letzten 7 Tage. Tagesläufe kommen nicht in die Top 10 (F-END-08); Gold, Skins und Statistiken zählen wie immer. | Muss |
+
+**Endlos-Upgrades** (Backlog [`v1.7.0.md`](backlog/v1.7.0.md), alle Werte *Startwerte*)
+
+| Upgrade | Wirkung pro Stufe | Höchststufe |
+|---|---|---|
+| Abpraller | Kugeln prallen 1× mehr von Wänden ab | 3 |
+| +1 Herz | Maximum +1 Herz, heilt 1 Herz | 3 |
+| Längere Perks | Perk-Dauer +30 % | 3 |
+| Gold-Magnet | Magnetradius +1 Kachel | 2 |
+| Feuerspur | Dash hinterlässt 1,5 s Feuer, 30 Schaden pro Sekunde | 1 |
+| Begleiter dauerhaft | Kampfdrohne bleibt den ganzen Lauf | 1 |
+| Schnelle Füße | Lauftempo +10 % | 3 |
+| Feuerrate | +15 % | 3 |
+| Schaden | +15 % auf jeden Spielerschaden | 3 |
+| Perk-Glück | Drop-Chance +3 Prozentpunkte | 3 |
+| Schneller Rush | Rush-Leiste voll bei 20 statt 25 | 1 |
+| Kurzer Dash | Dash-Abklingzeit −25 % | 2 |
 
 ### 2.11 Beute (Gold)
 
@@ -287,7 +308,7 @@ Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (De
 | F-DAT-01 | Gespeichert wird lokal als JSON-Datei im App-Speicher (`Application.persistentDataPath`). | Muss |
 | F-DAT-02 | Es gibt kein manuelles Speichern und keinen Speicherstand innerhalb eines Levels. | Muss |
 | F-DAT-03 | **Autosave** bei: Level geschafft, Tod der Spielfigur (Statistiken), Abbruch eines Levels oder Laufs, Kauf eines Skins, Änderung der Einstellungen. | Muss |
-| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08), Goldkontostand und Gold insgesamt (F-GLD-05). | Muss |
+| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08) und der Tagesläufe (F-END-14), Goldkontostand und Gold insgesamt (F-GLD-05). | Muss |
 | F-DAT-05 | Das Speicherformat hat eine Versionsnummer, damit spätere Versionen alte Spielstände migrieren können. | Muss |
 | F-DAT-06 | Ein beschädigter Spielstand führt nicht zum Absturz. Es wird ein Backup geladen oder ein neuer Spielstand angelegt. | Muss |
 
@@ -340,7 +361,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.4.0 Superwaffen**: siehe Abschnitt 2.7 (F-PRK-09 bis F-PRK-12).
 - **v1.5.0 Hunde**: siehe Abschnitt 2.3 (F-GEG-05 bis F-GEG-07) und 2.10 (F-END-10).
 - **v1.6.0 Rush-Meter**: siehe Abschnitt 2.12 (F-RSH-01 bis F-RSH-06) und 3.3 (F-HUD-09).
-- **v1.7.0 Endlos-Upgrades und Tageslauf**: Upgrade-Wahl nach jeder dritten Runde; täglicher Lauf mit dem Datum als Zufalls-Seed.
+- **v1.7.0 Endlos-Upgrades und Tageslauf**: siehe Abschnitt 2.10 (F-END-11 bis F-END-14).
 - **v1.8.0 Herausforderungen und Rätsel mit Zombies**: Abzeichen pro Level; Druckplatte (nur Brute) und rissige Wand (nur Boomer) mit Hinweisen, nur in der Kampagne.
 - **v1.9.0 Feinschliff**: Musik, Vibration (Haptik) bei Treffern und Explosionen, Balancing, Sterne-Schwellen neu.
 - Erledigt: **Waffensystem** (W1 bis W10), erschienen mit v1.0.0 ([`v1.0.0-waffen.md`](backlog/v1.0.0-waffen.md)).
@@ -380,3 +401,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.2 | 08.11.2026 | Abschnitt 2.7 mit Superwaffen Flammenwerfer und Raketenwerfer (F-PRK-09 bis F-PRK-12) und zwei Pool-Zeilen (Design-Fragen W11 bis W15). |
 | 1.3 | 10.11.2026 | Abschnitt 2.3 mit Zombiehunden (F-GEG-05 bis F-GEG-07) und Zeile in der Gegnertabelle; Abschnitt 2.10 mit Hunderunde (F-END-10) (Design-Fragen H1 bis H6, N6, N7). |
 | 1.4 | 10.11.2026 | Neuer Abschnitt 2.12 Rush-Meter (F-RSH-01 bis F-RSH-06); Abschnitt 3.3 mit Rush-Button (F-HUD-09) (Design-Fragen RM1 bis RM6, N8, N15 bis N18). |
+| 1.5 | 11.11.2026 | Abschnitt 2.10 mit Endlos-Upgrades (F-END-11, F-END-12, Upgrade-Tabelle) und Tageslauf (F-END-13, F-END-14); F-DAT-04 mit Tagesbestwerten (Design-Fragen T1 bis T4, N19 bis N22). |
