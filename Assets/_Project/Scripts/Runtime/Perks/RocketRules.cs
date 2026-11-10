@@ -21,6 +21,30 @@ namespace RushOps.Perks
             return explosionDamage > 0 ? explosionDamage : 0;
         }
 
+        /// <summary>
+        /// True if a body is caught by the blast: its center <paramref name="aimPoint"/> or the point of its hurtbox
+        /// nearest to the center, <paramref name="closestPoint"/>, lies within the radius. Large bodies such as bosses
+        /// count as soon as an edge reaches in.
+        /// </summary>
+        public static bool InBlast(Vector2 center, float radius, Vector2 aimPoint, Vector2 closestPoint)
+        {
+            return ExplosionTargeting.IsInRadius(center, radius, aimPoint)
+                || ExplosionTargeting.IsInRadius(center, radius, closestPoint);
+        }
+
+        /// <summary>Explosion damage with a damage multiplier such as double damage; never below 0.</summary>
+        public static int ScaledDamage(int damage, float multiplier)
+        {
+            return WeaponMath.ShotDamage(damage, multiplier);
+        }
+
+        /// <summary>Direction a blast pushes a body at <paramref name="position"/>: away from the center, up when on it.</summary>
+        public static Vector2 PushDirection(Vector2 center, Vector2 position)
+        {
+            Vector2 away = position - center;
+            return away.sqrMagnitude > 0.0001f ? away.normalized : Vector2.up;
+        }
+
         /// <summary>Damage of the explosion to the player: always 0, even in the middle of it (W12).</summary>
         public static int PlayerDamage => 0;
     }

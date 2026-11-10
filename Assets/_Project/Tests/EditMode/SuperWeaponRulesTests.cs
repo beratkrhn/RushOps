@@ -230,5 +230,30 @@ namespace RushOps.Tests.EditMode
             Assert.IsTrue(RocketRules.Hits(Vector2.zero, 1.6f, Vector2.zero, true));
             Assert.AreEqual(0, RocketRules.PlayerDamage);
         }
+    
+
+        [Test]
+        public void Rocket_LargeBody_CountsWhenItsEdgeReachesIn()
+        {
+            // Center far outside, nearest hurtbox point inside: a boss with a wide body is caught.
+            Assert.IsTrue(RocketRules.InBlast(Vector2.zero, 1.6f, new Vector2(3f, 0f), new Vector2(1.5f, 0f)));
+            Assert.IsTrue(RocketRules.InBlast(Vector2.zero, 1.6f, new Vector2(1f, 0f), new Vector2(3f, 0f)));
+            Assert.IsFalse(RocketRules.InBlast(Vector2.zero, 1.6f, new Vector2(3f, 0f), new Vector2(2f, 0f)));
+        }
+
+        [Test]
+        public void Rocket_DoubleDamage_DoublesTheBlast()
+        {
+            Assert.AreEqual(40, RocketRules.ScaledDamage(40, 1f));
+            Assert.AreEqual(80, RocketRules.ScaledDamage(40, 2f));
+            Assert.AreEqual(0, RocketRules.ScaledDamage(40, 0f));
+        }
+
+        [Test]
+        public void Rocket_PushesAwayFromTheCenter()
+        {
+            Assert.AreEqual(Vector2.right, RocketRules.PushDirection(Vector2.zero, new Vector2(2f, 0f)));
+            Assert.AreEqual(Vector2.up, RocketRules.PushDirection(Vector2.one, Vector2.one));
+        }
     }
 }

@@ -18,3 +18,6 @@ MonoBehaviour:
   _range: 10
   _explosionRadius: 1.6
   _explosionDamage: 40
+  _explosionFrameDuration: 0.06
+  _launchVolume: 0.7
+  _explosionVolume: 0.8
