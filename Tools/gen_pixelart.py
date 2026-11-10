@@ -17,6 +17,7 @@ Output (under Assets/_Project/Art/):
   Sprites/Enemies/Runner_Run_<DIR>_<F>.png  64x64, 8 directions x 4 frames (issue #20)
   Sprites/Enemies/Runner_Hit_<DIR>_<F>.png  64x64, 8 directions x 2 frames, recoil (issue #100)
   Sprites/Enemies/Runner_Death_<DIR>_<F>.png 64x64, 8 directions x 5 frames, pitches forward (issue #100)
+  Sprites/Enemies/Dog_<STATE>_<DIR>_<F>.png 64x64, zombie dog: Run 4, Crouch 2, Lunge 2, Hit 2, Death 5 (issue #263)
   Sprites/Enemies/Brute_Walk_<DIR>_<F>.png  96x96, 8 directions x 4 frames (issue #21)
   Sprites/Enemies/Brute_Hit_<DIR>_<F>.png   96x96, 8 directions x 2 frames (issue #101)
   Sprites/Enemies/Brute_Death_<DIR>_<F>.png 96x96, 8 directions x 5 frames, slams face down (issue #101)
@@ -321,6 +322,8 @@ RAMP = {
     "brood": ("night", "dusk", "mauve"),
     "sac": ("red_0", "red_1", "clay"),
     "rags": ("green_0", "green_1", "green_1"),
+    # Zombie dog (issue #263): mangy brown fur, so the low four-legged body reads apart from the pale runner.
+    "fur": ("brown_0", "brown_1", "clay"),
 }
 
 
@@ -1133,6 +1136,145 @@ def runner_hit(direction: int, frame: int) -> Canvas:
 
 def runner_death(direction: int, frame: int) -> Canvas:
     return runner_frame(direction, 1, RUNNER_DEATH_POSES[frame], eyes=frame == 0, stain=DEATH_STAIN[frame])
+
+
+# --- Zombie dog (issue #263) -----------------------------------------------------------
+# A low, long four-legged body in mangy brown fur with bare pale ribs and a raw red wound on the flank, red eyes and
+# a gaping snout, so it reads apart from the upright runner at a glance. States: "run" (4 frames gallop), "crouch"
+# (2 frames: front low, hind legs bunched, trembling; the announced lunge), "lunge" (2 frames: stretched out in the
+# air) and the hit and death frames. The death frames lay the body down sideways instead of tipping it over.
+DOG_CROUCH_FRAMES = 2
+DOG_LUNGE_FRAMES = 2
+DOG_DEATH_SINK = [0.25, 0.55, 0.8, 1.0, 1.0]
+DOG_DEATH_STAIN = [0.0, 0.0, 0.0, 7.0, 10.0]
+# Pixels every dog frame is drawn higher than other characters (see dog_frame).
+DOG_LIFT = 8
+
+
+def dog_frame(direction: int, frame: int, mode: str = "run", pose: Pose = UPRIGHT, eyes: bool = True,
+              sink: float = 0.0, stain: float = 0.0) -> Canvas:
+    """Zombie dog in one of 8 directions. sink (0..1) lays a dying dog down: legs splay, body and head drop to the
+    floor and roll to one side."""
+    m = Model(direction * 45.0, pose=pose)
+    c = Canvas(CHARACTER, CHARACTER + DOG_LIFT)
+    if stain > 0:
+        m.ground_stain(c, 0.0, 0.0, stain, "red_0", "outline")
+    phase = frame / 4 * 2 * math.pi
+    # Body line: hips (rear) and shoulders (front) heights, plus how far the legs reach.
+    hip_f, chest_f = -9.0, 7.0
+    hip_z, chest_z = 13.0, 14.0
+    front_reach, back_reach = 0.0, 0.0
+    front_lift, back_lift = 0.0, 0.0
+    head_dz, head_df = 0.0, 0.0
+    jaw = 1.0
+    roll = 0.0
+    if mode == "run":
+        # Rotary gallop: front and hind pairs swing against each other, the spine flexes.
+        swing = math.sin(phase)
+        front_reach, back_reach = 6.0 * swing, -6.0 * swing
+        front_lift = max(0.0, -swing) * 3.0
+        back_lift = max(0.0, swing) * 3.0
+        bob = 1.5 * abs(math.cos(phase))
+        hip_z -= bob
+        chest_z -= 1.5 - bob
+        head_dz = -1.0 + bob
+    elif mode == "crouch":
+        # Front sunk low, head pressed down and forward, hindquarters raised and bunched; frame 1 trembles lower.
+        tremble = frame % 2
+        chest_z, hip_z = 8.0 - tremble, 12.0
+        chest_f, hip_f = 6.0, -7.0
+        front_reach, back_reach = 3.0, 4.0
+        head_dz, head_df = -6.0 - tremble, 1.0
+        jaw = 2.0
+    elif mode == "lunge":
+        # Airborne and stretched: front legs reach far ahead, hind legs kick out behind, jaws wide open.
+        air = 5.0 + frame
+        hip_z, chest_z = 13.0 + air, 15.0 + air
+        hip_f, chest_f = -10.0, 9.0
+        front_reach, back_reach = 9.0, -9.0
+        front_lift, back_lift = air + 2.0, air
+        head_dz, head_df = 1.0, 2.0
+        jaw = 3.0
+    if sink > 0:
+        # Dying: the body drops to the floor and rolls onto its side, the legs splay out.
+        hip_z = hip_z + (5.0 - hip_z) * sink
+        chest_z = chest_z + (5.5 - chest_z) * sink
+        head_dz = head_dz + (-10.0 - head_dz) * sink
+        roll = 4.0 * sink
+        jaw = 2.0
+
+    # Legs: upper leg from the body to a joint, lower leg to the paw. The far side is drawn first by depth sort.
+    for side in (-3.8, 3.8):
+        for base_f, base_z, reach, lift, hind in ((chest_f - 1.0, chest_z, front_reach, front_lift, False),
+                                                    (hip_f + 1.0, hip_z, back_reach, back_lift, True)):
+            spread = side * (1.0 + 1.2 * sink)
+            paw_z = 1.8 + lift
+            if sink > 0:
+                paw = (base_f + reach * 0.3 + (2.0 if hind else 3.0), spread * 2.2 + roll, 1.8)
+            else:
+                paw = (base_f + reach, spread, paw_z)
+            # Hind legs bend backward at the hock, front legs bend forward at the wrist.
+            joint = ((base_f + paw[0]) * 0.5 + (-2.5 if hind else 1.0), (side + paw[1]) * 0.5,
+                     (base_z + paw[2]) * 0.5 + 1.0)
+            m.capsule((base_f, side + roll * 0.5, base_z - 2.0), joint, 2.6 if hind else 2.2, "fur")
+            m.capsule(joint, paw, 1.6, "fur")
+            m.sphere(paw[0] + 0.8, paw[1], paw[2], 1.8, "shoe")
+    # Tail, thin and ragged, sticking out behind the hips.
+    tail_tip = (hip_f - 7.0, roll, hip_z + (4.0 if mode != "crouch" else 7.0) - sink * 8.0)
+    m.capsule((hip_f - 2.0, roll, hip_z + 1.0), tail_tip, 1.3, "fur")
+    # Body: a barrel from the hips to the chest, deeper at the chest.
+    for s in (-1.6, 1.6):
+        m.capsule((hip_f, roll + s, hip_z), (chest_f, roll + s, chest_z), 4.8, "fur")
+    m.sphere(chest_f, roll, chest_z - 0.5, 6.2, "fur")
+    # Neck and head, the head held low and forward with a long snout.
+    neck = (chest_f + 3.5 + head_df * 0.5, roll, chest_z + 3.0 + head_dz * 0.5)
+    head = (chest_f + 7.0 + head_df, roll, chest_z + 6.0 + head_dz)
+    m.capsule((chest_f + 1.0, roll, chest_z + 1.5), neck, 3.6, "fur")
+    m.sphere(*head, 4.4, "fur")
+    # Upper snout and lower jaw, parted by jaw pixels.
+    m.capsule((head[0] + 2.0, head[1], head[2] - 0.5), (head[0] + 7.0, head[1], head[2] - 1.0), 2.2, "fur")
+    m.capsule((head[0] + 2.0, head[1], head[2] - 2.0 - jaw), (head[0] + 6.0, head[1], head[2] - 2.0 - jaw * 1.3),
+              1.6, "red")
+    # Torn ears.
+    for s in (-2.4, 2.4):
+        m.sphere(head[0] - 1.5, head[1] + s, head[2] + 4.0 - sink * 2.0, 1.6, "fur")
+
+    m.paint(c)
+
+    # Bare ribs on the flank that faces the viewer, and a raw wound behind them.
+    _, _, body_north = m.project(0.0, roll, (hip_z + chest_z) * 0.5)
+    for s in (-6.2, 6.2):
+        for i in range(3):
+            x, y, north = m.project(chest_f - 3.0 - i * 2.5, roll + s, (hip_z + chest_z) * 0.5 + 1.0)
+            if north <= body_north + 0.5:
+                c.set(int(x), int(y), "slate_5")
+                c.set(int(x), int(y) + 1, "slate_4")
+        x, y, north = m.project(hip_f + 3.0, roll + s, hip_z + 1.0)
+        if north <= body_north + 0.5:
+            c.set(int(x), int(y), "red_1")
+            c.set(int(x) + 1, int(y), "red_0")
+    # Glowing red eyes, only where they face the viewer; brighter while crouching (the warning).
+    _, _, head_north = m.project(*head)
+    for s in (-1.8, 1.8):
+        x, y, north = m.project(head[0] + 3.4, head[1] + s, head[2] + 1.2)
+        if eyes and north <= head_north + 0.5:
+            eye = "yellow" if mode == "crouch" else "red_1"
+            c.set(int(x), int(y), eye)
+            c.set(int(x) + (1 if s > 0 else -1), int(y), eye)
+    c.outline("outline")
+    # The long body facing the viewer reaches below its feet; the same lift for every frame keeps the pivot steady.
+    out = Canvas(CHARACTER, CHARACTER)
+    out.px = c.px[DOG_LIFT:]
+    return out
+
+
+def dog_hit(direction: int, frame: int) -> Canvas:
+    return dog_frame(direction, 1, pose=HIT_POSES[frame])
+
+
+def dog_death(direction: int, frame: int) -> Canvas:
+    return dog_frame(direction, 1, mode="dead", eyes=frame == 0, sink=DOG_DEATH_SINK[frame],
+                     stain=DOG_DEATH_STAIN[frame])
 
 
 # --- Player animations (issue #102) ----------------------------------------------------
@@ -4315,6 +4457,16 @@ def outputs() -> dict[str, Image.Image]:
         for frame, c in enumerate(death_frames(mega_death, d, MEGA_DEATH_FRAMES)):
             files[f"Sprites/Enemies/MegaBoomer_Death_{name}_{frame}.png"] = c.to_image()
         for frame in range(4):
+            files[f"Sprites/Enemies/Dog_Run_{name}_{frame}.png"] = dog_frame(d, frame).to_image()
+        for frame in range(DOG_CROUCH_FRAMES):
+            files[f"Sprites/Enemies/Dog_Crouch_{name}_{frame}.png"] = dog_frame(d, frame, mode="crouch").to_image()
+        for frame in range(DOG_LUNGE_FRAMES):
+            files[f"Sprites/Enemies/Dog_Lunge_{name}_{frame}.png"] = dog_frame(d, frame, mode="lunge").to_image()
+        for frame in range(len(HIT_POSES)):
+            files[f"Sprites/Enemies/Dog_Hit_{name}_{frame}.png"] = dog_hit(d, frame).to_image()
+        for frame, c in enumerate(death_frames(dog_death, d, len(DOG_DEATH_SINK))):
+            files[f"Sprites/Enemies/Dog_Death_{name}_{frame}.png"] = c.to_image()
+        for frame in range(4):
             files[f"Sprites/Enemies/Walker_Walk_{name}_{frame}.png"] = walker_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Runner_Run_{name}_{frame}.png"] = runner_frame(d, frame).to_image()
             files[f"Sprites/Enemies/Brute_Walk_{name}_{frame}.png"] = brute_frame(d, frame).to_image()
@@ -4383,6 +4535,7 @@ def preview(files: dict[str, Image.Image], path: Path, scale: int = 3) -> None:
 ANIMATION_PREVIEWS = {
     "Walker": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Runner": [("Run", 8, 3), ("Hit", 12, 1), ("Death", 10, 1)],
+    "Dog": [("Run", 12, 3), ("Crouch", 10, 4), ("Lunge", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Brute": [("Walk", 8, 2), ("Hit", 12, 1), ("Death", 10, 1)],
     "Boomer": [("Walk", 8, 2), ("Hit", 12, 1), ("Swell", 12, 4), ("Death", 10, 1)],
     "Koloss": [("Walk", 8, 2), ("Windup", 8, 3), ("Charge", 12, 2), ("Stun", 6, 3), ("Hit", 12, 1), ("Death", 10, 1)],
