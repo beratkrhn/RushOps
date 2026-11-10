@@ -16,13 +16,14 @@ namespace RushOps.Editor.Art
         public const int PixelsPerUnit = 32;
 
         // Character sprites are pivoted bottom center so they can be sorted by their feet; so is the scarecrow on its pole
-        // and the flamethrower laid over the player sprite (issue #254).
+        // and the flamethrower and rocket launcher laid over the player sprite (issues #254, #255).
         private static readonly string[] FootPivotFolders =
         {
             ArtRoot + "Sprites/Player/",
             ArtRoot + "Sprites/Enemies/",
             ArtRoot + "Sprites/Scarecrow/",
             ArtRoot + "Sprites/Flamethrower/",
+            ArtRoot + "Sprites/RocketLauncher/",
         };
 
         /// <summary>Returns true if the asset at <paramref name="assetPath"/> must use the pixel art import settings.</summary>

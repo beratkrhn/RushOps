@@ -30,6 +30,7 @@ namespace RushOps.Combat
         private int _damage;
         private bool _lethal;
         private Action<Projectile> _expire;
+        private Action<Projectile, Vector2> _impact;
         private bool _flying;
 
         /// <summary>Raised when the projectile hits a collider, with the hit point (issue #107: hit sparks).</summary>
@@ -53,9 +54,12 @@ namespace RushOps.Combat
         /// a <paramref name="lethal"/> hit kills it unless it is a boss. <paramref name="look"/> picks the sprite.
         /// <paramref name="expire"/> is called once when the projectile hits something or runs out of range.
         /// <paramref name="normalSprite"/> is the weapon's own bullet (issue #174); null keeps the prefab's.
+        /// <paramref name="impact"/> is called with the hit point when this flight hits something, e.g. to set off a
+        /// rocket's explosion (issue #255); it is forgotten when the flight ends.
         /// </summary>
         public void Launch(Vector2 origin, Vector2 direction, float speed, float range, LayerMask hitLayers, int damage,
-            bool lethal, ShotLook look, Action<Projectile> expire, Sprite normalSprite = null)
+            bool lethal, ShotLook look, Action<Projectile> expire, Sprite normalSprite = null,
+            Action<Projectile, Vector2> impact = null)
         {
             _weaponSprite = normalSprite;
             _direction = direction.normalized;
@@ -65,6 +69,7 @@ namespace RushOps.Combat
             _damage = damage;
             _lethal = lethal;
             _expire = expire;
+            _impact = impact;
             SetLook(look);
             _flying = true;
 
@@ -75,10 +80,31 @@ namespace RushOps.Combat
             Collider2D overlap = Physics2D.OverlapPoint(origin, _hitLayers);
             if (overlap != null)
             {
-                Impacted?.Invoke(this, origin);
+                Impact(origin);
                 Hit(overlap);
                 Expire();
             }
+        }
+
+        /// <summary>True while this projectile flies with <paramref name="impact"/> as its impact handler.</summary>
+        public bool Carries(Action<Projectile, Vector2> impact)
+        {
+            return _flying && impact != null && _impact == impact;
+        }
+
+        /// <summary>Ends the flight at once without a hit, e.g. when a super weapon clears its rockets (issue #255).</summary>
+        public void Cancel()
+        {
+            if (_flying)
+            {
+                Expire();
+            }
+        }
+
+        private void Impact(Vector2 point)
+        {
+            Impacted?.Invoke(this, point);
+            _impact?.Invoke(this, point);
         }
 
         private void Update()
@@ -94,7 +120,7 @@ namespace RushOps.Combat
             if (hit.collider != null)
             {
                 transform.position = hit.point;
-                Impacted?.Invoke(this, hit.point);
+                Impact(hit.point);
                 Hit(hit.collider);
                 Expire();
                 return;
@@ -151,6 +177,7 @@ namespace RushOps.Combat
         private void Expire()
         {
             _flying = false;
+            _impact = null;
             Action<Projectile> expire = _expire;
             _expire = null;
             if (expire != null)

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Perks.PerkDefinition
   _id: rocket_launcher
   _displayName: Raketenwerfer
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 2486c1b3d9d7a4bd89e506a13d66bf75, type: 3}
   _kind: 1
   _duration: 12
   _weight: 4
