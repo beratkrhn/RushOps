@@ -43,5 +43,32 @@ namespace RushOps.Tests.PlayMode
             yield return StoreScreenshots.Capture("perk_hud.png", "docs/art");
             SaveGameIsolation.Reset();
         }
+
+        /// <summary>Super weapon timer next to another perk timer plus the name flash (issue #256), <c>docs/art/super_weapon_hud.png</c>.</summary>
+        [UnityTest]
+        public IEnumerator Shot_TimerOfTheRocketLauncher()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("no graphics device (-nographics): nothing can render");
+            }
+
+            SaveGameIsolation.Reset();
+            yield return SceneManager.LoadSceneAsync("Arena_Test", LoadSceneMode.Single);
+            yield return null;
+            Object.FindAnyObjectByType<WaveDirector>().enabled = false;
+            var player = Object.FindAnyObjectByType<PlayerMovement>();
+            player.GetComponent<PlayerMoveInput>().enabled = false;
+            player.GetComponent<PlayerAimInput>().enabled = false;
+
+            var perks = Object.FindAnyObjectByType<PlayerPerks>();
+            perks.Apply(AssetDatabase.LoadAssetAtPath<PerkDefinition>("Assets/_Project/Data/Perks/DoubleDamage.asset"));
+            yield return new WaitForSeconds(3f);
+            perks.Apply(AssetDatabase.LoadAssetAtPath<PerkDefinition>("Assets/_Project/Data/Perks/RocketLauncher.asset"));
+            yield return new WaitForSeconds(0.2f);
+
+            yield return StoreScreenshots.Capture("super_weapon_hud.png", "docs/art");
+            SaveGameIsolation.Reset();
+        }
     }
 }
