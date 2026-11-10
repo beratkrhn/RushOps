@@ -82,9 +82,9 @@ namespace RushOps.Editor.Scenes
         private const string DeathSplatPrefabPath = "Assets/_Project/Prefabs/Effects/DeathSplat.prefab";
         private const int HitSparkFrameCount = 3;
         private const int DeathSplatFrameCount = 4;
-        private static readonly Color ExplosionLightColor = new Color(1f, 0.6f, 0.25f);
+        internal static readonly Color ExplosionLightColor = new Color(1f, 0.6f, 0.25f);
         private const float ExplosionLightRadius = 3.5f;
-        private const float ExplosionLightIntensity = 2f;
+        internal const float ExplosionLightIntensity = 2f;
         private static readonly Color MuzzleLightColor = new Color(1f, 0.8f, 0.4f);
         private const float MuzzleLightRadius = 1.8f;
         internal const string SaveGameServicePath = "Assets/_Project/Data/Save/SaveGameService.asset";
@@ -706,6 +706,7 @@ namespace RushOps.Editor.Scenes
             AddClickSounds(sfx.GetComponent<UiClickSound>());
             CompanionBuilder.Create(target, results, enemyPools, sfx);
             FlamethrowerBuilder.Create(target, results, pause, sfx);
+            RocketLauncherBuilder.Create(target, results, sfx);
             ScarecrowBuilder.Create(target, results, navigator, explosions, perks);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
 

@@ -42,6 +42,7 @@ namespace RushOps.Editor.Scenes
             ("Companion", "companion", "Begleiter", PerkKind.Timed, 15f, 10f, PerkEffect.Companion, 1f),
             ("Scarecrow", "scarecrow", "Strohmann", PerkKind.Timed, 8f, 8f, PerkEffect.Scarecrow, 1f),
             ("Flamethrower", "flamethrower", "Flammenwerfer", PerkKind.Timed, 12f, 4f, PerkEffect.Flamethrower, 1f),
+            ("RocketLauncher", "rocket_launcher", "Raketenwerfer", PerkKind.Timed, 12f, 4f, PerkEffect.RocketLauncher, 1f),
         };
 
         /// <summary>Number of timed perks, i.e. the most perks that can run at once (one HUD slot each).</summary>
