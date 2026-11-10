@@ -27,6 +27,17 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
+        public void DogTracker_ShowsRoundAndDogsLeft_WithSingular_AndNotice()
+        {
+            Assert.AreEqual("Runde 6\nNoch 9 Hunde", EndlessText.DogTracker(6, 9));
+            Assert.AreEqual("Runde 6\nNoch 1 Hund", EndlessText.DogTracker(6, 1));
+            Assert.AreEqual("Runde 6\nNoch 0 Hunde", EndlessText.DogTracker(6, 0));
+            Assert.AreEqual("Runde 6\nNoch 3 Hunde\nNeue Waffe: Schrotflinte",
+                EndlessText.DogTracker(6, 3, EndlessText.NewWeapon("Schrotflinte")));
+            Assert.AreEqual("Hunderunde!", EndlessText.DogRound);
+        }
+
+        [Test]
         public void NewWeapon_NamesTheWeapon_AndJoinsTheTrackerAsThirdLine()
         {
             Assert.AreEqual("Neue Waffe: Schrotflinte", EndlessText.NewWeapon("Schrotflinte"));

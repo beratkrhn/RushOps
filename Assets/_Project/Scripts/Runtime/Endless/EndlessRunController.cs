@@ -15,7 +15,7 @@ namespace RushOps.Endless
     /// <see cref="EndlessRules"/> into one wave of the arena's zone that the <see cref="WaveDirector"/> plays from the
     /// spawn points of all four gates (ADR 0013). The cap of enemies alive at once comes from the round, not from the
     /// spawner config (F-GEG-03). Every boss round brings a boss of <see cref="EndlessBosses"/> with the health of the
-    /// round instead (F-END-05); it ends when the boss is beaten. Pause banner, mission tracker and result screen are shown by the <see cref="EndlessHud"/>.
+    /// round instead (F-END-05); it ends when the boss is beaten. A dog round has dogs only, in packs (F-END-10). Pause banner, mission tracker and result screen are shown by the <see cref="EndlessHud"/>.
     /// </summary>
     public class EndlessRunController : MonoBehaviour
     {
@@ -152,7 +152,9 @@ namespace RushOps.Endless
                 string shown = notice ? _notice : null;
                 _hud.SetTracker(_fight != null
                     ? EndlessText.BossTracker(_run.Round, shown)
-                    : EndlessText.Tracker(_run.Round, remaining, shown));
+                    : CurrentRound != null && CurrentRound.IsDogRound
+                        ? EndlessText.DogTracker(_run.Round, remaining, shown)
+                        : EndlessText.Tracker(_run.Round, remaining, shown));
             }
         }
 
@@ -160,7 +162,7 @@ namespace RushOps.Endless
         {
             CurrentRound = null;
             _hud.SetTracker(string.Empty);
-            _hud.ShowBanner(EndlessText.Round(round));
+            _hud.ShowBanner(EndlessText.Round(round), _rules.IsDogRound(round) ? EndlessText.DogRound : null);
         }
 
         private void OnRoundStarted(int round)

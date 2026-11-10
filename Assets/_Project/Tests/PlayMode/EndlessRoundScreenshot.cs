@@ -154,5 +154,37 @@ namespace RushOps.Tests.PlayMode
             yield return StoreScreenshots.Capture("Bossrunde.png", OutputDir);
             SaveGameIsolation.Reset();
         }
+
+        [UnityTest]
+        public IEnumerator Shot_DogRound_BannerAndPack()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("no graphics device (-nographics): nothing can render");
+            }
+
+            SaveGameIsolation.Reset();
+            EndlessStart.Round = 6;
+            yield return SceneManager.LoadSceneAsync("Endless_Arena", LoadSceneMode.Single);
+            yield return null;
+            var player = Object.FindAnyObjectByType<PlayerMovement>();
+            player.GetComponent<PlayerMoveInput>().enabled = false;
+            player.GetComponent<PlayerAimInput>().enabled = false;
+            yield return new WaitForSeconds(1f);
+            yield return StoreScreenshots.Capture("Hunderunde_Pause.png", OutputDir);
+
+            // After the 4 s break the round runs; as above, batch mode needs the pack put in view by hand.
+            yield return new WaitForSeconds(3.5f);
+            RushOps.Enemies.EnemyPool dogs = EnemyPools.Of(EnemyPools.Dog);
+            Vector2 at = (Vector2)player.transform.position + new Vector2(1.5f, 5.5f);
+            foreach (Vector2 offset in new[] { new Vector2(0f, 0f), new Vector2(-0.7f, 0.5f), new Vector2(0.6f, 0.7f) })
+            {
+                dogs.Spawn(at + offset);
+            }
+
+            yield return new WaitForSeconds(0.4f);
+            yield return StoreScreenshots.Capture("Hunderunde_Rudel.png", OutputDir);
+            SaveGameIsolation.Reset();
+        }
     }
 }
