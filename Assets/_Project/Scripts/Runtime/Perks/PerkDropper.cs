@@ -19,6 +19,20 @@ namespace RushOps.Perks
         [SerializeField] private FlowFieldNavigator _navigator;
 
         private PerkPool _pool;
+        private float _chanceBonus;
+
+        /// <summary>
+        /// Added to the drop chance of the config as probability, e.g. 0.03 with the perk luck upgrade of the endless run
+        /// (F-END-12); 0 by default.
+        /// </summary>
+        public float ChanceBonus
+        {
+            get => _chanceBonus;
+            set => _chanceBonus = Mathf.Max(0f, value);
+        }
+
+        /// <summary>Drop chance per death: the config's plus <see cref="ChanceBonus"/>, at most 1.</summary>
+        public float DropChance => Mathf.Min(1f, (_config != null ? _config.DropChance : 0f) + _chanceBonus);
 
         /// <summary>The weighted pool, e.g. for tests.</summary>
         public PerkPool Pool => _pool ??= CreatePool(new SystemRandomSource());
@@ -74,7 +88,7 @@ namespace RushOps.Perks
 
         private void OnEnemyDied(Enemy enemy)
         {
-            if (_config != null && Pool.TryDrop(_config.DropChance, out PerkDefinition perk))
+            if (_config != null && Pool.TryDrop(DropChance, out PerkDefinition perk))
             {
                 Drop(enemy.transform.position, perk);
             }

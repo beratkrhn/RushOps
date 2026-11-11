@@ -43,7 +43,7 @@ namespace RushOps.Rush
         public int Fill { get; private set; }
 
         /// <summary>Fill at which the meter is full.</summary>
-        public int FillTarget { get; }
+        public int FillTarget { get; private set; }
 
         /// <summary>Seconds a rush lasts.</summary>
         public float Duration { get; }
@@ -120,6 +120,32 @@ namespace RushOps.Rush
             if (IsActive)
             {
                 Stop();
+            }
+        }
+
+        /// <summary>
+        /// Changes the fill at which the meter is full (at least 1), e.g. 20 with the fast rush upgrade (F-END-12). A fill
+        /// at or above the new target makes the meter full at once; the fill never exceeds the target.
+        /// </summary>
+        public void SetFillTarget(int fillTarget)
+        {
+            fillTarget = fillTarget > 1 ? fillTarget : 1;
+            if (fillTarget == FillTarget)
+            {
+                return;
+            }
+
+            bool wasFull = Fill >= FillTarget;
+            FillTarget = fillTarget;
+            if (Fill > FillTarget)
+            {
+                Fill = FillTarget;
+            }
+
+            FillChanged?.Invoke(Fill, FillTarget);
+            if (!wasFull && !IsActive && Fill >= FillTarget)
+            {
+                Filled?.Invoke();
             }
         }
 

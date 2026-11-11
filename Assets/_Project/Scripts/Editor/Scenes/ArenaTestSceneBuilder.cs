@@ -631,7 +631,8 @@ namespace RushOps.Editor.Scenes
         /// </summary>
         internal static void BuildScene(
             string scenePath, ArenaLayout layout, bool firstInBuild, System.Action<ArenaScene> extend, string displayName,
-            Vector2Int? starScores = null, string themePath = IslandThemes.DefaultPath, bool dogs = false)
+            Vector2Int? starScores = null, string themePath = IslandThemes.DefaultPath, bool dogs = false,
+            int extraHeartSlots = 0)
         {
             // Create the scene first: NewScene unloads assets loaded before it, which would drop the references below.
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -675,7 +676,7 @@ namespace RushOps.Editor.Scenes
             PauseController pause = CreateHud(
                 LoadOrCreateConfig<HudConfig>(HudConfigPath), target.GetComponent<PlayerHealth>(), target.GetComponent<PlayerPerks>(),
                 PixelFontBuilder.Build(), out MissionTracker tracker, out ScreenFlash flash, out ScoreView scoreView,
-                out LevelResults results);
+                out LevelResults results, extraHeartSlots);
             CreateActiveWeaponIcon((RectTransform)tracker.transform.parent, target.GetComponent<PlayerWeapon>());
             LevelRestarter restarter = CreateLevelRestarter(target.GetComponent<PlayerHealth>(), results);
             FeelConfig feelConfig = LoadOrCreateConfig<FeelConfig>(FeelConfigPath);
@@ -1738,7 +1739,7 @@ namespace RushOps.Editor.Scenes
 
         private static PauseController CreateHud(
             HudConfig config, PlayerHealth player, PlayerPerks perks, Font font, out MissionTracker tracker, out ScreenFlash flash,
-            out ScoreView scoreView, out LevelResults results)
+            out ScoreView scoreView, out LevelResults results, int extraHeartSlots = 0)
         {
             var root = new GameObject("HUD", typeof(RectTransform));
             var canvas = root.AddComponent<Canvas>();
@@ -1756,7 +1757,7 @@ namespace RushOps.Editor.Scenes
             flash = CreateScreenFlash((RectTransform)root.transform);
             RectTransform safeArea = CreateUiRect("SafeArea", root.transform, Vector2.zero, Vector2.one);
             safeArea.gameObject.AddComponent<SafeAreaFitter>();
-            float heartsHeight = CreateHearts(safeArea, config, player);
+            float heartsHeight = CreateHearts(safeArea, config, player, extraHeartSlots);
             CreateActivePerks(safeArea, perks, HudMargin + heartsHeight + PerkRowGap);
             CreatePerkNameNotice(safeArea, config, perks, font);
             CreatePauseButton(safeArea, pause);
@@ -1799,8 +1800,10 @@ namespace RushOps.Editor.Scenes
             return nuke;
         }
 
-        // Returns the height of the heart row in reference units.
-        private static float CreateHearts(RectTransform parent, HudConfig config, PlayerHealth player)
+        // Returns the height of the heart rows in reference units. The hearts of the config fill the first row; extra
+        // slots (the +1 heart upgrade of the endless run, F-END-12) go into a second row below, so the row never reaches
+        // the score in the middle. Slots beyond the current maximum stay hidden.
+        private static float CreateHearts(RectTransform parent, HudConfig config, PlayerHealth player, int extraSlots = 0)
         {
             Sprite full = LoadUiSprite("Heart_Full.png");
             Sprite empty = LoadUiSprite("Heart_Empty.png");
@@ -1809,7 +1812,8 @@ namespace RushOps.Editor.Scenes
             row.pivot = topLeft;
             row.anchoredPosition = new Vector2(HudMargin, -HudMargin);
 
-            int count = player.GetComponent<PlayerMovement>().Config.MaxHearts;
+            int perRow = player.GetComponent<PlayerMovement>().Config.MaxHearts;
+            int count = perRow + Mathf.Max(0, extraSlots);
             Vector2 size = full.rect.size * HudPixelScale;
             var hearts = new Image[count];
             for (int i = 0; i < count; i++)
@@ -1817,7 +1821,8 @@ namespace RushOps.Editor.Scenes
                 RectTransform heart = CreateUiRect($"Heart_{i}", row, topLeft, topLeft);
                 heart.pivot = topLeft;
                 heart.sizeDelta = size;
-                heart.anchoredPosition = new Vector2(i * (size.x + HeartSpacing), 0f);
+                heart.anchoredPosition =
+                    new Vector2(i % perRow * (size.x + HeartSpacing), -(i / perRow) * (size.y + HeartSpacing));
                 hearts[i] = heart.gameObject.AddComponent<Image>();
                 hearts[i].sprite = full;
                 hearts[i].raycastTarget = false;
@@ -1837,7 +1842,8 @@ namespace RushOps.Editor.Scenes
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
-            return size.y;
+            int rows = (count + perRow - 1) / perRow;
+            return rows * size.y + (rows - 1) * HeartSpacing;
         }
 
         // One slot per timed perk below the hearts (F-HUD-02): a dark disc with an empty ring, the perk icon on it and

@@ -32,6 +32,7 @@ namespace RushOps.Rush
         [SerializeField] private SfxPlayer _sfx;
 
         private RushMeter _meter;
+        private int _killsReduction;
         private PlayerHealth _health;
         private PlayerDash _dash;
         private PlayerWeapon _weapon;
@@ -60,6 +61,21 @@ namespace RushOps.Rush
         public bool TryTrigger()
         {
             return isActiveAndEnabled && Meter.TryTrigger();
+        }
+
+        /// <summary>
+        /// Kills fewer the meter needs to be full, e.g. 5 with the fast rush upgrade of the endless run (F-END-12): full
+        /// at 20 instead of 25. A meter that is already past the new target is full at once.
+        /// </summary>
+        public int KillsReduction
+        {
+            get => _killsReduction;
+            set
+            {
+                _killsReduction = Mathf.Max(0, value);
+                int target = (_config != null ? _config.KillsToFill : 1) - _killsReduction;
+                Meter.SetFillTarget(target);
+            }
         }
 
         /// <summary>Fills the meter at once; for tests and the debug controls.</summary>

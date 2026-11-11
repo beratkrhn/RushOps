@@ -21,6 +21,7 @@ namespace RushOps.Loot
         private readonly List<GoldPickup> _active = new List<GoldPickup>();
         private ObjectPool<GoldPickup> _pool;
         private Action<GoldPickup> _release;
+        private float _magnetBonus;
 
         /// <summary>Raised when a coin appeared on the floor.</summary>
         public event Action<GoldPickup> Dropped;
@@ -40,6 +41,23 @@ namespace RushOps.Loot
         /// <summary>Coins currently on the floor.</summary>
         public IReadOnlyList<GoldPickup> Active => _active;
 
+        /// <summary>
+        /// Units added to the magnet range of every coin, also of those already on the floor, e.g. by the gold magnet
+        /// upgrade of the endless run (F-END-12).
+        /// </summary>
+        public float MagnetBonus
+        {
+            get => _magnetBonus;
+            set
+            {
+                _magnetBonus = Mathf.Max(0f, value);
+                for (int i = 0; i < _active.Count; i++)
+                {
+                    _active[i].MagnetBonus = _magnetBonus;
+                }
+            }
+        }
+
         /// <summary>Drops one coin at <paramref name="position"/>; null without prefab.</summary>
         public GoldPickup Spawn(Vector2 position)
         {
@@ -50,6 +68,7 @@ namespace RushOps.Loot
 
             GoldPickup coin = _pool.Get();
             coin.Spawn(position, _config, _player, _release);
+            coin.MagnetBonus = _magnetBonus;
             Dropped?.Invoke(coin);
             return coin;
         }

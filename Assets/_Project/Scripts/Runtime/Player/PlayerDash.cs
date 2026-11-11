@@ -21,6 +21,7 @@ namespace RushOps.Player
         private PlayerAim _aim;
         private bool _overriding;
         private bool _cooldownFree;
+        private float _cooldownFactor = 1f;
 
         /// <summary>Raised when a dash starts, with its direction.</summary>
         public event Action<Vector2> Dashed;
@@ -42,6 +43,26 @@ namespace RushOps.Player
 
         /// <summary>Cooldown progress for the dash button: 0 right after a dash, 1 when ready.</summary>
         public float CooldownProgress => _state.CooldownProgress;
+
+        /// <summary>
+        /// Factor on the dash cooldown from the upgrades of the endless run, e.g. 0.75 with short dash (F-END-12); 1 by
+        /// default, between 0 and 1. Applies from the next dash; duration and i-frames stay.
+        /// </summary>
+        public float CooldownFactor
+        {
+            get => _cooldownFactor;
+            set => _cooldownFactor = Mathf.Clamp01(value);
+        }
+
+        /// <summary>Cooldown the next dash starts with: the config's cooldown times <see cref="CooldownFactor"/>, 0 in the rush.</summary>
+        public float NextCooldown
+        {
+            get
+            {
+                PlayerConfig config = _movement != null ? _movement.Config : null;
+                return config != null ? RushRules.DashCooldown(_cooldownFree, config.DashCooldown * _cooldownFactor) : 0f;
+            }
+        }
 
         /// <summary>
         /// True while the dash has no cooldown, e.g. during the rush (F-RSH-04); setting it ends a running cooldown. The
@@ -73,7 +94,7 @@ namespace RushOps.Player
             Vector2 direction = PlayerDashMath.Direction(_movement.MoveInput, _aim.FacingDirection);
             if (direction == Vector2.zero
                 || !_state.TryStart(config.DashDuration, config.DashInvulnerability,
-                    RushRules.DashCooldown(_cooldownFree, config.DashCooldown)))
+                    NextCooldown))
             {
                 return false;
             }

@@ -41,9 +41,16 @@ namespace RushOps.Endless
         private string _notice;
         private float _noticeRemaining;
         private bool _shownNotice;
+        private RunUpgrades _upgrades;
 
         /// <summary>The run in progress, or null before the first <see cref="BeginRun"/>.</summary>
         public EndlessRun Run => _run;
+
+        /// <summary>
+        /// The upgrades of the running run (F-END-12); empty at the start of every run and never saved (E10). Created
+        /// on first use over the upgrades of the config.
+        /// </summary>
+        public RunUpgrades Upgrades => _upgrades ??= new RunUpgrades(_config != null ? _config.Upgrades : null);
 
         /// <summary>The rules built on the config.</summary>
         public EndlessRules Rules => _rules;
@@ -85,6 +92,8 @@ namespace RushOps.Endless
             _notice = null;
             _noticeRemaining = 0f;
             _shownNotice = false;
+            // A new run starts without upgrades (F-END-12); this also drops their extra hearts before the run reads them.
+            Upgrades.Clear();
             // Weapons of the rounds before the first one hang unlocked; the first round's own weapon unlocks with it.
             ApplyWallWeapons(firstRound - 1, false);
             // A run always starts with the pistol, whatever weapon the menu has selected (F-END-07).
@@ -246,7 +255,19 @@ namespace RushOps.Endless
 
         private void OnHealthChanged(int current, int max)
         {
-            _run?.NotifyHearts(current);
+            if (_run == null)
+            {
+                return;
+            }
+
+            if (max != _run.MaxHearts)
+            {
+                _run.NotifyMaxHearts(max, current);
+            }
+            else
+            {
+                _run.NotifyHearts(current);
+            }
         }
 
         private void Unsubscribe()
