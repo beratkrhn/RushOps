@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: Lavastrom
   _sceneName: Level_3-2
-  _twoStarScore: 2100
-  _threeStarScore: 3000
+  _twoStarScore: 19400
+  _threeStarScore: 32300
   _badgeSeconds: 420
   _completionMessage: 

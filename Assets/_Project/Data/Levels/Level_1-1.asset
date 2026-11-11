@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: Strandbad
   _sceneName: Level_1-1
-  _twoStarScore: 1150
-  _threeStarScore: 1600
+  _twoStarScore: 8450
+  _threeStarScore: 14100
   _badgeSeconds: 240
   _completionMessage: 

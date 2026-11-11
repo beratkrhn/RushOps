@@ -72,7 +72,8 @@ namespace RushOps.Editor.Scenes
                 Island = 0,
                 Slot = 2,
                 ThemePath = IslandThemes.StrandPath,
-                StarScores = new Vector2Int(1150, 1400),
+                // Proposed by StarThresholdProposer (issue #301, N33); the feel is checked on the device.
+                StarScores = new Vector2Int(4000, 6650),
                 // Target time for the badge „Blitz“ (issue #287, start value).
                 BadgeSeconds = 150f,
                 DifficultyPath = LevelDifficulties.Island1Path,
