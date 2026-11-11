@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888eeded5bb69477890c2c429787ba4d, type: 3}
+  m_Name: Skin_Elite
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
+  _id: Elite
+  _displayName: Elite
+  _idle: {fileID: 11400000, guid: 4e54aad121a4f4381844f9764463cb3c, type: 2}
+  _walk: {fileID: 11400000, guid: 2332b61df92a14e9ab7be03755a6bf17, type: 2}
+  _hit: {fileID: 11400000, guid: db7f14efdb24f46aab51ee3c72adadca, type: 2}
+  _death: {fileID: 11400000, guid: 97deadbe5610241f7a5f5c2aea0d2c05, type: 2}
+  _dash: {fileID: 11400000, guid: 23efa193306b54c53b34a385b19f2ac5, type: 2}
+  _unlockKind: 2
+  _levelId: 
+  _levelName: 
+  _milestone: 4
+  _threshold: 18

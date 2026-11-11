@@ -62,6 +62,10 @@ SKINS = {
     "Imperator": dict(dark="brown_0", mid="slate_3", cloak="white", light="cream", accent_0="orange", accent_1="yellow"),
     # Gold (issue #237): bought with gold in the skin carousel; golden clothes and cloak, bright gold armour
     "Goldrausch": dict(dark="brown_0", mid="orange", cloak="yellow", light="glow", accent_0="orange", accent_1="glow"),
+    # Abzeichen (issue #288, F-SKN-05): 9, 18 and 27 badges
+    "Spaeher": dict(dark="green_0", mid="brown_0", cloak="brown_1", light="skin_1", accent_0="green_1", accent_1="green_2"),
+    "Elite": dict(dark="outline", mid="night", cloak="slate_1", light="slate_3", accent_0="orange", accent_1="yellow"),
+    "Legende": dict(dark="navy_0", mid="blue_0", cloak="glow", light="white", accent_0="blue_1", accent_1="blue_2"),
 }
 
 PREVIEW_DIRECTIONS = ["S", "SE", "E", "N"]

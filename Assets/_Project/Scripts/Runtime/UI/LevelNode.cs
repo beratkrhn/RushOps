@@ -21,6 +21,8 @@ namespace RushOps.UI
         [Tooltip("Short name of the level under the point (decision C11).")]
         [SerializeField] private Text _name;
         [SerializeField] private Image[] _stars = System.Array.Empty<Image>();
+        [Tooltip("The level's badges under the stars (issue #288, F-UI-08): Unversehrt, Blitz, Kombo.")]
+        [SerializeField] private Image[] _badges = System.Array.Empty<Image>();
 
         /// <summary>Island of this point.</summary>
         public int Island => _island;
@@ -70,6 +72,33 @@ namespace RushOps.UI
                 if (config != null)
                 {
                     _stars[i].sprite = i < StarsShown ? config.StarFull : config.StarEmpty;
+                }
+            }
+        }
+
+        /// <summary>Badges shown as earned; none unless finished.</summary>
+        public Scoring.BadgeKind BadgesShown { get; private set; }
+
+        /// <summary>
+        /// Shows the level's badges under the stars (F-UI-08): earned ones bright, missing ones dark, all hidden unless
+        /// the level is finished.
+        /// </summary>
+        public void ShowBadges(Scoring.BadgeKind badges, Scoring.BadgeConfig config)
+        {
+            bool done = State == LevelNodeState.Done;
+            BadgesShown = done ? badges : Scoring.BadgeKind.None;
+            for (int i = 0; i < _badges.Length && i < Scoring.BadgeRules.Order.Length; i++)
+            {
+                if (_badges[i] == null)
+                {
+                    continue;
+                }
+
+                _badges[i].enabled = done;
+                if (config != null)
+                {
+                    Scoring.BadgeKind badge = Scoring.BadgeRules.Order[i];
+                    _badges[i].sprite = config.Icon(badge, Scoring.BadgeRules.Has(BadgesShown, badge));
                 }
             }
         }

@@ -16,4 +16,5 @@ MonoBehaviour:
   _sceneName: Arena_Vulkan
   _twoStarScore: 1000
   _threeStarScore: 2500
+  _badgeSeconds: 0
   _completionMessage: 

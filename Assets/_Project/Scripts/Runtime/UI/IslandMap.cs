@@ -21,6 +21,8 @@ namespace RushOps.UI
         [SerializeField] private Campaign _campaign;
         [SerializeField] private SaveGameService _save;
         [SerializeField] private IslandMapConfig _config;
+        [Tooltip("Icons of the badges under the stars (issue #288).")]
+        [SerializeField] private Scoring.BadgeConfig _badges;
         [SerializeField] private string _menuScene = "MainMenu";
 
         [Tooltip("Holds the islands; moved down to show a higher island.")]
@@ -139,7 +141,9 @@ namespace RushOps.UI
                 }
 
                 LevelNodeState state = unlocks.StateOf(node.Island, node.Level, progress);
-                node.Show(state, ProgressRules.StarsOf(progress, unlocks.LevelId(node.Island, node.Level)), _config);
+                string levelId = unlocks.LevelId(node.Island, node.Level);
+                node.Show(state, ProgressRules.StarsOf(progress, levelId), _config);
+                node.ShowBadges(ProgressRules.BadgesOf(progress, levelId), _badges);
                 LevelDefinition definition = _campaign.LevelAt(node.Island, node.Level);
                 node.ShowName(definition != null ? definition.DisplayName : null);
             }

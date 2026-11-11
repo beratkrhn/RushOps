@@ -31,6 +31,8 @@ namespace RushOps.Save
         [SerializeField] private WeaponCatalog _weapons;
         [Tooltip("The gold of the level (issue #236). Found once at start if empty, so older scenes keep working.")]
         [SerializeField] private GoldCollector _gold;
+        [Tooltip("Badges of the running try (issue #288); empty in the endless arena and test scenes.")]
+        [SerializeField] private LevelBadges _badges;
         [Tooltip("The endless run of the arena; its end is recorded as a best score (issue #211). Empty in the campaign.")]
         [SerializeField] private EndlessRunController _endless;
 
@@ -44,6 +46,22 @@ namespace RushOps.Save
 
         /// <summary>Raised after „Level geschafft!“ with the weapons the level unlocked (issue #176).</summary>
         public event Action<IReadOnlyList<WeaponDefinition>> WeaponsUnlocked;
+
+        /// <summary>
+        /// Raised after „Level geschafft!“ with all badges of the level now and the ones new with this try (issue #288).
+        /// </summary>
+        public event Action<BadgeKind, BadgeKind> BadgesRecorded;
+
+        /// <summary>All badges of the level after the last finish; none before.</summary>
+        public BadgeKind AllBadges { get; private set; }
+
+        /// <summary>The badges new with the last finish; none before.</summary>
+        public BadgeKind NewBadges { get; private set; }
+
+        /// <summary>The badges of this scene's level in the save game; none without save or level.</summary>
+        public BadgeKind SavedBadges => _save != null && _results != null && _results.Level != null
+            ? ProgressRules.BadgesOf(_save.Data.Progress, _results.Level.SceneName)
+            : BadgeKind.None;
 
         /// <summary>Raised after an endless run was recorded and saved (issue #211).</summary>
         public event Action<EndlessRecord> EndlessRecorded;
@@ -124,6 +142,12 @@ namespace RushOps.Save
             if (level != null && !string.IsNullOrEmpty(level.SceneName))
             {
                 ProgressRules.RecordCompletion(data.Progress, level.SceneName, stars, score);
+                if (_badges != null)
+                {
+                    // Before the skins: the badges count for the badge skins of the same finish (F-SKN-05).
+                    NewBadges = ProgressRules.RecordBadges(data.Progress, level.SceneName, _badges.Earned);
+                    AllBadges = ProgressRules.BadgesOf(data.Progress, level.SceneName);
+                }
             }
 
             data.Stats.LevelsCompleted++;
@@ -131,6 +155,10 @@ namespace RushOps.Save
             UnlockSkins(data);
             UnlockWeapons(data);
             _save.Save();
+            if (_badges != null)
+            {
+                BadgesRecorded?.Invoke(AllBadges, NewBadges);
+            }
         }
 
         private void OnFailed()
