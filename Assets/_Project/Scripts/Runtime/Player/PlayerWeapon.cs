@@ -30,7 +30,7 @@ namespace RushOps.Player
         private const float FallbackMuzzleDistance = 0.4f;
 
         private readonly FireRateTimer _timer = new FireRateTimer();
-        private readonly IRandomSource _random = new SystemRandomSource();
+        private IRandomSource _random = new SystemRandomSource();
         private WeaponSlots _slots;
         private PlayerAim _aim;
         private AimAssist _assist;
@@ -120,6 +120,12 @@ namespace RushOps.Player
         {
             get => _upgradeFireRateFactor;
             set => _upgradeFireRateFactor = value > 0f ? value : 1f;
+        }
+
+        /// <summary>Replaces the random source of the spread, e.g. with a stream of the daily run (F-END-13).</summary>
+        public void SetRandomSource(IRandomSource random)
+        {
+            _random = random ?? new SystemRandomSource();
         }
 
         /// <summary>

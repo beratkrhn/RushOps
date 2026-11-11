@@ -1,4 +1,5 @@
 using RushOps.Feel;
+using RushOps.Perks;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -12,6 +13,8 @@ namespace RushOps.Audio
     [RequireComponent(typeof(AudioSource))]
     public class SfxPlayer : MonoBehaviour
     {
+        private IRandomSource _random = new SystemRandomSource();
+
         [Tooltip("Mixer group the effects play through (Effekte).")]
         [SerializeField] private AudioMixerGroup _output;
 
@@ -24,6 +27,12 @@ namespace RushOps.Audio
         /// <summary>Mixer group the effects play through.</summary>
         public AudioMixerGroup Output => _output;
 
+        /// <summary>Replaces the random source of the pitch, e.g. with a stream of the daily run (F-END-13).</summary>
+        public void SetRandomSource(IRandomSource random)
+        {
+            _random = random ?? new SystemRandomSource();
+        }
+
         /// <summary>Plays <paramref name="clip"/> at <paramref name="volume"/>, with the pitch varied by up to <paramref name="pitchVariation"/>.</summary>
         public void Play(AudioClip clip, float volume, float pitchVariation)
         {
@@ -34,7 +43,7 @@ namespace RushOps.Audio
 
             AudioSource source = _sources[_next];
             _next = (_next + 1) % _sources.Length;
-            source.pitch = FeelMath.Pitch(Random.value, pitchVariation);
+            source.pitch = FeelMath.Pitch(_random.Value(), pitchVariation);
             source.PlayOneShot(clip, volume);
         }
 

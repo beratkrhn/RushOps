@@ -1,0 +1,78 @@
+using System.Collections.Generic;
+using RushOps.Endless;
+using RushOps.Save;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace RushOps.UI
+{
+    /// <summary>
+    /// The area „Endlos“ of the main menu (F-UI-02, F-END-14, N22, issue #280): „Starten“ for a normal run, „Tageslauf“
+    /// for the daily run, today's best and the best daily runs of the last 7 days (date, score, round). Refreshed from the
+    /// save game each time it opens.
+    /// </summary>
+    public class EndlessMenu : MonoBehaviour
+    {
+        [SerializeField] private SaveGameService _save;
+        [SerializeField] private GameObject _panel;
+        [SerializeField] private Text _today;
+        [Tooltip("Columns of the list of the last days: date, score, round.")]
+        [SerializeField] private Text[] _columns = System.Array.Empty<Text>();
+
+        /// <summary>True while the area shows.</summary>
+        public bool IsOpen => _panel != null && _panel.activeSelf;
+
+        /// <summary>Text of today's line, e.g. for tests.</summary>
+        public string TodayText => _today != null ? _today.text : string.Empty;
+
+        /// <summary>Text of a column of the list (0 date, 1 score, 2 round), e.g. for tests.</summary>
+        public string ColumnText(int column)
+        {
+            return column >= 0 && column < _columns.Length && _columns[column] != null ? _columns[column].text : string.Empty;
+        }
+
+        /// <summary>Shows the area with the current daily bests.</summary>
+        public void Open()
+        {
+            Refresh();
+            if (_panel != null)
+            {
+                _panel.SetActive(true);
+            }
+        }
+
+        /// <summary>Hides the area.</summary>
+        public void Close()
+        {
+            if (_panel != null)
+            {
+                _panel.SetActive(false);
+            }
+        }
+
+        /// <summary>Reads the daily bests of the save game into the texts.</summary>
+        public void Refresh()
+        {
+            DailyData data = _save != null ? _save.Data.Daily : null;
+            string today = DailySeed.Today();
+            if (_today != null)
+            {
+                _today.text = EndlessText.DailyToday(DailyRecords.Find(data, today));
+            }
+
+            List<DailyScore> days = DailyRecords.LastDays(data, today);
+            for (int i = 0; i < _columns.Length; i++)
+            {
+                if (_columns[i] != null)
+                {
+                    _columns[i].text = EndlessText.DailyColumn(days, i);
+                }
+            }
+        }
+
+        private void Awake()
+        {
+            Close();
+        }
+    }
+}

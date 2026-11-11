@@ -56,6 +56,22 @@ namespace RushOps.Save
             return new EndlessRecord(score, round, index + 1, isNewBest);
         }
 
+        /// <summary>
+        /// Counts a run that does not go into the top list, e.g. a daily run (F-END-14): the number of runs and the highest
+        /// round still count as statistics.
+        /// </summary>
+        public static void CountRun(EndlessData data, int round)
+        {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
+            data.Top ??= new List<EndlessScore>();
+            data.Runs++;
+            data.HighestRound = Math.Max(data.HighestRound, Math.Max(0, round));
+        }
+
         /// <summary>The best score of all runs; 0 without a run.</summary>
         public static int BestScore(EndlessData data)
         {

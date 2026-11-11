@@ -170,15 +170,19 @@ namespace RushOps.UI
         // Rank, „Neuer Bestwert!“ and the top 10; hidden without a recorded run (e.g. without a save game).
         private void ShowRecord(bool recorded, EndlessRecord record)
         {
+            // A daily run says whether it beat the best of its day instead of a place in the top 10 (F-END-14).
+            bool daily = recorded && _recorder.IsDailyRecord;
+            DailyRecord dailyRecord = daily ? _recorder.LastDailyRecord : default;
             if (_resultNewBest != null)
             {
-                _resultNewBest.text = EndlessText.NewBest;
-                _resultNewBest.enabled = recorded && record.IsNewBest;
+                _resultNewBest.text = daily ? EndlessText.NewDailyBest : EndlessText.NewBest;
+                _resultNewBest.enabled = daily ? dailyRecord.IsNewBest : recorded && record.IsNewBest;
             }
 
             if (_resultRank != null)
             {
-                _resultRank.text = recorded ? EndlessText.Rank(record.Rank) : string.Empty;
+                _resultRank.text = daily ? EndlessText.DailyBest(dailyRecord.BestScore)
+                    : recorded ? EndlessText.Rank(record.Rank) : string.Empty;
                 _resultRank.enabled = recorded;
             }
 

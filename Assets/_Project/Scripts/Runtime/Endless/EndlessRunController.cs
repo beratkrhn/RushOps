@@ -95,6 +95,18 @@ namespace RushOps.Endless
             return true;
         }
 
+        /// <summary>Whether the running run is the daily run (F-END-13).</summary>
+        public bool IsDaily { get; private set; }
+
+        /// <summary>Day of the running daily run as <c>yyyy-MM-dd</c>; empty for a normal run.</summary>
+        public string DailyDate { get; private set; } = string.Empty;
+
+        /// <summary>
+        /// Raised when a run begins, before its first break: the moment to seed every random source of the run
+        /// (<see cref="EndlessRunRandom"/>).
+        /// </summary>
+        public event Action<EndlessRunController> RunBegan;
+
         /// <summary>The rules built on the config.</summary>
         public EndlessRules Rules => _rules;
 
@@ -115,6 +127,15 @@ namespace RushOps.Endless
         /// hearts at this moment are the hearts of the run.
         /// </summary>
         public void BeginRun(int firstRound)
+        {
+            BeginRun(firstRound, false);
+        }
+
+        /// <summary>
+        /// Starts a new run like <see cref="BeginRun(int)"/>; with <paramref name="daily"/> it is the daily run of
+        /// <paramref name="dailyDate"/> (<c>yyyy-MM-dd</c>, today on the device clock if null, T4).
+        /// </summary>
+        public void BeginRun(int firstRound, bool daily, string dailyDate = null)
         {
             Unsubscribe();
             if (_rules == null || _rules.Config != _config)
@@ -152,6 +173,10 @@ namespace RushOps.Endless
                 weapon.Slots.Reset(_config.StartWeapon);
             }
 
+            IsDaily = daily;
+            DailyDate = daily ? dailyDate ?? DailySeed.Today() : string.Empty;
+            RunBegan?.Invoke(this);
+
             _run = new EndlessRun(_config, _player.Current, _player.Max);
             _run.PauseStarted += OnPauseStarted;
             _run.RoundStarted += OnRoundStarted;
@@ -166,7 +191,7 @@ namespace RushOps.Endless
         {
             if (_autoStart)
             {
-                BeginRun(EndlessStart.Consume());
+                BeginRun(EndlessStart.Consume(), EndlessStart.Daily);
             }
         }
 
@@ -223,7 +248,7 @@ namespace RushOps.Endless
         {
             CurrentRound = null;
             _hud.SetTracker(string.Empty);
-            _hud.ShowBanner(EndlessText.Round(round), _rules.IsDogRound(round) ? EndlessText.DogRound : null);
+            _hud.ShowBanner(EndlessText.Round(round), EndlessText.BannerSubtitle(_rules.IsDogRound(round), DailyDate));
         }
 
         private void OnRoundStarted(int round)

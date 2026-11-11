@@ -40,7 +40,8 @@ namespace RushOps.Enemies
         private int[] _candidates;
         private int _announcedCount;
         private int _announcedSlots;
-        private readonly IRandomSource _random = new SystemRandomSource();
+        private IRandomSource _pointRandom = new SystemRandomSource();
+        private IRandomSource _packRandom = new SystemRandomSource();
         private Vector2[] _packPositions = new Vector2[4];
         private Func<SpawnRequest, bool> _canPlace;
         private int _maxActiveOverride = -1;
@@ -94,6 +95,16 @@ namespace RushOps.Enemies
         public int FreeSlots => _config != null
             ? SpawnRules.FreeSlots(MaxActive, AliveCount, _announcedSlots)
             : 0;
+
+        /// <summary>
+        /// Replaces the random sources of the spawn points and of the offsets in a pack, e.g. with the streams of the
+        /// daily run (F-END-13); null keeps a fresh unseeded source.
+        /// </summary>
+        public void SetRandomSources(IRandomSource points, IRandomSource packs)
+        {
+            _pointRandom = points ?? new SystemRandomSource();
+            _packRandom = packs ?? new SystemRandomSource();
+        }
 
         /// <summary>
         /// Replaces the cap of <see cref="SpawnerConfig.MaxActive"/> from now on, e.g. with the value of an endless round
@@ -367,7 +378,7 @@ namespace RushOps.Enemies
                 _packPositions = new Vector2[request.Count];
             }
 
-            int count = PackRules.Offsets(point.Position, request.Enemy.PackSpread, request.Count, _random, _packPositions);
+            int count = PackRules.Offsets(point.Position, request.Enemy.PackSpread, request.Count, _packRandom, _packPositions);
             EnemyPool pool = PoolFor(request.Enemy);
             int spawned = 0;
             while (spawned < count)
@@ -415,13 +426,21 @@ namespace RushOps.Enemies
             }
         }
 
+        // Only whether a point is free, without a roll: the rolls follow the spawns, not the frames (F-END-13).
         private bool CanPlace(SpawnRequest request)
         {
-            return PickPoint(request.Owner) >= 0;
+            return Candidates(request.Owner) > 0;
         }
 
         // A random free and allowed spawn point of the zone, or -1.
         private int PickPoint(int owner)
+        {
+            int count = Candidates(owner);
+            return count > 0 ? SpawnRules.Pick(_candidates, count, _pointRandom.Value()) : -1;
+        }
+
+        // Fills the candidates with the free and allowed spawn points of the zone; returns their number.
+        private int Candidates(int owner)
         {
             int count = 0;
             for (int i = 0; i < _points.Length; i++)
@@ -433,8 +452,7 @@ namespace RushOps.Enemies
                 }
             }
 
-            // Random per call: CanPlace and the following pick may choose different points, both are allowed.
-            return SpawnRules.Pick(_candidates, count, UnityEngine.Random.value);
+            return count;
         }
 
         private EnemyPool PoolFor(EnemyDefinition enemy)
