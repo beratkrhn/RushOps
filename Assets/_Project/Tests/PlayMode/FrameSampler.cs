@@ -94,7 +94,7 @@ namespace RushOps.Tests.PlayMode
                 gcWorst = Math.Max(gcWorst, gc);
                 framesWithGc += gc > 0 ? 1 : 0;
                 peakTextures = Math.Max(peakTextures, textureMemory.Valid ? textureMemory.LastValue : 0);
-                long draws = drawCalls.Valid ? drawCalls.LastValue : 0;
+                long draws = DrawCalls(drawCalls);
                 drawCallsTotal += draws;
                 drawCallsWorst = Math.Max(drawCallsWorst, draws);
                 batchesTotal += batches.Valid ? batches.LastValue : 0;
@@ -144,6 +144,21 @@ namespace RushOps.Tests.PlayMode
         private static void CountCamera(ScriptableRenderContext context, Camera camera)
         {
             _camerasRendered++;
+        }
+
+        // The profiler counter adds up every render pass of the frame. The open editor sometimes renders the game
+        // twice in one frame, which doubled the count (issue #303: 238 against 119). UnityStats is the number of the
+        // Game view's Stats overlay, one pass, so the editor uses it; builds and batch mode fall back to the counter.
+        private static long DrawCalls(ProfilerRecorder profiler)
+        {
+#if UNITY_EDITOR
+            int stats = UnityEditor.UnityStats.drawCalls;
+            if (stats > 0)
+            {
+                return stats;
+            }
+#endif
+            return profiler.Valid ? profiler.LastValue : 0;
         }
 
         // Recorders of markers that did not run this frame are invalid or 0.
