@@ -16,4 +16,5 @@ MonoBehaviour:
   _sceneName: Level_3-3
   _twoStarScore: 1700
   _threeStarScore: 2300
+  _badgeSeconds: 210
   _completionMessage: Alle Inseln geschafft!

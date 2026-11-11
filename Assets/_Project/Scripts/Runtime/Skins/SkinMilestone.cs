@@ -14,5 +14,8 @@ namespace RushOps.Skins
 
         /// <summary>Highest combo multiplier reached.</summary>
         BestCombo,
+
+        /// <summary>Badges of all levels added up (issue #287, F-SKN-05).</summary>
+        TotalBadges,
     }
 }

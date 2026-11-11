@@ -16,4 +16,5 @@ MonoBehaviour:
   _sceneName: Level_2-2
   _twoStarScore: 1700
   _threeStarScore: 2400
+  _badgeSeconds: 300
   _completionMessage: 

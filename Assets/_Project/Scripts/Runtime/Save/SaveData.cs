@@ -13,7 +13,7 @@ namespace RushOps.Save
     public class SaveData
     {
         /// <summary>Format version written by this build.</summary>
-        public const int CurrentVersion = 5;
+        public const int CurrentVersion = 6;
 
         /// <summary>Format version of this save.</summary>
         public int Version = CurrentVersion;
@@ -41,5 +41,8 @@ namespace RushOps.Save
 
         /// <summary>Best daily runs of the last days (issue #276, version 5).</summary>
         public DailyData Daily = new DailyData();
+
+        /// <summary>Puzzle hints already shown (issue #287, version 6).</summary>
+        public HintsData Hints = new HintsData();
     }
 }

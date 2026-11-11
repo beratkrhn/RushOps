@@ -30,7 +30,7 @@ namespace RushOps.Editor.Scenes
             ArenaTestSceneBuilder.BuildScene(
                 blueprint.ScenePath, blueprint.Layout, false, arena => AddObjects(blueprint, arena), blueprint.DisplayName,
                 blueprint.StarScores, blueprint.ThemePath, blueprint.Dogs);
-            SetCompletionMessage(blueprint);
+            SetLevelExtras(blueprint);
             AddToCampaign(blueprint);
         }
 
@@ -445,7 +445,7 @@ namespace RushOps.Editor.Scenes
                 : null;
         }
 
-        private static void SetCompletionMessage(LevelBlueprint blueprint)
+        private static void SetLevelExtras(LevelBlueprint blueprint)
         {
             var level = AssetDatabase.LoadAssetAtPath<LevelDefinition>($"{LevelsDir}/{blueprint.SceneName}.asset");
             if (level == null)
@@ -455,6 +455,7 @@ namespace RushOps.Editor.Scenes
 
             var serialized = new SerializedObject(level);
             serialized.FindProperty("_completionMessage").stringValue = blueprint.CompletionMessage ?? string.Empty;
+            serialized.FindProperty("_badgeSeconds").floatValue = blueprint.BadgeSeconds;
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(level);
             AssetDatabase.SaveAssets();

@@ -21,6 +21,9 @@ namespace RushOps.Levels
         [Tooltip("Score needed for three stars.")]
         [SerializeField, Min(0)] private int _threeStarScore = 2500;
 
+        [Tooltip("Target time in seconds for the badge „Blitz“ (issue #287, F-SCO-04); 0 = the level has none.")]
+        [SerializeField, Min(0f)] private float _badgeSeconds;
+
         [Tooltip("Extra line on „Level geschafft!“, e.g. „Alle Inseln geschafft!“ after the last boss (C12); empty = none.")]
         [SerializeField] private string _completionMessage = "";
 
@@ -35,6 +38,9 @@ namespace RushOps.Levels
 
         /// <summary>Score needed for three stars.</summary>
         public int ThreeStarScore => _threeStarScore;
+
+        /// <summary>Target time in seconds for the badge „Blitz“; 0 if the level has none.</summary>
+        public float BadgeSeconds => _badgeSeconds;
 
         /// <summary>Extra line on the done screen; empty if none.</summary>
         public string CompletionMessage => _completionMessage ?? string.Empty;

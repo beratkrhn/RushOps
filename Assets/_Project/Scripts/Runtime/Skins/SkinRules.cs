@@ -21,6 +21,7 @@ namespace RushOps.Skins
                 SkinMilestone.TotalStars => ProgressRules.TotalStars(progress),
                 SkinMilestone.LevelsCompleted => stats?.LevelsCompleted ?? 0,
                 SkinMilestone.BestCombo => stats?.BestCombo ?? 0,
+                SkinMilestone.TotalBadges => ProgressRules.TotalBadges(progress),
                 _ => 0,
             };
         }
