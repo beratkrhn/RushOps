@@ -34,7 +34,7 @@ cli_json() {
   for _ in $(seq 1 "$RELOAD_RETRIES"); do
     unity "$@" --project-path . --json > "$out" 2>/dev/null
     rc=$?
-    if [[ $rc -ne 7 ]] && ! grep -q "No Pipeline instance found" "$out"; then
+    if [[ $rc -ne 7 ]] && ! grep -qE "No Pipeline instance found|Network error" "$out"; then
       return $rc
     fi
     sleep "$RELOAD_WAIT"
@@ -190,8 +190,24 @@ EOF
 }
 
 # A Pipeline Editor answers `editor status`; exit 7 or an error means none is reachable.
-if unity command editor status --project-path . --json > "$LOG_DIR/check-editor.json" 2>/dev/null \
-   && [[ "$(json_field "$LOG_DIR/check-editor.json" success)" == "True" ]]; then
+# An open Editor that is just reloading its domain does not answer for a few seconds: wait for it
+# instead of falling back to batch mode, which cannot run while the project is open.
+editor_answers() {
+  unity command editor status --project-path . --json > "$LOG_DIR/check-editor.json" 2>/dev/null \
+    && [[ "$(json_field "$LOG_DIR/check-editor.json" success)" == "True" ]]
+}
+editor_found=1
+if ! editor_answers; then
+  editor_found=0
+  if pgrep -f "Unity.app/Contents/MacOS/Unity -projectpath $PWD" > /dev/null 2>&1; then
+    echo "Unity-Editor ist offen, antwortet aber noch nicht; warte bis zu 2 min."
+    for _ in $(seq 1 24); do
+      sleep 5
+      if editor_answers; then editor_found=1; break; fi
+    done
+  fi
+fi
+if [[ $editor_found -eq 1 ]]; then
   echo "Offener Unity-Editor gefunden, prüfe darin."
   # A background Editor throttles its frames; auto-tick keeps PlayMode tests at full speed.
   unity command editor set_auto_tick --enable true --project-path . --json > /dev/null 2>&1
