@@ -37,6 +37,8 @@ namespace RushOps.Player
         private DirectionalSpriteAnimator _view;
         private ShotModifiers _modifiers = ShotModifiers.None;
         private float _damageFactor = 1f;
+        private float _upgradeDamageFactor = 1f;
+        private float _upgradeFireRateFactor = 1f;
         private int _shotCount;
         private bool _holstered;
 
@@ -99,8 +101,37 @@ namespace RushOps.Player
             set => _damageFactor = value > 0f ? value : 1f;
         }
 
-        /// <summary>Total damage factor: perks (<see cref="Modifiers"/>) times <see cref="DamageFactor"/>.</summary>
-        public float DamageMultiplier => _modifiers.DamageMultiplier * _damageFactor;
+        /// <summary>
+        /// Factor on every damage of the player from the upgrades of the endless run (F-END-12); 1 by default. Kept apart
+        /// from <see cref="DamageFactor"/>, which the rush sets.
+        /// </summary>
+        public float UpgradeDamageFactor
+        {
+            get => _upgradeDamageFactor;
+            set => _upgradeDamageFactor = value > 0f ? value : 1f;
+        }
+
+        /// <summary>
+        /// Factor on the fire rate from the upgrades of the endless run (F-END-12); 1 by default. Multiplies with rapid
+        /// fire.
+        /// </summary>
+        public float UpgradeFireRateFactor
+        {
+            get => _upgradeFireRateFactor;
+            set => _upgradeFireRateFactor = value > 0f ? value : 1f;
+        }
+
+        /// <summary>
+        /// Every damage factor that is not a perk: <see cref="DamageFactor"/> (rush) times
+        /// <see cref="UpgradeDamageFactor"/>. Drone and scarecrow use it, since they take no perk modifiers.
+        /// </summary>
+        public float ExtraDamageFactor => _damageFactor * _upgradeDamageFactor;
+
+        /// <summary>Total damage factor: perks (<see cref="Modifiers"/>) times <see cref="ExtraDamageFactor"/>.</summary>
+        public float DamageMultiplier => _modifiers.DamageMultiplier * ExtraDamageFactor;
+
+        /// <summary>Total fire rate factor: rapid fire (<see cref="Modifiers"/>) times <see cref="UpgradeFireRateFactor"/>.</summary>
+        public float FireRateMultiplier => _modifiers.FireRateMultiplier * _upgradeFireRateFactor;
 
         /// <summary>Shots per second of the active weapon with the current <see cref="Modifiers"/>; 0 without weapon.</summary>
         public float FireRate
@@ -108,7 +139,7 @@ namespace RushOps.Player
             get
             {
                 WeaponDefinition weapon = ActiveWeapon;
-                return weapon != null ? WeaponMath.FireRate(weapon.FireRate, _modifiers.FireRateMultiplier) : 0f;
+                return weapon != null ? WeaponMath.FireRate(weapon.FireRate, FireRateMultiplier) : 0f;
             }
         }
 

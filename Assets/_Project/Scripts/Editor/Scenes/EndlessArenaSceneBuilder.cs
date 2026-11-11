@@ -6,8 +6,10 @@ using RushOps.Editor.Combat;
 using RushOps.Editor.Endless;
 using RushOps.Endless;
 using RushOps.Levels;
+using RushOps.Loot;
 using RushOps.Perks;
 using RushOps.Player;
+using RushOps.Rush;
 using RushOps.Save;
 using RushOps.Scoring;
 using RushOps.UI;
@@ -61,8 +63,10 @@ namespace RushOps.Editor.Scenes
                     "Endless_Arena breaks the level design rules:\n" + string.Join("\n", problems));
             }
 
-            ArenaTestSceneBuilder.BuildScene(
-                ScenePath, ColosseumLayout.Layout, false, AddArena, DisplayName, null, IslandThemes.KolosseumPath, true);
+            // Slots for the hearts the +1 heart upgrade can add (F-END-12), read before the scene unloads the assets.
+            int extraHearts = RunUpgrades.MaxExtraHearts(EndlessConfigBuilder.Get().Upgrades);
+            ArenaTestSceneBuilder.BuildScene(ScenePath, ColosseumLayout.Layout, false, AddArena, DisplayName, null,
+                IslandThemes.KolosseumPath, true, extraHearts);
         }
 
         private static void AddArena(ArenaScene arena)
@@ -293,11 +297,38 @@ namespace RushOps.Editor.Scenes
             }
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            CreateUpgradeEffects(arena, controller);
 
             // Autosave at the end of a run (issue #211): the run goes into the top 10 of the save game.
             var serializedRecorder = new SerializedObject(recorder);
             serializedRecorder.FindProperty("_endless").objectReferenceValue = controller;
             serializedRecorder.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Hands the run upgrades to the player and the loot (issue #277); the key U grants upgrades in the editor.
+        private static void CreateUpgradeEffects(ArenaScene arena, EndlessRunController controller)
+        {
+            Transform player = arena.Player;
+            var effects = controller.gameObject.AddComponent<EndlessUpgradeEffects>();
+            var serialized = new SerializedObject(effects);
+            serialized.FindProperty("_controller").objectReferenceValue = controller;
+            serialized.FindProperty("_health").objectReferenceValue = player.GetComponent<PlayerHealth>();
+            serialized.FindProperty("_movement").objectReferenceValue = player.GetComponent<PlayerMovement>();
+            serialized.FindProperty("_weapon").objectReferenceValue = player.GetComponent<PlayerWeapon>();
+            serialized.FindProperty("_dash").objectReferenceValue = player.GetComponent<PlayerDash>();
+            serialized.FindProperty("_perks").objectReferenceValue = player.GetComponent<PlayerPerks>();
+            serialized.FindProperty("_superWeapon").objectReferenceValue = Object.FindAnyObjectByType<PlayerSuperWeapon>();
+            serialized.FindProperty("_drone").objectReferenceValue = Object.FindAnyObjectByType<CompanionDrone>();
+            serialized.FindProperty("_scarecrow").objectReferenceValue = Object.FindAnyObjectByType<Scarecrow>();
+            serialized.FindProperty("_rush").objectReferenceValue = Object.FindAnyObjectByType<PlayerRush>();
+            serialized.FindProperty("_perkDropper").objectReferenceValue = Object.FindAnyObjectByType<PerkDropper>();
+            serialized.FindProperty("_gold").objectReferenceValue = Object.FindAnyObjectByType<GoldPickupPool>();
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            var key = controller.gameObject.AddComponent<DebugUpgradeKey>();
+            var serializedKey = new SerializedObject(key);
+            serializedKey.FindProperty("_controller").objectReferenceValue = controller;
+            serializedKey.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // The theme draws every outer wall as ring wall; here the stands, the weapon boards, the gate openings and the

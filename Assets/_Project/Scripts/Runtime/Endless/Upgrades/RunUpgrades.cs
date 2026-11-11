@@ -82,6 +82,27 @@ namespace RushOps.Endless
         /// <summary>Number of levels taken in total.</summary>
         public int TotalLevels { get; private set; }
 
+        /// <summary>
+        /// Most hearts the upgrades of <paramref name="definitions"/> can add at their highest levels, e.g. for the number
+        /// of heart slots in the HUD.
+        /// </summary>
+        public static int MaxExtraHearts(IReadOnlyList<UpgradeDefinition> definitions)
+        {
+            double hearts = 0;
+            if (definitions != null)
+            {
+                foreach (UpgradeDefinition definition in definitions)
+                {
+                    if (definition != null && definition.Kind == UpgradeKind.ExtraHeart)
+                    {
+                        hearts += (double)definition.ValuePerLevel * definition.MaxLevel;
+                    }
+                }
+            }
+
+            return Whole(hearts);
+        }
+
         /// <summary>The upgrade with <paramref name="id"/>, or null.</summary>
         public UpgradeDefinition Find(string id)
         {

@@ -39,6 +39,7 @@ namespace RushOps.Perks
         [SerializeField] private Sprite _warningFrame;
 
         private readonly ScarecrowRules _rules = new ScarecrowRules();
+        private float _durationFactor = 1f;
         private float _age;
 
         /// <summary>True while the scarecrow stands.</summary>
@@ -52,6 +53,16 @@ namespace RushOps.Perks
 
         /// <summary>Raised when the scarecrow explodes, with its position, after the damage was dealt.</summary>
         public event Action<Vector2> Detonated;
+
+        /// <summary>
+        /// Factor on the duration of the scarecrow started from now on, e.g. 1.3 with the longer perks upgrade of the endless run
+        /// (F-END-12); 1 by default, never below 0. A running one keeps its time.
+        /// </summary>
+        public float DurationFactor
+        {
+            get => _durationFactor;
+            set => _durationFactor = Mathf.Max(0f, value);
+        }
 
         /// <summary>Places the scarecrow at <paramref name="spot"/> (or the nearest walkable cell), or moves and restarts it.</summary>
         public void Place(Vector2 spot)
@@ -73,7 +84,7 @@ namespace RushOps.Perks
 
             transform.position = position;
             _age = 0f;
-            _rules.Activate(_config.Duration);
+            _rules.Activate(_config.Duration * _durationFactor);
             if (_navigator != null)
             {
                 _navigator.SetLure(position, _config.GatherRadius);
@@ -178,7 +189,7 @@ namespace RushOps.Perks
             Refresh();
             if (_explosions != null)
             {
-                int damage = WeaponMath.ShotDamage(_config.ExplosionDamage, _weapon != null ? _weapon.DamageFactor : 1f);
+                int damage = WeaponMath.ShotDamage(_config.ExplosionDamage, _weapon != null ? _weapon.ExtraDamageFactor : 1f);
                 _explosions.ExplodeEnemiesOnly(center, _config.ExplosionRadius, damage, _config.ExplosionFeedback);
             }
 

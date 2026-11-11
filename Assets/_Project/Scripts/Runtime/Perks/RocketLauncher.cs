@@ -249,7 +249,7 @@ namespace RushOps.Perks
         }
 
         private float FireRate => _weapon != null
-            ? WeaponMath.FireRate(_config.FireRate, _weapon.Modifiers.FireRateMultiplier)
+            ? WeaponMath.FireRate(_config.FireRate, _weapon.FireRateMultiplier)
             : _config.FireRate;
 
         private Vector2 MuzzlePosition(Direction8 facing, Vector2 direction)

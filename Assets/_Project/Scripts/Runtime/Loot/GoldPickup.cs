@@ -24,6 +24,7 @@ namespace RushOps.Loot
         private Action<GoldPickup> _release;
         private int _spinOffset;
         private bool _active;
+        private float _magnetBonus;
 
         /// <summary>Raised when the player touched the coin, before it returns to the pool.</summary>
         public event Action<GoldPickup> Collected;
@@ -58,6 +59,16 @@ namespace RushOps.Loot
             Refresh();
         }
 
+        /// <summary>Units added to the magnet range of the config, e.g. by the gold magnet upgrade (F-END-12).</summary>
+        public float MagnetBonus
+        {
+            get => _magnetBonus;
+            set => _magnetBonus = Mathf.Max(0f, value);
+        }
+
+        /// <summary>Magnet range of this coin in units: the config's plus <see cref="MagnetBonus"/>.</summary>
+        public float MagnetRange => (_config != null ? _config.MagnetRange : 0f) + _magnetBonus;
+
         /// <summary>Collects the coin, as if the player touched it. False if it was already gone.</summary>
         public bool Collect()
         {
@@ -90,7 +101,7 @@ namespace RushOps.Loot
             if (_config != null && _player != null && !IsPlayerDead)
             {
                 transform.position = GoldMath.MagnetStep(
-                    transform.position, _player.position, _config.MagnetRange, _config.FlightSpeed, Time.deltaTime);
+                    transform.position, _player.position, MagnetRange, _config.FlightSpeed, Time.deltaTime);
             }
 
             Refresh();

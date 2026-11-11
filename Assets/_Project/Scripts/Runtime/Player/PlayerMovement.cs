@@ -18,6 +18,7 @@ namespace RushOps.Player
         private Vector2 _velocityOverride;
         private bool _hasVelocityOverride;
         private float _speedMultiplier = 1f;
+        private float _upgradeMultiplier = 1f;
         private float _loadMultiplier = 1f;
 
         /// <summary>Stick direction and deflection; length 1 is full speed, longer values are clamped.</summary>
@@ -44,8 +45,22 @@ namespace RushOps.Player
             set => _loadMultiplier = value > 0f ? value : 0f;
         }
 
-        /// <summary>Current walking speed at full deflection, including <see cref="SpeedMultiplier"/> and <see cref="LoadMultiplier"/>.</summary>
-        public float MoveSpeed => _config != null ? _config.MoveSpeed * _speedMultiplier * _loadMultiplier : 0f;
+        /// <summary>
+        /// Factor on the walking speed from the upgrades of the endless run, e.g. 1.1 with quick feet (F-END-12); 1 by
+        /// default, never negative. Multiplies with <see cref="SpeedMultiplier"/> and <see cref="LoadMultiplier"/>.
+        /// </summary>
+        public float UpgradeMultiplier
+        {
+            get => _upgradeMultiplier;
+            set => _upgradeMultiplier = value > 0f ? value : 0f;
+        }
+
+        /// <summary>
+        /// Current walking speed at full deflection, including <see cref="SpeedMultiplier"/>, <see cref="LoadMultiplier"/>
+        /// and <see cref="UpgradeMultiplier"/>.
+        /// </summary>
+        public float MoveSpeed =>
+            _config != null ? _config.MoveSpeed * _speedMultiplier * _loadMultiplier * _upgradeMultiplier : 0f;
 
         /// <summary>Current velocity of the player in units per second.</summary>
         public Vector2 Velocity => _body.linearVelocity;

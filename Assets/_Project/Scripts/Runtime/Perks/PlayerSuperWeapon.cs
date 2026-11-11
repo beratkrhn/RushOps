@@ -27,6 +27,7 @@ namespace RushOps.Perks
 
         private readonly SuperWeaponState _state = new SuperWeaponState();
         private PlayerWeapon _weapon;
+        private float _durationFactor = 1f;
 
         /// <summary>Raised when a super weapon came into the hands or was refreshed.</summary>
         public event Action<SuperWeaponKind> Started;
@@ -43,10 +44,20 @@ namespace RushOps.Perks
         /// <summary>Seconds left; 0 when not active.</summary>
         public float Remaining => _state.Remaining;
 
+        /// <summary>
+        /// Factor on the duration of the super weapons started from now on, e.g. 1.3 with the longer perks upgrade of the endless run
+        /// (F-END-12); 1 by default, never below 0. A running one keeps its time.
+        /// </summary>
+        public float DurationFactor
+        {
+            get => _durationFactor;
+            set => _durationFactor = Mathf.Max(0f, value);
+        }
+
         /// <summary>Takes <paramref name="kind"/> into the hands, or restarts its timer. Ignored without its config.</summary>
         public void Activate(SuperWeaponKind kind)
         {
-            float duration = Duration(kind);
+            float duration = Duration(kind) * _durationFactor;
             if (duration <= 0f)
             {
                 return;

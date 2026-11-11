@@ -30,7 +30,7 @@ namespace RushOps.Combat
         public event Action Died;
 
         /// <summary>Maximum health.</summary>
-        public int Max { get; }
+        public int Max { get; private set; }
 
         /// <summary>Current health, 0..<see cref="Max"/>.</summary>
         public int Current { get; private set; }
@@ -78,6 +78,24 @@ namespace RushOps.Combat
             Current += healed;
             Changed?.Invoke(Current, Max);
             return healed;
+        }
+
+        /// <summary>
+        /// Changes the maximum to <paramref name="max"/> (at least 1): a higher maximum heals the hearts gained, a lower
+        /// one cuts the current health down to it (e.g. +1 heart upgrade, F-END-12). Does nothing when dead.
+        /// </summary>
+        public void SetMax(int max)
+        {
+            max = max > 1 ? max : 1;
+            if (IsDead || max == Max)
+            {
+                return;
+            }
+
+            int gained = max - Max;
+            Max = max;
+            Current = gained > 0 ? Current + gained : Math.Min(Current, Max);
+            Changed?.Invoke(Current, Max);
         }
 
         /// <summary>Advances the invulnerability window by <paramref name="deltaTime"/> seconds.</summary>

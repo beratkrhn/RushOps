@@ -39,6 +39,7 @@ namespace RushOps.Perks
         [SerializeField] private AudioClip _shotClip;
 
         private readonly CompanionRules _rules = new CompanionRules();
+        private float _durationFactor = 1f;
         private readonly List<CompanionTarget> _candidates = new List<CompanionTarget>(128);
         private Transform _player;
         private float _age;
@@ -51,6 +52,16 @@ namespace RushOps.Perks
 
         /// <summary>Raised once per bullet the drone fires, with its direction.</summary>
         public event System.Action<Vector2> Fired;
+
+        /// <summary>
+        /// Factor on the duration of the drone started from now on, e.g. 1.3 with the longer perks upgrade of the endless run
+        /// (F-END-12); 1 by default, never below 0. A running one keeps its time.
+        /// </summary>
+        public float DurationFactor
+        {
+            get => _durationFactor;
+            set => _durationFactor = Mathf.Max(0f, value);
+        }
 
         /// <summary>Starts the drone next to the player, or restarts its timer if it is already there.</summary>
         public void Activate()
@@ -66,7 +77,7 @@ namespace RushOps.Perks
                 _age = 0f;
             }
 
-            _rules.Activate(_config.Duration);
+            _rules.Activate(_config.Duration * _durationFactor);
             Refresh();
         }
 
@@ -206,7 +217,7 @@ namespace RushOps.Perks
             }
 
             // The rush makes every player damage stronger, the drone's too (F-RSH-05, N17).
-            int damage = WeaponMath.ShotDamage(weapon.Damage, _weapon.DamageFactor);
+            int damage = WeaponMath.ShotDamage(weapon.Damage, _weapon.ExtraDamageFactor);
             for (int i = 0; i < shots; i++)
             {
                 _projectiles.Launch(origin, direction, weapon.ProjectileSpeed, _config.Range + 1f, _obstacles,

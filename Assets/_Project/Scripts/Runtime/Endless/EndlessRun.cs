@@ -43,7 +43,7 @@ namespace RushOps.Endless
         public int Hearts { get; private set; }
 
         /// <summary>Most hearts the player can have.</summary>
-        public int MaxHearts { get; }
+        public int MaxHearts { get; private set; }
 
         /// <summary>Seconds left of the current pause; 0 outside a pause.</summary>
         public float PauseRemaining => Phase == EndlessPhase.Pause ? Math.Max(0f, _timer) : 0f;
@@ -118,6 +118,16 @@ namespace RushOps.Endless
             RoundCleared?.Invoke(cleared, gained);
             BeginPause(cleared + 1);
             return gained;
+        }
+
+        /// <summary>
+        /// Reports a new maximum and the hearts with it, e.g. after the +1 heart upgrade (F-END-12). Hearts above the new
+        /// maximum are cut; at 0 hearts the run ends.
+        /// </summary>
+        public void NotifyMaxHearts(int maxHearts, int hearts)
+        {
+            MaxHearts = Math.Max(0, maxHearts);
+            NotifyHearts(hearts);
         }
 
         /// <summary>Reports the player's hearts, e.g. after a hit or a heart perk; at 0 the run ends.</summary>

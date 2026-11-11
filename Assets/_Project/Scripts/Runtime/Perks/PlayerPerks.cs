@@ -23,6 +23,17 @@ namespace RushOps.Perks
         private PlayerMovement _movement;
         private PlayerHealth _health;
         private PlayerWeapon _weapon;
+        private float _durationFactor = 1f;
+
+        /// <summary>
+        /// Factor on the duration of timed perks started from now on, e.g. 1.3 with the longer perks upgrade of the endless run
+        /// (F-END-12); 1 by default, never below 0. A running one keeps its time.
+        /// </summary>
+        public float DurationFactor
+        {
+            get => _durationFactor;
+            set => _durationFactor = Mathf.Max(0f, value);
+        }
 
         /// <summary>Raised when a perk was applied, also when a running perk was refreshed.</summary>
         public event Action<PerkDefinition> Applied;
@@ -71,7 +82,7 @@ namespace RushOps.Perks
                     _active.EndOtherSuperWeapons(perk.Id);
                 }
 
-                _active.Activate(perk.Id, perk.Effect, perk.Magnitude, perk.Duration);
+                _active.Activate(perk.Id, perk.Effect, perk.Magnitude, perk.Duration * _durationFactor);
                 ApplyModifiers();
             }
             else

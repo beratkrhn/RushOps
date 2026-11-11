@@ -23,6 +23,7 @@ namespace RushOps.Player
         private PlayerConfig _config;
         private PlayerDash _dash;
         private IDamageBlocker _blocker;
+        private int _extraMax;
 
         /// <summary>Raised when the hearts change, with current and maximum hearts. Also raised once on start for the HUD.</summary>
         public event Action<int, int> HealthChanged;
@@ -44,6 +45,23 @@ namespace RushOps.Player
             || IsBlocked;
 
         private bool IsBlocked => _blocker != null && _blocker.BlocksDamage;
+
+        /// <summary>
+        /// Hearts added to the maximum of the config, e.g. by the +1 heart upgrade of the endless run (F-END-12). Raising
+        /// it heals the hearts gained; lowering it cuts the current hearts down to the new maximum.
+        /// </summary>
+        public int ExtraMax
+        {
+            get => _extraMax;
+            set
+            {
+                _extraMax = Math.Max(0, value);
+                if (_health != null && _config != null)
+                {
+                    _health.SetMax(_config.MaxHearts + _extraMax);
+                }
+            }
+        }
 
         /// <summary>Removes <paramref name="hearts"/> unless the player is invulnerable or dead.</summary>
         /// <returns>True if the hit counted.</returns>
@@ -74,7 +92,7 @@ namespace RushOps.Player
                 return;
             }
 
-            _health = new Health(_config.MaxHearts, _config.HitInvulnerability);
+            _health = new Health(_config.MaxHearts + _extraMax, _config.HitInvulnerability);
             _health.Changed += OnChanged;
             _health.Died += OnDied;
         }
