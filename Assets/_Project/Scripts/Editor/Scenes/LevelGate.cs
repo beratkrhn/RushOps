@@ -35,6 +35,12 @@ namespace RushOps.Editor.Scenes
         /// <summary>Zone index from whose entry the kills count (decision P1); -1 counts from level start.</summary>
         public int CountKillsFromZone { get; set; } = -1;
 
+        /// <summary>
+        /// Zone whose waves must be beaten before the gate opens (issue #291), like a locked exit; -1 for none.
+        /// Replaces kills and puzzles.
+        /// </summary>
+        public int ClearZone { get; set; } = -1;
+
         /// <summary>Indices of the blueprint's puzzles that must be solved.</summary>
         public List<int> Puzzles { get; } = new List<int>();
 

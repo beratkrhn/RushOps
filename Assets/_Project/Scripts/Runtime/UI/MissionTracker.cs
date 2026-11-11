@@ -245,6 +245,18 @@ namespace RushOps.UI
             var group = condition as GateConditionGroup;
             var kills = group != null ? group.Find<KillGateCondition>() : condition as KillGateCondition;
             var puzzles = group != null ? group.Find<PuzzleSolvedCondition>() : condition as PuzzleSolvedCondition;
+            if (condition is ZoneClearedCondition && gate.State == GateState.Closed)
+            {
+                // A last rush before a further zone (issue #291): like a locked exit, „Alle Gegner besiegen“.
+                SetGate(gate);
+                _kills = null;
+                _puzzles = null;
+                SetProgressVisible(false);
+                _doneTime = -1f;
+                Show(MissionText.ClearZone);
+                return;
+            }
+
             if ((kills == null && puzzles == null) || gate.State != GateState.Closed)
             {
                 Puzzle loose = LoosePuzzleIn(zone);

@@ -107,9 +107,13 @@ namespace RushOps.Tests.EditMode
         {
             LevelBlueprint level = Level1_2SceneBuilder.Blueprint;
 
-            Assert.AreEqual(5, level.Zones.Count, "decision C2: as long as 1-1");
+            Assert.AreEqual(7, level.Zones.Count, "decision C2: as long as 1-1, plus the jetty and the exit (issue #291)");
             CollectionAssert.AreEquivalent(
-                new[] { LevelPuzzleKind.HoldZone, LevelPuzzleKind.TimedSwitches, LevelPuzzleKind.Transport },
+                new[]
+                {
+                    LevelPuzzleKind.HoldZone, LevelPuzzleKind.TimedSwitches, LevelPuzzleKind.Transport,
+                    LevelPuzzleKind.PressurePlate,
+                },
                 level.Puzzles.ConvertAll(p => p.Kind));
             Assert.That(level.Gates, Has.Some.Matches<LevelGate>(g => g.Kills > 0 && g.CountKillsFromZone >= 0));
         }
@@ -151,11 +155,12 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void Level2_2_HasSixZones_ASideBranch_AndAGateWithTransportAndZoneKills()
+        public void Level2_2_HasASideBranch_AWall_AndAGateWithTransportAndZoneKills()
         {
             LevelBlueprint level = Level2_2SceneBuilder.Blueprint;
 
-            Assert.AreEqual(6, level.Zones.Count, "decision C2: six zones on island 2");
+            Assert.AreEqual(8, level.Zones.Count, "decision C2: six zones on island 2, plus the wall and the exit (issue #291)");
+            Assert.That(level.Puzzles, Has.Some.Matches<LevelPuzzle>(p => p.Kind == LevelPuzzleKind.CrackedWall), "Z2, N28");
             Assert.That(level.Gates, Has.Some.Matches<LevelGate>(g => g.Vertical), "decision L3: side branch");
             Assert.That(
                 level.Gates,
@@ -207,12 +212,14 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void Level3_2_HasSixZones_AndTwoGatesWithTwoPuzzles_OnIsland3()
+        public void Level3_2_HasTwoGatesWithTwoPuzzles_APlateAndAWall_OnIsland3()
         {
             LevelBlueprint level = Level3_2SceneBuilder.Blueprint;
 
-            Assert.AreEqual(6, level.Zones.Count, "decision C2: six zones");
+            Assert.AreEqual(9, level.Zones.Count, "decision C2: six zones, plus plate, wall and exit (issue #291)");
             Assert.AreEqual(2, level.Gates.FindAll(g => g.Puzzles.Count >= 2).Count);
+            Assert.That(level.Puzzles, Has.Some.Matches<LevelPuzzle>(p => p.Kind == LevelPuzzleKind.PressurePlate), "N28");
+            Assert.That(level.Puzzles, Has.Some.Matches<LevelPuzzle>(p => p.Kind == LevelPuzzleKind.CrackedWall), "N28");
             Assert.AreEqual(LevelDifficulties.Island3Path, level.DifficultyPath, "decision C3");
             Assert.AreEqual(IslandThemes.VulkanPath, level.ThemePath);
             Assert.AreEqual(2, level.Island);
@@ -325,7 +332,7 @@ namespace RushOps.Tests.EditMode
             level.Gates[0].Kills = 0;
             level.Gates[0].Puzzles.Clear();
 
-            Assert.That(LevelBlueprintBuilder.Validate(level), Has.Some.Contains("neither kills nor puzzles"));
+            Assert.That(LevelBlueprintBuilder.Validate(level), Has.Some.Contains("neither kills, puzzles nor a zone to clear"));
         }
 
         [Test]

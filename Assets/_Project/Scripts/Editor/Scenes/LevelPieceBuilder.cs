@@ -117,6 +117,28 @@ namespace RushOps.Editor.Scenes
         /// Lets the kill gate <paramref name="gate"/> count only the kills after the player entered
         /// <paramref name="zone"/> (decision P1). Zones are created after their gates, so this is a separate step.
         /// </summary>
+        /// <summary>
+        /// Makes <paramref name="gate"/> wait until the waves of <paramref name="zone"/> are beaten (issue #291), instead of
+        /// its puzzles.
+        /// </summary>
+        public static void WaitForZoneCleared(Gate gate, Zone zone, ArenaScene arena)
+        {
+            var old = gate.GetComponent<PuzzleSolvedCondition>();
+            if (old != null)
+            {
+                Object.DestroyImmediate(old);
+            }
+
+            var condition = gate.gameObject.AddComponent<ZoneClearedCondition>();
+            var serializedCondition = new SerializedObject(condition);
+            serializedCondition.FindProperty("_zone").objectReferenceValue = zone;
+            serializedCondition.FindProperty("_director").objectReferenceValue = arena.Director;
+            serializedCondition.ApplyModifiedPropertiesWithoutUndo();
+            var serialized = new SerializedObject(gate);
+            serialized.FindProperty("_condition").objectReferenceValue = condition;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+        }
+
         public static void CountKillsFromZone(Gate gate, Zone zone)
         {
             var kills = gate.GetComponent<KillGateCondition>();

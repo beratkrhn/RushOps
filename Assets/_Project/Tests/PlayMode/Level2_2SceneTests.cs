@@ -20,21 +20,28 @@ namespace RushOps.Tests.PlayMode
             yield return null;
         }
 
+        // Finishing a level freezes the game (timeScale 0); later tests must not inherit that.
+        [TearDown]
+        public void RestoreTime()
+        {
+            Time.timeScale = 1f;
+        }
+
         [UnityTest]
-        public IEnumerator Scene_HasSixZones_FiveClosedGates_FirstZoneActive()
+        public IEnumerator Scene_HasEightZones_SevenClosedGates_FirstZoneActive()
         {
             yield return null;
 
-            Assert.AreEqual(6, Object.FindObjectsByType<Zone>(FindObjectsSortMode.None).Length);
+            Assert.AreEqual(8, Object.FindObjectsByType<Zone>(FindObjectsSortMode.None).Length);
             Gate[] gates = Object.FindObjectsByType<Gate>(FindObjectsSortMode.None);
-            Assert.AreEqual(5, gates.Length);
+            Assert.AreEqual(7, gates.Length);
             foreach (Gate gate in gates)
             {
                 Assert.AreEqual(GateState.Closed, gate.State, gate.name);
             }
 
             Assert.AreEqual(ZoneState.Active, Find<Zone>("Zone_1").State);
-            for (int i = 1; i <= 6; i++)
+            for (int i = 1; i < 8; i++)
             {
                 Zone zone = Find<Zone>($"Zone_{i}");
                 Assert.IsNotEmpty(zone.SpawnPoints, $"{zone.name} has no spawn points");
@@ -99,6 +106,26 @@ namespace RushOps.Tests.PlayMode
             Assert.AreEqual("Level_2-2", level.SceneName);
             Assert.AreEqual("U-Bahn", level.DisplayName);
             Assert.Greater(level.ThreeStarScore, level.TwoStarScore);
+        }
+
+        [UnityTest]
+        public IEnumerator NewZones_RushThenZombiePuzzle_LevelEndsAtTheExit()
+        {
+            yield return null;
+            PuzzleZoneFlow.PrepareRun();
+
+            // Issue #291: the last rush still has to be beaten, then the new zone's puzzle opens the way to the exit.
+            yield return PuzzleZoneFlow.BeatRush(6);
+            yield return PuzzleZoneFlow.SolvePuzzleZone(7);
+            yield return PuzzleZoneFlow.FinishAtExit();
+        }
+
+        [UnityTest]
+        public IEnumerator Dogs_ComeOnlyInTheNewZones()
+        {
+            yield return null;
+
+            PuzzleZoneFlow.AssertDogsOnlyIn(7);
         }
 
         private static T Find<T>(string name) where T : Component
