@@ -171,5 +171,75 @@ namespace RushOps.Endless
 
             return text.Length > 0 ? text.ToString() : NoUpgrades;
         }
+
+        /// <summary>Name of the daily run (F-END-13, N22).</summary>
+        public const string Daily = "Tageslauf";
+
+        /// <summary>Shown on the result screen when a daily run beat the best of its day.</summary>
+        public const string NewDailyBest = "Neuer Tagesbestwert!";
+
+        /// <summary>Title of the list of the last days in the endless area.</summary>
+        public const string LastDaysTitle = "Letzte 7 Tage";
+
+        /// <summary>Column headings of the list of the last days.</summary>
+        public static readonly string[] DailyHeadings = { "Datum", "Score", "Runde" };
+
+        /// <summary>
+        /// Line under „Runde X“ in the break: „Tageslauf“ with the date in a daily run, „Hunderunde!“ before a dog round,
+        /// both on two lines; null for a normal round of a normal run.
+        /// </summary>
+        public static string BannerSubtitle(bool dogRound, string dailyDate)
+        {
+            string daily = string.IsNullOrEmpty(dailyDate) ? null : $"{Daily} {Date(dailyDate)}";
+            if (daily == null)
+            {
+                return dogRound ? DogRound : null;
+            }
+
+            return dogRound ? daily + "\n" + DogRound : daily;
+        }
+
+        /// <summary>Line with the best of the day on the result screen, e.g. „Tagesbestwert: 1200“.</summary>
+        public static string DailyBest(int score)
+        {
+            return $"Tagesbestwert: {score}";
+        }
+
+        /// <summary>Today's best in the endless area, e.g. „Heute: 1200, Runde 7“, or that there is none yet.</summary>
+        public static string DailyToday(DailyScore today)
+        {
+            return today != null ? $"Heute: {today.Score}, Runde {today.Round}" : "Heute noch kein Tageslauf";
+        }
+
+        /// <summary>
+        /// One column (0 date, 1 score, 2 round) of the list of the last days, newest first, one line per day; a dash
+        /// without any day. Allocates; call when the endless area opens.
+        /// </summary>
+        public static string DailyColumn(IReadOnlyList<DailyScore> days, int column)
+        {
+            if (days == null || days.Count == 0)
+            {
+                return column == 0 ? "-" : string.Empty;
+            }
+
+            var text = new StringBuilder();
+            for (int i = 0; i < days.Count; i++)
+            {
+                if (i > 0)
+                {
+                    text.Append('\n');
+                }
+
+                DailyScore day = days[i];
+                text.Append(column switch
+                {
+                    0 => Date(day.Date),
+                    1 => day.Score.ToString(CultureInfo.InvariantCulture),
+                    _ => day.Round.ToString(CultureInfo.InvariantCulture),
+                });
+            }
+
+            return text.ToString();
+        }
     }
 }

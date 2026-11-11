@@ -35,6 +35,7 @@ namespace RushOps.UI
         public void LoadEndless(int round)
         {
             EndlessStart.Round = round;
+            EndlessStart.Daily = false;
             Time.timeScale = 1f;
             SceneManager.LoadScene(EndlessScene);
         }

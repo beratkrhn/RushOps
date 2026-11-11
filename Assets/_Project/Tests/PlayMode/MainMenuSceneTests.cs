@@ -46,7 +46,11 @@ namespace RushOps.Tests.PlayMode
         public IEnumerator Endless_OpensTheArena_WithTheRunAtRoundOne()
         {
             RushOps.Endless.EndlessStart.Round = 7;
+            RushOps.Endless.EndlessStart.Daily = true;
+            // „Endlos“ opens its area (issue #280); „Starten“ there starts a normal run.
             FindButton("EndlessButton").onClick.Invoke();
+            Assert.IsTrue(Object.FindAnyObjectByType<EndlessMenu>().IsOpen);
+            FindButton("StartButton").onClick.Invoke();
             yield return null;
             yield return null;
 
@@ -54,6 +58,7 @@ namespace RushOps.Tests.PlayMode
             var controller = Object.FindAnyObjectByType<RushOps.Endless.EndlessRunController>();
             Assert.IsNotNull(controller, "no endless run in the arena");
             Assert.AreEqual(1, controller.Run.Round, "the menu always starts at round 1");
+            Assert.IsFalse(controller.IsDaily, "„Starten“ is a normal run");
         }
 
         [Test]

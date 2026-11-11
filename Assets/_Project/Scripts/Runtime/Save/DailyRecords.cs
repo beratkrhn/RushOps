@@ -80,6 +80,31 @@ namespace RushOps.Save
             return null;
         }
 
+        /// <summary>
+        /// The best runs of the last <see cref="MaxDays"/> days up to <paramref name="today"/> (<c>yyyy-MM-dd</c>), newest
+        /// first; days without a daily run are left out. Allocates; for the endless area.
+        /// </summary>
+        public static List<DailyScore> LastDays(DailyData data, string today)
+        {
+            var days = new List<DailyScore>();
+            if (data?.Days == null || !TryParse(today, out DateTime end))
+            {
+                return days;
+            }
+
+            DateTime start = end.AddDays(-(MaxDays - 1));
+            foreach (DailyScore entry in data.Days)
+            {
+                if (entry != null && TryParse(entry.Date, out DateTime day) && day >= start && day <= end)
+                {
+                    days.Add(entry);
+                }
+            }
+
+            days.Sort((x, y) => string.CompareOrdinal(y.Date, x.Date));
+            return days;
+        }
+
         /// <summary>The best score of <paramref name="date"/>; 0 without a daily run that day.</summary>
         public static int BestScore(DailyData data, string date)
         {

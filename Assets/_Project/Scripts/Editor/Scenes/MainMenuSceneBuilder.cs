@@ -73,7 +73,7 @@ namespace RushOps.Editor.Scenes
             MenuFigure figure = CreateFigure(safeArea);
 
             CreateButton("StoryButton", safeArea, font, "Story Mode", 0, true, true, menu.StartStory);
-            CreateButton("EndlessButton", safeArea, font, "Endlos", 1, true, true, menu.StartEndless);
+            Button endlessButton = CreateButton("EndlessButton", safeArea, font, "Endlos", 1, true, true, null);
             CreateButton("SkinsButton", safeArea, font, "Spielerauswahl", 2, false, true, skins.Open);
             CreateButton("WeaponsButton", safeArea, font, "Waffenwahl", 3, false, true, weapons.Open);
             CreateButton("SettingsButton", safeArea, font, "Einstellungen", 4, false, true, settings.Open);
@@ -96,6 +96,9 @@ namespace RushOps.Editor.Scenes
             GoldBalanceView menuBalance = CreateBalance(safeArea, font, "MenuBalance");
             SkinSelectionBuilder.Create(safeArea, font, skins, figure, menuBalance);
             WeaponSelectionBuilder.Create(safeArea, font, weapons);
+            // „Endlos“ opens its area with „Starten“, „Tageslauf“ and the daily bests (issue #280).
+            EndlessMenu endless = EndlessMenuBuilder.Create(safeArea, root, font, menu);
+            UnityEventTools.AddPersistentListener(endlessButton.onClick, endless.Open);
             SettingsScreenBuilder.Create(safeArea, font, settings, audio.GetComponent<RushOps.Audio.AudioVolumes>());
             ArenaTestSceneBuilder.AddClickSounds(audio.GetComponent<RushOps.Audio.UiClickSound>());
 

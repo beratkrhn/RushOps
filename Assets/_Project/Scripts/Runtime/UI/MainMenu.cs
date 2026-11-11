@@ -36,6 +36,18 @@ namespace RushOps.UI
         public void StartEndless()
         {
             RushOps.Endless.EndlessStart.Round = 1;
+            RushOps.Endless.EndlessStart.Daily = false;
+            Load(_endlessScene);
+        }
+
+        /// <summary>
+        /// Starts the daily run in the arena (F-END-13, N22): the same start all day, its best goes into the daily list,
+        /// not into the top 10.
+        /// </summary>
+        public void StartDaily()
+        {
+            RushOps.Endless.EndlessStart.Round = 1;
+            RushOps.Endless.EndlessStart.Daily = true;
             Load(_endlessScene);
         }
 

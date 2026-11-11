@@ -299,11 +299,26 @@ namespace RushOps.Editor.Scenes
             serialized.ApplyModifiedPropertiesWithoutUndo();
             CreateUpgradeEffects(arena, controller);
             UpgradeChoiceBuilder.Create(parent, controller, pause, font);
+            CreateRunRandom(arena, controller);
 
             // Autosave at the end of a run (issue #211): the run goes into the top 10 of the save game.
             var serializedRecorder = new SerializedObject(recorder);
             serializedRecorder.FindProperty("_endless").objectReferenceValue = controller;
             serializedRecorder.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        // Seeds every random source of the arena when a run begins: the date in the daily run (issue #280).
+        private static void CreateRunRandom(ArenaScene arena, EndlessRunController controller)
+        {
+            var random = controller.gameObject.AddComponent<EndlessRunRandom>();
+            var serialized = new SerializedObject(random);
+            serialized.FindProperty("_controller").objectReferenceValue = controller;
+            serialized.FindProperty("_director").objectReferenceValue = arena.Director;
+            serialized.FindProperty("_perks").objectReferenceValue = Object.FindAnyObjectByType<PerkDropper>();
+            serialized.FindProperty("_gold").objectReferenceValue = Object.FindAnyObjectByType<GoldDropper>();
+            serialized.FindProperty("_weapon").objectReferenceValue = arena.Player.GetComponent<PlayerWeapon>();
+            serialized.FindProperty("_sfx").objectReferenceValue = arena.Sfx;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // Hands the run upgrades to the player and the loot (issues #277, #278), with the fire trail of the dash; the key U grants upgrades in the editor.

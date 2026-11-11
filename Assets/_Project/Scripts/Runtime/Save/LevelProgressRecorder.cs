@@ -54,6 +54,12 @@ namespace RushOps.Save
         /// <summary>True once an endless run was recorded in this scene.</summary>
         public bool HasEndlessRecord { get; private set; }
 
+        /// <summary>True if the last recorded run was a daily run; then <see cref="LastDailyRecord"/> holds its result.</summary>
+        public bool IsDailyRecord { get; private set; }
+
+        /// <summary>The record of the last daily run; only valid while <see cref="IsDailyRecord"/>.</summary>
+        public DailyRecord LastDailyRecord { get; private set; }
+
         /// <summary>The endless best scores of the save game; null without a save.</summary>
         public EndlessData EndlessData => _save != null ? _save.Data.Endless : null;
 
@@ -155,7 +161,21 @@ namespace RushOps.Save
             data.Endless ??= new EndlessData();
             int score = _score != null ? _score.Keeper.Score : 0;
             string date = DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
-            LastEndlessRecord = EndlessRecords.Record(data.Endless, score, round, date);
+            IsDailyRecord = _endless != null && _endless.IsDaily;
+            if (IsDailyRecord)
+            {
+                // A daily run counts as a run and for the highest round, but its best goes into the daily list, not into
+                // the top 10 (F-END-14, N22). Gold, kills and skins are saved as for every run.
+                data.Daily ??= new DailyData();
+                LastDailyRecord = DailyRecords.Record(data.Daily, score, round, _endless.DailyDate);
+                EndlessRecords.CountRun(data.Endless, round);
+                LastEndlessRecord = new EndlessRecord(Math.Max(0, score), Math.Max(0, round), 0, false);
+            }
+            else
+            {
+                LastEndlessRecord = EndlessRecords.Record(data.Endless, score, round, date);
+            }
+
             HasEndlessRecord = true;
             UnlockSkins(data);
             _save.Save();
