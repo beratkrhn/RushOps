@@ -17,7 +17,9 @@ namespace RushOps.Editor.Scenes
     /// (L1, L2, P1); mixed.</item>
     /// <item>Stellwerk (west): hold zone, the gate leads back east; brutes.</item>
     /// <item>Gleise: four timed switches between two train wagons; runners.</item>
-    /// <item>Ausgang: a last rush of all types; the exit opens once it is beaten.</item>
+    /// <item>Ausgang: a last rush of all types; the gate north opens once it is beaten.</item>
+    /// <item>Notausgang (issue #291): a cracked wall only a boomer breaks blocks the way to the exit; dog packs.</item>
+    /// <item>Treppe: the exit.</item>
     /// </list>
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.Level2_2SceneBuilder.Build</c>
     /// </summary>
@@ -27,7 +29,7 @@ namespace RushOps.Editor.Scenes
 
         // The side lane takes columns 1..15, column 16 divides it from the main lane in columns 17..38.
         private const int Width = 40;
-        private const int Height = 110;
+        private const int Height = 138;
         private const int SideLeft = 1;
         private const int SideRight = 15;
         private const int SideColumn = 16;
@@ -45,6 +47,10 @@ namespace RushOps.Editor.Scenes
         private const int StellwerkGateY = 66;
         private const int GleiseRow = 89;
         private const int GleiseGateX = 32;
+        // Issue #291: the last rush ends at a gate, then the emergency exit with its cracked wall, then the stairs.
+        private const int RushTopRow = 109;
+        private const int WallRow = 128;
+        private const int NewGateX = 26;
 
         // Main lane between the platform and the tracks: closed, the way runs through the side lane.
         private const int MainSplitRow = 53;
@@ -84,7 +90,9 @@ namespace RushOps.Editor.Scenes
             new RectInt(SideLeft, SideBottomRow + 1, SideRight, TunnelRow - SideBottomRow - 1),
             new RectInt(SideLeft, TunnelRow + 1, SideRight, SideTopRow - TunnelRow - 1),
             new RectInt(MainLeft, MainSplitRow + 1, MainRight - MainLeft + 1, GleiseRow - MainSplitRow - 1),
-            new RectInt(MainLeft, GleiseRow + 1, MainRight - MainLeft + 1, Height - 2 - GleiseRow),
+            new RectInt(MainLeft, GleiseRow + 1, MainRight - MainLeft + 1, RushTopRow - GleiseRow - 1),
+            new RectInt(MainLeft, RushTopRow + 1, MainRight - MainLeft + 1, WallRow - RushTopRow - 1),
+            new RectInt(MainLeft, WallRow + 1, MainRight - MainLeft + 1, Height - 2 - WallRow),
         };
 
         private static readonly Vector2Int[][] ZoneSpawnCells =
@@ -95,6 +103,8 @@ namespace RushOps.Editor.Scenes
             new[] { new Vector2Int(2, 84), new Vector2Int(14, 84), new Vector2Int(8, 85), new Vector2Int(2, 70), new Vector2Int(14, 76) },
             new[] { new Vector2Int(37, 56), new Vector2Int(18, 56), new Vector2Int(37, 87), new Vector2Int(18, 87), new Vector2Int(29, 87) },
             new[] { new Vector2Int(18, 107), new Vector2Int(37, 107), new Vector2Int(18, 99), new Vector2Int(37, 98) },
+            new[] { new Vector2Int(18, 125), new Vector2Int(37, 125), new Vector2Int(18, 115), new Vector2Int(37, 117) },
+            new[] { new Vector2Int(18, 134), new Vector2Int(37, 134) },
         };
 
         private static readonly RectInt[] Obstacles =
@@ -125,6 +135,9 @@ namespace RushOps.Editor.Scenes
             // Zone 6: crates in front of the stairs.
             new RectInt(20, 96, 3, 2),
             new RectInt(33, 101, 2, 2),
+            // Zone 7: crates in the emergency exit corridor.
+            new RectInt(20, 119, 3, 2),
+            new RectInt(33, 113, 2, 2),
         };
 
         internal static readonly LevelBlueprint Blueprint = CreateBlueprint();
@@ -148,12 +161,13 @@ namespace RushOps.Editor.Scenes
                 Island = 1,
                 Slot = 1,
                 ThemePath = IslandThemes.StadtPath,
-                StarScores = new Vector2Int(1700, 2400),
+                StarScores = new Vector2Int(2050, 2900),
                 // Target time for the badge „Blitz“ (issue #287, start value).
-                BadgeSeconds = 300f,
+                BadgeSeconds = 360f,
                 DifficultyPath = LevelDifficulties.Island2Path,
                 ExitCenter = new Vector2(27f, Height - 2.25f),
-                ExitLockZone = 5,
+                // The emergency exit has zombie dogs (A4, F-GEG-07); only its waves send them.
+                Dogs = true,
             };
             level.Walls.AddRange(Obstacles);
 
@@ -165,7 +179,9 @@ namespace RushOps.Editor.Scenes
             int stellwerk = level.AddVerticalDivider(
                 "Gate_4", SideColumn, TunnelRow, SideTopRow - 1, StellwerkGateY, GateWidth);
             int gleise = level.AddHorizontalDivider("Gate_5", GleiseRow, MainLeft, MainRight, GleiseGateX, GateWidth);
-            int[] exits = { halle, bahnsteig, tunnel, stellwerk, gleise, -1 };
+            int rush = level.AddHorizontalDivider("Gate_6", RushTopRow, MainLeft, MainRight, NewGateX, GateWidth);
+            int wallGate = level.AddHorizontalDivider("Gate_7", WallRow, MainLeft, MainRight, NewGateX, GateWidth);
+            int[] exits = { halle, bahnsteig, tunnel, stellwerk, gleise, rush, wallGate, -1 };
 
             LevelWaves[] waves = CreateWaves();
             for (int i = 0; i < ZoneAreas.Length; i++)
@@ -186,6 +202,10 @@ namespace RushOps.Editor.Scenes
             level.Gates[tunnel].CountKillsFromZone = 2;
             level.Gates[stellwerk].Puzzles.Add(hold);
             level.Gates[gleise].Puzzles.Add(gleiseSwitches);
+            // Issue #291: the last rush must still be beaten, then a boomer has to break the wall before the exit.
+            level.Gates[rush].ClearZone = 5;
+            int wall = level.AddPuzzle(LevelPuzzle.CrackedWall("CrackedWall_Zone_7", 6, wallGate, level.Gates[wallGate].Center));
+            level.Gates[wallGate].Puzzles.Add(wall);
             // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
             // Tunnel, the western side branch, beside the generator.
             level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(5, 36), Combat.WeaponCatalogBuilder.AssaultRiflePath));
@@ -244,6 +264,15 @@ namespace RushOps.Editor.Scenes
                         new Wave(new WaveEntry(e.Walker, 4), new WaveEntry(e.Runner, 5), new WaveEntry(e.Brute, 2), new WaveEntry(e.Boomer, 1)),
                     },
                     0.5f, 2f, AfterLastWave.End)),
+                // Emergency exit (issue #291): dog packs with walkers; the boomers for the wall come from the wall itself.
+                new LevelWaves(WavesPrefix + "Zone7.asset", (w, e) => w.Configure(
+                    new[]
+                    {
+                        new Wave(new WaveEntry(e.Walker, 3), new WaveEntry(e.Dog, e.Dog.PackSize)),
+                        new Wave(new WaveEntry(e.Walker, 3), new WaveEntry(e.Runner, 3), new WaveEntry(e.Dog, e.Dog.PackSize)),
+                    },
+                    0.8f, 6f, AfterLastWave.RepeatLast)),
+                null,
             };
         }
     }

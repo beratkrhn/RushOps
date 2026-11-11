@@ -15,7 +15,10 @@ namespace RushOps.Editor.Scenes
     /// <item>Schmelzkessel: generator and two energy cells while a kill gate counts from entering the zone; mixed.</item>
     /// <item>Glutbrücke: four timed switches; runners.</item>
     /// <item>Magmakammer: hold zone <b>and</b> a second generator with cells at one gate; mixed.</item>
-    /// <item>Lavaufstieg: a last rush of all types; the exit opens once it is beaten.</item>
+    /// <item>Lavaufstieg: a last rush of all types; the gate north opens once it is beaten.</item>
+    /// <item>Druckkammer (issue #291): a pressure plate only a brute pushes down; dog packs.</item>
+    /// <item>Schlackewand (issue #291): a cracked wall only a boomer breaks; dog packs.</item>
+    /// <item>Gipfel: the exit.</item>
     /// </list>
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.Level3_2SceneBuilder.Build</c>
     /// </summary>
@@ -24,12 +27,12 @@ namespace RushOps.Editor.Scenes
         private const string WavesPrefix = "Level_3-2_";
 
         private const int Width = 28;
-        private const int Height = 134;
+        private const int Height = 174;
         private const int GateWidth = 4;
-        private static readonly int[] DividerRows = { 22, 44, 66, 88, 112 };
+        private static readonly int[] DividerRows = { 22, 44, 66, 88, 112, 133, 151, 165 };
 
         // First cell of each gate: they alternate between the east and the west side.
-        private static readonly int[] GateXs = { 21, 3, 21, 3, 12 };
+        private static readonly int[] GateXs = { 21, 3, 21, 3, 12, 12, 3, 12 };
         private static readonly Vector2Int StartCell = new Vector2Int(14, 3);
 
         private const int AscheKills = 18;
@@ -55,6 +58,9 @@ namespace RushOps.Editor.Scenes
         private static readonly Vector2[] KammerCells = { new Vector2(23.5f, 100.5f), new Vector2(5.5f, 104.5f) };
         private const int RequiredCells = 2;
 
+        // Zones 7 and 8 (issue #291): the plate mid-field, then the cracked wall in the last gate.
+        private static readonly Vector2 PlateCenter = new Vector2(14f, 142f);
+
         private static readonly RectInt[] Obstacles =
         {
             // Zone 1: ash dunes.
@@ -77,6 +83,12 @@ namespace RushOps.Editor.Scenes
             new RectInt(6, 118, 3, 2),
             new RectInt(19, 118, 3, 2),
             new RectInt(17, 124, 4, 2),
+            // Zone 7: basalt blocks, clear of the plate.
+            new RectInt(6, 138, 3, 2),
+            new RectInt(19, 146, 3, 2),
+            // Zone 8: slag heaps at the sides, the way from the entry to the wall stays in sight.
+            new RectInt(19, 155, 3, 2),
+            new RectInt(6, 160, 3, 2),
         };
 
         internal static readonly LevelBlueprint Blueprint = CreateBlueprint();
@@ -100,12 +112,13 @@ namespace RushOps.Editor.Scenes
                 Island = 2,
                 Slot = 1,
                 ThemePath = IslandThemes.VulkanPath,
-                StarScores = new Vector2Int(2100, 3000),
+                StarScores = new Vector2Int(2600, 3700),
                 // Target time for the badge „Blitz“ (issue #287, start value).
-                BadgeSeconds = 330f,
+                BadgeSeconds = 420f,
                 DifficultyPath = LevelDifficulties.Island3Path,
                 ExitCenter = new Vector2(14f, Height - 2.25f),
-                ExitLockZone = 5,
+                // The two new zones have zombie dogs (A4, F-GEG-07); only their waves send them.
+                Dogs = true,
             };
             level.Walls.AddRange(Obstacles);
 
@@ -122,8 +135,9 @@ namespace RushOps.Editor.Scenes
             {
                 int top = i < gates.Length ? DividerRows[i] : Height - 2;
                 var area = new RectInt(1, bottom, Width - 2, top - bottom + 1);
-                level.AddZone(new LevelZone(
-                    $"Zone_{i + 1}", area, SpawnCells(bottom, top), waves[i], i < gates.Length ? gates[i] : -1));
+                // The exit zone is too short for the usual spawn points at its entry side.
+                Vector2Int[] spawns = i < gates.Length ? SpawnCells(bottom, top) : new[] { new Vector2Int(2, top - 2), new Vector2Int(25, top - 2) };
+                level.AddZone(new LevelZone($"Zone_{i + 1}", area, spawns, waves[i], i < gates.Length ? gates[i] : -1));
                 bottom = top + 1;
             }
 
@@ -145,6 +159,12 @@ namespace RushOps.Editor.Scenes
             level.Gates[gates[3]].Puzzles.Add(bruecke);
             level.Gates[gates[4]].Puzzles.Add(kammerHold);
             level.Gates[gates[4]].Puzzles.Add(kammer);
+            // Issue #291: the last rush must still be beaten, then a brute for the plate and a boomer for the wall.
+            level.Gates[gates[5]].ClearZone = 5;
+            int plate = level.AddPuzzle(LevelPuzzle.PressurePlate("PressurePlate_Zone_7", 6, PlateCenter));
+            level.Gates[gates[6]].Puzzles.Add(plate);
+            int wall = level.AddPuzzle(LevelPuzzle.CrackedWall("CrackedWall_Zone_8", 7, gates[7], level.Gates[gates[7]].Center));
+            level.Gates[gates[7]].Puzzles.Add(wall);
             // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
             // Zone 3 Schmelzkessel: on the ridge between generator and cells.
             level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(16, 56), Combat.WeaponCatalogBuilder.DualPistolsPath));
@@ -212,6 +232,23 @@ namespace RushOps.Editor.Scenes
                         new Wave(new WaveEntry(e.Runner, 8), new WaveEntry(e.Brute, 3), new WaveEntry(e.Boomer, 4)),
                     },
                     0.5f, 2f, AfterLastWave.End)),
+                // Pressure chamber (issue #291): dog packs with runners; the brutes come from the plate itself.
+                new LevelWaves(WavesPrefix + "Zone7.asset", (w, e) => w.Configure(
+                    new[]
+                    {
+                        new Wave(new WaveEntry(e.Runner, 3), new WaveEntry(e.Dog, e.Dog.PackSize)),
+                        new Wave(new WaveEntry(e.Walker, 3), new WaveEntry(e.Runner, 3), new WaveEntry(e.Dog, e.Dog.PackSize)),
+                    },
+                    0.7f, 5f, AfterLastWave.RepeatLast)),
+                // Slag wall (issue #291): dog packs with walkers; the boomers come from the wall itself.
+                new LevelWaves(WavesPrefix + "Zone8.asset", (w, e) => w.Configure(
+                    new[]
+                    {
+                        new Wave(new WaveEntry(e.Walker, 3), new WaveEntry(e.Dog, e.Dog.PackSize)),
+                        new Wave(new WaveEntry(e.Walker, 3), new WaveEntry(e.Runner, 3), new WaveEntry(e.Dog, e.Dog.PackSize)),
+                    },
+                    0.7f, 5f, AfterLastWave.RepeatLast)),
+                null,
             };
         }
     }

@@ -93,9 +93,9 @@ namespace RushOps.Editor.Scenes
                     problems.Add($"Gate {gate.Name} is {gate.Length} cells wide, at least {size} needed");
                 }
 
-                if (gate.Kills <= 0 && gate.Puzzles.Count == 0 && ZoneLeavingBy(blueprint, g) >= 0)
+                if (gate.Kills <= 0 && gate.Puzzles.Count == 0 && gate.ClearZone < 0 && ZoneLeavingBy(blueprint, g) >= 0)
                 {
-                    problems.Add($"Gate {gate.Name} has neither kills nor puzzles");
+                    problems.Add($"Gate {gate.Name} has neither kills, puzzles nor a zone to clear");
                 }
 
                 foreach (int puzzle in gate.Puzzles)
@@ -104,6 +104,11 @@ namespace RushOps.Editor.Scenes
                     {
                         problems.Add($"Gate {gate.Name}: puzzle {puzzle} does not exist");
                     }
+                }
+
+                if (gate.ClearZone >= blueprint.Zones.Count || (gate.ClearZone >= 0 && (gate.Kills > 0 || gate.Puzzles.Count > 0)))
+                {
+                    problems.Add($"Gate {gate.Name}: zone {gate.ClearZone} to clear does not exist or mixes with kills or puzzles");
                 }
 
                 if (gate.CountKillsFromZone >= blueprint.Zones.Count)
@@ -360,6 +365,11 @@ namespace RushOps.Editor.Scenes
 
             for (int i = 0; i < gates.Length; i++)
             {
+                if (blueprint.Gates[i].ClearZone >= 0)
+                {
+                    LevelPieceBuilder.WaitForZoneCleared(gates[i], zones[blueprint.Gates[i].ClearZone], arena);
+                }
+
                 if (blueprint.Gates[i].Kills > 0 && blueprint.Gates[i].CountKillsFromZone >= 0)
                 {
                     LevelPieceBuilder.CountKillsFromZone(gates[i], zones[blueprint.Gates[i].CountKillsFromZone]);

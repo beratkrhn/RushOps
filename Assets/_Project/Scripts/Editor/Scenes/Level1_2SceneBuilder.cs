@@ -14,7 +14,9 @@ namespace RushOps.Editor.Scenes
     /// <item>Kioske: four timed switches on two levels split by a long wall; boomers.</item>
     /// <item>Strandbar: kill gate that counts from entering the zone (decision P1); runners.</item>
     /// <item>Seebrücke: two energy cells behind a pier wall, carried to the generator; brutes.</item>
-    /// <item>Hafen: a last rush of all types; the exit opens once it is beaten.</item>
+    /// <item>Hafen: a last rush of all types; the gate north opens once it is beaten.</item>
+    /// <item>Bootssteg (issue #291): a pressure plate only a brute pushes down opens the gate to the exit; dog packs.</item>
+    /// <item>Anleger: the exit.</item>
     /// </list>
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.Level1_2SceneBuilder.Build</c>
     /// </summary>
@@ -23,13 +25,13 @@ namespace RushOps.Editor.Scenes
         private const string WavesPrefix = "Level_1-2_";
 
         private const int Width = 24;
-        private const int Height = 120;
+        private const int Height = 150;
         private const int GateWidth = 4;
         private static readonly Vector2Int StartCell = new Vector2Int(12, 3);
 
         // Rows of the walls between the zones and the first column of their gates; the gates change sides.
-        private static readonly int[] DividerRows = { 24, 52, 76, 102 };
-        private static readonly int[] GateColumns = { 10, 3, 17, 10 };
+        private static readonly int[] DividerRows = { 24, 52, 76, 102, 119, 140 };
+        private static readonly int[] GateColumns = { 10, 3, 17, 10, 10, 10 };
 
         // Kills after entering zone 3 that open its gate.
         private const int StrandbarKills = 18;
@@ -48,6 +50,9 @@ namespace RushOps.Editor.Scenes
         private static readonly Vector2[] CellPositions = { new Vector2(3.5f, 96.5f), new Vector2(20.5f, 97.5f) };
         private const int RequiredCells = 2;
 
+        // Zone 6 (issue #291): the plate in the open middle of the jetty, in sight of the entry.
+        private static readonly Vector2 PlateCenter = new Vector2(12f, 130f);
+
         private static readonly Vector2Int[][] ZoneSpawnCells =
         {
             new[] { new Vector2Int(2, 22), new Vector2Int(21, 22), new Vector2Int(12, 21), new Vector2Int(2, 12), new Vector2Int(21, 12) },
@@ -55,6 +60,8 @@ namespace RushOps.Editor.Scenes
             new[] { new Vector2Int(2, 74), new Vector2Int(21, 74), new Vector2Int(12, 73), new Vector2Int(2, 62), new Vector2Int(21, 65) },
             new[] { new Vector2Int(2, 99), new Vector2Int(21, 100), new Vector2Int(12, 99), new Vector2Int(2, 88), new Vector2Int(21, 90) },
             new[] { new Vector2Int(2, 116), new Vector2Int(21, 116), new Vector2Int(2, 111), new Vector2Int(21, 111) },
+            new[] { new Vector2Int(2, 138), new Vector2Int(21, 138), new Vector2Int(2, 129), new Vector2Int(21, 129) },
+            new[] { new Vector2Int(2, 146), new Vector2Int(21, 146) },
         };
 
         private static readonly RectInt[] Obstacles =
@@ -79,6 +86,9 @@ namespace RushOps.Editor.Scenes
             // Zone 5: two crates in front of the exit.
             new RectInt(5, 108, 3, 2),
             new RectInt(16, 108, 3, 2),
+            // Zone 6: bollards on the jetty, clear of the plate.
+            new RectInt(4, 124, 3, 2),
+            new RectInt(17, 134, 3, 2),
         };
 
         internal static readonly LevelBlueprint Blueprint = CreateBlueprint();
@@ -102,12 +112,13 @@ namespace RushOps.Editor.Scenes
                 Island = 0,
                 Slot = 1,
                 ThemePath = IslandThemes.StrandPath,
-                StarScores = new Vector2Int(1450, 2000),
+                StarScores = new Vector2Int(1800, 2500),
                 // Target time for the badge „Blitz“ (issue #287, start value).
-                BadgeSeconds = 270f,
+                BadgeSeconds = 330f,
                 DifficultyPath = LevelDifficulties.Island1Path,
                 ExitCenter = new Vector2(12f, Height - 2.25f),
-                ExitLockZone = 4,
+                // The jetty has zombie dogs (A4, F-GEG-07); only its waves send them.
+                Dogs = true,
             };
             level.Walls.AddRange(Obstacles);
 
@@ -137,6 +148,10 @@ namespace RushOps.Editor.Scenes
             level.Gates[gates[2]].Kills = StrandbarKills;
             level.Gates[gates[2]].CountKillsFromZone = 2;
             level.Gates[gates[3]].Puzzles.Add(transport);
+            // Issue #291: the last rush must still be beaten, then the jetty's plate opens the way to the exit.
+            level.Gates[gates[4]].ClearZone = 4;
+            int plate = level.AddPuzzle(LevelPuzzle.PressurePlate("PressurePlate_Zone_6", 5, PlateCenter));
+            level.Gates[gates[5]].Puzzles.Add(plate);
             // Wall weapons (issue #177): the island's new weapon at least once before its boss unlocks it.
             // Zone 3 Strandbar: on the bar counter.
             level.WallWeapons.Add(new LevelWallWeapon(new Vector2Int(12, 62), Combat.WeaponCatalogBuilder.ShotgunPath));
@@ -197,6 +212,15 @@ namespace RushOps.Editor.Scenes
                         new Wave(new WaveEntry(e.Walker, 4), new WaveEntry(e.Runner, 4), new WaveEntry(e.Brute, 1), new WaveEntry(e.Boomer, 2)),
                     },
                     0.5f, 2f, AfterLastWave.End)),
+                // Jetty (issue #291): dog packs with walkers; the brutes for the plate come from the plate itself.
+                new LevelWaves(WavesPrefix + "Zone6.asset", (w, e) => w.Configure(
+                    new[]
+                    {
+                        new Wave(new WaveEntry(e.Walker, 3), new WaveEntry(e.Dog, e.Dog.PackSize)),
+                        new Wave(new WaveEntry(e.Walker, 3), new WaveEntry(e.Runner, 2), new WaveEntry(e.Dog, e.Dog.PackSize)),
+                    },
+                    0.8f, 6f, AfterLastWave.RepeatLast)),
+                null,
             };
         }
     }
