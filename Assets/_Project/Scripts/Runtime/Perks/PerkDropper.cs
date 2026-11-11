@@ -20,6 +20,7 @@ namespace RushOps.Perks
 
         private PerkPool _pool;
         private float _chanceBonus;
+        private PerkEffect? _excluded;
 
         /// <summary>
         /// Added to the drop chance of the config as probability, e.g. 0.03 with the perk luck upgrade of the endless run
@@ -33,6 +34,17 @@ namespace RushOps.Perks
 
         /// <summary>Drop chance per death: the config's plus <see cref="ChanceBonus"/>, at most 1.</summary>
         public float DropChance => Mathf.Min(1f, (_config != null ? _config.DropChance : 0f) + _chanceBonus);
+
+        /// <summary>A perk effect that does not drop right now, e.g. the companion during the permanent drone; null for none.</summary>
+        public PerkEffect? Excluded
+        {
+            get => _excluded;
+            set
+            {
+                _excluded = value;
+                Pool.Excluded = value;
+            }
+        }
 
         /// <summary>The weighted pool, e.g. for tests.</summary>
         public PerkPool Pool => _pool ??= CreatePool(new SystemRandomSource());
@@ -96,7 +108,7 @@ namespace RushOps.Perks
 
         private PerkPool CreatePool(IRandomSource random)
         {
-            return new PerkPool(_config != null ? _config.Perks : null, random);
+            return new PerkPool(_config != null ? _config.Perks : null, random) { Excluded = _excluded };
         }
     }
 }

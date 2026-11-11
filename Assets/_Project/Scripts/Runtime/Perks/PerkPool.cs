@@ -11,6 +11,7 @@ namespace RushOps.Perks
     {
         private readonly IReadOnlyList<PerkDefinition> _perks;
         private readonly IRandomSource _random;
+        private PerkEffect? _excluded;
 
         /// <summary>Pool over <paramref name="perks"/> (null entries are skipped) rolling with <paramref name="random"/>.</summary>
         public PerkPool(IReadOnlyList<PerkDefinition> perks, IRandomSource random)
@@ -23,8 +24,28 @@ namespace RushOps.Perks
             }
         }
 
-        /// <summary>Sum of all positive weights; 0 if nothing can drop.</summary>
-        public float TotalWeight { get; }
+        /// <summary>Sum of all positive weights of the perks that can drop; 0 if nothing can drop.</summary>
+        public float TotalWeight { get; private set; }
+
+        /// <summary>
+        /// A perk effect that does not drop right now, e.g. the companion while the permanent drone flies (F-END-12); null
+        /// for none. The other perks keep their weights, so their share grows.
+        /// </summary>
+        public PerkEffect? Excluded
+        {
+            get => _excluded;
+            set
+            {
+                _excluded = value;
+                float total = 0f;
+                for (int i = 0; i < _perks.Count; i++)
+                {
+                    total += WeightOf(_perks[i]);
+                }
+
+                TotalWeight = total;
+            }
+        }
 
         /// <summary>
         /// Rolls the drop chance (0..1) and, on success, picks a perk. False if the roll failed or no perk can drop.
@@ -81,9 +102,14 @@ namespace RushOps.Perks
             return last;
         }
 
-        private static float WeightOf(PerkDefinition perk)
+        private float WeightOf(PerkDefinition perk)
         {
-            return perk != null && perk.Weight > 0f ? perk.Weight : 0f;
+            if (perk == null || perk.Weight <= 0f || (_excluded.HasValue && perk.Effect == _excluded.Value))
+            {
+                return 0f;
+            }
+
+            return perk.Weight;
         }
     }
 }

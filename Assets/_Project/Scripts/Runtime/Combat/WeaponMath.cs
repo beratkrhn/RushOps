@@ -123,5 +123,19 @@ namespace RushOps.Combat
 
             return modifiers.DamageMultiplier > 1f ? ShotLook.DoubleDamage : ShotLook.Normal;
         }
+
+        /// <summary>
+        /// Direction of a shot after it bounced off a wall with <paramref name="normal"/> (bounce upgrade, F-END-12): the
+        /// angle of reflection equals the angle of incidence. Returns the direction unchanged for a zero normal.
+        /// </summary>
+        public static Vector2 Bounce(Vector2 direction, Vector2 normal)
+        {
+            if (normal.sqrMagnitude < 1e-8f)
+            {
+                return direction;
+            }
+
+            return Vector2.Reflect(direction, normal.normalized).normalized;
+        }
     }
 }

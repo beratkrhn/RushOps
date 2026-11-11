@@ -305,7 +305,7 @@ namespace RushOps.Editor.Scenes
             serializedRecorder.ApplyModifiedPropertiesWithoutUndo();
         }
 
-        // Hands the run upgrades to the player and the loot (issue #277); the key U grants upgrades in the editor.
+        // Hands the run upgrades to the player and the loot (issues #277, #278), with the fire trail of the dash; the key U grants upgrades in the editor.
         private static void CreateUpgradeEffects(ArenaScene arena, EndlessRunController controller)
         {
             Transform player = arena.Player;
@@ -323,6 +323,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_rush").objectReferenceValue = Object.FindAnyObjectByType<PlayerRush>();
             serialized.FindProperty("_perkDropper").objectReferenceValue = Object.FindAnyObjectByType<PerkDropper>();
             serialized.FindProperty("_gold").objectReferenceValue = Object.FindAnyObjectByType<GoldPickupPool>();
+            serialized.FindProperty("_fireTrail").objectReferenceValue = FireTrailBuilder.Create(player, arena.Sfx);
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             var key = controller.gameObject.AddComponent<DebugUpgradeKey>();

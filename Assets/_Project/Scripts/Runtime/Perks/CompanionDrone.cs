@@ -81,6 +81,42 @@ namespace RushOps.Perks
             Refresh();
         }
 
+        /// <summary>
+        /// Whether the drone stays for the rest of the run (permanent companion upgrade, F-END-12). Setting it starts the
+        /// drone next to the player if it is not there; clearing it removes the drone.
+        /// </summary>
+        public bool Permanent
+        {
+            get => _rules.IsPermanent;
+            set
+            {
+                if (value == _rules.IsPermanent)
+                {
+                    return;
+                }
+
+                if (!value)
+                {
+                    Dismiss();
+                    return;
+                }
+
+                if (_config == null || _player == null)
+                {
+                    return;
+                }
+
+                if (!_rules.IsActive)
+                {
+                    transform.position = FollowTarget();
+                    _age = 0f;
+                }
+
+                _rules.ActivatePermanent();
+                Refresh();
+            }
+        }
+
         /// <summary>Removes the drone, e.g. at level end or death.</summary>
         public void Dismiss()
         {

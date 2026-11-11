@@ -32,7 +32,7 @@ namespace RushOps.Combat
         /// </summary>
         public Projectile Launch(Vector2 origin, Vector2 direction, float speed, float range, LayerMask hitLayers, int damage = 0,
             bool lethal = false, ShotLook look = ShotLook.Normal, Sprite normalSprite = null,
-            Action<Projectile, Vector2> impact = null)
+            Action<Projectile, Vector2> impact = null, int bounces = 0)
         {
             if (_pool == null)
             {
@@ -40,7 +40,8 @@ namespace RushOps.Combat
             }
 
             Projectile projectile = _pool.Get();
-            projectile.Launch(origin, direction, speed, range, hitLayers, damage, lethal, look, _release, normalSprite, impact);
+            projectile.Launch(origin, direction, speed, range, hitLayers, damage, lethal, look, _release, normalSprite, impact,
+                bounces);
             return projectile;
         }
 

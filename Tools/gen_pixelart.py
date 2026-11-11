@@ -72,6 +72,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Flamethrower/Flamethrower_Muzzles.json  nozzle of the flamethrower per direction in units from the feet
   Sprites/Effects/Flame_<0-3>.png          112x48 flame jet pointing right from the left edge, 4 loop frames (issue #254)
   Sprites/Effects/Burn_<0-3>.png           16x16 small flames licking up a burning enemy, 4 frames (issue #254)
+  Sprites/Effects/FireTrail_<0-3>.png      24x24 burning tile of the dash fire trail on a scorched patch, 4 loop frames
+                                           (issue #278)
   Sprites/Pickups/Perk_RocketLauncher.png  24x24 perk icon of the rocket launcher (issue #255)
   Sprites/RocketLauncher/Hand_<DIR>.png    64x64 rocket launcher in the player's hand per direction, laid over the
                                            player sprite, pivot bottom centre (issue #255)
@@ -1743,6 +1745,56 @@ def burn_frame(frame: int) -> Canvas:
                     hot = dx < w * 0.45 and i < h * 0.6
                     c.set(x, int(y), "yellow" if hot else ("orange" if i < h * 0.8 else "red_1"))
     return c
+
+
+FIRE_TRAIL = 24
+FIRE_TRAIL_FRAMES = 4
+
+
+def fire_trail_frame(frame: int) -> Canvas:
+    """A burning tile of the dash fire trail (issue #278): a scorched patch on the ground with four flame tongues that
+    rise and fall out of step, so a row of tiles flickers instead of pulsing together."""
+    c = Canvas(FIRE_TRAIL, FIRE_TRAIL)
+    cx, cy = FIRE_TRAIL / 2, 17.5
+    # Scorched ground: a flat dark oval with a glowing rim of embers.
+    for y in range(FIRE_TRAIL):
+        for x in range(FIRE_TRAIL):
+            d = ((x + 0.5 - cx) / 10.5) ** 2 + ((y + 0.5 - cy) / 4.0) ** 2
+            if d <= 1.0:
+                c.set(x, y, "brown_0" if d > 0.55 else "night")
+    for i, (ex, ey) in enumerate(((4, 17), (8, 20), (15, 20), (19, 16), (11, 15))):
+        if (i + frame) % 3 != 0:
+            c.set(ex, ey, "red_1" if (i + frame) % 2 else "orange")
+    # Tongues: x of the base, height per frame.
+    tongues = (
+        (6.5, (6, 8, 7, 5)),
+        (10.5, (11, 9, 13, 10)),
+        (14.0, (9, 12, 8, 11)),
+        (17.5, (5, 6, 8, 7)),
+    )
+    for k, (bx, heights) in enumerate(tongues):
+        h = heights[frame]
+        for i in range(h):
+            y = 18 - i
+            w = max(0.55, 2.1 * (1 - i / h) ** 0.8)
+            sway = 0.7 * math.sin(i * 0.8 + frame * 1.6 + k * 1.3)
+            for x in range(FIRE_TRAIL):
+                dx = abs(x + 0.5 - (bx + sway))
+                if dx > w:
+                    continue
+                if dx < w * 0.4 and i < h * 0.45:
+                    color = "yellow"
+                elif i < h * 0.75:
+                    color = "orange"
+                else:
+                    color = "red_1"
+                c.set(x, y, color)
+    return c
+
+
+def fire_trail_files(files: dict[str, Image.Image]) -> None:
+    for f in range(FIRE_TRAIL_FRAMES):
+        files[f"Sprites/Effects/FireTrail_{f}.png"] = fire_trail_frame(f).to_image()
 
 
 def flamethrower_files(files: dict[str, Image.Image]) -> None:
@@ -4497,6 +4549,7 @@ def outputs() -> dict[str, Image.Image]:
         files[f"Sprites/Scarecrow/Scarecrow_{f}.png"] = scarecrow_frame(f).to_image()
     files["Sprites/Scarecrow/Scarecrow_Warning.png"] = scarecrow_frame(0, warning=True).to_image()
     flamethrower_files(files)
+    fire_trail_files(files)
     rocket_files(files)
     for d, name in enumerate(DIRECTIONS):
         for frame in range(len(HIT_POSES)):

@@ -39,6 +39,7 @@ namespace RushOps.Player
         private float _damageFactor = 1f;
         private float _upgradeDamageFactor = 1f;
         private float _upgradeFireRateFactor = 1f;
+        private int _bounces;
         private int _shotCount;
         private bool _holstered;
 
@@ -119,6 +120,16 @@ namespace RushOps.Player
         {
             get => _upgradeFireRateFactor;
             set => _upgradeFireRateFactor = value > 0f ? value : 1f;
+        }
+
+        /// <summary>
+        /// Wall bounces of every projectile of the player's weapons, from the bounce upgrade of the endless run
+        /// (F-END-12); 0 by default. Super weapons and the drone do not use it.
+        /// </summary>
+        public int Bounces
+        {
+            get => _bounces;
+            set => _bounces = Mathf.Max(0, value);
         }
 
         /// <summary>
@@ -209,7 +220,7 @@ namespace RushOps.Player
                     Vector2 projectileDirection = WeaponMath.ProjectileDirection(
                         direction, p, projectiles, weapon.FanAngle, weapon.Spread, random);
                     _pool.Launch(muzzle, projectileDirection, weapon.ProjectileSpeed, weapon.Range, _obstacles, damage,
-                        _modifiers.InstaKill, look, weapon.ProjectileSprite);
+                        _modifiers.InstaKill, look, weapon.ProjectileSprite, null, _bounces);
                 }
 
                 Fired?.Invoke(direction);

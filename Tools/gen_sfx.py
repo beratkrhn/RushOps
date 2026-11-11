@@ -42,6 +42,7 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   RushStart.wav       rush (issue #270): a fast rising sweep that lands on a bright power chord over a low throb
   RushFull.wav        rush (issue #271): a short bright two-note chime when the meter is full
   RushEnd.wav         rush (issue #270): a short falling sweep that winds the power down
+  FireCrackle.wav     fire trail (issue #278): a soft hiss with sharp crackling pops, fading out
 
 Usage:
   python3 Tools/gen_sfx.py
@@ -460,6 +461,24 @@ def rush_end() -> list[float]:
             * decay(t, length, 0.002) for t in (i / RATE for i in frames(length))]
 
 
+def fire_crackle() -> list[float]:
+    """Fire trail (issue #278): a soft low hiss with a dozen short noise pops at random times, like burning twigs,
+    fading out over the life of the trail."""
+    length = 0.7
+    hiss, pop = Noise(), Noise()
+    pops = sorted(random.uniform(0.0, length - 0.05) for _ in range(12))
+    out = []
+    for t in (i / RATE for i in frames(length)):
+        crackle = 0.0
+        for start in pops:
+            if 0.0 <= t - start < 0.018:
+                crackle = (1.0 - (t - start) / 0.018) * pop.sample(random.choice((3000, 5000, 7000)))
+                break
+        fade = decay(t, length, 0.01)
+        out.append((0.25 * hiss.sample(1200) + 0.75 * crackle) * fade)
+    return out
+
+
 SOUNDS = {
     "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "FlameLoop": flame_loop, "RocketLaunch": rocket_launch, "RocketBlast": rocket_blast, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
     "GateOpen": gate_open, "MissionDone": mission_done,
@@ -471,6 +490,7 @@ SOUNDS = {
     "Explosion": explosion, "PerkPickup": perk_pickup, "GoldPickup": gold_pickup, "Nuke": nuke,
     "PuzzleSolved": puzzle_solved, "SwitchOn": switch_on, "SwitchReset": switch_reset,
     "RushStart": rush_start, "RushEnd": rush_end, "RushFull": rush_full,
+    "FireCrackle": fire_crackle,
 }
 
 

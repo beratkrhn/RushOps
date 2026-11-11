@@ -31,20 +31,34 @@ namespace RushOps.Perks
         private float _shotProgress;
 
         /// <summary>True while the drone is there.</summary>
-        public bool IsActive => _timer.IsRunning;
+        public bool IsActive => IsPermanent || _timer.IsRunning;
+
+        /// <summary>True while the drone stays for good (permanent companion upgrade, F-END-12); it has no timer then.</summary>
+        public bool IsPermanent { get; private set; }
 
         /// <summary>Seconds left.</summary>
         public float Remaining => _timer.Remaining;
 
-        /// <summary>Starts the drone, or restarts its timer on a second pickup (K1).</summary>
+        /// <summary>Starts the drone, or restarts its timer on a second pickup (K1). A permanent drone stays permanent.</summary>
         public void Activate(float duration)
         {
-            _timer.Restart(duration);
+            if (!IsPermanent)
+            {
+                _timer.Restart(duration);
+            }
         }
 
-        /// <summary>Removes the drone, e.g. at level end, death or restart.</summary>
+        /// <summary>Starts the drone for good, or makes a running one stay (permanent companion upgrade, F-END-12).</summary>
+        public void ActivatePermanent()
+        {
+            IsPermanent = true;
+            _timer.Stop();
+        }
+
+        /// <summary>Removes the drone, e.g. at level end, death or restart; also ends a permanent one.</summary>
         public void Clear()
         {
+            IsPermanent = false;
             _timer.Stop();
             _shotProgress = 0f;
         }
@@ -52,6 +66,11 @@ namespace RushOps.Perks
         /// <summary>Advances the timer. Returns true if the drone ran out with this step.</summary>
         public bool Tick(float deltaTime)
         {
+            if (IsPermanent)
+            {
+                return false;
+            }
+
             bool expired = _timer.Tick(deltaTime);
             if (expired)
             {
