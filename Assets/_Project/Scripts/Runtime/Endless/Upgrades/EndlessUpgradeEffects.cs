@@ -9,7 +9,8 @@ namespace RushOps.Endless
     /// <summary>
     /// Thin adapter that hands the combined values of the run upgrades (<see cref="RunUpgrades"/>, F-END-12) to the
     /// player and the loot systems of the endless arena: extra hearts, move speed, fire rate, damage, dash cooldown,
-    /// perk durations, perk drop chance, gold magnet and the rush meter. Works on the <see cref="RunUpgrades.Changed"/>
+    /// perk durations, perk drop chance, gold magnet, the rush meter, bouncing shots, the fire trail and the permanent
+    /// drone (issue #278). Works on the <see cref="RunUpgrades.Changed"/>
     /// event only, so nothing runs per frame. Only the endless arena has it; the campaign keeps all factors at 1.
     /// </summary>
     public class EndlessUpgradeEffects : MonoBehaviour
@@ -26,6 +27,7 @@ namespace RushOps.Endless
         [SerializeField] private PlayerRush _rush;
         [SerializeField] private PerkDropper _perkDropper;
         [SerializeField] private GoldPickupPool _gold;
+        [SerializeField] private FireTrail _fireTrail;
 
         private RunUpgrades _upgrades;
 
@@ -74,6 +76,7 @@ namespace RushOps.Endless
             {
                 _weapon.UpgradeFireRateFactor = _upgrades.FireRateFactor;
                 _weapon.UpgradeDamageFactor = _upgrades.DamageFactor;
+                _weapon.Bounces = _upgrades.ExtraBounces;
             }
 
             if (_dash != null)
@@ -95,6 +98,7 @@ namespace RushOps.Endless
             if (_drone != null)
             {
                 _drone.DurationFactor = duration;
+                _drone.Permanent = _upgrades.HasPermanentCompanion;
             }
 
             if (_scarecrow != null)
@@ -110,6 +114,18 @@ namespace RushOps.Endless
             if (_perkDropper != null)
             {
                 _perkDropper.ChanceBonus = _upgrades.PerkChanceBonus;
+                // While the drone stays for good, its perk would do nothing: it does not drop.
+                _perkDropper.Excluded = _upgrades.HasPermanentCompanion ? PerkEffect.Companion : (PerkEffect?)null;
+            }
+
+            if (_fireTrail != null)
+            {
+                if (_fireTrail.Active && !_upgrades.HasFireTrail)
+                {
+                    _fireTrail.Clear();
+                }
+
+                _fireTrail.Active = _upgrades.HasFireTrail;
             }
 
             if (_gold != null)

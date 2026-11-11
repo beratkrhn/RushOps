@@ -8,7 +8,8 @@ namespace RushOps.Combat
     /// even at high speed; a hit collider with an <see cref="IDamageable"/> takes the projectile's damage.
     /// It expires on a hit or after its maximum range. Expiring hands it back to its owner
     /// (usually a <see cref="ProjectilePool"/>) instead of destroying it. Its sprite shows active offensive perks
-    /// (<see cref="ShotLook"/>, issue #25).
+    /// (<see cref="ShotLook"/>, issue #25). With bounces left (bounce upgrade, F-END-12) it reflects off anything that
+    /// cannot take damage, e.g. walls, and keeps its damage and remaining range; enemies still stop it.
     /// </summary>
     public class Projectile : MonoBehaviour
     {
@@ -32,9 +33,22 @@ namespace RushOps.Combat
         private Action<Projectile> _expire;
         private Action<Projectile, Vector2> _impact;
         private bool _flying;
+        private int _bouncesLeft;
+
+        // Distance a bounced projectile starts away from the wall, so the next ray does not hit the same spot.
+        private const float BounceOffset = 0.02f;
 
         /// <summary>Raised when the projectile hits a collider, with the hit point (issue #107: hit sparks).</summary>
         public event Action<Projectile, Vector2> Impacted;
+
+        /// <summary>Raised when the projectile bounced off a wall, with the bounce point.</summary>
+        public event Action<Projectile, Vector2> Bounced;
+
+        /// <summary>Wall bounces this flight has left.</summary>
+        public int BouncesLeft => _bouncesLeft;
+
+        /// <summary>Units this flight can still travel.</summary>
+        public float RemainingRange => _remainingRange;
 
         /// <summary>Unit vector of the flight direction.</summary>
         public Vector2 Direction => _direction;
@@ -55,12 +69,14 @@ namespace RushOps.Combat
         /// <paramref name="expire"/> is called once when the projectile hits something or runs out of range.
         /// <paramref name="normalSprite"/> is the weapon's own bullet (issue #174); null keeps the prefab's.
         /// <paramref name="impact"/> is called with the hit point when this flight hits something, e.g. to set off a
-        /// rocket's explosion (issue #255); it is forgotten when the flight ends.
+        /// rocket's explosion (issue #255); it is forgotten when the flight ends. <paramref name="bounces"/> is how often
+        /// it bounces off walls before a wall stops it (bounce upgrade, F-END-12).
         /// </summary>
         public void Launch(Vector2 origin, Vector2 direction, float speed, float range, LayerMask hitLayers, int damage,
             bool lethal, ShotLook look, Action<Projectile> expire, Sprite normalSprite = null,
-            Action<Projectile, Vector2> impact = null)
+            Action<Projectile, Vector2> impact = null, int bounces = 0)
         {
+            _bouncesLeft = Mathf.Max(0, bounces);
             _weaponSprite = normalSprite;
             _direction = direction.normalized;
             _speed = speed;
@@ -117,6 +133,12 @@ namespace RushOps.Combat
             float step = Mathf.Min(_speed * Time.deltaTime, _remainingRange);
             Vector2 position = transform.position;
             RaycastHit2D hit = Physics2D.Raycast(position, _direction, step, _hitLayers);
+            if (hit.collider != null && _bouncesLeft > 0 && !IsDamageable(hit.collider))
+            {
+                Bounce(hit);
+                return;
+            }
+
             if (hit.collider != null)
             {
                 transform.position = hit.point;
@@ -132,6 +154,29 @@ namespace RushOps.Combat
             {
                 Expire();
             }
+        }
+
+        // Reflects off the wall at the hit point; the way to the wall counts against the range.
+        private void Bounce(RaycastHit2D hit)
+        {
+            _bouncesLeft--;
+            _remainingRange -= hit.distance;
+            _direction = WeaponMath.Bounce(_direction, hit.normal);
+            Vector2 point = hit.point + hit.normal * BounceOffset;
+            transform.SetPositionAndRotation(
+                point, Quaternion.Euler(0f, 0f, Mathf.Atan2(_direction.y, _direction.x) * Mathf.Rad2Deg));
+            Impacted?.Invoke(this, hit.point);
+            Bounced?.Invoke(this, hit.point);
+            if (_remainingRange <= 0f)
+            {
+                Expire();
+            }
+        }
+
+        private static bool IsDamageable(Collider2D other)
+        {
+            return other.TryGetComponent(out IDamageable _)
+                || (other.attachedRigidbody != null && other.attachedRigidbody.TryGetComponent(out IDamageable _));
         }
 
         private void Hit(Collider2D other)
