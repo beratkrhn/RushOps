@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using RushOps.Bosses;
 using RushOps.Combat;
 using RushOps.Enemies;
 using RushOps.Levels;
+using RushOps.Perks;
 using RushOps.Player;
 using RushOps.UI;
 using UnityEngine;
@@ -42,6 +44,8 @@ namespace RushOps.Endless
         private float _noticeRemaining;
         private bool _shownNotice;
         private RunUpgrades _upgrades;
+        private readonly List<UpgradeDefinition> _offer = new List<UpgradeDefinition>();
+        private IRandomSource _random = new SystemRandomSource();
 
         /// <summary>The run in progress, or null before the first <see cref="BeginRun"/>.</summary>
         public EndlessRun Run => _run;
@@ -51,6 +55,45 @@ namespace RushOps.Endless
         /// on first use over the upgrades of the config.
         /// </summary>
         public RunUpgrades Upgrades => _upgrades ??= new RunUpgrades(_config != null ? _config.Upgrades : null);
+
+        /// <summary>The upgrades offered in the running choice; empty outside a choice.</summary>
+        public IReadOnlyList<UpgradeDefinition> CurrentOffer => _offer;
+
+        /// <summary>
+        /// Raised when a cleared round brings an upgrade choice (F-END-11, N20), with the offered upgrades; the run waits
+        /// in <see cref="EndlessPhase.Choice"/> until <see cref="Choose"/>.
+        /// </summary>
+        public event Action<IReadOnlyList<UpgradeDefinition>> UpgradeOffered;
+
+        /// <summary>Raised when a running choice ends without a pick, e.g. because a new run starts.</summary>
+        public event Action ChoiceCancelled;
+
+        /// <summary>Raised when an upgrade was chosen, with the upgrade and its new level.</summary>
+        public event Action<UpgradeDefinition, int> UpgradeChosen;
+
+        /// <summary>Replaces the random source of the upgrade offers, e.g. with the seed of the daily run (F-END-13).</summary>
+        public void SetRandomSource(IRandomSource random)
+        {
+            _random = random ?? new SystemRandomSource();
+        }
+
+        /// <summary>
+        /// Takes <paramref name="upgrade"/> from the running offer: raises its level and starts the break before the next
+        /// round. False and nothing happens outside a choice or for an upgrade that is not offered.
+        /// </summary>
+        public bool Choose(UpgradeDefinition upgrade)
+        {
+            if (_run == null || _run.Phase != EndlessPhase.Choice || upgrade == null || !_offer.Contains(upgrade)
+                || !Upgrades.Take(upgrade))
+            {
+                return false;
+            }
+
+            _offer.Clear();
+            UpgradeChosen?.Invoke(upgrade, Upgrades.Level(upgrade));
+            _run.FinishChoice();
+            return true;
+        }
 
         /// <summary>The rules built on the config.</summary>
         public EndlessRules Rules => _rules;
@@ -92,6 +135,13 @@ namespace RushOps.Endless
             _notice = null;
             _noticeRemaining = 0f;
             _shownNotice = false;
+            bool choosing = _run != null && _run.Phase == EndlessPhase.Choice;
+            _offer.Clear();
+            if (choosing)
+            {
+                ChoiceCancelled?.Invoke();
+            }
+
             // A new run starts without upgrades (F-END-12); this also drops their extra hearts before the run reads them.
             Upgrades.Clear();
             // Weapons of the rounds before the first one hang unlocked; the first round's own weapon unlocks with it.
@@ -106,6 +156,7 @@ namespace RushOps.Endless
             _run.PauseStarted += OnPauseStarted;
             _run.RoundStarted += OnRoundStarted;
             _run.RoundCleared += OnRoundCleared;
+            _run.ChoiceStarted += OnChoiceStarted;
             _run.Ended += OnEnded;
             _player.HealthChanged += OnHealthChanged;
             _run.Start(firstRound);
@@ -142,8 +193,9 @@ namespace RushOps.Endless
             bool finished = _fight != null ? _fight.IsWon : _sequence.Phase == WavePhase.Finished;
             if (finished)
             {
-                // The boss or the last enemy of the round died (or the round had none).
-                _run.NotifyRoundCleared();
+                // The boss or the last enemy of the round died (or the round had none); every third round and every
+                // boss round bring an upgrade choice first, if any upgrade is left (F-END-11).
+                _run.NotifyRoundCleared(DrawOffer(_run.Round));
                 return;
             }
 
@@ -236,6 +288,19 @@ namespace RushOps.Endless
             }
         }
 
+        private bool DrawOffer(int clearedRound)
+        {
+            _offer.Clear();
+            return _rules.IsUpgradeRound(clearedRound)
+                && UpgradeOfferRules.Draw(Upgrades, _random, _config.UpgradeOffers, _offer) > 0;
+        }
+
+        private void OnChoiceStarted(int round)
+        {
+            _hud.SetTracker(string.Empty);
+            UpgradeOffered?.Invoke(_offer);
+        }
+
         private void OnEnded(int round)
         {
             CurrentRound = null;
@@ -277,6 +342,7 @@ namespace RushOps.Endless
                 _run.PauseStarted -= OnPauseStarted;
                 _run.RoundStarted -= OnRoundStarted;
                 _run.RoundCleared -= OnRoundCleared;
+                _run.ChoiceStarted -= OnChoiceStarted;
                 _run.Ended -= OnEnded;
             }
 

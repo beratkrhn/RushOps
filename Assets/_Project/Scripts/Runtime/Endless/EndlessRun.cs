@@ -3,8 +3,9 @@ using System;
 namespace RushOps.Endless
 {
     /// <summary>
-    /// The course of one endless run (F-END-03, F-END-06, F-END-08): pause with „Runde X“ → round running → round cleared
-    /// (+hearts) → pause before the next round … until the player has no hearts left. Knows nothing about enemies; the
+    /// The course of one endless run (F-END-03, F-END-06, F-END-08, F-END-11): pause with „Runde X“ → round running →
+    /// round cleared (+hearts) → upgrade choice after some rounds → pause before the next round … until the player has
+    /// no hearts left. Knows nothing about enemies; the
     /// caller reports cleared rounds and the player's hearts.
     /// </summary>
     public class EndlessRun
@@ -33,7 +34,7 @@ namespace RushOps.Endless
         /// <summary>Current phase.</summary>
         public EndlessPhase Phase { get; private set; } = EndlessPhase.Idle;
 
-        /// <summary>The round being played, or the next one during a pause; 0 before the start.</summary>
+        /// <summary>The round being played, the next one during a pause, the cleared one during a choice; 0 before the start.</summary>
         public int Round { get; private set; }
 
         /// <summary>Rounds cleared in this run.</summary>
@@ -56,6 +57,9 @@ namespace RushOps.Endless
 
         /// <summary>Raised when a round was cleared, with its number and the hearts given back (0 at full health).</summary>
         public event Action<int, int> RoundCleared;
+
+        /// <summary>Raised when the upgrade choice after a cleared round starts, with that round.</summary>
+        public event Action<int> ChoiceStarted;
 
         /// <summary>Raised once when the run ends, with the round reached.</summary>
         public event Action<int> Ended;
@@ -101,10 +105,11 @@ namespace RushOps.Endless
         }
 
         /// <summary>
-        /// Reports that all enemies of the running round are beaten: gives hearts up to the maximum and pauses before the
-        /// next round. Returns the hearts given; 0 if no round was running.
+        /// Reports that all enemies of the running round are beaten: gives hearts up to the maximum, then either waits for
+        /// an upgrade choice (<paramref name="offerChoice"/>, see <see cref="FinishChoice"/>) or pauses before the next
+        /// round. Returns the hearts given; 0 if no round was running.
         /// </summary>
-        public int NotifyRoundCleared()
+        public int NotifyRoundCleared(bool offerChoice = false)
         {
             if (Phase != EndlessPhase.Running)
             {
@@ -116,8 +121,32 @@ namespace RushOps.Endless
             RoundsCleared++;
             int cleared = Round;
             RoundCleared?.Invoke(cleared, gained);
-            BeginPause(cleared + 1);
+            if (Phase != EndlessPhase.Running)
+            {
+                // The hearts given ended nothing, but a listener may have ended the run.
+                return gained;
+            }
+
+            if (offerChoice)
+            {
+                Phase = EndlessPhase.Choice;
+                ChoiceStarted?.Invoke(cleared);
+            }
+            else
+            {
+                BeginPause(cleared + 1);
+            }
+
             return gained;
+        }
+
+        /// <summary>Ends the upgrade choice and pauses before the next round; does nothing outside a choice.</summary>
+        public void FinishChoice()
+        {
+            if (Phase == EndlessPhase.Choice)
+            {
+                BeginPause(Round + 1);
+            }
         }
 
         /// <summary>

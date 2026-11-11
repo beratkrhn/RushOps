@@ -298,6 +298,7 @@ namespace RushOps.Editor.Scenes
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
             CreateUpgradeEffects(arena, controller);
+            UpgradeChoiceBuilder.Create(parent, controller, pause, font);
 
             // Autosave at the end of a run (issue #211): the run goes into the top 10 of the save game.
             var serializedRecorder = new SerializedObject(recorder);

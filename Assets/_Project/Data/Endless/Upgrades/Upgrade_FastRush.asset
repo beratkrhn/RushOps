@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 10
   _displayName: Schneller Rush
   _description: Die Rush-Leiste ist schon bei 20 Kills voll.
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 9ea357fda64c54fd6a417b335e39eb1b, type: 3}
   _valuePerLevel: 5
   _maxLevel: 1

@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 0
   _displayName: Abpraller
   _description: "Kugeln prallen 1\xD7 mehr von W\xE4nden ab."
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: da8abed96fbc04ed7b47089bf0e05629, type: 3}
   _valuePerLevel: 1
   _maxLevel: 3

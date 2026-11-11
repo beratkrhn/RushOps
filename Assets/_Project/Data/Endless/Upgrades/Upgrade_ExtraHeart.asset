@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 1
   _displayName: +1 Herz
   _description: Ein Herz mehr und 1 Herz geheilt.
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 6473257fa094f4377b049a8369971df9, type: 3}
   _valuePerLevel: 1
   _maxLevel: 3

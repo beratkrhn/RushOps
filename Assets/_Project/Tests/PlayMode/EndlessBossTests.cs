@@ -104,6 +104,7 @@ namespace RushOps.Tests.PlayMode
             Assert.AreEqual(score + 1000, Object.FindAnyObjectByType<LevelScore>().Keeper.Score, "the win gives 1000 points");
 
             yield return WaitFor(() => _controller.Run.RoundsCleared == 1, "round 10 to end");
+            PickFirstUpgrade();
             Assert.AreEqual(EndlessPhase.Pause, _controller.Run.Phase, "the normal break follows");
             Assert.AreEqual(11, _controller.Run.Round);
             Assert.AreEqual("Runde 11", _hud.BannerText);
@@ -133,6 +134,7 @@ namespace RushOps.Tests.PlayMode
 
             boss.TakeHit(boss.CurrentHealth, Vector2.down);
             yield return WaitFor(() => _controller.Run.RoundsCleared == 1, "round 20 to end");
+            PickFirstUpgrade();
             Assert.AreEqual(21, _controller.Run.Round);
             foreach (Enemy enemy in Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None))
             {
@@ -167,6 +169,7 @@ namespace RushOps.Tests.PlayMode
             }
 
             yield return WaitFor(() => _controller.Run.RoundsCleared == 1, "round 30 to end");
+            PickFirstUpgrade();
             Assert.AreEqual(31, _controller.Run.Round);
         }
 
@@ -187,6 +190,13 @@ namespace RushOps.Tests.PlayMode
             Assert.AreSame(_config.Bosses[0], again.Bodies[0].Definition, "the order starts over with the Koloss");
             Assert.AreEqual(Mathf.RoundToInt(again.Bodies[0].Definition.Health * 1.75f), again.Bodies[0].MaxHealth);
             Assert.IsTrue(again.Bodies[0].IsActive);
+        }
+
+        // Since issue #279 every third round and every boss round end with the upgrade choice: take the first card.
+        private void PickFirstUpgrade()
+        {
+            Assert.AreEqual(EndlessPhase.Choice, _controller.Run.Phase, "the cleared round brings an upgrade choice");
+            Assert.IsTrue(_controller.Choose(_controller.CurrentOffer[0]));
         }
 
         private static IEnumerator WaitFor(System.Func<bool> condition, string what)

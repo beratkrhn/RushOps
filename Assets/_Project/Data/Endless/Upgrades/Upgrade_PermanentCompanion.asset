@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 5
   _displayName: Begleiter dauerhaft
   _description: Die Kampfdrohne bleibt den ganzen Lauf.
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 578ca61be41774299b55f83e545f52be, type: 3}
   _valuePerLevel: 1
   _maxLevel: 1

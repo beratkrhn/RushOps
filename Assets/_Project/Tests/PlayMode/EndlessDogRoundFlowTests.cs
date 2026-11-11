@@ -118,6 +118,7 @@ namespace RushOps.Tests.PlayMode
             StringAssert.Contains("Hund", _hud.TrackerText);
 
             yield return KillUntil(() => _controller.Run.RoundsCleared >= 1);
+            PickFirstUpgrade();
 
             Assert.AreEqual(6, _spawns.Count, "four enemies round up to two full packs");
             var packs = new Dictionary<(int, SpawnPoint), int>();
@@ -171,6 +172,13 @@ namespace RushOps.Tests.PlayMode
 
                 yield return null;
             }
+        }
+
+        // Since issue #279 every third round and every boss round end with the upgrade choice: take the first card.
+        private void PickFirstUpgrade()
+        {
+            Assert.AreEqual(EndlessPhase.Choice, _controller.Run.Phase, "the cleared round brings an upgrade choice");
+            Assert.IsTrue(_controller.Choose(_controller.CurrentOffer[0]));
         }
 
         private static IEnumerator WaitFor(System.Func<bool> condition, string what)
