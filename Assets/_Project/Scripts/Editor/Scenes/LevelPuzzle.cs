@@ -73,6 +73,12 @@ namespace RushOps.Editor.Scenes
             return new LevelPuzzle(LevelPuzzleKind.Transport, name, zone, generator, cells, requiredCells);
         }
 
+        /// <summary>A pressure plate at <paramref name="center"/> only a brute pushes down (issue #289).</summary>
+        public static LevelPuzzle PressurePlate(string name, int zone, Vector2 center)
+        {
+            return new LevelPuzzle(LevelPuzzleKind.PressurePlate, name, zone, center, null, 0);
+        }
+
         /// <summary>Lets the zone run <paramref name="waves"/> while the puzzle is active, then do <paramref name="after"/>.</summary>
         public LevelPuzzle WithPressure(LevelWaves waves, AfterPuzzle after)
         {

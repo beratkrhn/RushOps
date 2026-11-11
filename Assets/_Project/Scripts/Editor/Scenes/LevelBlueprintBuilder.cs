@@ -421,6 +421,9 @@ namespace RushOps.Editor.Scenes
                     puzzle = PuzzleBuilder.CreateTimedSwitches(spec.Name, spec.Points, zone, arena);
                     SetDifficulty(puzzle, difficulty);
                     break;
+                case LevelPuzzleKind.PressurePlate:
+                    puzzle = PuzzleBuilder.CreatePressurePlate(spec.Name, spec.Position, zone, arena);
+                    break;
                 default:
                     puzzle = PuzzleBuilder.CreateTransport(spec.Name, spec.Position, spec.Points, spec.RequiredCells, zone, arena);
                     break;

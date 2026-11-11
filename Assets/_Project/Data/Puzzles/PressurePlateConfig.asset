@@ -15,3 +15,6 @@ MonoBehaviour:
   _holdSeconds: 1.5
   _bruteInterval: 12
   _maxBrutes: 2
+  _radius: 0.8
+  _volume: 0.8
+  _hintHeightAndBob: {x: 1.4, y: 0.12}
