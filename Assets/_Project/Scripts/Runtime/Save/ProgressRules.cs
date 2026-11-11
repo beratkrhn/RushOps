@@ -1,4 +1,5 @@
 using System;
+using RushOps.Scoring;
 
 namespace RushOps.Save
 {
@@ -59,6 +60,52 @@ namespace RushOps.Save
             }
 
             return total;
+        }
+
+        /// <summary>Badges earned in <paramref name="levelId"/> (issue #287), none if never finished.</summary>
+        public static BadgeKind BadgesOf(ProgressData progress, string levelId)
+        {
+            LevelRecord record = Find(progress, levelId);
+            return record != null && record.Completed ? (BadgeKind)record.Badges & BadgeKind.All : BadgeKind.None;
+        }
+
+        /// <summary>Badges of all finished levels added up (issue #287, F-SKN-05).</summary>
+        public static int TotalBadges(ProgressData progress)
+        {
+            if (progress?.Levels == null)
+            {
+                return 0;
+            }
+
+            int total = 0;
+            foreach (LevelRecord record in progress.Levels)
+            {
+                if (record != null && record.Completed)
+                {
+                    total += BadgeRules.Count((BadgeKind)record.Badges);
+                }
+            }
+
+            return total;
+        }
+
+        /// <summary>
+        /// Adds <paramref name="earned"/> to the badges of the finished level <paramref name="levelId"/>; nothing is
+        /// taken away (issue #287, F-SCO-04). Call after <see cref="RecordCompletion"/>.
+        /// </summary>
+        /// <returns>The badges that are new with this call.</returns>
+        public static BadgeKind RecordBadges(ProgressData progress, string levelId, BadgeKind earned)
+        {
+            LevelRecord record = Find(progress, levelId);
+            if (record == null || !record.Completed)
+            {
+                return BadgeKind.None;
+            }
+
+            var saved = (BadgeKind)record.Badges;
+            BadgeKind fresh = BadgeRules.NewOnes(saved, earned);
+            record.Badges = (int)BadgeRules.Merge(saved, earned);
+            return fresh;
         }
 
         /// <summary>

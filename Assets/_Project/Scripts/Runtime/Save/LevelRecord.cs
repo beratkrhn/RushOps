@@ -17,5 +17,8 @@ namespace RushOps.Save
 
         /// <summary>Best score reached.</summary>
         public int BestScore;
+
+        /// <summary>Badges earned, a <see cref="Scoring.BadgeKind"/> as int (issue #287, version 6).</summary>
+        public int Badges;
     }
 }

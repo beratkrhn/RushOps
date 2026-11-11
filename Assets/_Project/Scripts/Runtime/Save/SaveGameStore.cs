@@ -158,6 +158,8 @@ namespace RushOps.Save
                 data.Endless.Top ??= new List<EndlessScore>();
                 data.Daily ??= new DailyData();
                 data.Daily.Days ??= new List<DailyScore>();
+                data.Hints ??= new HintsData();
+                data.Hints.Seen ??= new List<string>();
                 return true;
             }
             catch (Exception)

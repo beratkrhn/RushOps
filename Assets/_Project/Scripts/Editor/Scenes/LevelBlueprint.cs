@@ -48,6 +48,9 @@ namespace RushOps.Editor.Scenes
         /// <summary>Scores for two and three stars of a new level definition.</summary>
         public Vector2Int StarScores { get; set; } = new Vector2Int(1500, 3000);
 
+        /// <summary>Target time in seconds for the badge „Blitz“ (issue #287); 0 = none.</summary>
+        public float BadgeSeconds { get; set; }
+
         /// <summary>Extra line on „Level geschafft!“, e.g. after the last boss (decision C12); null = none.</summary>
         public string CompletionMessage { get; set; }
 

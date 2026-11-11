@@ -147,11 +147,11 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void NewSave_IsVersion5WithAnEmptyDailyList()
+        public void NewSave_IsAtLeastVersion5WithAnEmptyDailyList()
         {
             SaveData data = _store.Load();
 
-            Assert.AreEqual(5, SaveData.CurrentVersion);
+            Assert.GreaterOrEqual(SaveData.CurrentVersion, 5);
             Assert.IsNotNull(data.Daily);
             Assert.IsEmpty(data.Daily.Days);
         }
@@ -169,7 +169,7 @@ namespace RushOps.Tests.EditMode
             SaveData data = _store.Load();
 
             Assert.AreEqual(SaveLoadSource.Main, _store.LastSource);
-            Assert.AreEqual(5, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.AreEqual(120, data.Gold.Balance);
             Assert.AreEqual(3, data.Endless.Runs);
             Assert.IsNotNull(data.Daily);
@@ -183,7 +183,7 @@ namespace RushOps.Tests.EditMode
 
             SaveData data = _store.Load();
 
-            Assert.AreEqual(5, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.AreEqual(9, data.Gold.Balance);
             Assert.IsEmpty(data.Daily.Days);
         }
@@ -213,7 +213,7 @@ namespace RushOps.Tests.EditMode
             SaveData data = _store.Load();
 
             Assert.AreEqual(SaveLoadSource.Backup, _store.LastSource);
-            Assert.AreEqual(5, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.AreEqual(55, data.Gold.Balance);
             Assert.IsEmpty(data.Daily.Days);
         }

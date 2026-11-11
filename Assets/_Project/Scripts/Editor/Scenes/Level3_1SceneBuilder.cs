@@ -103,6 +103,8 @@ namespace RushOps.Editor.Scenes
                 Slot = 0,
                 ThemePath = IslandThemes.VulkanPath,
                 StarScores = new Vector2Int(1900, 2700),
+                // Target time for the badge „Blitz“ (issue #287, start value).
+                BadgeSeconds = 300f,
                 DifficultyPath = LevelDifficulties.Island3Path,
                 ExitCenter = new Vector2(14f, Height - 2.25f),
                 ExitLockZone = 5,

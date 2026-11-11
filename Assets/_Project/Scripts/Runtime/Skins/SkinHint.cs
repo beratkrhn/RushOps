@@ -68,6 +68,8 @@ namespace RushOps.Skins
                     return remaining == 1 ? "Noch 1 Stern" : $"Noch {n} Sterne";
                 case SkinMilestone.LevelsCompleted:
                     return $"Noch {n} Level";
+                case SkinMilestone.TotalBadges:
+                    return remaining == 1 ? "Noch 1 Abzeichen" : $"Noch {n} Abzeichen";
                 case SkinMilestone.BestCombo:
                     return $"Erreiche Kombo x{threshold.ToString(CultureInfo.InvariantCulture)}";
                 default:
