@@ -42,6 +42,10 @@ In Stories zerlegt: [`v1.6.0.md`](v1.6.0.md) (#269 bis #271, Epic #218). Entsche
 
 In Stories zerlegt: [`v1.7.0.md`](v1.7.0.md) (#276 bis #280, Epic #219). Entscheidungen T1 bis T4, N19 bis N22, Lastenheft F-END-11 bis F-END-14.
 
+### v1.8.0 – Herausforderungen und Rätsel mit Zombies
+
+In Stories zerlegt: [`v1.8.0.md`](v1.8.0.md) (#287 bis #291, Epic #220). Entscheidungen CH1, CH2, Z1, Z2, N9, N23 bis N29, Lastenheft F-LVL-07, F-RAE-09 bis F-RAE-13, F-SCO-04, F-SCO-05, F-SKN-05 und F-UI-08.
+
 ### Musik (#42)
 Ein Menütrack und je ein loopbarer Action-Track pro Insel.
 *Offen:* selbst erzeugt oder lizenzfreie Packs.
