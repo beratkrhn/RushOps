@@ -72,5 +72,47 @@ namespace RushOps.Tests.PlayMode
             yield return StoreScreenshots.Capture("plate_locked.png", Dir);
             SaveGameIsolation.Reset();
         }
+
+        [UnityTest]
+        public IEnumerator Shots_CrackedWall()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("no graphics device (-nographics): nothing can render");
+            }
+
+            SaveGameIsolation.Reset();
+            yield return SceneManager.LoadSceneAsync("Puzzle_Test", LoadSceneMode.Single);
+            yield return null;
+            Object.FindFirstObjectByType<WaveDirector>().enabled = false;
+            Object.FindFirstObjectByType<PressurePlatePuzzle>().GetComponent<PuzzleReinforcements>().enabled = false;
+            var wall = Object.FindFirstObjectByType<CrackedWallPuzzle>();
+            wall.GetComponent<PuzzleReinforcements>().enabled = false;
+            var player = Object.FindFirstObjectByType<PlayerHealth>();
+            player.GetComponent<PlayerMoveInput>().enabled = false;
+            Vector2 below = (Vector2)wall.transform.position + new Vector2(0f, -6f);
+            player.GetComponent<Rigidbody2D>().position = below;
+            yield return new WaitForSeconds(1.2f);
+
+            Enemy boomer = null;
+            foreach (EnemyPool pool in Object.FindObjectsByType<EnemyPool>(FindObjectsSortMode.None))
+            {
+                if (pool.Definition == wall.NeededEnemy)
+                {
+                    boomer = pool.Spawn((Vector2)wall.transform.position + new Vector2(-1f, -1.5f));
+                }
+            }
+
+            yield return new WaitForSeconds(0.4f);
+            boomer.GetComponent<Rigidbody2D>().position = (Vector2)wall.transform.position + new Vector2(-1f, -1.5f);
+            yield return StoreScreenshots.Capture("wall_hint.png", Dir);
+
+            boomer.Kill();
+            yield return new WaitForSeconds(0.15f);
+            yield return StoreScreenshots.Capture("wall_blast.png", Dir);
+            yield return new WaitForSeconds(1.5f);
+            yield return StoreScreenshots.Capture("wall_broken.png", Dir);
+            SaveGameIsolation.Reset();
+        }
     }
 }

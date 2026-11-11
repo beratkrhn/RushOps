@@ -24,6 +24,7 @@ namespace RushOps.Editor.Scenes
         private const string GeneratorOffSpritePath = "Assets/_Project/Art/Sprites/Level/Generator_Off.png";
         private const string GeneratorOnSpritePath = "Assets/_Project/Art/Sprites/Level/Generator_On.png";
         private const string PressurePlateConfigPath = "Assets/_Project/Data/Puzzles/PressurePlateConfig.asset";
+        private const string CrackedWallConfigPath = "Assets/_Project/Data/Puzzles/CrackedWallConfig.asset";
         private const string LevelSpriteDir = "Assets/_Project/Art/Sprites/Level/";
         private const string PickupRingSpriteFormat = "Assets/_Project/Art/Sprites/Effects/PickupRing_{0}.png";
         private const int PickupRingFrames = 8;
@@ -234,6 +235,68 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_hint").objectReferenceValue = hint;
             serialized.FindProperty("_sinkClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("PlateSink.wav");
             serialized.FindProperty("_lockClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("PlateLock.wav");
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AddReinforcements(puzzle, arena);
+            return puzzle;
+        }
+
+        /// <summary>
+        /// A cracked wall in front of <paramref name="gate"/> (issue #290), active with <paramref name="zone"/>: hides the
+        /// gate's bars, puts one wall tile on each gate cell and keeps sending boomers until one breaks it.
+        /// </summary>
+        public static CrackedWallPuzzle CreateCrackedWall(string name, Gate gate, Zone zone, ArenaScene arena)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(gate.transform, false);
+            Bounds area = gate.Area;
+            go.transform.position = area.center;
+            bool vertical = area.size.y > area.size.x;
+            int length = Mathf.RoundToInt(vertical ? area.size.y : area.size.x);
+            // The wall replaces the bars: hidden, and taken from the gate so its opening never shows them again.
+            foreach (SpriteRenderer bar in gate.GetComponentsInChildren<SpriteRenderer>())
+            {
+                bar.enabled = false;
+            }
+
+            var serializedGate = new SerializedObject(gate);
+            serializedGate.FindProperty("_bars").arraySize = 0;
+            serializedGate.ApplyModifiedPropertiesWithoutUndo();
+
+            Sprite wall = LoadSprite(LevelSpriteDir + "CrackedWall.png");
+            var tiles = new SpriteRenderer[length];
+            for (int i = 0; i < length; i++)
+            {
+                var tile = new GameObject($"Wall_{i}");
+                tile.transform.SetParent(go.transform, false);
+                float offset = i - (length - 1) * 0.5f;
+                // The 48 px sprite stands on its cell: its 32 px front face covers the cell, the top sticks out above.
+                tile.transform.localPosition = vertical ? new Vector3(0f, offset + 0.25f, 0f) : new Vector3(offset, 0.25f, 0f);
+                tiles[i] = tile.AddComponent<SpriteRenderer>();
+                tiles[i].sprite = wall;
+                tiles[i].sortingOrder = ArenaTestSceneBuilder.ActorSortingOrder;
+            }
+
+            SpriteRenderer hint = CreateHint(go.transform, "Hint_Boomer.png");
+            var puzzle = go.AddComponent<CrackedWallPuzzle>();
+            var serialized = new SerializedObject(puzzle);
+            SetBase(serialized, zone, arena);
+            serialized.FindProperty("_wallConfig").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<CrackedWallConfig>(CrackedWallConfigPath);
+            serialized.FindProperty("_explosions").objectReferenceValue = Object.FindFirstObjectByType<ExplosionSystem>();
+            serialized.FindProperty("_boomers").objectReferenceValue = FindPool(arena, ArenaTestSceneBuilder.BoomerDefinitionPath);
+            serialized.FindProperty("_save").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<RushOps.Save.SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
+            serialized.FindProperty("_size").vector2Value = new Vector2(area.size.x, area.size.y);
+            SerializedProperty list = serialized.FindProperty("_tiles");
+            list.arraySize = tiles.Length;
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                list.GetArrayElementAtIndex(i).objectReferenceValue = tiles[i];
+            }
+
+            serialized.FindProperty("_rubbleSprite").objectReferenceValue = LoadSprite(LevelSpriteDir + "CrackedWall_Rubble.png");
+            serialized.FindProperty("_hint").objectReferenceValue = hint;
+            serialized.FindProperty("_collapseClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("WallCollapse.wav");
             serialized.ApplyModifiedPropertiesWithoutUndo();
             AddReinforcements(puzzle, arena);
             return puzzle;

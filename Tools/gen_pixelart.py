@@ -60,6 +60,8 @@ Output (under Assets/_Project/Art/):
   Sprites/UI/Star_Empty.png                16x16 missing star on the result screen (issue #35)
   Sprites/Level/PressurePlate_<Up|Down|Locked>.png 48x48 pressure plate only a brute pushes down, the same on every
                                            island like the other puzzle objects (issue #289)
+  Sprites/Level/CrackedWall.png             32x48 one tile of the cracked wall, front face with glowing cracks; and
+  Sprites/Level/CrackedWall_Rubble.png      32x32 the rubble left on the floor once a boomer broke it (issue #290)
   Sprites/Level/Hint_<Brute|Boomer>.png    16x20 floating hint bubble with the head of the zombie a puzzle needs (issue #289)
   Sprites/UI/Badge_<Unharmed|Blitz|Combo>_<On|Off>.png 16x16 level badges, round medal with a heart, a lightning
                                            bolt or „x5“; Off is a dark hollow (issue #288)
@@ -2814,6 +2816,55 @@ def pressure_plate(state: str) -> Canvas:
     return c
 
 
+def cracked_wall() -> Canvas:
+    """One tile of a cracked wall (issue #290), the same on every island: a block of grey bricks, 16 px top and 32 px
+    front face, split by dark cracks with an orange glow inside, and a yellow warning stripe at its foot, so it reads
+    as "this breaks" next to the island's normal walls."""
+    c = Canvas(TILE, 48)
+    c.rect(0, 0, 31, 15, "slate_3")
+    c.rect(0, 0, 31, 1, "slate_4")
+    c.rect(0, 16, 31, 47, "slate_2")
+    # Bricks on the front face.
+    for row, y in enumerate(range(16, 44, 7)):
+        c.rect(0, y, 31, y, "slate_1")
+        offset = 0 if row % 2 == 0 else 8
+        for x in range(offset, 32, 16):
+            c.rect(x, y, x, min(y + 6, 43), "slate_1")
+    # Cracks: a jagged line down the middle and two branches, each with a glowing core.
+    crack = [(15, 2), (16, 6), (14, 10), (15, 14), (17, 18), (16, 22), (13, 26), (14, 30), (17, 34), (16, 38), (15, 42)]
+    for (x0, y0), (x1, y1) in zip(crack, crack[1:]):
+        steps = max(abs(x1 - x0), abs(y1 - y0))
+        for i in range(steps + 1):
+            x = round(x0 + (x1 - x0) * i / steps)
+            y = round(y0 + (y1 - y0) * i / steps)
+            c.set(x, y, "night")
+            c.set(x + 1, y, "orange" if y > 16 else "slate_1")
+    for x, y in ((12, 22), (10, 23), (9, 25), (19, 30), (21, 31), (23, 33), (11, 36), (9, 37)):
+        c.set(x, y, "night")
+    # Warning stripe at the foot.
+    for x in range(32):
+        c.set(x, 44, "yellow" if (x // 4) % 2 == 0 else "night")
+        c.set(x, 45, "yellow" if ((x + 2) // 4) % 2 == 0 else "night")
+    c.rect(0, 46, 31, 47, "slate_0")
+    c.outline()
+    return c
+
+
+def cracked_wall_rubble() -> Canvas:
+    """Rubble of a broken cracked wall (issue #290): a low heap of grey chunks with a few glowing ember bits, flat on
+    the floor so bodies walk over it."""
+    c = Canvas(TILE, TILE)
+    chunks = [(5, 20, 4, 3), (12, 22, 5, 4), (20, 19, 4, 3), (25, 23, 3, 3), (8, 25, 3, 2), (17, 26, 4, 2),
+              (3, 27, 2, 2), (23, 27, 3, 2), (14, 17, 3, 2)]
+    for x, y, w, h in chunks:
+        c.rect(x, y, x + w - 1, y + h - 1, "slate_2")
+        c.rect(x, y, x + w - 1, y, "slate_3")
+    for x, y in ((13, 24), (21, 21), (9, 26), (26, 25)):
+        c.set(x, y, "orange")
+    c.outline()
+    return c
+
+
 HINT_HEADS = {
     # Brute: broad square head, a heavy angry brow, red eyes and a jaw of teeth.
     "Brute": ([
@@ -4888,6 +4939,8 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/EnergyCell.png": energy_cell().to_image(),
         **{f"Sprites/Level/PressurePlate_{state}.png": pressure_plate(state).to_image() for state in ("Up", "Down", "Locked")},
         **{f"Sprites/Level/Hint_{name}.png": hint_bubble(name).to_image() for name in HINT_HEADS},
+        "Sprites/Level/CrackedWall.png": cracked_wall().to_image(),
+        "Sprites/Level/CrackedWall_Rubble.png": cracked_wall_rubble().to_image(),
         "Sprites/Level/Generator_Off.png": generator(False).to_image(),
         "Sprites/Level/Generator_On.png": generator(True).to_image(),
         "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),

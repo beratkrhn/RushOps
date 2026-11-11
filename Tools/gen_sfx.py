@@ -44,6 +44,7 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   RushEnd.wav         rush (issue #270): a short falling sweep that winds the power down
   PlateSink.wav       pressure plate (issue #289): a heavy stone grind sinking down under a brute
   PlateLock.wav       pressure plate (issue #289): a deep thud and a metal latch clicking shut
+  WallCollapse.wav    cracked wall (issue #290): a crack, then a rumbling fall of stones that rattles out
   FireCrackle.wav     fire trail (issue #278): a soft hiss with sharp crackling pops, fading out
 
 Usage:
@@ -499,6 +500,19 @@ def plate_lock() -> list[float]:
     return thud + click + silence(0.04) + click
 
 
+def wall_collapse() -> list[float]:
+    """Cracked wall collapsing (issue #290): a sharp crack, then a low rumble with stones clattering down."""
+    crack_length, fall_length = 0.05, 0.8
+    c, tri, n, s = Noise(short=True), Triangle(), Noise(), Noise()
+    crack = [c.sample(5000) * decay(t, crack_length) for t in (i / RATE for i in frames(crack_length))]
+    fall = []
+    for t in (i / RATE for i in frames(fall_length)):
+        clatter = s.sample(2500) if int(t * 22) % 3 == 0 else 0.0
+        fall.append((0.5 * tri.sample(slide(70, 35, t, fall_length)) + 0.35 * n.sample(slide(800, 150, t, fall_length))
+                     + 0.25 * clatter) * decay(t, fall_length, 0.01))
+    return crack + fall
+
+
 SOUNDS = {
     "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "FlameLoop": flame_loop, "RocketLaunch": rocket_launch, "RocketBlast": rocket_blast, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
     "GateOpen": gate_open, "MissionDone": mission_done,
@@ -511,7 +525,7 @@ SOUNDS = {
     "PuzzleSolved": puzzle_solved, "SwitchOn": switch_on, "SwitchReset": switch_reset,
     "RushStart": rush_start, "RushEnd": rush_end, "RushFull": rush_full,
     "FireCrackle": fire_crackle,
-    "PlateSink": plate_sink, "PlateLock": plate_lock,
+    "PlateSink": plate_sink, "PlateLock": plate_lock, "WallCollapse": wall_collapse,
 }
 
 
