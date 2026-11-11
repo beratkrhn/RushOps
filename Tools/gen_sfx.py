@@ -42,6 +42,8 @@ Output (under Assets/_Project/Audio/SFX/), 16-bit mono WAV at 22050 Hz:
   RushStart.wav       rush (issue #270): a fast rising sweep that lands on a bright power chord over a low throb
   RushFull.wav        rush (issue #271): a short bright two-note chime when the meter is full
   RushEnd.wav         rush (issue #270): a short falling sweep that winds the power down
+  PlateSink.wav       pressure plate (issue #289): a heavy stone grind sinking down under a brute
+  PlateLock.wav       pressure plate (issue #289): a deep thud and a metal latch clicking shut
   FireCrackle.wav     fire trail (issue #278): a soft hiss with sharp crackling pops, fading out
 
 Usage:
@@ -479,6 +481,24 @@ def fire_crackle() -> list[float]:
     return out
 
 
+def plate_sink() -> list[float]:
+    """Pressure plate sinking (issue #289): low grinding noise sliding down over a dull triangle rumble."""
+    length = 0.45
+    tri, n = Triangle(), Noise()
+    return [(0.5 * tri.sample(slide(70, 45, t, length)) + 0.5 * n.sample(slide(500, 200, t, length)))
+            * decay(t, length, 0.03) for t in (i / RATE for i in frames(length))]
+
+
+def plate_lock() -> list[float]:
+    """Pressure plate locking (issue #289): a deep thud, then two bright latch clicks."""
+    thud_length, click_length = 0.22, 0.04
+    tri, n, c = Triangle(), Noise(), Noise(short=True)
+    thud = [(0.7 * tri.sample(slide(110, 40, t, thud_length)) + 0.3 * n.sample(300)) * decay(t, thud_length)
+            for t in (i / RATE for i in frames(thud_length))]
+    click = [c.sample(7000) * decay(t, click_length) * 0.8 for t in (i / RATE for i in frames(click_length))]
+    return thud + click + silence(0.04) + click
+
+
 SOUNDS = {
     "Shot": shot, "ShotRifle": shot_rifle, "ShotShotgun": shot_shotgun, "ShotDual": shot_dual, "ShotDrone": shot_drone, "FlameLoop": flame_loop, "RocketLaunch": rocket_launch, "RocketBlast": rocket_blast, "Hit": hit, "Death": death, "PlayerHurt": player_hurt, "Dash": dash, "UiClick": ui_click,
     "GateOpen": gate_open, "MissionDone": mission_done,
@@ -491,6 +511,7 @@ SOUNDS = {
     "PuzzleSolved": puzzle_solved, "SwitchOn": switch_on, "SwitchReset": switch_reset,
     "RushStart": rush_start, "RushEnd": rush_end, "RushFull": rush_full,
     "FireCrackle": fire_crackle,
+    "PlateSink": plate_sink, "PlateLock": plate_lock,
 }
 
 

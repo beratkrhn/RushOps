@@ -58,6 +58,9 @@ Output (under Assets/_Project/Art/):
   Sprites/Level/Exit_Pad.png               128x48 glowing exit field on the floor with arrows pointing on (issue #35, #103)
   Sprites/Level/Exit_Pad_Locked.png        128x48 the exit while locked: dark plate, red rim and padlock (issue #103)
   Sprites/UI/Star_Empty.png                16x16 missing star on the result screen (issue #35)
+  Sprites/Level/PressurePlate_<Up|Down|Locked>.png 48x48 pressure plate only a brute pushes down, the same on every
+                                           island like the other puzzle objects (issue #289)
+  Sprites/Level/Hint_<Brute|Boomer>.png    16x20 floating hint bubble with the head of the zombie a puzzle needs (issue #289)
   Sprites/UI/Badge_<Unharmed|Blitz|Combo>_<On|Off>.png 16x16 level badges, round medal with a heart, a lightning
                                            bolt or „x5“; Off is a dark hollow (issue #288)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
@@ -2757,6 +2760,107 @@ def floor_switch(on: bool) -> Canvas:
     return c
 
 
+PLATE = 48
+
+
+def pressure_plate(state: str) -> Canvas:
+    """Heavy pressure plate (issue #289), the same on every island: a riveted steel frame with hazard stripes around a
+    big round slab. Up: the slab stands proud with a red ring, too heavy for the player. Down: the slab is sunk into
+    the frame, its ring amber. Locked: sunk for good, the ring glowing green like a solved switch."""
+    c = Canvas(PLATE, PLATE)
+    cx, cy = 23.5, 24.0
+    c.rect(2, 3, 45, 45, "slate_1")
+    c.rect(2, 3, 45, 4, "slate_3")
+    c.rect(2, 44, 45, 45, "slate_0")
+    # Hazard stripes along all four sides.
+    for i in range(2, 46):
+        if (i // 3) % 2 == 0:
+            for d in (5, 6):
+                c.set(i, d, "yellow")
+                c.set(i, 47 - d - 1, "yellow")
+                c.set(d - 2, i, "yellow")
+                c.set(47 - d + 1, i, "yellow")
+    c.rect(8, 9, 39, 39, "night")
+    ring = {"Up": "red_1", "Down": "orange", "Locked": "green_2"}[state]
+    c.ellipse(cx, cy, 15.0, 14.0, ring)
+    if state == "Up":
+        # Raised slab with a visible front face below it.
+        c.ellipse(cx, cy + 2.0, 13.0, 12.0, "slate_0")
+        c.ellipse(cx, cy - 1.0, 13.0, 12.0, "slate_3")
+        c.ellipse(cx, cy - 2.0, 11.0, 10.0, "slate_4")
+        top = "slate_5"
+    elif state == "Down":
+        c.ellipse(cx, cy, 13.0, 12.0, "slate_1")
+        c.ellipse(cx, cy, 11.0, 10.0, "slate_2")
+        top = "slate_3"
+    else:
+        c.ellipse(cx, cy, 13.0, 12.0, "green_1")
+        c.ellipse(cx, cy, 11.0, 10.0, "slate_2")
+        top = "slate_3"
+    dy = -2 if state == "Up" else 0
+    # Two chevrons pointing down: something heavy has to press it.
+    for y0 in (16, 22):
+        for i in range(6):
+            for w in (0, 1):
+                c.set(18 + i + w, y0 + i + dy, top)
+                c.set(29 - i - w, y0 + i + dy, top)
+    # Rivets in the frame corners.
+    for x, y in ((9, 10), (38, 10), (9, 38), (38, 38)):
+        c.set(x, y, "slate_4")
+    if state == "Locked":
+        for x, y in ((23, 8), (24, 8), (23, 40), (24, 40), (7, 24), (40, 24)):
+            c.set(x, y, "glow")
+    c.outline()
+    return c
+
+
+HINT_HEADS = {
+    # Brute: broad square head, a heavy angry brow, red eyes and a jaw of teeth.
+    "Brute": ([
+        "..######..",
+        ".########.",
+        "#oo####oo#",
+        "##oo##oo##",
+        "##rr##rr##",
+        "##########",
+        "#oooooooo#",
+        "#owowowow#",
+        ".########.",
+    ], "green_1", "green_0", "red_1"),
+    # Boomer: round swollen head with yellow boils, small red eyes and a gaping mouth.
+    "Boomer": ([
+        "...####...",
+        ".##+###+#.",
+        "##########",
+        "#r##+###r#",
+        "###oooo###",
+        "##oooooo##",
+        "#+#oooo###",
+        ".#####+##.",
+        "...####...",
+    ], "orange", "red_0", "yellow"),
+}
+
+
+def hint_bubble(name: str) -> Canvas:
+    """Floating hint (issue #289, N9, N29): a white speech bubble with a tail pointing down at the puzzle and the head
+    of the zombie the puzzle needs in it."""
+    c = Canvas(16, 20)
+    c.rect(1, 1, 14, 14, "white")
+    for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        c.set(x, y, None)
+    for y, (x0, x1) in enumerate(((6, 9), (7, 8)), start=15):
+        c.rect(x0, y, x1, y, "white")
+    rows, main, dark, accent = HINT_HEADS[name]
+    colors = {"#": main, "o": dark, "r": "red_1", "w": "white", "+": accent}
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in colors:
+                c.set(3 + x, 3 + y, colors[ch])
+    c.outline()
+    return c
+
+
 def energy_cell() -> Canvas:
     """Upright energy cell (issue #103): steel caps with terminals at both ends, a glowing green core in a glass tube
     with a bright highlight and a lightning bolt."""
@@ -4782,6 +4886,8 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/Switch_Off.png": floor_switch(False).to_image(),
         "Sprites/Level/Switch_On.png": floor_switch(True).to_image(),
         "Sprites/Level/EnergyCell.png": energy_cell().to_image(),
+        **{f"Sprites/Level/PressurePlate_{state}.png": pressure_plate(state).to_image() for state in ("Up", "Down", "Locked")},
+        **{f"Sprites/Level/Hint_{name}.png": hint_bubble(name).to_image() for name in HINT_HEADS},
         "Sprites/Level/Generator_Off.png": generator(False).to_image(),
         "Sprites/Level/Generator_On.png": generator(True).to_image(),
         "Sprites/UI/Dash_Locked.png": dash_locked().to_image(),

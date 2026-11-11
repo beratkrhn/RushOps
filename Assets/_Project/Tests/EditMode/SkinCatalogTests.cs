@@ -18,11 +18,11 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void Catalog_HasStandardThreeIslandThreeMilestoneAndThreeEndlessSkins()
+        public void Catalog_HasStandardIslandMilestoneEndlessGoldAndBadgeSkins()
         {
             IReadOnlyList<SkinDefinition> skins = Load().Skins;
 
-            Assert.AreEqual(11, skins.Count);
+            Assert.AreEqual(14, skins.Count);
             Assert.AreEqual(SkinUnlockKind.Default, skins[0].UnlockKind, "the default skin comes first");
             int levels = 0;
             int milestones = 0;
@@ -48,7 +48,7 @@ namespace RushOps.Tests.EditMode
             }
 
             Assert.AreEqual(3, levels, "one skin per island");
-            Assert.AreEqual(3, milestones);
+            Assert.AreEqual(6, milestones, "three milestones and three badge skins (issue #288)");
             SkinDefinition gold = null;
             foreach (SkinDefinition skin in skins)
             {
@@ -78,7 +78,7 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void Milestones_Are100And1000KillsAndAllStars()
+        public void Milestones_Are100And1000KillsAllStarsAnd9_18_27Badges()
         {
             var milestones = new List<(SkinMilestone, int)>();
             foreach (SkinDefinition skin in Load().Skins)
@@ -90,7 +90,11 @@ namespace RushOps.Tests.EditMode
             }
 
             CollectionAssert.AreEquivalent(
-                new[] { (SkinMilestone.TotalKills, 100), (SkinMilestone.TotalKills, 1000), (SkinMilestone.TotalStars, 27) },
+                new[]
+                {
+                    (SkinMilestone.TotalKills, 100), (SkinMilestone.TotalKills, 1000), (SkinMilestone.TotalStars, 27),
+                    (SkinMilestone.TotalBadges, 9), (SkinMilestone.TotalBadges, 18), (SkinMilestone.TotalBadges, 27),
+                },
                 milestones);
         }
 

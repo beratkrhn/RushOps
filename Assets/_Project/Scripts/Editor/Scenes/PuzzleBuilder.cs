@@ -23,6 +23,10 @@ namespace RushOps.Editor.Scenes
         private const string EnergyCellSpritePath = "Assets/_Project/Art/Sprites/Level/EnergyCell.png";
         private const string GeneratorOffSpritePath = "Assets/_Project/Art/Sprites/Level/Generator_Off.png";
         private const string GeneratorOnSpritePath = "Assets/_Project/Art/Sprites/Level/Generator_On.png";
+        private const string PressurePlateConfigPath = "Assets/_Project/Data/Puzzles/PressurePlateConfig.asset";
+        private const string LevelSpriteDir = "Assets/_Project/Art/Sprites/Level/";
+        private const string PickupRingSpriteFormat = "Assets/_Project/Art/Sprites/Effects/PickupRing_{0}.png";
+        private const int PickupRingFrames = 8;
         private static readonly Color CellLightColor = new Color32(141, 178, 84, 255);
         // The generator sprite (32x48) is centered; its base sits 0.75 units below the center.
         private static readonly Vector2 GeneratorTriggerSize = new Vector2(1.4f, 1.4f);
@@ -184,6 +188,99 @@ namespace RushOps.Editor.Scenes
 
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return puzzle;
+        }
+
+        /// <summary>
+        /// A pressure plate at <paramref name="center"/> only a brute pushes down (issue #289), active with
+        /// <paramref name="zone"/>; the zone keeps sending brutes until it locks.
+        /// </summary>
+        public static PressurePlatePuzzle CreatePressurePlate(string name, Vector2 center, Zone zone, ArenaScene arena)
+        {
+            var go = new GameObject(name);
+            go.transform.position = center;
+            SpriteRenderer plate = CreateFloorSprite("Plate", go.transform, LevelSpriteDir + "PressurePlate_Up.png");
+            SpriteRenderer ring = CreateFloorSprite("Ring", go.transform, string.Format(PickupRingSpriteFormat, 0));
+            ring.sortingOrder = ArenaTestSceneBuilder.FloorMarkSortingOrder + 1;
+            ring.transform.localPosition = new Vector3(0f, -0.9f, 0f);
+            ring.enabled = false;
+            SpriteRenderer hint = CreateHint(go.transform, "Hint_Brute.png");
+
+            var ringFrames = new Sprite[PickupRingFrames];
+            for (int i = 0; i < ringFrames.Length; i++)
+            {
+                ringFrames[i] = LoadSprite(string.Format(PickupRingSpriteFormat, i));
+            }
+
+            var puzzle = go.AddComponent<PressurePlatePuzzle>();
+            var serialized = new SerializedObject(puzzle);
+            SetBase(serialized, zone, arena);
+            serialized.FindProperty("_plateConfig").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<PressurePlateConfig>(PressurePlateConfigPath);
+            serialized.FindProperty("_brutes").objectReferenceValue = FindPool(arena, ArenaTestSceneBuilder.BruteDefinitionPath);
+            serialized.FindProperty("_save").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<RushOps.Save.SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
+            serialized.FindProperty("_plate").objectReferenceValue = plate;
+            serialized.FindProperty("_upSprite").objectReferenceValue = plate.sprite;
+            serialized.FindProperty("_downSprite").objectReferenceValue = LoadSprite(LevelSpriteDir + "PressurePlate_Down.png");
+            serialized.FindProperty("_lockedSprite").objectReferenceValue = LoadSprite(LevelSpriteDir + "PressurePlate_Locked.png");
+            serialized.FindProperty("_ring").objectReferenceValue = ring;
+            SerializedProperty frames = serialized.FindProperty("_ringFrames");
+            frames.arraySize = ringFrames.Length;
+            for (int i = 0; i < ringFrames.Length; i++)
+            {
+                frames.GetArrayElementAtIndex(i).objectReferenceValue = ringFrames[i];
+            }
+
+            serialized.FindProperty("_hint").objectReferenceValue = hint;
+            serialized.FindProperty("_sinkClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("PlateSink.wav");
+            serialized.FindProperty("_lockClip").objectReferenceValue = ArenaTestSceneBuilder.LoadClip("PlateLock.wav");
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AddReinforcements(puzzle, arena);
+            return puzzle;
+        }
+
+        /// <summary>Lets <paramref name="puzzle"/> keep sending the zombie it needs while it is active (issue #289).</summary>
+        public static PuzzleReinforcements AddReinforcements(Puzzle puzzle, ArenaScene arena)
+        {
+            var reinforcements = puzzle.gameObject.AddComponent<PuzzleReinforcements>();
+            var serialized = new SerializedObject(reinforcements);
+            SerializedProperty pools = serialized.FindProperty("_pools");
+            pools.arraySize = arena.Enemies.Length;
+            for (int i = 0; i < arena.Enemies.Length; i++)
+            {
+                pools.GetArrayElementAtIndex(i).objectReferenceValue = arena.Enemies[i];
+            }
+
+            serialized.FindProperty("_player").objectReferenceValue = arena.Player;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return reinforcements;
+        }
+
+        // Floating hint bubble above a puzzle (issue #289, N9), drawn above the figures.
+        internal static SpriteRenderer CreateHint(Transform parent, string file)
+        {
+            var go = new GameObject("Hint");
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = new Vector3(0f, 1.4f, 0f);
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = LoadSprite(LevelSpriteDir + file);
+            renderer.sortingOrder = ArenaTestSceneBuilder.EffectSortingOrder;
+            return renderer;
+        }
+
+        // The pool whose enemies use the definition at <paramref name="definitionPath"/>.
+        internal static EnemyPool FindPool(ArenaScene arena, string definitionPath)
+        {
+            var definition = AssetDatabase.LoadAssetAtPath<EnemyDefinition>(definitionPath);
+            foreach (EnemyPool pool in arena.Enemies)
+            {
+                if (pool != null && pool.Definition == definition)
+                {
+                    return pool;
+                }
+            }
+
+            throw new System.InvalidOperationException($"no enemy pool for {definitionPath}");
         }
 
         /// <summary>

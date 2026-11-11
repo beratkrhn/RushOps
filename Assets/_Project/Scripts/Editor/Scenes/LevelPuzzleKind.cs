@@ -6,5 +6,8 @@ namespace RushOps.Editor.Scenes
         HoldZone,
         TimedSwitches,
         Transport,
+
+        /// <summary>Pressure plate only a brute pushes down (issue #289).</summary>
+        PressurePlate,
     }
 }
