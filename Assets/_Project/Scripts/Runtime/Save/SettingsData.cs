@@ -24,5 +24,11 @@ namespace RushOps.Save
 
         /// <summary>Aim assist on or off.</summary>
         public bool AimAssist = true;
+
+        /// <summary>
+        /// Vibration on damage and explosions on or off (issue #300, F-AUD-05). Applies whether or not the settings were
+        /// customized; a save from before the field reads it as on.
+        /// </summary>
+        public bool Vibration = true;
     }
 }

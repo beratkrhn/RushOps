@@ -37,6 +37,30 @@ namespace RushOps.Save
             return settings != null && settings.Customized ? settings.AimAssist : defaultOn;
         }
 
+        /// <summary>Whether the phone vibrates on damage and explosions (issue #300); on without settings.</summary>
+        public static bool GetVibration(SettingsData settings)
+        {
+            return settings == null || settings.Vibration;
+        }
+
+        /// <summary>Turns the vibration on or off.</summary>
+        /// <returns>True if the setting changed.</returns>
+        public static bool SetVibration(SettingsData settings, bool on)
+        {
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings));
+            }
+
+            if (settings.Vibration == on)
+            {
+                return false;
+            }
+
+            settings.Vibration = on;
+            return true;
+        }
+
         /// <summary>Sets the volume of <paramref name="channel"/>.</summary>
         /// <returns>True if the setting changed.</returns>
         public static bool SetVolume(SettingsData settings, AudioChannel channel, float volume, SettingsDefaults defaults)
