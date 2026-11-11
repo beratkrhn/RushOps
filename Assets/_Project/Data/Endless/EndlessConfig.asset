@@ -57,3 +57,18 @@ MonoBehaviour:
   - _round: 15
     _weapon: {fileID: 11400000, guid: 1eb2936e780f54a34a097c4dab00b226, type: 2}
   _newWeaponNoticeSeconds: 4
+  _upgradeEveryRounds: 3
+  _upgradeOffers: 3
+  _upgrades:
+  - {fileID: 11400000, guid: cc84bdef9f8fa48569eced85b50fccd4, type: 2}
+  - {fileID: 11400000, guid: 986324594329c4a3c923507eaf4b7aab, type: 2}
+  - {fileID: 11400000, guid: 974ca2cf7708640f5bbdfdca44955991, type: 2}
+  - {fileID: 11400000, guid: c208ebb4855f1484992a1b4f4c3159bd, type: 2}
+  - {fileID: 11400000, guid: 68c020bdb5c094461b76461151f20331, type: 2}
+  - {fileID: 11400000, guid: f52472153fb4e49ffb59b0043d8fba1a, type: 2}
+  - {fileID: 11400000, guid: 800dd5567e87141bf98eca97ee9a1682, type: 2}
+  - {fileID: 11400000, guid: 4b24fd71081ac44e28d27d974599077d, type: 2}
+  - {fileID: 11400000, guid: a755e7353246946acb47430091c2d254, type: 2}
+  - {fileID: 11400000, guid: 84cadedd9c64d469baec370ccc78fbaa, type: 2}
+  - {fileID: 11400000, guid: a05f12bc4c75e4bc1938de98b1334cb7, type: 2}
+  - {fileID: 11400000, guid: 996e70d256f464f1590a6dd07249a7a3, type: 2}

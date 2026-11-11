@@ -289,6 +289,16 @@ namespace RushOps.Endless
             return null;
         }
 
+        /// <summary>
+        /// Whether clearing <paramref name="clearedRound"/> brings an upgrade choice (F-END-11, T2, N20): every n-th round
+        /// and every boss round.
+        /// </summary>
+        public bool IsUpgradeRound(int clearedRound)
+        {
+            return UpgradeOfferRules.IsOfferRound(clearedRound, _config.UpgradeEveryRounds,
+                clearedRound >= 1 && IsBossRound(clearedRound));
+        }
+
         /// <summary>Everything <paramref name="round"/> brings.</summary>
         public EndlessRound Build(int round)
         {

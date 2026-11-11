@@ -156,6 +156,8 @@ namespace RushOps.Save
                 data.Weapons.Unlocked ??= new List<string>();
                 data.Endless ??= new EndlessData();
                 data.Endless.Top ??= new List<EndlessScore>();
+                data.Daily ??= new DailyData();
+                data.Daily.Days ??= new List<DailyScore>();
                 return true;
             }
             catch (Exception)

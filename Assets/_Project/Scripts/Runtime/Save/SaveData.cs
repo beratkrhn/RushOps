@@ -13,7 +13,7 @@ namespace RushOps.Save
     public class SaveData
     {
         /// <summary>Format version written by this build.</summary>
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         /// <summary>Format version of this save.</summary>
         public int Version = CurrentVersion;
@@ -38,5 +38,8 @@ namespace RushOps.Save
 
         /// <summary>The gold account (issue #236, version 4).</summary>
         public GoldData Gold = new GoldData();
+
+        /// <summary>Best daily runs of the last days (issue #276, version 5).</summary>
+        public DailyData Daily = new DailyData();
     }
 }
