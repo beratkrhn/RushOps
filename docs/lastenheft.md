@@ -82,7 +82,7 @@ Alle Gegner verursachen ausschließlich **Kontaktschaden**. Es gibt keine Fernka
 | F-GEG-04 | Gegner sind über ScriptableObjects konfigurierbar (Gesundheit, Tempo, Schaden, Größe, Punkte). | Muss |
 | F-GEG-05 | **Zombiehunde** kommen im **Rudel von 3** *(Startwert)* und spawnen gemeinsam an einem normalen Spawnpunkt. Ein Rudel zählt mit 3 zur Höchstzahl gleichzeitiger Gegner. | Muss |
 | F-GEG-06 | Ein Hund in Reichweite duckt sich *0,4 s (Startwert)* sichtbar und hörbar und springt dann in gerader Linie zur Position, an der der Spieler beim Ducken stand. Seitliches Ausweichen lässt den Sprung ins Leere gehen. | Muss |
-| F-GEG-07 | Hunde gibt es nur im Endlos-Modus (F-END-10); in der Kampagne erst mit neuen Zonen ab v1.8.0. | Muss |
+| F-GEG-07 | Hunde gibt es im Endlos-Modus (F-END-10) und in der Kampagne nur in den neuen Zonen mit Zombie-Rätseln (F-LVL-07). | Muss |
 
 **Gegnertypen**
 
@@ -119,6 +119,7 @@ Jede Insel endet mit einem Boss im dritten Level. Bosse folgen ebenfalls dem Kon
 | F-LVL-04 | Weitere Tore öffnen sich durch das Lösen von Rätseln (2.6). | Muss |
 | F-LVL-05 | Ein Level gilt als geschafft, wenn das Levelziel erreicht ist (letztes Tor bzw. Boss besiegt). | Muss |
 | F-LVL-06 | Umfang Version 1.0: **3 Inseln mit je 3 Leveln**, das dritte Level jeder Insel ist ein Boss-Level. | Muss |
+| F-LVL-07 | Je eine neue Zone vor dem Ausgang mit einem Zombie-Rätsel (2.6) und Hunden: Druckplatte in Level 1-2, rissige Wand in Level 2-2, beide nacheinander in Level 3-2. Nur in der Kampagne (Design-Fragen Z2, N28). | Muss |
 
 ### 2.6 Rätsel
 
@@ -146,6 +147,16 @@ Rätsel sind Action-Rätsel: Während sie gelöst werden, spawnen weiterhin Gegn
 | F-RAE-06 | Ein Objekt (z. B. Energiezelle) wird aufgesammelt und zu einer Zielstation gebracht. | Muss |
 | F-RAE-07 | Während des Tragens: **Schießen möglich**, **Dash deaktiviert**, Laufgeschwindigkeit −20 % *(Startwert)*. | Muss |
 | F-RAE-08 | Bei Schaden bleibt das Objekt in der Hand. | Muss |
+
+**Zombie-Rätsel** (Design-Fragen Z1, N9, N26, N27, N29; nur in der Kampagne)
+
+| ID | Anforderung | Prio |
+|---|---|---|
+| F-RAE-09 | Eine **Druckplatte** senkt sich nur unter einem Brute; Spieler und andere Zombies sind zu leicht. Steht ein Brute *1,5 s (Startwert)* darauf, rastet sie dauerhaft ein und löst das Rätsel. Verlässt er sie vorher, beginnt der Fortschritt neu. | Muss |
+| F-RAE-10 | Solange die Druckplatte nicht eingerastet ist, schickt ihre Zone regelmäßig Brutes. | Muss |
+| F-RAE-11 | Eine **rissige Wand** versperrt einen Durchgang und bricht nur durch die Explosion eines Boomers in Reichweite auf. Schüsse, Nuke, Rakete und Strohmann wirken nicht. Danach ist der Durchgang frei. | Muss |
+| F-RAE-12 | Solange die rissige Wand steht, schickt ihre Zone regelmäßig Boomer. | Muss |
+| F-RAE-13 | **Hinweise**: Am Rätsel ist ein Symbol des nötigen Zombies zu sehen. Beim ersten Mal pro Rätselart erklärt der Missions-Tracker, was zu tun ist; das wird gespeichert. | Muss |
 
 ### 2.7 Perks
 
@@ -187,6 +198,8 @@ Alle Werte sind *Startwerte*.
 | F-SCO-01 | Jeder Kill gibt Punkte je nach Gegnertyp. | Soll |
 | F-SCO-02 | **Kombo-Multiplikator**: Kills kurz hintereinander erhöhen den Multiplikator (bis ×5). Ein erlittener Treffer setzt ihn zurück. | Soll |
 | F-SCO-03 | Pro Level werden 1 bis 3 Sterne nach Score vergeben. Bester Score und Sterne werden gespeichert. | Soll |
+| F-SCO-04 | Zusätzlich hat jedes Level drei **Abzeichen**: *Unversehrt* (geschafft ohne Herzverlust), *Blitz* (geschafft unter der Zielzeit des Levels, Startwert pro Level) und *Kombo* (Multiplikator ×5 *(Startwert)* erreicht). Jedes zählt für sich, auch aus verschiedenen Versuchen; einmal verdient, bleibt es (Design-Fragen CH1, N23). | Muss |
+| F-SCO-05 | „Level geschafft!“ zeigt die Abzeichen des Levels und hebt neu verdiente hervor; das Pause-Overlay zeigt die drei Bedingungen mit ihrem Stand (N25). | Muss |
 
 ### 2.9 Meta-Progression und Skins
 
@@ -196,6 +209,7 @@ Alle Werte sind *Startwerte*.
 | F-SKN-02 | Jede abgeschlossene Insel (ihr letztes Level) schaltet einen fest definierten Skin frei. | Muss |
 | F-SKN-03 | Zusätzliche Skins werden über spielübergreifende Meilensteine freigeschaltet (z. B. 100 Kills insgesamt). | Muss |
 | F-SKN-04 | Skins sind in Version 1.0 **rein kosmetisch**. | Muss |
+| F-SKN-05 | Abzeichen (F-SCO-04) schalten Skins frei: *„Späher“* bei 9, *„Elite“* bei 18 und *„Legende“* bei 27 Abzeichen (N24). | Muss |
 
 ### 2.10 Endlos-Modus
 
@@ -281,6 +295,7 @@ Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (De
 | F-UI-05 | Eine Karte zeigt drei durch Brücken verbundene Inseln, die unterste ist zu Beginn freigeschaltet. | Muss |
 | F-UI-06 | Eine Insel wird freigeschaltet, wenn alle Level der vorherigen Insel geschafft sind. Innerhalb einer Insel werden Level nacheinander freigeschaltet. | Muss |
 | F-UI-07 | Pro Level werden die erreichten Sterne angezeigt. | Soll |
+| F-UI-08 | Unter den Sternen jedes geschafften Levels stehen seine drei Abzeichen, verdiente hell, fehlende dunkel (N25). | Muss |
 
 ### 3.3 HUD
 
@@ -308,7 +323,7 @@ Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (De
 | F-DAT-01 | Gespeichert wird lokal als JSON-Datei im App-Speicher (`Application.persistentDataPath`). | Muss |
 | F-DAT-02 | Es gibt kein manuelles Speichern und keinen Speicherstand innerhalb eines Levels. | Muss |
 | F-DAT-03 | **Autosave** bei: Level geschafft, Tod der Spielfigur (Statistiken), Abbruch eines Levels oder Laufs, Kauf eines Skins, Änderung der Einstellungen. | Muss |
-| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08) und der Tagesläufe (F-END-14), Goldkontostand und Gold insgesamt (F-GLD-05). | Muss |
+| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08) und der Tagesläufe (F-END-14), Goldkontostand und Gold insgesamt (F-GLD-05), Abzeichen pro Level (F-SCO-04) und gezeigte Rätsel-Hinweise (F-RAE-13). | Muss |
 | F-DAT-05 | Das Speicherformat hat eine Versionsnummer, damit spätere Versionen alte Spielstände migrieren können. | Muss |
 | F-DAT-06 | Ein beschädigter Spielstand führt nicht zum Absturz. Es wird ein Backup geladen oder ein neuer Spielstand angelegt. | Muss |
 
@@ -362,7 +377,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.5.0 Hunde**: siehe Abschnitt 2.3 (F-GEG-05 bis F-GEG-07) und 2.10 (F-END-10).
 - **v1.6.0 Rush-Meter**: siehe Abschnitt 2.12 (F-RSH-01 bis F-RSH-06) und 3.3 (F-HUD-09).
 - **v1.7.0 Endlos-Upgrades und Tageslauf**: siehe Abschnitt 2.10 (F-END-11 bis F-END-14).
-- **v1.8.0 Herausforderungen und Rätsel mit Zombies**: Abzeichen pro Level; Druckplatte (nur Brute) und rissige Wand (nur Boomer) mit Hinweisen, nur in der Kampagne.
+- **v1.8.0 Herausforderungen und Rätsel mit Zombies**: siehe Abschnitt 2.5 (F-LVL-07), 2.6 (F-RAE-09 bis F-RAE-13), 2.8 (F-SCO-04, F-SCO-05), 2.9 (F-SKN-05) und 3.2 (F-UI-08).
 - **v1.9.0 Feinschliff**: Musik, Vibration (Haptik) bei Treffern und Explosionen, Balancing, Sterne-Schwellen neu.
 - Erledigt: **Waffensystem** (W1 bis W10), erschienen mit v1.0.0 ([`v1.0.0-waffen.md`](backlog/v1.0.0-waffen.md)).
 - Nach dem Release: Skins mit Modifikatoren, Dieb-Gegner, Mutatoren, weitere Inseln.
@@ -402,3 +417,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.3 | 10.11.2026 | Abschnitt 2.3 mit Zombiehunden (F-GEG-05 bis F-GEG-07) und Zeile in der Gegnertabelle; Abschnitt 2.10 mit Hunderunde (F-END-10) (Design-Fragen H1 bis H6, N6, N7). |
 | 1.4 | 10.11.2026 | Neuer Abschnitt 2.12 Rush-Meter (F-RSH-01 bis F-RSH-06); Abschnitt 3.3 mit Rush-Button (F-HUD-09) (Design-Fragen RM1 bis RM6, N8, N15 bis N18). |
 | 1.5 | 11.11.2026 | Abschnitt 2.10 mit Endlos-Upgrades (F-END-11, F-END-12, Upgrade-Tabelle) und Tageslauf (F-END-13, F-END-14); F-DAT-04 mit Tagesbestwerten (Design-Fragen T1 bis T4, N19 bis N22). |
+| 1.6 | 11.11.2026 | Abschnitt 2.6 mit Zombie-Rätseln Druckplatte und rissige Wand samt Hinweisen (F-RAE-09 bis F-RAE-13); F-LVL-07 mit neuen Zonen in 1-2, 2-2 und 3-2; Abzeichen F-SCO-04, F-SCO-05, Skins F-SKN-05, Inselkarte F-UI-08; F-GEG-07 mit Hunden in den neuen Zonen; F-DAT-04 mit Abzeichen und Hinweisen (Design-Fragen CH1, Z1, Z2, N9, N23 bis N29). |

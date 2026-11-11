@@ -254,3 +254,15 @@ Beim Zerlegen von v1.7.0 am 11.11.2026 nachgefragt:
 | N20 | Ablauf der Wahl (T2)? | Spiel hält an, 3 Karten ohne ausgereizte Upgrades, Pflichtwahl, danach die Pause „Runde X“; auch nach Bossrunden | V |
 | N21 | Was legt der Tages-Seed fest? | Alles Zufällige im Lauf: Upgrade-Angebote, Spawns, Perk- und Gold-Drops, Boss-Reihenfolge | V |
 | N22 | Wertung und Start des Tageslaufs? | Button „Tageslauf“ im Bereich „Endlos“, Bestwert pro Tag, Anzeige der letzten 7 Tage, nicht in der Top 10; Gold und Skins zählen | V |
+
+Beim Zerlegen von v1.8.0 am 11.11.2026 nachgefragt:
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| N23 | Welche Abzeichen (CH1)? | 3 pro Level, in allen 9 Leveln dieselben: Unversehrt (ohne Herzverlust), Blitz (unter der Zielzeit des Levels), Kombo (×5 erreicht); jedes zählt für sich, auch über verschiedene Versuche; zusammen 27 | V |
+| N24 | Welche Skins? | „Späher“ für 9, „Elite“ für 18, „Legende“ für 27 Abzeichen, Paletten-Varianten per Skript | V |
+| N25 | Anzeige der Abzeichen? | Inselkarte unter den Sternen, neu verdiente auf „Level geschafft!“, die drei Bedingungen im Pause-Overlay | V |
+| N26 | Druckplatte (Z1)? | Senkt sich nur unter einem Brute; nach 1,5 s rastet sie dauerhaft ein und das Tor öffnet sich; bis dahin schickt die Zone regelmäßig Brutes | V |
+| N27 | Rissige Wand (Z1)? | Bricht nur durch eine Boomer-Explosion in Reichweite; Schüsse, Nuke und Rakete wirken nicht; bis dahin schickt die Zone regelmäßig Boomer | V |
+| N28 | Wo (Z2)? | Je eine neue Zone vor dem Ausgang: Druckplatte in 1-2, rissige Wand in 2-2, beide nacheinander in 3-2; dort auch Hunde (A4); Sterne-Schwellen angepasst; Boss-Level unverändert | V |
+| N29 | Hinweise genau (N9)? | Brute- bzw. Boomer-Kopf als Symbol am Rätsel; beim ersten Mal pro Rätselart „Locke einen Brute auf die Platte“ bzw. „Lass einen Boomer an der Wand explodieren“ im Missions-Tracker; gemerkt im Spielstand (Version 6) | V |
