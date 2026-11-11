@@ -36,7 +36,9 @@ namespace RushOps.Editor.Scenes
             Slider effects = CreateVolumeSlider("Effects", settingsPanel, font, "Effekte", 2, menu.SetEffectsVolume);
             Button aim = MainMenuSceneBuilder.CreateButton("AimAssistButton", settingsPanel, font, SettingsMenu.AimAssistText(true),
                 new Vector2(0f, -40f), false, true, menu.ToggleAimAssist);
-            MainMenuSceneBuilder.CreateButton("CreditsButton", settingsPanel, font, "Credits", new Vector2(0f, -95f), false, true,
+            Button vibration = MainMenuSceneBuilder.CreateButton("VibrationButton", settingsPanel, font,
+                SettingsMenu.VibrationText(true), new Vector2(0f, -95f), false, true, menu.ToggleVibration);
+            MainMenuSceneBuilder.CreateButton("CreditsButton", settingsPanel, font, "Credits", new Vector2(0f, -150f), false, true,
                 menu.OpenCredits);
             MainMenuSceneBuilder.CreateButton("BackButton", settingsPanel, font, "Zurück", new Vector2(0f, -200f), true, true,
                 menu.Close);
@@ -65,6 +67,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_music").objectReferenceValue = music;
             serialized.FindProperty("_effects").objectReferenceValue = effects;
             serialized.FindProperty("_aimAssistLabel").objectReferenceValue = aim.GetComponentInChildren<Text>();
+            serialized.FindProperty("_vibrationLabel").objectReferenceValue = vibration.GetComponentInChildren<Text>();
             serialized.FindProperty("_creditsText").objectReferenceValue = credits;
             serialized.ApplyModifiedPropertiesWithoutUndo();
 

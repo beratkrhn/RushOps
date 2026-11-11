@@ -8,7 +8,7 @@ namespace RushOps.UI
 {
     /// <summary>
     /// Settings screen of the main menu (issue #126, F-UI-04, F-AUD-04): sliders for the three volumes, aim assist on
-    /// and off, and the credits. Volume changes are audible at once; the settings are saved when the screen closes,
+    /// and off, vibration on and off (issue #300), and the credits. Volume changes are audible at once; the settings are saved when the screen closes,
     /// when aim assist is switched and when the app goes to the background (F-DAT-03). Thin adapter; the rules live
     /// in <see cref="SettingsRules"/>. Buttons and sliders call the public methods.
     /// </summary>
@@ -29,6 +29,7 @@ namespace RushOps.UI
         [SerializeField] private Slider _music;
         [SerializeField] private Slider _effects;
         [SerializeField] private Text _aimAssistLabel;
+        [SerializeField] private Text _vibrationLabel;
         [SerializeField] private Text _creditsText;
 
         private bool _dirty;
@@ -44,6 +45,12 @@ namespace RushOps.UI
         public static string AimAssistText(bool on)
         {
             return on ? "Zielhilfe: An" : "Zielhilfe: Aus";
+        }
+
+        /// <summary>Text of the vibration button, „Vibration: An“ or „Vibration: Aus“ (issue #300).</summary>
+        public static string VibrationText(bool on)
+        {
+            return on ? "Vibration: An" : "Vibration: Aus";
         }
 
         /// <summary>Shows the settings screen with the current values.</summary>
@@ -108,6 +115,22 @@ namespace RushOps.UI
             _save.Save();
         }
 
+        /// <summary>Switches the vibration and saves (issue #300).</summary>
+        public void ToggleVibration()
+        {
+            if (_save == null)
+            {
+                return;
+            }
+
+            SettingsData settings = _save.Data.Settings;
+            bool on = !SettingsRules.GetVibration(settings);
+            SettingsRules.SetVibration(settings, on);
+            SetText(_vibrationLabel, VibrationText(on));
+            _dirty = false;
+            _save.Save();
+        }
+
         private SettingsDefaults Defaults => SettingsRules.DefaultsFrom(_audioConfig, _weaponConfig);
 
         private void Awake()
@@ -160,6 +183,7 @@ namespace RushOps.UI
             SetSlider(_effects, SettingsRules.GetVolume(settings, AudioChannel.Effects, Defaults));
             _refreshing = false;
             SetText(_aimAssistLabel, AimAssistText(SettingsRules.GetAimAssist(settings, Defaults.AimAssist)));
+            SetText(_vibrationLabel, VibrationText(SettingsRules.GetVibration(settings)));
         }
 
         private void SaveIfChanged()

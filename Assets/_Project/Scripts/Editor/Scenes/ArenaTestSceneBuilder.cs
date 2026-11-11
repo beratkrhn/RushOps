@@ -92,6 +92,7 @@ namespace RushOps.Editor.Scenes
         internal const string SaveGameServicePath = "Assets/_Project/Data/Save/SaveGameService.asset";
         private const string NavigationConfigPath = "Assets/_Project/Data/Navigation/NavigationConfig.asset";
         internal const string FeelConfigPath = "Assets/_Project/Data/Feel/FeelConfig.asset";
+        internal const string HapticConfigPath = "Assets/_Project/Data/Feel/HapticConfig.asset";
         private const string FlashShaderName = "RushOps/Sprite Flash";
         private const string FlashMaterialPath = "Assets/_Project/Art/Shaders/SpriteFlash.mat";
         // Enemies slide off each other and off walls instead of sticking by friction, so a brute shoves smaller
@@ -748,7 +749,10 @@ namespace RushOps.Editor.Scenes
             AddClickSounds(sfx.GetComponent<UiClickSound>());
             CompanionBuilder.Create(target, results, enemyPools, sfx);
             FlamethrowerBuilder.Create(target, results, pause, sfx);
-            RocketLauncherBuilder.Create(target, results, sfx);
+            RocketLauncher rocket = RocketLauncherBuilder.Create(target, results, sfx);
+            var serializedHaptics = new SerializedObject(sfx.GetComponent<Haptics>());
+            serializedHaptics.FindProperty("_rocket").objectReferenceValue = rocket;
+            serializedHaptics.ApplyModifiedPropertiesWithoutUndo();
             ScarecrowBuilder.Create(target, results, navigator, explosions, perks);
             RushBuilder.Create(target, results, enemyPools, score, sfx, (RectTransform)flash.transform.parent);
             extend?.Invoke(new ArenaScene(walls, target, navigator, enemyPools, director, kills, tracker, sfx, results, theme));
@@ -1608,6 +1612,17 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_hitClip").objectReferenceValue = LoadClip("Hit.wav");
             serialized.FindProperty("_deathClip").objectReferenceValue = LoadClip("Death.wav");
             serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            // Vibration on damage and explosions (issue #300); the rocket launcher is wired once it exists.
+            var haptics = go.AddComponent<Haptics>();
+            var serializedHaptics = new SerializedObject(haptics);
+            serializedHaptics.FindProperty("_config").objectReferenceValue = LoadOrCreateConfig<HapticConfig>(HapticConfigPath);
+            serializedHaptics.FindProperty("_save").objectReferenceValue = LoadOrCreateConfig<SaveGameService>(SaveGameServicePath);
+            serializedHaptics.FindProperty("_player").objectReferenceValue = player.GetComponent<PlayerHealth>();
+            serializedHaptics.FindProperty("_explosions").objectReferenceValue = explosions;
+            serializedHaptics.FindProperty("_nuke").objectReferenceValue = nuke;
+            serializedHaptics.FindProperty("_camera").objectReferenceValue = camera != null ? camera.GetComponent<Camera>() : null;
+            serializedHaptics.ApplyModifiedPropertiesWithoutUndo();
             return sfx;
         }
 
