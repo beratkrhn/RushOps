@@ -266,3 +266,13 @@ Beim Zerlegen von v1.8.0 am 11.11.2026 nachgefragt:
 | N27 | Rissige Wand (Z1)? | Bricht nur durch eine Boomer-Explosion in Reichweite; Schüsse, Nuke und Rakete wirken nicht; bis dahin schickt die Zone regelmäßig Boomer | V |
 | N28 | Wo (Z2)? | Je eine neue Zone vor dem Ausgang: Druckplatte in 1-2, rissige Wand in 2-2, beide nacheinander in 3-2; dort auch Hunde (A4); Sterne-Schwellen angepasst; Boss-Level unverändert | V |
 | N29 | Hinweise genau (N9)? | Brute- bzw. Boomer-Kopf als Symbol am Rätsel; beim ersten Mal pro Rätselart „Locke einen Brute auf die Platte“ bzw. „Lass einen Boomer an der Wand explodieren“ im Missions-Tracker; gemerkt im Spielstand (Version 6) | V |
+
+Beim Zerlegen von v1.9.0 am 11.11.2026 nachgefragt:
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| N30 | Musikstil? | Chiptune, per Skript erzeugt (G11) | Chiptune mit dem Gefühl eines Arcade-Zombie-Shooters von oben (treibend, düster, verspielt); eigene Komposition, nichts nachgespielt |
+| N31 | Welche Tracks? | Menü, je einer pro Insel, Arena | **Nur zwei:** Hauptmenü und ein Spieltrack für Kampagne, Boss-Level und Endlos-Modus |
+| N32 | Wann vibriert das Handy? | Schaden am Spieler, Explosionen, Sieg; Schalter in den Einstellungen | Schaden am Spieler und Explosionen; Schalter „Vibration“ in den Einstellungen, Standard an; kein Muster beim Sieg |
+| N33 | Sterne-Schwellen ohne Spieltest? | Warten auf den Spieltest | **Per Simulation** aus dem Inhalt jedes Levels vorschlagen; Gefühl am Gerät |
+
