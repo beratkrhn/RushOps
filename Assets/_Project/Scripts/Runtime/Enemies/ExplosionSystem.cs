@@ -29,10 +29,16 @@ namespace RushOps.Enemies
         /// <summary>Raised after an explosion dealt its damage, with its center and definition.</summary>
         public event Action<Vector2, ExplosionDefinition> Exploded;
 
+        /// <summary>
+        /// Raised after the explosion of an enemy (e.g. a boomer) dealt its damage, with its center and definition; not
+        /// for blasts of the player's side like the scarecrow (issue #290, F-RAE-11).
+        /// </summary>
+        public event Action<Vector2, ExplosionDefinition> EnemyExploded;
+
         /// <summary>Explosions waiting to go off, e.g. chain reactions.</summary>
         public int Pending => _queue.Count;
 
-        /// <summary>Sets off <paramref name="definition"/> at <paramref name="center"/> right now.</summary>
+        /// <summary>Sets off the enemy explosion <paramref name="definition"/> at <paramref name="center"/> right now.</summary>
         public void Explode(Vector2 center, ExplosionDefinition definition)
         {
             if (definition == null)
@@ -53,6 +59,7 @@ namespace RushOps.Enemies
             }
 
             Exploded?.Invoke(center, definition);
+            EnemyExploded?.Invoke(center, definition);
         }
 
         /// <summary>

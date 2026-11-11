@@ -32,6 +32,9 @@ namespace RushOps.Editor.Scenes
 
         public int RequiredCells { get; }
 
+        /// <summary>Index of the gate a cracked wall stands in front of (issue #290); -1 otherwise.</summary>
+        public int Gate { get; private set; } = -1;
+
         /// <summary>Waves the zone runs while the puzzle is active (issue #34), or null.</summary>
         public LevelWaves PressureWaves { get; private set; }
 
@@ -77,6 +80,15 @@ namespace RushOps.Editor.Scenes
         public static LevelPuzzle PressurePlate(string name, int zone, Vector2 center)
         {
             return new LevelPuzzle(LevelPuzzleKind.PressurePlate, name, zone, center, null, 0);
+        }
+
+        /// <summary>
+        /// A cracked wall in front of gate <paramref name="gate"/> of the blueprint (issue #290): it hides the gate's bars,
+        /// and the gate opens once a boomer broke it. Add the puzzle to that gate's puzzles too.
+        /// </summary>
+        public static LevelPuzzle CrackedWall(string name, int zone, int gate, Vector2 gateCenter)
+        {
+            return new LevelPuzzle(LevelPuzzleKind.CrackedWall, name, zone, gateCenter, null, 0) { Gate = gate };
         }
 
         /// <summary>Lets the zone run <paramref name="waves"/> while the puzzle is active, then do <paramref name="after"/>.</summary>

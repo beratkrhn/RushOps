@@ -6,8 +6,9 @@ namespace RushOps.Editor.Scenes
 {
     /// <summary>
     /// Test scene „Zombie-Rätsel“ (issues #289, #290): the zombie puzzles without playing up to their zones. Zone 1 has
-    /// a pressure plate that opens the gate north; the zone keeps sending brutes until it locks. Listed in the test menu,
-    /// not in the campaign.
+    /// a pressure plate that opens the gate north; the zone keeps sending brutes until it locks. Zone 2 ends in a cracked
+    /// wall in front of the next gate; it keeps sending boomers until one breaks it. Listed in the test menu, not in the
+    /// campaign.
     /// Batchmode: <c>-executeMethod RushOps.Editor.Scenes.PuzzleTestSceneBuilder.Build</c>
     /// </summary>
     public static class PuzzleTestSceneBuilder
@@ -18,6 +19,7 @@ namespace RushOps.Editor.Scenes
         private const int Width = 24;
         private const int Height = 38;
         private const int DividerRow = 20;
+        private const int WallRow = 31;
         private const int GateX = 10;
         private const int GateWidth = 4;
 
@@ -46,10 +48,16 @@ namespace RushOps.Editor.Scenes
             level.AddZone(new LevelZone("Zone_Plate", new RectInt(1, 1, Width - 2, DividerRow - 1),
                 new[] { new Vector2Int(3, 17), new Vector2Int(20, 17), new Vector2Int(3, 4), new Vector2Int(20, 4) },
                 walkers, gate));
-            level.AddZone(new LevelZone("Zone_Wall", new RectInt(1, DividerRow + 1, Width - 2, Height - DividerRow - 2),
+            int wallGate = level.AddHorizontalDivider("Gate_Wall", WallRow, 1, Width - 2, GateX, GateWidth);
+            level.AddZone(new LevelZone("Zone_Wall", new RectInt(1, DividerRow + 1, Width - 2, WallRow - DividerRow - 1),
+                new[] { new Vector2Int(3, 23), new Vector2Int(20, 23), new Vector2Int(3, 28), new Vector2Int(20, 28) },
+                null, wallGate));
+            level.AddZone(new LevelZone("Zone_Exit", new RectInt(1, WallRow + 1, Width - 2, Height - WallRow - 2),
                 new[] { new Vector2Int(3, Height - 4), new Vector2Int(20, Height - 4) }, null, -1));
             int plate = level.AddPuzzle(LevelPuzzle.PressurePlate("PressurePlate", 0, PlateCenter));
             level.Gates[gate].Puzzles.Add(plate);
+            int wall = level.AddPuzzle(LevelPuzzle.CrackedWall("CrackedWall", 1, wallGate, level.Gates[wallGate].Center));
+            level.Gates[wallGate].Puzzles.Add(wall);
             return level;
         }
     }

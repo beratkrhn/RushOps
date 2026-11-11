@@ -9,5 +9,8 @@ namespace RushOps.Editor.Scenes
 
         /// <summary>Pressure plate only a brute pushes down (issue #289).</summary>
         PressurePlate,
+
+        /// <summary>Cracked wall in front of a gate, only a boomer breaks it (issue #290).</summary>
+        CrackedWall,
     }
 }

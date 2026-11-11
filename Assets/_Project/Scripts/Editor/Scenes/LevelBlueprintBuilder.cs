@@ -120,6 +120,13 @@ namespace RushOps.Editor.Scenes
                     targets.Add(($"{puzzle.Name} part {i + 1}", parts[i]));
                 }
 
+                if (puzzle.Kind == LevelPuzzleKind.CrackedWall
+                    && (puzzle.Gate < 0 || puzzle.Gate >= blueprint.Gates.Count
+                        || !blueprint.Gates[puzzle.Gate].Puzzles.Contains(blueprint.Puzzles.IndexOf(puzzle))))
+                {
+                    problems.Add($"{puzzle.Name}: a cracked wall needs its gate, and the gate must wait for it");
+                }
+
                 if (puzzle.Zone < 0 || puzzle.Zone >= blueprint.Zones.Count)
                 {
                     problems.Add($"{puzzle.Name}: zone {puzzle.Zone} does not exist");
@@ -362,7 +369,7 @@ namespace RushOps.Editor.Scenes
             var puzzles = new Puzzle[blueprint.Puzzles.Count];
             for (int i = 0; i < puzzles.Length; i++)
             {
-                puzzles[i] = CreatePuzzle(blueprint.Puzzles[i], zones, arena, difficulty, enemies);
+                puzzles[i] = CreatePuzzle(blueprint.Puzzles[i], zones, gates, arena, difficulty, enemies);
             }
 
             for (int i = 0; i < gates.Length; i++)
@@ -407,7 +414,7 @@ namespace RushOps.Editor.Scenes
         }
 
         private static Puzzle CreatePuzzle(
-            LevelPuzzle spec, Zone[] zones, ArenaScene arena, LevelDifficulty difficulty, LevelEnemies enemies)
+            LevelPuzzle spec, Zone[] zones, Gate[] gates, ArenaScene arena, LevelDifficulty difficulty, LevelEnemies enemies)
         {
             Zone zone = zones[spec.Zone];
             Puzzle puzzle;
@@ -420,6 +427,9 @@ namespace RushOps.Editor.Scenes
                 case LevelPuzzleKind.TimedSwitches:
                     puzzle = PuzzleBuilder.CreateTimedSwitches(spec.Name, spec.Points, zone, arena);
                     SetDifficulty(puzzle, difficulty);
+                    break;
+                case LevelPuzzleKind.CrackedWall:
+                    puzzle = PuzzleBuilder.CreateCrackedWall(spec.Name, gates[spec.Gate], zone, arena);
                     break;
                 case LevelPuzzleKind.PressurePlate:
                     puzzle = PuzzleBuilder.CreatePressurePlate(spec.Name, spec.Position, zone, arena);
