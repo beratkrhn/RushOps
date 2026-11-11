@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: Strandpromenade
   _sceneName: Level_1-2
-  _twoStarScore: 1450
-  _threeStarScore: 2000
+  _twoStarScore: 8850
+  _threeStarScore: 14750
   _badgeSeconds: 330
   _completionMessage: 

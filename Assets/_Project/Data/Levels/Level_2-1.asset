@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: "Hinterh\xF6fe"
   _sceneName: Level_2-1
-  _twoStarScore: 1700
-  _threeStarScore: 2400
+  _twoStarScore: 10400
+  _threeStarScore: 17300
   _badgeSeconds: 270
   _completionMessage: 

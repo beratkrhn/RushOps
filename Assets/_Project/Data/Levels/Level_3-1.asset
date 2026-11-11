@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: Aschefeld
   _sceneName: Level_3-1
-  _twoStarScore: 1900
-  _threeStarScore: 2700
+  _twoStarScore: 13050
+  _threeStarScore: 21800
   _badgeSeconds: 300
   _completionMessage: 

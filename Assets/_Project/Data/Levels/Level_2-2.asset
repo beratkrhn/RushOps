@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: U-Bahn
   _sceneName: Level_2-2
-  _twoStarScore: 1700
-  _threeStarScore: 2400
+  _twoStarScore: 11800
+  _threeStarScore: 19650
   _badgeSeconds: 360
   _completionMessage: 

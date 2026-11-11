@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Levels.LevelDefinition
   _displayName: Kanalisation
   _sceneName: Level_2-3
-  _twoStarScore: 1600
-  _threeStarScore: 2100
+  _twoStarScore: 4500
+  _threeStarScore: 7550
   _badgeSeconds: 180
   _completionMessage: 

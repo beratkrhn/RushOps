@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c870546d214884839b945f23ec739d7d, type: 3}
+  m_Name: StarEstimateConfig
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Scoring.StarEstimateConfig
+  _solidMultiplier: 1.5
+  _strongMultiplier: 2.5
+  _killShare: 0.9
+  _coinShare: 0.8
+  _repeatRounds: 1
+  _roundTo: 50
