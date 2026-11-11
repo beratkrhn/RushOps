@@ -7,7 +7,7 @@ using UnityEngine;
 namespace RushOps.Endless
 {
     /// <summary>
-    /// Balancing values of the endless mode (F-END-03 to F-END-07, F-END-10, decisions E3 to E6, N3 to N6). All are start values;
+    /// Balancing values of the endless mode (F-END-03 to F-END-07, F-END-10 to F-END-12, decisions E3 to E6, N3 to N6, T2, N19). All are start values;
     /// <see cref="EndlessRules"/> turns them into the values of one round.
     /// </summary>
     [CreateAssetMenu(fileName = "EndlessConfig", menuName = "RushOps/Endless Config")]
@@ -82,6 +82,16 @@ namespace RushOps.Endless
         [Tooltip("Seconds the mission tracker shows „Neue Waffe: …“ when a wall weapon unlocks (issue #209).")]
         [SerializeField, Min(0f)] private float _newWeaponNoticeSeconds = 4f;
 
+        [Header("Upgrades")]
+        [Tooltip("Every how many cleared rounds an upgrade choice comes; boss rounds always bring one (F-END-11, T2).")]
+        [SerializeField, Min(1)] private int _upgradeEveryRounds = 3;
+
+        [Tooltip("Different upgrades offered per choice (F-END-11).")]
+        [SerializeField, Min(1)] private int _upgradeOffers = 3;
+
+        [Tooltip("The run upgrades, in a fixed order; the daily run draws from this order (F-END-12, N19).")]
+        [SerializeField] private UpgradeDefinition[] _upgrades = Array.Empty<UpgradeDefinition>();
+
         /// <summary>Seconds of break before every round.</summary>
         public float PauseBetweenRounds => _pauseBetweenRounds;
 
@@ -145,6 +155,15 @@ namespace RushOps.Endless
         /// <summary>Weapons on the wall with their rounds.</summary>
         public EndlessWeaponRound[] WallWeapons => _wallWeapons ?? Array.Empty<EndlessWeaponRound>();
 
+        /// <summary>Every how many cleared rounds an upgrade choice comes.</summary>
+        public int UpgradeEveryRounds => Math.Max(1, _upgradeEveryRounds);
+
+        /// <summary>Different upgrades offered per choice.</summary>
+        public int UpgradeOffers => Math.Max(1, _upgradeOffers);
+
+        /// <summary>The run upgrades in order.</summary>
+        public UpgradeDefinition[] Upgrades => _upgrades ?? Array.Empty<UpgradeDefinition>();
+
         /// <summary>Sets the round values, for editor scripts and tests.</summary>
         public void ConfigureRounds(float pauseBetweenRounds, int heartsPerRound)
         {
@@ -194,6 +213,14 @@ namespace RushOps.Endless
         {
             _startWeapon = startWeapon;
             _wallWeapons = wallWeapons ?? Array.Empty<EndlessWeaponRound>();
+        }
+
+        /// <summary>Sets the upgrade values, for editor scripts and tests.</summary>
+        public void ConfigureUpgrades(int everyRounds, int offers, UpgradeDefinition[] upgrades)
+        {
+            _upgradeEveryRounds = Math.Max(1, everyRounds);
+            _upgradeOffers = Math.Max(1, offers);
+            _upgrades = upgrades ?? Array.Empty<UpgradeDefinition>();
         }
     }
 }

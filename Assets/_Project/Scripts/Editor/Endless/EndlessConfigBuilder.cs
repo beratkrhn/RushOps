@@ -60,6 +60,9 @@ namespace RushOps.Editor.Endless
                 new EndlessWeaponRound(15, Load<WeaponDefinition>(WeaponCatalogBuilder.DualPistolsPath)),
             });
 
+            // Upgrades came with v1.7.0 (F-END-11, F-END-12); both numbers start at 3 in older assets too.
+            config.ConfigureUpgrades(config.UpgradeEveryRounds, config.UpgradeOffers, UpgradeCatalogBuilder.Get());
+
             EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
             return config;

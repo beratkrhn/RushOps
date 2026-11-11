@@ -20,18 +20,18 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void NewSave_IsVersion4WithEmptyAccount()
+        public void NewSave_HasAnEmptyAccount()
         {
             SaveData data = _store.Load();
 
-            Assert.AreEqual(4, SaveData.CurrentVersion);
+            Assert.GreaterOrEqual(SaveData.CurrentVersion, 4);
             Assert.AreEqual(0, data.Gold.Balance);
             Assert.AreEqual(0, data.Gold.TotalEarned);
             Assert.IsEmpty(data.Skins.Purchased);
         }
 
         [Test]
-        public void Migration_3To4_KeepsTheRestAndStartsWithAnEmptyAccount()
+        public void Migration_3ToCurrent_KeepsTheRestAndStartsWithAnEmptyAccount()
         {
             var old = new SaveData { Version = 3 };
             old.Stats.TotalKills = 77;
@@ -42,7 +42,7 @@ namespace RushOps.Tests.EditMode
             SaveData data = _store.Load();
 
             Assert.AreEqual(SaveLoadSource.Main, _store.LastSource);
-            Assert.AreEqual(4, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.AreEqual(77, data.Stats.TotalKills);
             Assert.AreEqual("Skin_A", data.Skins.Current);
             Assert.AreEqual(0, data.Gold.Balance);
@@ -51,13 +51,13 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void Migration_FromV1_ReachesVersion4()
+        public void Migration_FromV1_ReachesTheCurrentVersion()
         {
             _files.Files[_store.MainPath] = "{\"Version\":1,\"Stats\":{\"TotalKills\":5}}";
 
             SaveData data = _store.Load();
 
-            Assert.AreEqual(4, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.AreEqual(5, data.Stats.TotalKills);
             Assert.AreEqual(0, data.Gold.Balance);
         }
