@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 2
   _displayName: "L\xE4ngere Perks"
   _description: "Perks halten 30 % l\xE4nger."
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: ba9a7f6397ae9428cace8d661622f779, type: 3}
   _valuePerLevel: 0.3
   _maxLevel: 3

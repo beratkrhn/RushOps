@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 4
   _displayName: Feuerspur
   _description: "Dein Dash hinterl\xE4sst brennendes Feuer."
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 92a07bf34e3064c2b94a477c690caddb, type: 3}
   _valuePerLevel: 1
   _maxLevel: 1

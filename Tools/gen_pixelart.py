@@ -74,6 +74,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Effects/Burn_<0-3>.png           16x16 small flames licking up a burning enemy, 4 frames (issue #254)
   Sprites/Effects/FireTrail_<0-3>.png      24x24 burning tile of the dash fire trail on a scorched patch, 4 loop frames
                                            (issue #278)
+  Sprites/UI/Upgrade_<NAME>.png            24x24 icons of the 12 endless run upgrades on a square gold-rimmed plaque, so
+                                           they never look like the round perk coins (issue #279)
   Sprites/Pickups/Perk_RocketLauncher.png  24x24 perk icon of the rocket launcher (issue #255)
   Sprites/RocketLauncher/Hand_<DIR>.png    64x64 rocket launcher in the player's hand per direction, laid over the
                                            player sprite, pivot bottom centre (issue #255)
@@ -2468,6 +2470,213 @@ def perk_icon(perk: str) -> Canvas:
     return c
 
 
+# --- Run upgrades (issue #279) ------------------------------------------------------------
+# One icon per upgrade of the endless run on a square navy plaque with a gold rim; the round coins stay the perks'.
+# Glyphs as for the perks: '#' main color, '+' accent, 'o' detail; '.' shows the plaque.
+
+UPGRADE_GLYPHS = {
+    # A shot coming down at a wall on the left and flying back up.
+    "Bounce": [
+        "oo.....++++",
+        "oo......+++",
+        "oo.....#+++",
+        "oo....##..+",
+        "oo...##....",
+        "oo..##.....",
+        "oo.##......",
+        "oo##.......",
+        "oo.##......",
+        "oo..##.....",
+        "oo...##....",
+        "oo....##...",
+        "oo.....##..",
+    ],
+    # A heart with a plus.
+    "ExtraHeart": [
+        ".##...##.....",
+        "####.####....",
+        "#########..+.",
+        "#########.+++",
+        ".#######...+.",
+        "..#####......",
+        "...###.......",
+        "....#........",
+    ],
+    # Hourglass with sand running.
+    "LongerPerks": [
+        "#########",
+        ".o+++++o.",
+        "..o+++o..",
+        "...o+o...",
+        "....+....",
+        "...o+o...",
+        "..o.+.o..",
+        ".o.+++.o.",
+        "#########",
+    ],
+    # Horseshoe magnet with white tips pulling a coin.
+    "GoldMagnet": [
+        "oo...oo.....",
+        "##...##.....",
+        "##...##..++.",
+        "##...##.++++",
+        "##...##.++++",
+        ".##.##...++.",
+        "..###.......",
+    ],
+    # A flame on the floor with dash streaks behind it.
+    "FireTrail": [
+        ".......+.....",
+        "......+#+....",
+        ".....+###+...",
+        "....+##o##+..",
+        "oo..+#ooo#+..",
+        "....+#ooo#+..",
+        "ooo..+###+...",
+        "######.......",
+    ],
+    # The combat drone over an infinity loop.
+    "PermanentCompanion": [
+        "####....####",
+        ".##.####.##.",
+        "..########..",
+        "...oooooo...",
+        "............",
+        ".++++..++++.",
+        "+....++....+",
+        ".++++..++++.",
+    ],
+    # A boot with speed streaks.
+    "QuickFeet": [
+        "......####...",
+        "......####...",
+        "+++...####...",
+        "......#####..",
+        "..++..######.",
+        "......#######",
+        "+++..########",
+        "......oooooo.",
+    ],
+    # Three bullets one behind the other.
+    "FireRate": [
+        ".######+.....",
+        "#######++....",
+        ".######+.....",
+        ".............",
+        "...######+...",
+        "..#######++..",
+        "...######+...",
+        ".............",
+        ".....######+.",
+        "....#######++",
+        ".....######+.",
+    ],
+    # A burst with a hot core.
+    "Damage": [
+        ".....#.....",
+        "..#..#..#..",
+        "...#####...",
+        "...#+++#...",
+        "####+o+####",
+        "...#+++#...",
+        "...#####...",
+        "..#..#..#..",
+        ".....#.....",
+    ],
+    # Four-leaf clover with its stem.
+    "PerkLuck": [
+        "..##..##..",
+        ".####.####",
+        ".####.####",
+        "..##+o##..",
+        "..##o+##..",
+        ".####.####",
+        ".####.####",
+        "..##..##..",
+        ".....+....",
+        "......+...",
+    ],
+    # Lightning bolt of the rush.
+    "FastRush": [
+        ".....####",
+        "....####.",
+        "...####..",
+        "..#######",
+        ".......##",
+        "......##.",
+        ".....##..",
+        "....##...",
+        "...#.....",
+    ],
+    # Two dash chevrons with a short streak.
+    "ShortDash": [
+        "....##...##..",
+        ".....##...##.",
+        "++....##...##",
+        ".....##...##.",
+        "....##...##..",
+    ],
+}
+
+# Glyph colors (main, accent, detail) per upgrade.
+UPGRADE_COLORS = {
+    "Bounce": ("yellow", "white", "slate_4"),
+    "ExtraHeart": ("red_1", "white", "outline"),
+    "LongerPerks": ("slate_5", "yellow", "blue_2"),
+    "GoldMagnet": ("red_1", "yellow", "white"),
+    "FireTrail": ("orange", "red_1", "yellow"),
+    "PermanentCompanion": ("slate_4", "yellow", "blue_2"),
+    "QuickFeet": ("clay", "white", "brown_0"),
+    "FireRate": ("white", "glow", "outline"),
+    "Damage": ("orange", "yellow", "white"),
+    "PerkLuck": ("green_2", "green_1", "yellow"),
+    "FastRush": ("yellow", "glow", "outline"),
+    "ShortDash": ("blue_2", "white", "outline"),
+}
+
+UPGRADE_IDS = ["Bounce", "ExtraHeart", "LongerPerks", "GoldMagnet", "FireTrail", "PermanentCompanion", "QuickFeet",
+               "FireRate", "Damage", "PerkLuck", "FastRush", "ShortDash"]
+
+
+def upgrade_plaque() -> Canvas:
+    """Square navy plaque with cut corners, a gold rim and a lighter top edge."""
+    c = Canvas(PERK_ICON, PERK_ICON)
+    for y in range(1, 23):
+        for x in range(1, 23):
+            corner = min(x - 1, 22 - x) + min(y - 1, 22 - y)
+            if corner < 2:
+                continue
+            edge = min(x - 1, 22 - x, y - 1, 22 - y)
+            if edge == 0 or (edge == 1 and corner < 4):
+                c.set(x, y, "yellow" if y < 12 else "brown_1")
+            elif y == 2 or y == 3 and edge > 1:
+                c.set(x, y, "navy_1")
+            else:
+                c.set(x, y, "navy_0")
+    return c
+
+
+def upgrade_icon(upgrade: str) -> Canvas:
+    main, accent, detail = UPGRADE_COLORS[upgrade]
+    c = upgrade_plaque()
+    rows = UPGRADE_GLYPHS[upgrade]
+    width = max(len(row) for row in rows)
+    x0 = 12 - (width + 1) // 2
+    y0 = 12 - (len(rows) + 1) // 2
+    colors = {"#": main, "+": accent, "o": detail}
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch in colors:
+                c.set(x0 + x, y0 + y, colors[ch])
+    c.outline()
+    return c
+
+
+def upgrade_files(files: dict[str, Image.Image]) -> None:
+    for upgrade in UPGRADE_IDS:
+        files[f"Sprites/UI/Upgrade_{upgrade}.png"] = upgrade_icon(upgrade).to_image()
+
+
 HOLD_ZONE = 128
 
 
@@ -4550,6 +4759,7 @@ def outputs() -> dict[str, Image.Image]:
     files["Sprites/Scarecrow/Scarecrow_Warning.png"] = scarecrow_frame(0, warning=True).to_image()
     flamethrower_files(files)
     fire_trail_files(files)
+    upgrade_files(files)
     rocket_files(files)
     for d, name in enumerate(DIRECTIONS):
         for frame in range(len(HIT_POSES)):

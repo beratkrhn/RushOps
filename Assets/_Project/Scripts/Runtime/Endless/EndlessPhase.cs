@@ -14,5 +14,10 @@ namespace RushOps.Endless
 
         /// <summary>The player has no hearts left; the run is over (F-END-08).</summary>
         Ended,
+
+        /// <summary>
+        /// A round was cleared and the game waits for the player to pick an upgrade (F-END-11, N20); the break follows.
+        /// </summary>
+        Choice,
     }
 }

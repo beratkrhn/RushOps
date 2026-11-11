@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 9
   _displayName: "Perk-Gl\xFCck"
   _description: "Perks fallen \xF6fter (+3 Prozentpunkte)."
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: 8fdfa7f21f90249e6bb2a79d05288d77, type: 3}
   _valuePerLevel: 0.03
   _maxLevel: 3

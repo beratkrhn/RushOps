@@ -1,6 +1,7 @@
 using RushOps.Editor.Scenes;
 using RushOps.Endless;
 using UnityEditor;
+using UnityEngine;
 
 namespace RushOps.Editor.Endless
 {
@@ -12,6 +13,8 @@ namespace RushOps.Editor.Endless
     public static class UpgradeCatalogBuilder
     {
         public const string UpgradesDir = "Assets/_Project/Data/Endless/Upgrades";
+
+        private const string IconsDir = "Assets/_Project/Art/Sprites/UI";
 
         private readonly struct Entry
         {
@@ -72,6 +75,8 @@ namespace RushOps.Editor.Endless
                     upgrade.Configure(entry.Id, entry.Kind, entry.Name, entry.Description, entry.Value, entry.Max);
                 }
 
+                // Icons come from Tools/gen_pixelart.py (issue #279); missing ones stay empty until it ran.
+                upgrade.SetIcon(AssetDatabase.LoadAssetAtPath<Sprite>($"{IconsDir}/Upgrade_{entry.File}.png"));
                 EditorUtility.SetDirty(upgrade);
                 upgrades[i] = upgrade;
             }

@@ -127,5 +127,49 @@ namespace RushOps.Endless
         {
             return string.IsNullOrEmpty(notice) ? $"Runde {round}\nBoss besiegen" : $"Runde {round}\n{notice}";
         }
+
+        /// <summary>Title over the upgrade cards (F-END-11).</summary>
+        public const string ChooseUpgrade = "Wähle ein Upgrade";
+
+        /// <summary>Title of the upgrade list in the pause overlay.</summary>
+        public const string UpgradesTitle = "Upgrades";
+
+        /// <summary>Shown in the pause overlay before the first upgrade of the run.</summary>
+        public const string NoUpgrades = "Noch keine Upgrades";
+
+        /// <summary>Level line of an upgrade card or list entry, e.g. „Stufe 2/3“.</summary>
+        public static string UpgradeLevel(int level, int maxLevel)
+        {
+            return $"Stufe {level}/{maxLevel}";
+        }
+
+        /// <summary>
+        /// The upgrades taken in the run, one per line with their level („Abpraller 2/3“), in the order of the config;
+        /// <see cref="NoUpgrades"/> without any. Allocates; call when the pause overlay opens, not per frame.
+        /// </summary>
+        public static string UpgradeList(RunUpgrades upgrades)
+        {
+            var text = new System.Text.StringBuilder();
+            if (upgrades != null)
+            {
+                foreach (UpgradeDefinition upgrade in upgrades.Definitions)
+                {
+                    int level = upgrades.Level(upgrade);
+                    if (level <= 0)
+                    {
+                        continue;
+                    }
+
+                    if (text.Length > 0)
+                    {
+                        text.Append('\n');
+                    }
+
+                    text.Append(upgrade.DisplayName).Append(' ').Append(level).Append('/').Append(upgrade.MaxLevel);
+                }
+            }
+
+            return text.Length > 0 ? text.ToString() : NoUpgrades;
+        }
     }
 }

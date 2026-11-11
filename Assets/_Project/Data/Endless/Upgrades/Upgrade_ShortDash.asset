@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 11
   _displayName: Kurzer Dash
   _description: "Der Dash l\xE4dt 25 % schneller nach."
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: cdaa8f419a45e405fbefd199fccf2c53, type: 3}
   _valuePerLevel: 0.25
   _maxLevel: 2

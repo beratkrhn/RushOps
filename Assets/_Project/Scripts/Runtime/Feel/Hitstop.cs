@@ -28,7 +28,7 @@ namespace RushOps.Feel
             Time.timeScale = 0f;
         }
 
-        private bool IsPaused => _pause != null && _pause.IsPaused;
+        private bool IsPaused => _pause != null && _pause.StopsTime;
 
         private void Update()
         {

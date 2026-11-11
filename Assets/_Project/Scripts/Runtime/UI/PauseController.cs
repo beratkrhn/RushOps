@@ -25,12 +25,44 @@ namespace RushOps.UI
 
         private bool _paused;
         private bool _frozen;
+        private bool _held;
 
         /// <summary>True while the game is paused or frozen by a result screen.</summary>
         public bool IsPaused
         {
             get => _paused || _frozen;
             private set => _paused = value;
+        }
+
+        /// <summary>
+        /// True while a screen holds the game without the pause overlay, e.g. the upgrade choice (F-END-11). The pause
+        /// button still works; resuming from it keeps the game held.
+        /// </summary>
+        public bool IsHeld => _held;
+
+        /// <summary>True while the game time stands for any reason: paused, frozen or held.</summary>
+        public bool StopsTime => _paused || _frozen || _held;
+
+        /// <summary>Holds the game time for a screen that waits for the player, without the pause overlay.</summary>
+        public void Hold()
+        {
+            _held = true;
+            Time.timeScale = 0f;
+        }
+
+        /// <summary>Ends a <see cref="Hold"/>; the game time runs again unless paused or frozen.</summary>
+        public void Release()
+        {
+            if (!_held)
+            {
+                return;
+            }
+
+            _held = false;
+            if (!_paused && !_frozen)
+            {
+                Time.timeScale = 1f;
+            }
         }
 
         /// <summary>True while a result screen freezes the game (issue #35); pausing and resuming do nothing then.</summary>
@@ -75,7 +107,7 @@ namespace RushOps.UI
             }
 
             IsPaused = false;
-            Time.timeScale = 1f;
+            Time.timeScale = _held ? 0f : 1f;
             SetOverlay(false);
             Resumed?.Invoke();
         }
@@ -85,6 +117,7 @@ namespace RushOps.UI
         {
             IsPaused = false;
             _frozen = false;
+            _held = false;
             Time.timeScale = 1f;
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
@@ -94,6 +127,7 @@ namespace RushOps.UI
         {
             IsPaused = false;
             _frozen = false;
+            _held = false;
             Time.timeScale = 1f;
             SceneManager.LoadScene(_menuScene);
         }
@@ -124,7 +158,7 @@ namespace RushOps.UI
         private void OnDestroy()
         {
             // A paused level that gets unloaded must not leave the next one frozen.
-            if (IsPaused)
+            if (StopsTime)
             {
                 Time.timeScale = 1f;
             }

@@ -16,6 +16,6 @@ MonoBehaviour:
   _kind: 6
   _displayName: "Schnelle F\xFC\xDFe"
   _description: "Du l\xE4ufst 10 % schneller."
-  _icon: {fileID: 0}
+  _icon: {fileID: 21300000, guid: e45a2168583294eaf825567e7cbbf6ce, type: 3}
   _valuePerLevel: 0.1
   _maxLevel: 3
