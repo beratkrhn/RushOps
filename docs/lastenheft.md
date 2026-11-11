@@ -286,7 +286,7 @@ Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (De
 | F-UI-01 | Beim Start läuft eine kurze **Logo-Animation**, die in das Hauptmenü übergeht. | Muss |
 | F-UI-02 | Das Hauptmenü hat vier Bereiche: **Story Mode**, **Endlos**, **Spielerauswahl**, **Einstellungen**. | Muss |
 | F-UI-03 | **Spielerauswahl**: horizontal scrollbares Karussell mit allen Skins. Gesperrte Skins zeigen ihre Freischaltbedingung. | Muss |
-| F-UI-04 | **Einstellungen**: Lautstärke (Gesamt, Musik, Effekte), Zielhilfe an/aus, Credits. Die Sticks werden nicht eingestellt; Modus, Größe und Position sind fest (Design-Frage M3). | Muss |
+| F-UI-04 | **Einstellungen**: Lautstärke (Gesamt, Musik, Effekte), Zielhilfe an/aus, Vibration an/aus, Credits. Die Sticks werden nicht eingestellt; Modus, Größe und Position sind fest (Design-Frage M3). | Muss |
 
 ### 3.2 Story Mode (Levelauswahl)
 
@@ -333,10 +333,11 @@ Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (De
 
 | ID | Anforderung | Prio |
 |---|---|---|
-| F-AUD-01 | Hintergrundmusik im Chiptune- oder Synthwave-Stil: ein Track für das Hauptmenü, ein loopbarer Action-Track pro Insel. | Soll |
+| F-AUD-01 | Hintergrundmusik im Chiptune-Stil mit dem Gefühl eines Arcade-Zombie-Shooters, per Skript erzeugt: ein Track für das Hauptmenü und ein loopbarer Spieltrack für Kampagne, Boss-Level und Endlos-Modus (Design-Fragen G11, N30, N31). | Soll |
 | F-AUD-02 | Soundeffekte für Schüsse, Treffer, Gegner (Spawn, Annäherung, Schaden), Perks, sich öffnende Tore, Dash und UI-Klicks. | Muss |
 | F-AUD-03 | Der Boomer hat ein deutlich anderes Warnsignal als die übrigen Gegner. | Muss |
 | F-AUD-04 | Lautstärke getrennt einstellbar: Gesamt, Musik, Effekte. | Muss |
+| F-AUD-05 | **Vibration**: Das Handy vibriert kurz, wenn der Spieler ein Herz verliert und bei Explosionen (Boomer, Rakete, Nuke); in den Einstellungen abschaltbar, Standard an (Design-Frage N32). | Soll |
 
 ---
 
@@ -378,7 +379,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.6.0 Rush-Meter**: siehe Abschnitt 2.12 (F-RSH-01 bis F-RSH-06) und 3.3 (F-HUD-09).
 - **v1.7.0 Endlos-Upgrades und Tageslauf**: siehe Abschnitt 2.10 (F-END-11 bis F-END-14).
 - **v1.8.0 Herausforderungen und Rätsel mit Zombies**: siehe Abschnitt 2.5 (F-LVL-07), 2.6 (F-RAE-09 bis F-RAE-13), 2.8 (F-SCO-04, F-SCO-05), 2.9 (F-SKN-05) und 3.2 (F-UI-08).
-- **v1.9.0 Feinschliff**: Musik, Vibration (Haptik) bei Treffern und Explosionen, Balancing, Sterne-Schwellen neu.
+- **v1.9.0 Feinschliff**: siehe Abschnitt 5 (F-AUD-01, F-AUD-05), 3.1 (F-UI-04) und 2.8 (F-SCO-03, Sterne-Schwellen per Simulation, N33); weiteres Balancing aus dem Gesamtspieltest.
 - Erledigt: **Waffensystem** (W1 bis W10), erschienen mit v1.0.0 ([`v1.0.0-waffen.md`](backlog/v1.0.0-waffen.md)).
 - Nach dem Release: Skins mit Modifikatoren, Dieb-Gegner, Mutatoren, weitere Inseln.
 
@@ -388,7 +389,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - Mindestversionen: Android 8.0 (API 26), iOS 15 (30.10.2026, Issue #13)
 - Veröffentlicht wird nur im App Store für das iPhone, kostenlos, Store-Eintrag auf Deutsch (05.11.2026, Design-Fragen R2, R3, R6, R10)
 
-- Musik: vorerst keine; falls später, per Skript erzeugt (04.11.2026, Design-Frage G11); nicht in 1.0 (05.11.2026, R1)
+- Musik: vorerst keine; falls später, per Skript erzeugt (04.11.2026, Design-Frage G11); nicht in 1.0 (05.11.2026, R1); mit v1.9.0 zwei Chiptune-Tracks (11.11.2026, N30, N31)
 - Inselthemen: Strand, düstere Stadt, Vulkan (04.11.2026, Design-Frage G6)
 - Kein Release vor den Erweiterungen v1.1.0 bis v1.9.0; getestet wird am Gerät, wann Berat es sagt (06.11.2026, Design-Fragen A1 bis A3)
 
@@ -418,3 +419,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.4 | 10.11.2026 | Neuer Abschnitt 2.12 Rush-Meter (F-RSH-01 bis F-RSH-06); Abschnitt 3.3 mit Rush-Button (F-HUD-09) (Design-Fragen RM1 bis RM6, N8, N15 bis N18). |
 | 1.5 | 11.11.2026 | Abschnitt 2.10 mit Endlos-Upgrades (F-END-11, F-END-12, Upgrade-Tabelle) und Tageslauf (F-END-13, F-END-14); F-DAT-04 mit Tagesbestwerten (Design-Fragen T1 bis T4, N19 bis N22). |
 | 1.6 | 11.11.2026 | Abschnitt 2.6 mit Zombie-Rätseln Druckplatte und rissige Wand samt Hinweisen (F-RAE-09 bis F-RAE-13); F-LVL-07 mit neuen Zonen in 1-2, 2-2 und 3-2; Abzeichen F-SCO-04, F-SCO-05, Skins F-SKN-05, Inselkarte F-UI-08; F-GEG-07 mit Hunden in den neuen Zonen; F-DAT-04 mit Abzeichen und Hinweisen (Design-Fragen CH1, Z1, Z2, N9, N23 bis N29). |
+| 1.7 | 11.11.2026 | F-AUD-01 mit zwei Tracks (Hauptmenü, Spiel) im Chiptune-Stil; neu F-AUD-05 Vibration; F-UI-04 mit Schalter „Vibration“ (Design-Fragen N30 bis N32). |
