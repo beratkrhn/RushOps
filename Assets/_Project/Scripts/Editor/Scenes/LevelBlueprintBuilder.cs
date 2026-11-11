@@ -401,6 +401,9 @@ namespace RushOps.Editor.Scenes
                 LevelPieceBuilder.CreateExit(
                     arena, blueprint.ExitCenter, blueprint.ExitLockZone >= 0 ? zones[blueprint.ExitLockZone] : null);
             }
+
+            // Level badges (issue #288, F-SCO-04, F-SCO-05).
+            BadgeBuilder.Create(arena);
         }
 
         private static Puzzle CreatePuzzle(

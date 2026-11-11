@@ -58,6 +58,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Level/Exit_Pad.png               128x48 glowing exit field on the floor with arrows pointing on (issue #35, #103)
   Sprites/Level/Exit_Pad_Locked.png        128x48 the exit while locked: dark plate, red rim and padlock (issue #103)
   Sprites/UI/Star_Empty.png                16x16 missing star on the result screen (issue #35)
+  Sprites/UI/Badge_<Unharmed|Blitz|Combo>_<On|Off>.png 16x16 level badges, round medal with a heart, a lightning
+                                           bolt or „x5“; Off is a dark hollow (issue #288)
   Sprites/Pickups/Perk_<ID>.png            24x24 round perk icons, 7 perks (issue #23)
   Sprites/Pickups/Perk_Glow.png            32x16 light pool under a dropped perk (issue #23)
   Sprites/Pickups/Gold_<0-3>.png           16x16 gold coin, 4 spin frames (issue #234)
@@ -3172,6 +3174,78 @@ def star(full: bool) -> Canvas:
     return c
 
 
+BADGES = ("Unharmed", "Blitz", "Combo")
+
+# Glyphs of the level badges (issue #288): "#" main colour, "+" highlight.
+BADGE_GLYPHS = {
+    "Unharmed": [
+        ".##.##.",
+        "#+#####",
+        "#######",
+        ".#####.",
+        "..###..",
+        "...#...",
+    ],
+    "Blitz": [
+        "...##",
+        "..##.",
+        ".##..",
+        "####.",
+        "..##.",
+        ".##..",
+        ".#...",
+    ],
+    "Combo": [
+        "#.#.###",
+        "#.#.#..",
+        ".#..##.",
+        "#.#...#",
+        "#.#.##.",
+    ],
+}
+
+# Main and highlight colour of each glyph on an earned badge.
+BADGE_COLORS = {
+    "Unharmed": ("red_1", "glow"),
+    "Blitz": ("yellow", "glow"),
+    "Combo": ("orange", "glow"),
+}
+
+
+def badge(name: str, earned: bool) -> Canvas:
+    """Round medal of a level badge (issue #288): a gold rim around a dark field with the badge's glyph when earned,
+    the same medal hollow in slate when it is still missing, so earned and missing read apart at a glance."""
+    c = Canvas(16, 16)
+    cx, cy = 7.5, 7.5
+    for y in range(16):
+        for x in range(16):
+            d = math.hypot(x - cx, y - cy)
+            if d > 7.2:
+                continue
+            if d > 5.6:
+                if earned:
+                    c.set(x, y, "yellow" if y < 8 else "orange")
+                else:
+                    c.set(x, y, "slate_2")
+            else:
+                c.set(x, y, "navy_0" if earned else "slate_0")
+    rows = BADGE_GLYPHS[name]
+    width = max(len(row) for row in rows)
+    x0 = 8 - (width + 1) // 2
+    y0 = 8 - (len(rows) + 1) // 2
+    main, light = BADGE_COLORS[name] if earned else ("slate_1", "slate_1")
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch == "#":
+                c.set(x0 + x, y0 + y, main)
+            elif ch == "+":
+                c.set(x0 + x, y0 + y, light)
+    if earned:
+        c.set(4, 3, "glow")
+    c.outline()
+    return c
+
+
 def exit_pad(open_: bool = True) -> Canvas:
     """Level exit on the floor (issue #103). Open: a green field with a bright, dashed rim and three glowing
     chevrons pointing on (north). Locked: the same plate dark grey with a red rim, unlit chevrons and a red padlock
@@ -4732,6 +4806,8 @@ def outputs() -> dict[str, Image.Image]:
         "Sprites/Level/Exit_Pad.png": exit_pad(True).to_image(),
         "Sprites/Level/Exit_Pad_Locked.png": exit_pad(False).to_image(),
         "Sprites/UI/Star_Empty.png": star(False).to_image(),
+        **{f"Sprites/UI/Badge_{name}_{'On' if on else 'Off'}.png": badge(name, on).to_image()
+           for name in BADGES for on in (True, False)},
         "Sprites/Level/Gate_Bars.png": gate_bars().to_image(),
         "Sprites/UI/Heart_Full.png": heart(True).to_image(),
         "Sprites/UI/Heart_Empty.png": heart(False).to_image(),

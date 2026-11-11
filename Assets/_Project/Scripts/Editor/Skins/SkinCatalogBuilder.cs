@@ -10,7 +10,7 @@ namespace RushOps.Editor.Skins
 {
     /// <summary>
     /// Creates or updates the skin assets and the <see cref="SkinCatalog"/> (issue #128): the standard skin, one skin
-    /// per level (F-SKN-02), three milestone skins (F-SKN-03) and three endless skins (issue #211, F-END-09). Names and thresholds of existing assets are kept, so
+    /// per level (F-SKN-02), three milestone skins (F-SKN-03), three endless skins (issue #211, F-END-09), the gold skin (issue #237) and three badge skins (issue #288, F-SKN-05). Names and thresholds of existing assets are kept, so
     /// tuned values survive; the animations are taken from <c>Data/Animations/Skins/&lt;Id&gt;_&lt;Anim&gt;.asset</c>
     /// (issue #129, built from the sprites of <c>Tools/gen_skins.py</c>) and fall back to the standard player
     /// animations.
@@ -64,6 +64,10 @@ namespace RushOps.Editor.Skins
             new Spec("Imperator", "Imperator", SkinUnlockKind.EndlessRound, "", default, 50),
             // Bought with gold in the carousel (issue #237, F-GLD-06): the price is the threshold.
             new Spec("Goldrausch", "Goldrausch", SkinUnlockKind.Purchase, "", default, 2500),
+            // Badges of all levels added up (issue #288, F-SKN-05, N24).
+            new Spec("Spaeher", "Späher", SkinUnlockKind.Milestone, "", SkinMilestone.TotalBadges, 9),
+            new Spec("Elite", "Elite", SkinUnlockKind.Milestone, "", SkinMilestone.TotalBadges, 18),
+            new Spec("Legende", "Legende", SkinUnlockKind.Milestone, "", SkinMilestone.TotalBadges, 27),
         };
 
         /// <summary>Ids of all skins in display order.</summary>

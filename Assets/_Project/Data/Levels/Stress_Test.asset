@@ -16,4 +16,5 @@ MonoBehaviour:
   _sceneName: Stress_Test
   _twoStarScore: 5000
   _threeStarScore: 10000
+  _badgeSeconds: 0
   _completionMessage: 

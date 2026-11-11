@@ -13,3 +13,13 @@ MonoBehaviour:
   m_Name: BadgeConfig
   m_EditorClassIdentifier: RushOps.Runtime::RushOps.Scoring.BadgeConfig
   _comboTarget: 5
+  _earnedIcons:
+  - {fileID: 21300000, guid: a2bb9311e86c3416b9951f3813f614b8, type: 3}
+  - {fileID: 21300000, guid: 3def94320134c4534aaf0c0421c5d53b, type: 3}
+  - {fileID: 21300000, guid: 807f5038ca2af4df9a81dc37dfa63312, type: 3}
+  _missingIcons:
+  - {fileID: 21300000, guid: 4fc5a59886b10496788fa77b74f1d48d, type: 3}
+  - {fileID: 21300000, guid: ab102657013654e2d8d3bff09066d673, type: 3}
+  - {fileID: 21300000, guid: cc77d4be82e484419a586780cbf63286, type: 3}
+  _newPulseSeconds: 0.6
+  _newPulseScale: 1.25

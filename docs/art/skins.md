@@ -19,7 +19,7 @@ Vorschau zur Abnahme: [`skins/skins.png`](skins/skins.png) (Spalten: Standard un
 
 ## Skins
 
-Ein Skin pro Insel, freigeschaltet mit ihrem letzten Level (F-SKN-02), dazu drei Meilenstein-Skins.
+Ein Skin pro Insel, freigeschaltet mit ihrem letzten Level (F-SKN-02), dazu Meilenstein-, Endlos-, Gold- und Abzeichen-Skins.
 
 | Skin | Freischaltung | Idee |
 |---|---|---|
@@ -29,5 +29,12 @@ Ein Skin pro Insel, freigeschaltet mit ihrem letzten Level (F-SKN-02), dazu drei
 | Veteran | 100 Kills | Oliv und Braun |
 | Zombiejäger | 1000 Kills | Dunkelgrün mit Blutrot |
 | Goldstern | 27 Sterne | Gold |
+| Gladiator | Endlos-Runde 10 | Rot und Braun |
+| Zenturio | Endlos-Runde 25 | Grau mit Rot |
+| Imperator | Endlos-Runde 50 | Weiß und Gold |
+| Goldrausch | 2500 Gold | ganz in Gold |
+| Späher | 9 Abzeichen (Issue #288) | brauner Umhang, grüne Rüstung |
+| Elite | 18 Abzeichen | Schwarz mit goldener Rüstung |
+| Legende | 27 Abzeichen | heller, leuchtender Umhang, blaue Rüstung |
 
 Neue Farben eines Skins ändert man in `SKINS` in `Tools/gen_skins.py`, danach das Skript ausführen und in Unity „RushOps → Skins → Skin-Katalog aktualisieren“.

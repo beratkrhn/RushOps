@@ -9,6 +9,40 @@ namespace RushOps.Scoring
         /// <summary>Number of badges of one level.</summary>
         public const int PerLevel = 3;
 
+        /// <summary>The badges in display order: Unversehrt, Blitz, Kombo.</summary>
+        public static readonly BadgeKind[] Order = { BadgeKind.Unharmed, BadgeKind.Blitz, BadgeKind.Combo };
+
+        /// <summary>Position of <paramref name="badge"/> in <see cref="Order"/>; -1 for none or several.</summary>
+        public static int IndexOf(BadgeKind badge)
+        {
+            for (int i = 0; i < Order.Length; i++)
+            {
+                if (Order[i] == badge)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// Scale of a newly earned badge <paramref name="seconds"/> into its pulse: from 1 up to
+        /// <paramref name="maxScale"/> and back once per <paramref name="period"/>.
+        /// </summary>
+        public static float PulseScale(float seconds, float period, float maxScale)
+        {
+            if (period <= 0f || maxScale <= 1f)
+            {
+                return 1f;
+            }
+
+            float phase = seconds / period;
+            phase -= (float)System.Math.Floor(phase);
+            float wave = 0.5f - 0.5f * (float)System.Math.Cos(phase * 2.0 * System.Math.PI);
+            return 1f + (maxScale - 1f) * wave;
+        }
+
         /// <summary>
         /// Badges of one try: none if the level was not finished; „Unversehrt“ without a lost heart, „Blitz“ within
         /// <paramref name="targetSeconds"/> (exactly on it counts; 0 or less means the level has no target time),

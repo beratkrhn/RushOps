@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 888eeded5bb69477890c2c429787ba4d, type: 3}
+  m_Name: Skin_Legende
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Skins.SkinDefinition
+  _id: Legende
+  _displayName: Legende
+  _idle: {fileID: 11400000, guid: 10a88f6d7d7e2434ea11bf95973335c1, type: 2}
+  _walk: {fileID: 11400000, guid: 776a90c3b031b4964b249a7d08abcd01, type: 2}
+  _hit: {fileID: 11400000, guid: 0bb080f15448b4e44b43f206a585da2e, type: 2}
+  _death: {fileID: 11400000, guid: a0025239964ce4cd885184cfa8a597b3, type: 2}
+  _dash: {fileID: 11400000, guid: ef1478d35a3984eb687119b2c4b60439, type: 2}
+  _unlockKind: 2
+  _levelId: 
+  _levelName: 
+  _milestone: 4
+  _threshold: 27

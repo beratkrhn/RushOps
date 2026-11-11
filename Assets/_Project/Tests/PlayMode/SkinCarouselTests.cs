@@ -79,12 +79,12 @@ namespace RushOps.Tests.PlayMode
 
             Assert.IsTrue(_carousel.IsOpen);
             Assert.AreEqual(0, _carousel.Index, "a new game starts at the standard skin");
-            Assert.AreEqual(11, GameObject.Find("Strip").transform.childCount - 1, "one figure per skin besides the template");
+            Assert.AreEqual(14, GameObject.Find("Strip").transform.childCount - 1, "one figure per skin besides the template");
             Assert.AreEqual("Standard", Label("Name").text);
             Assert.AreEqual(SkinHint.Chosen, Button("SelectButton").GetComponentInChildren<Text>().text);
             Assert.IsFalse(Button("SelectButton").interactable);
             Assert.IsFalse(Button("PreviousButton").interactable);
-            Assert.AreEqual("1 / 11", Label("Counter").text);
+            Assert.AreEqual("1 / 14", Label("Counter").text);
         }
 
         [UnityTest]
@@ -234,9 +234,9 @@ namespace RushOps.Tests.PlayMode
             _carousel.Previous();
             Assert.AreEqual(0, _carousel.Index);
             _carousel.Show(99);
-            Assert.AreEqual(10, _carousel.Index);
+            Assert.AreEqual(13, _carousel.Index);
             _carousel.Next();
-            Assert.AreEqual(10, _carousel.Index);
+            Assert.AreEqual(13, _carousel.Index);
             yield return null;
             Assert.IsFalse(Button("NextButton").interactable);
         }

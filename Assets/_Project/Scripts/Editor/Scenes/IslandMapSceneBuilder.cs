@@ -37,6 +37,9 @@ namespace RushOps.Editor.Scenes
         private const float BelowNode = 30f;
         // Level name one text line under the stars (decision C11).
         private const float NameBelowStars = 11f;
+        // Badges one row under the stars (issue #288, F-UI-08); the name moves below them.
+        private const float BadgesBelowStars = 18f;
+        private const float BadgeSpacing = 18f;
         private static readonly Color Sea = new Color32(13, 43, 69, 255);
 
         [MenuItem("RushOps/Szenen/IslandMap erzeugen")]
@@ -47,6 +50,7 @@ namespace RushOps.Editor.Scenes
 
             // Load assets after the font build: it reimports assets, which leaves references loaded earlier stale.
             IslandMapConfig config = LoadOrCreateConfig();
+            RushOps.Scoring.BadgeConfig badgeConfig = BadgeBuilder.LoadConfig();
             var campaign = AssetDatabase.LoadAssetAtPath<Campaign>(CampaignPath);
 
             var cameraGo = new GameObject("Main Camera");
@@ -85,7 +89,7 @@ namespace RushOps.Editor.Scenes
                 var islandRect = (RectTransform)island.transform;
                 for (int j = 0; j < campaign.Islands[i].Levels.Length && j < NodePixels.Length; j++)
                 {
-                    nodes.Add(CreateNode(islandRect, font, map, i, j, NodePixels[j]));
+                    nodes.Add(CreateNode(islandRect, font, map, i, j, NodePixels[j], badgeConfig));
                 }
 
                 RectTransform cover = ArenaTestSceneBuilder.CreateUiRect("LockedCover", islandRect, Vector2.zero, Vector2.one);
@@ -111,6 +115,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_save").objectReferenceValue =
                 ArenaTestSceneBuilder.LoadOrCreateConfig<SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
             serialized.FindProperty("_config").objectReferenceValue = config;
+            serialized.FindProperty("_badges").objectReferenceValue = badgeConfig;
             serialized.FindProperty("_menuScene").stringValue = MainMenu.SceneName;
             serialized.FindProperty("_islands").objectReferenceValue = islands;
             SetArray(serialized.FindProperty("_nodes"), nodes);
@@ -147,7 +152,8 @@ namespace RushOps.Editor.Scenes
             return config;
         }
 
-        private static LevelNode CreateNode(RectTransform island, Font font, IslandMap map, int islandIndex, int level, Vector2Int pixel)
+        private static LevelNode CreateNode(RectTransform island, Font font, IslandMap map, int islandIndex, int level, Vector2Int pixel,
+            RushOps.Scoring.BadgeConfig badgeConfig)
         {
             float scale = ArenaTestSceneBuilder.HudPixelScale;
             Vector2 size = island.sizeDelta / scale;
@@ -165,7 +171,8 @@ namespace RushOps.Editor.Scenes
             Text label = ArenaTestSceneBuilder.CreateText("Label", rect, font, $"{islandIndex + 1}-{level + 1}", 1, Vector2.zero);
             label.color = new Color32(13, 11, 20, 255);
             Text soon = ArenaTestSceneBuilder.CreateText("Soon", rect, font, "bald", 1, new Vector2(0f, -BelowNode + 6f));
-            Text levelName = ArenaTestSceneBuilder.CreateText("Name", rect, font, string.Empty, 1, new Vector2(0f, -BelowNode - NameBelowStars));
+            Text levelName = ArenaTestSceneBuilder.CreateText("Name", rect, font, string.Empty, 1,
+                new Vector2(0f, -BelowNode - BadgesBelowStars - NameBelowStars));
             levelName.enabled = false;
             var stars = new Image[StarRating.MaxStars];
             Sprite empty = ArenaTestSceneBuilder.LoadUiSprite("Star_Empty.png");
@@ -180,6 +187,20 @@ namespace RushOps.Editor.Scenes
                 stars[i].raycastTarget = false;
             }
 
+            var badges = new Image[RushOps.Scoring.BadgeRules.PerLevel];
+            for (int i = 0; i < badges.Length; i++)
+            {
+                var center = new Vector2(0.5f, 0.5f);
+                RectTransform badge = ArenaTestSceneBuilder.CreateUiRect($"Badge_{i + 1}", rect, center, center);
+                Sprite off = badgeConfig.Icon(RushOps.Scoring.BadgeRules.Order[i], false);
+                badge.sizeDelta = off != null ? off.rect.size : new Vector2(16f, 16f);
+                badge.anchoredPosition = new Vector2((i - 1) * BadgeSpacing, -BelowNode - BadgesBelowStars);
+                badges[i] = badge.gameObject.AddComponent<Image>();
+                badges[i].sprite = off;
+                badges[i].raycastTarget = false;
+                badges[i].enabled = false;
+            }
+
             var node = image.gameObject.AddComponent<LevelNode>();
             UnityEventTools.AddPersistentListener(button.onClick, node.Play);
             var serialized = new SerializedObject(node);
@@ -192,6 +213,7 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_soon").objectReferenceValue = soon;
             serialized.FindProperty("_name").objectReferenceValue = levelName;
             SetArray(serialized.FindProperty("_stars"), stars);
+            SetArray(serialized.FindProperty("_badges"), badges);
             serialized.ApplyModifiedPropertiesWithoutUndo();
             return node;
         }

@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8ac18becaf664372aab51a3fc6f01e2, type: 3}
+  m_Name: Legende_Hit
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Characters.DirectionalAnimation
+  _framesPerSecond: 12
+  _loops: 0
+  _directions:
+  - _frames:
+    - {fileID: 21300000, guid: 8deb376ec284b4da3a6a9750bee0a6bd, type: 3}
+    - {fileID: 21300000, guid: e95b174be11354db3a600946d0633668, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 795129d1f01fa476cbe026af4a1c984f, type: 3}
+    - {fileID: 21300000, guid: 0c1cd66617cac483ea8c973bdcd28438, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 60e1c5e6f392841f0b8e076a2bbff64a, type: 3}
+    - {fileID: 21300000, guid: 9f9fb2857a89f4777bc100059c020263, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 17d998b04489848319fde541a4a32e09, type: 3}
+    - {fileID: 21300000, guid: 68369cd98d33d4097bd107816dbbc7bb, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 2f9787cca3ab84b3aa7805c4de8def36, type: 3}
+    - {fileID: 21300000, guid: fbbe26abf46dd4390b2f57f1a6daa4c7, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 4e9ec7e4d48f44b18851668bc11b92de, type: 3}
+    - {fileID: 21300000, guid: 001f872266c694da2b08d78a948c1738, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 5d2f23b41894e4ebf9f0e8894627bc0e, type: 3}
+    - {fileID: 21300000, guid: b6691276ca2eb4d3c8b71fb9f0fe715d, type: 3}
+  - _frames:
+    - {fileID: 21300000, guid: 52c995beecfae45839571b90b95928d8, type: 3}
+    - {fileID: 21300000, guid: 7bf736053685d4742ad911d5ed98cff1, type: 3}
