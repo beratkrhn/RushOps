@@ -20,6 +20,13 @@ namespace RushOps.Tests.PlayMode
             yield return null;
         }
 
+        // Finishing a level freezes the game (timeScale 0); later tests must not inherit that.
+        [TearDown]
+        public void RestoreTime()
+        {
+            Time.timeScale = 1f;
+        }
+
         [UnityTest]
         public IEnumerator Scene_HasSevenZones_SixClosedGates_FirstZoneActive()
         {

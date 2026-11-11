@@ -71,8 +71,13 @@ namespace RushOps.Tests.PlayMode
             Time.timeScale = 5f;
             // Generous: at a low frame rate (batch mode) the game runs slower than 5x real time.
             float timeout = Time.realtimeSinceStartup + 15f;
+            // Keep the player on the spot: at 5x speed the pressure waves can shove the body out of the zone, which is
+            // not what this test is about.
+            Vector2 spot = _hold.transform.position;
             while (Time.realtimeSinceStartup < timeout && _hold.State != PuzzleState.Solved)
             {
+                _player.position = spot;
+                _player.linearVelocity = Vector2.zero;
                 yield return null;
             }
 
