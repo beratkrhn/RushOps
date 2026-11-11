@@ -22,13 +22,14 @@ namespace RushOps.Tests.EditMode
 
         [TestCase("Music_Menu")]
         [TestCase("Music_Game")]
-        public void Track_IsStreamedVorbis(string name)
+        public void Track_IsCompressedInMemoryVorbis(string name)
         {
             var importer = (AudioImporter)AssetImporter.GetAtPath(MusicDir + name + ".wav");
 
             Assert.IsNotNull(importer);
             AudioImporterSampleSettings settings = importer.defaultSampleSettings;
-            Assert.AreEqual(AudioClipLoadType.Streaming, settings.loadType, "music streams instead of sitting in memory");
+            // Streaming cost the frame budget up to 18 ms in the stress scene (issue #299); 64 s of mono Vorbis are small.
+            Assert.AreEqual(AudioClipLoadType.CompressedInMemory, settings.loadType);
             Assert.AreEqual(AudioCompressionFormat.Vorbis, settings.compressionFormat);
             Assert.IsTrue(importer.forceToMono);
         }

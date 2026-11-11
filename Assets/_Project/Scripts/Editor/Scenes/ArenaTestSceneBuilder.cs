@@ -99,6 +99,8 @@ namespace RushOps.Editor.Scenes
         private const string EnemyBodyMaterialPath = "Assets/_Project/Data/Physics/EnemyBody.physicsMaterial2D";
         private const string SfxDir = "Assets/_Project/Audio/SFX";
         internal const string AudioConfigPath = "Assets/_Project/Data/Audio/AudioConfig.asset";
+        internal const string MusicConfigPath = "Assets/_Project/Data/Audio/MusicConfig.asset";
+        private const string MusicDir = "Assets/_Project/Audio/Music";
         private const string SpawnerConfigPath = "Assets/_Project/Data/Enemies/SpawnerConfig.asset";
         private const string SpawnMarkerSpritePath = "Assets/_Project/Art/Sprites/Effects/SpawnMarker.png";
         private const string WavesPath = "Assets/_Project/Data/Waves/Arena_Test.asset";
@@ -1579,7 +1581,7 @@ namespace RushOps.Editor.Scenes
             serializedHitstop.FindProperty("_pause").objectReferenceValue = pause;
             serializedHitstop.ApplyModifiedPropertiesWithoutUndo();
 
-            SfxPlayer sfx = CreateAudio(go);
+            SfxPlayer sfx = CreateAudio(go, pause);
 
             var feel = go.AddComponent<GameFeel>();
             var serialized = new SerializedObject(feel);
@@ -1610,10 +1612,11 @@ namespace RushOps.Editor.Scenes
         }
 
         /// <summary>
-        /// Adds the sound player (through the effects group of the mixer), the mixer volumes and the UI click to
-        /// <paramref name="go"/> (issue #108).
+        /// Adds the sound player (through the effects group of the mixer), the mixer volumes, the UI click (issue #108)
+        /// and the music cue of the scene (issue #299) to <paramref name="go"/>. With <paramref name="pause"/> the music
+        /// ducks while the game stands still.
         /// </summary>
-        internal static SfxPlayer CreateAudio(GameObject go)
+        internal static SfxPlayer CreateAudio(GameObject go, PauseController pause = null)
         {
             AudioMixer mixer = AudioMixerBuilder.LoadOrCreate();
             var sfx = go.AddComponent<SfxPlayer>();
@@ -1636,7 +1639,42 @@ namespace RushOps.Editor.Scenes
             serializedClick.FindProperty("_config").objectReferenceValue = config;
             serializedClick.FindProperty("_clip").objectReferenceValue = LoadClip("UiClick.wav");
             serializedClick.ApplyModifiedPropertiesWithoutUndo();
+
+            var cue = go.AddComponent<MusicCue>();
+            var serializedCue = new SerializedObject(cue);
+            serializedCue.FindProperty("_config").objectReferenceValue = LoadOrCreateMusicConfig(mixer);
+            serializedCue.FindProperty("_pause").objectReferenceValue = pause;
+            serializedCue.ApplyModifiedPropertiesWithoutUndo();
             return sfx;
+        }
+
+        /// <summary>The music config (issue #299) with both tracks of <c>Tools/gen_music.py</c> and the music group.</summary>
+        internal static MusicConfig LoadOrCreateMusicConfig(AudioMixer mixer)
+        {
+            MusicConfig config = LoadOrCreateConfig<MusicConfig>(MusicConfigPath);
+            var serialized = new SerializedObject(config);
+            serialized.FindProperty("_menu").objectReferenceValue = LoadMusic("Music_Menu.wav");
+            serialized.FindProperty("_game").objectReferenceValue = LoadMusic("Music_Game.wav");
+            serialized.FindProperty("_output").objectReferenceValue = AudioMixerBuilder.Group(mixer, AudioMixerBuilder.MusicGroup);
+            if (serialized.ApplyModifiedPropertiesWithoutUndo())
+            {
+                EditorUtility.SetDirty(config);
+                AssetDatabase.SaveAssets();
+            }
+
+            return config;
+        }
+
+        private static AudioClip LoadMusic(string file)
+        {
+            string path = $"{MusicDir}/{file}";
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+            if (clip == null)
+            {
+                throw new System.InvalidOperationException($"Music not found at {path}; run Tools/gen_music.py");
+            }
+
+            return clip;
         }
 
         /// <summary>Lets every button of the open scene play the UI click (issue #108, F-AUD-02).</summary>
