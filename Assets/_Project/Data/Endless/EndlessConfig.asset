@@ -36,10 +36,7 @@ MonoBehaviour:
   _spawnIntervalFirstRound: 0.8
   _spawnIntervalStep: 0.05
   _spawnIntervalMin: 0.3
-  _maxActiveStart: 10
-  _maxActiveStep: 1
-  _maxActiveEveryRounds: 5
-  _maxActiveCap: 20
+  _maxActiveLimit: 0
   _bossEveryRounds: 10
   _bosses:
   - {fileID: 11400000, guid: 9014eb21d56c041e8bdca01cc4e0a694, type: 2}

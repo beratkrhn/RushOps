@@ -49,7 +49,7 @@ namespace RushOps.Tests.EditMode
                 new EndlessEnemyShare(_boomer, 5, 0.10f, 0.01f, 0.20f),
                 new EndlessEnemyShare(_brute, 7, 0.05f, 0.01f, 0.15f),
             });
-            _config.ConfigureSpawning(0.8f, 0.05f, 0.3f, 10, 1, 5, 20);
+            _config.ConfigureSpawning(0.8f, 0.05f, 0.3f, 0);
             _config.ConfigureBosses(10, new[] { _colossus, _broodMother, _megaBoomer }, 0.25f);
             _config.ConfigureWeapons(_pistol, new[]
             {
@@ -277,19 +277,19 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(expected, _rules.SpawnInterval(round), 1e-5f);
         }
 
-        [TestCase(1, 10)]
-        [TestCase(4, 10)]
-        [TestCase(5, 11)]
-        [TestCase(9, 11)]
-        [TestCase(10, 12)]
-        [TestCase(20, 14)]
-        [TestCase(30, 16)]
-        [TestCase(49, 19)]
-        [TestCase(50, 20)]
-        [TestCase(1000, 20)]
-        public void MaxActive_TenPlusOneEveryFiveRounds_AtMostTwenty(int round, int expected)
+        [Test]
+        public void MaxActive_NoLimitByDefault()
         {
-            Assert.AreEqual(expected, _rules.MaxActive(round));
+            Assert.AreEqual(int.MaxValue, _rules.MaxActive);
+        }
+
+        [Test]
+        public void MaxActive_EmergencyBrakeFromTheConfig()
+        {
+            _config.ConfigureSpawning(0.8f, 0.05f, 0.3f, 80);
+
+            Assert.AreEqual(80, _rules.MaxActive);
+            Assert.AreEqual(80, _rules.Build(40).MaxActive);
         }
 
         // --- Bosses ---
@@ -407,7 +407,7 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(1, round.Number);
             Assert.AreEqual(6, round.EnemyCount);
             Assert.AreEqual(0.8f, round.SpawnInterval, 1e-5f);
-            Assert.AreEqual(10, round.MaxActive);
+            Assert.AreEqual(int.MaxValue, round.MaxActive, "no limit (F-END-04)");
             Assert.IsFalse(round.IsBossRound);
             Assert.IsNull(round.Boss);
             Assert.AreEqual(1f, round.BossHealthFactor);
@@ -423,7 +423,6 @@ namespace RushOps.Tests.EditMode
             Assert.IsTrue(round.IsBossRound);
             Assert.AreSame(_colossus, round.Boss);
             Assert.AreEqual(1f, round.BossHealthFactor);
-            Assert.AreEqual(12, round.MaxActive);
             Assert.AreSame(_rifle, round.NewWeapon);
             Assert.AreEqual(3, round.Weapons.Length);
         }
@@ -436,10 +435,8 @@ namespace RushOps.Tests.EditMode
 
             Assert.AreSame(_broodMother, twenty.Boss);
             Assert.AreEqual(1.25f, twenty.BossHealthFactor, 1e-5f);
-            Assert.AreEqual(14, twenty.MaxActive);
             Assert.AreSame(_megaBoomer, thirty.Boss);
             Assert.AreEqual(1.5f, thirty.BossHealthFactor, 1e-5f);
-            Assert.AreEqual(16, thirty.MaxActive);
             Assert.AreEqual(4, thirty.Weapons.Length);
         }
 
@@ -450,7 +447,7 @@ namespace RushOps.Tests.EditMode
             {
                 EndlessRound built = _rules.Build(round);
 
-                Assert.AreEqual(20, built.MaxActive, $"round {round}");
+                Assert.AreEqual(int.MaxValue, built.MaxActive, $"round {round}");
                 Assert.AreEqual(0.3f, built.SpawnInterval, 1e-5f, $"round {round}");
                 Assert.GreaterOrEqual(built.EnemyCount, 0, $"round {round}");
             }

@@ -55,10 +55,7 @@ namespace RushOps.Tests.EditMode
             Assert.AreEqual(0.8f, config.SpawnIntervalFirstRound, 1e-5f);
             Assert.AreEqual(0.05f, config.SpawnIntervalStep, 1e-5f);
             Assert.AreEqual(0.3f, config.SpawnIntervalMin, 1e-5f);
-            Assert.AreEqual(10, config.MaxActiveStart);
-            Assert.AreEqual(1, config.MaxActiveStep);
-            Assert.AreEqual(5, config.MaxActiveEveryRounds);
-            Assert.AreEqual(20, config.MaxActiveCap);
+            Assert.AreEqual(0, config.MaxActiveLimit, "no limit on enemies alive at once (F-END-04)");
         }
 
         [Test]

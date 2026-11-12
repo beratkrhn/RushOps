@@ -31,17 +31,18 @@ namespace RushOps.Tests.PlayMode
         }
 
         /// <summary>
-        /// The endless arena at the cap of enemies alive at once (issue #212, F-END-04, N3), with the Mega-Boomer on
-        /// top, perks and the boomers' explosions.
+        /// The endless arena with many enemies alive at once (issues #212, #312, F-END-04: no cap), with the
+        /// Mega-Boomer on top, perks and the boomers' explosions. 60 and 100 must stay inside the budget; 150 is
+        /// only logged to see how far the game gets.
         /// </summary>
         [UnityTest]
-        public IEnumerator EndlessArena_AtTheCap_WithBossAndPerks_NoAllocations_InsideTheFrameBudget()
+        public IEnumerator EndlessArena_WithManyEnemies_WithBossAndPerks_NoAllocations_InsideTheFrameBudget(
+            [Values(60, 100, 150)] int enemies)
         {
             var scenario = new StressScenario();
             yield return scenario.Load(StressScenario.EndlessScene);
-            yield return scenario.EnterEndlessStress(StressScenario.FastestWeapon, EndlessPerks);
+            yield return scenario.EnterEndlessStress(StressScenario.FastestWeapon, enemies, EndlessPerks);
             var director = Object.FindAnyObjectByType<WaveDirector>();
-            int cap = director.MaxActive;
             int most = 0;
             // A boss death drops 25 coins at once on top of the coins of every kill; the magnet pulls them in.
             var gold = Object.FindAnyObjectByType<GoldDropper>();
@@ -59,13 +60,19 @@ namespace RushOps.Tests.PlayMode
                 yield return measure.Current;
             }
 
-            Debug.Log($"[Perf] round {scenario.FullRound}, cap {cap}, most alive {most}, coins dropped {dropped}");
+            scenario.RestoreEndlessConfig();
+            Debug.Log($"[Perf] round {scenario.FullRound}, target {enemies}, most alive {most}, coins dropped {dropped}");
             Assert.GreaterOrEqual(dropped, 25, "the coins of the boss death should have dropped");
-            Assert.AreEqual(20, cap, $"round {scenario.FullRound} should play at the cap of 20 (F-END-04)");
-            Assert.AreEqual(cap, most, "the arena should fill up to the cap while measuring");
-            Assert.GreaterOrEqual(sample.enemiesAlive, cap / 2, "the arena should stay busy while measuring");
+            Assert.GreaterOrEqual(most, enemies, "the arena should fill up to the target while measuring");
             Assert.IsTrue(scenario.Fight.IsRunning, "the Mega-Boomer should fight through the whole measurement");
-            AssertInsideBudget(sample);
+            if (enemies <= 100)
+            {
+                AssertInsideBudget(sample);
+            }
+            else
+            {
+                Debug.Log($"[Perf] {sample.scene} with {enemies}: {JsonUtility.ToJson(sample)}");
+            }
         }
 
         private static void AssertInsideBudget(FrameSample sample)

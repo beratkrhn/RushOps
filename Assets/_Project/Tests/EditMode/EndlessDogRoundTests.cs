@@ -31,7 +31,7 @@ namespace RushOps.Tests.EditMode
 
             _config = Make<EndlessConfig>("EndlessConfig");
             _config.ConfigureEnemies(6, 2, _walker, new[] { new EndlessEnemyShare(_runner, 3, 0.15f, 0.02f, 0.30f) });
-            _config.ConfigureSpawning(0.8f, 0.05f, 0.3f, 10, 1, 5, 20);
+            _config.ConfigureSpawning(0.8f, 0.05f, 0.3f, 0);
             _config.ConfigureBosses(10, new[] { Make<BossDefinition>("Koloss") }, 0.25f);
             _config.ConfigureDogRounds(6, _dog);
             _rules = new EndlessRules(_config);

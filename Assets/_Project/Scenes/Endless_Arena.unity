@@ -591,7 +591,7 @@ MonoBehaviour:
   _prefab: {fileID: 2902927099083092168, guid: 59a752bda0d6d4d1da2dc62007c60802, type: 3}
   _navigator: {fileID: 2074667792}
   _defaultCapacity: 10
-  _maxSize: 32
+  _maxSize: 160
   _spawnJitter: 0.05
 --- !u!4 &46666476
 Transform:
@@ -22810,7 +22810,7 @@ MonoBehaviour:
   _prefab: {fileID: 3986369274874745230, guid: 1fc780854f9054df58c5bb2a720c7f2a, type: 3}
   _navigator: {fileID: 2074667792}
   _defaultCapacity: 10
-  _maxSize: 32
+  _maxSize: 160
   _spawnJitter: 0.05
 --- !u!4 &630952014
 Transform:
@@ -24097,7 +24097,7 @@ MonoBehaviour:
   _prefab: {fileID: 3754513233250335224, guid: 1ceb40420248240738b3034a3b9ce8b7, type: 3}
   _navigator: {fileID: 2074667792}
   _defaultCapacity: 10
-  _maxSize: 32
+  _maxSize: 160
   _spawnJitter: 0.05
 --- !u!4 &743740442
 Transform:
@@ -28698,7 +28698,7 @@ MonoBehaviour:
   _prefab: {fileID: 1340343925902760939, guid: baa124f306ed74473b763e65ca70867f, type: 3}
   _navigator: {fileID: 2074667792}
   _defaultCapacity: 10
-  _maxSize: 32
+  _maxSize: 160
   _spawnJitter: 0.05
 --- !u!4 &1241315787
 Transform:
@@ -38704,7 +38704,7 @@ MonoBehaviour:
   _prefab: {fileID: 7712663585691863749, guid: dd056e07070fe46d4aaa4a946e50bfc6, type: 3}
   _navigator: {fileID: 2074667792}
   _defaultCapacity: 10
-  _maxSize: 32
+  _maxSize: 160
   _spawnJitter: 0.05
 --- !u!4 &2086733444
 Transform:
