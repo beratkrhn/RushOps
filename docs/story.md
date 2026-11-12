@@ -41,7 +41,7 @@ Die drei Bosse könnten **Handlanger des Mannes** gewesen sein, die selbst vom T
 
 ## Intro-Cutscene (Storyboard, 12.11.2026)
 
-Sieben Standbilder in Pixelart mit Textboxen, im Stil des Spiels (Spieler-Sprite, Walker-Zombies, Projektpalette, Pixelschrift). Die Bilder sind per Skript entstanden und noch Entwürfe; Hintergründe und der Mann werden später fein ausgearbeitet.
+Sieben Standbilder in Pixelart mit Textboxen, im Stil des Spiels (Spieler-Sprite, Walker-Zombies, Projektpalette, Pixelschrift). Die Bilder liegen unter [`art/cutscene-intro/`](art/cutscene-intro/) (Übersicht: `storyboard_sheet.png`, Skript: `gen_intro_storyboard.py`) und sind noch Entwürfe; Hintergründe und der Mann werden später fein ausgearbeitet.
 
 | Bild | Inhalt | Text |
 |---|---|---|
