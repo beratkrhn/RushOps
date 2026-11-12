@@ -299,5 +299,5 @@ Beim Planen der Story am 12.11.2026 besprochen:
 | S4 | Motiv des Mannes? Warum bleibt er unversehrt? | Alleine übrig bleiben, Toke behalten, Immunität oder Gegenmittel | **Offen** |
 | S5 | Ende? | Rettung gelingt ganz, teilweise oder gar nicht | **Offen** |
 | S6 | Bosse in der Geschichte? | Die drei Bosse waren Handlanger des Mannes und wurden durch den Toke zu Monstern | V; Berat fand die Vorschläge sehr gut, Einzelheiten noch offen |
-| S7 | Umsetzung der Cutscenes? | Pixelart-Standbilder mit Textboxen und kurzer Animation | **Offen**, beim Zerlegen entscheiden |
+| S7 | Umsetzung der Cutscenes? | Pixelart-Standbilder mit Textboxen und kurzer Animation | **Pixelart-Standbilder mit Textboxen** im Spielstil; Intro mit sieben Bildern (Storyboard in `story.md`); Toke immer golden; Finale als Showdown mit dem geflügelten Mann |
 | S8 | Aufbau? | Intro, je eine Szene nach den drei Bossen, Finale; die drei Inseln als drei Akte | V |

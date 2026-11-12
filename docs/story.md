@@ -39,6 +39,22 @@ Die drei Inseln sind die drei Akte; Themen aus Design-Frage G6.
 
 Die drei Bosse könnten **Handlanger des Mannes** gewesen sein, die selbst vom Toke genommen haben und zu Monstern wurden. Das verbindet die Spielfiguren mit der Geschichte, ist aber ein Vorschlag (S6).
 
+## Intro-Cutscene (Storyboard, 12.11.2026)
+
+Sieben Standbilder in Pixelart mit Textboxen, im Stil des Spiels (Spieler-Sprite, Walker-Zombies, Projektpalette, Pixelschrift). Die Bilder sind per Skript entstanden und noch Entwürfe; Hintergründe und der Mann werden später fein ausgearbeitet.
+
+| Bild | Inhalt | Text |
+|---|---|---|
+| 1 | Der Mann auf einer riesigen Leinwand, in der Hand der goldene Toke; unten die Menge | „Es begann mit einem Satz.“ Der Mann: „Der Toke. Wer ihn besitzt, hat alles, was er sich wünscht: Gold, Kleidung, Essen, Besitz.“ „Den Toke trug er längst selbst in der Hand.“ |
+| 2 | Die Suche in Truhen, an Wasserfällen, auf Inseln und Schiffen; alle gesund | „Alle machten sich auf die Suche …“ „Tag 1. Alle gesund.“ |
+| 3 | Erste Kranke mit grünen Adern, die weitersuchen | „Wochen später. Die Ersten wurden krank. …“ „Sie suchten trotzdem weiter.“ |
+| 4 | Der Held ruft der Menge zu | Held: „Retired die Suche nach dem Toke!“ Menge: „Geh weg. Du bist nur neidisch.“ |
+| 5 | Die Menge verwandelt sich Stück für Stück in Zombies | „Einer nach dem anderen. Tag für Tag.“ … „Wo sie zusammenbrachen, standen sie als Zombies wieder auf.“ |
+| 6 | Der Mann im Fenster, der Toke golden, unten die Zombies, der Held ganz klein | Der Mann: „Der Toke vergiftet jeden, der ihn sucht. Und nur er kann sie heilen. Ich habe ihn.“ |
+| 7 | Showdown: **oben der Held**, **unten der Mann mit Teufelsflügeln** und dem goldenen Toke | Held: „assalamu aleykum wa rahmetullahi wa barakatuhu“. Der Mann: „wa aleykum ya ars“ |
+
+Regeln für die Bilder: Der **Toke leuchtet immer golden**; der Mann hat erst im letzten Bild Flügel und Hörner; das Gesicht des Mannes bleibt bis zum Finale unsichtbar.
+
 ## Cutscenes (Plan, Details später)
 
 | Wann | Inhalt |
@@ -47,7 +63,7 @@ Die drei Bosse könnten **Handlanger des Mannes** gewesen sein, die selbst vom T
 | Nach Boss 1 bis 3 | Kurze Szene mit einem Hinweis zum Toke bzw. zum Mann |
 | Finale | Der Mann, die Wahrheit, das Ende |
 
-Der Stil der Cutscenes (Standbilder mit Pixelart, kurze Animation, Textboxen) wird beim Zerlegen entschieden (S7).
+Der Stil steht fest: Pixelart-Standbilder mit Textboxen (S7); Kamerafahrten und kleine Effekte kommen beim Zerlegen dazu.
 
 ## Offene Punkte
 
@@ -55,4 +71,4 @@ Der Stil der Cutscenes (Standbilder mit Pixelart, kurze Animation, Textboxen) wi
 - Warum tötet der Mann alle (S4)? Wie bleibt er selbst unversehrt?
 - Wie endet die Geschichte (S5)? Gelingt die Rettung, ganz oder teilweise?
 - Zuordnung der Bosse zur Geschichte (S6)
-- Umsetzung der Cutscenes (S7)
+- Wie viel Bewegung die Cutscenes bekommen (Kamerafahrt, Flackern, Wackeln)
