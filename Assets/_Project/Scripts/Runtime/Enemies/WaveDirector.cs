@@ -335,6 +335,7 @@ namespace RushOps.Enemies
                 {
                     // Inverted, so the marker shows at once and then blinks.
                     point.SetMarkerVisible(!BlinkMath.IsVisible(_announced[i], _config.MarkerBlinkInterval));
+                    point.SetAnnounced(true);
                     continue;
                 }
 
@@ -347,6 +348,7 @@ namespace RushOps.Enemies
                 _announcedSlots -= request.SlotCost;
 
                 point.SetMarkerVisible(false);
+                point.SetAnnounced(false);
                 // The zone was completed while the marker blinked: its enemies are no longer wanted.
                 if (_zones[request.Owner].State == ZoneState.Completed)
                 {
@@ -391,7 +393,18 @@ namespace RushOps.Enemies
 
                 spawned++;
                 _owners[enemy] = sequence;
+                if (point.IsBreach)
+                {
+                    // Crawling out of the breach (F-END-15) before the spawn is reported.
+                    enemy.BeginEmerge(_config.EmergeDuration);
+                }
+
                 Spawned?.Invoke(enemy, point);
+            }
+
+            if (spawned > 0 && point.IsBreach)
+            {
+                point.HoldOpen(_config.EmergeDuration);
             }
 
             if (spawned < request.Count)

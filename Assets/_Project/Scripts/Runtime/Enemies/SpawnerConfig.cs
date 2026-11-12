@@ -24,8 +24,14 @@ namespace RushOps.Enemies
         [Tooltip("The camera view is enlarged by this margin in units; spawn points inside are skipped.")]
         [SerializeField, Min(0f)] private float _viewMargin = 1f;
 
+        [Tooltip("Seconds an enemy crawls out of a breach (F-END-15). During this time it cannot be hit, does not move and does not hurt. Only spawn points marked as breach use it.")]
+        [SerializeField, Min(0f)] private float _emergeDuration = 0.9f;
+
         /// <summary>Most enemies alive at once, including announced ones.</summary>
         public int MaxActive => _maxActive;
+
+        /// <summary>Seconds an enemy crawls out of a breach.</summary>
+        public float EmergeDuration => _emergeDuration;
 
         /// <summary>Seconds the marker shows before the enemy appears.</summary>
         public float TelegraphDuration => _telegraphDuration;

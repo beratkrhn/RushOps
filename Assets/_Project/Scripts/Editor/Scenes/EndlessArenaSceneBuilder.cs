@@ -5,6 +5,7 @@ using RushOps.Editor.Art;
 using RushOps.Editor.Combat;
 using RushOps.Editor.Endless;
 using RushOps.Endless;
+using RushOps.Enemies;
 using RushOps.Levels;
 using RushOps.Loot;
 using RushOps.Perks;
@@ -43,6 +44,8 @@ namespace RushOps.Editor.Scenes
         private const string DisplayName = "Kolosseum";
         private const string TilesDir = "Assets/_Project/Art/Tiles/Kolosseum";
         private const string SpritesDir = "Assets/_Project/Art/Sprites/Level/Kolosseum";
+        private const string BreachClosedPath = "Assets/_Project/Art/Sprites/Effects/BreachHole_Closed.png";
+        private const string BreachOpenPath = "Assets/_Project/Art/Sprites/Effects/BreachHole_Open.png";
 
         // Slightly inside the drawn rim (62 of 64 px), so bodies touch the stone, not the air next to it.
         private const float FountainColliderRadius = 1.9f;
@@ -87,10 +90,40 @@ namespace RushOps.Editor.Scenes
                 }
             }
 
+            foreach (SpawnPoint point in zone.SpawnPoints)
+            {
+                AddBreach(point);
+            }
+
             ArenaTestSceneBuilder.AssignZones(arena, new[] { zone });
             WallWeapon[] wall = CreateWallWeapons(arena);
             EndlessBosses bosses = CreateBosses(arena, fountain);
             CreateRunFlow(arena, zone, wall, bosses);
+        }
+
+        // Every spawn point of the arena is a breach (issue #313, F-END-15): a pit with rubble that glows while an
+        // enemy crawls out. The floor marker of the announcement is drawn above it.
+        private static void AddBreach(SpawnPoint point)
+        {
+            Sprite closed = RequireSprite(BreachClosedPath);
+            Sprite open = RequireSprite(BreachOpenPath);
+            var go = new GameObject("Breach");
+            go.transform.SetParent(point.transform, false);
+            var renderer = go.AddComponent<SpriteRenderer>();
+            renderer.sprite = closed;
+            renderer.sortingOrder = ArenaTestSceneBuilder.FloorMarkSortingOrder;
+
+            var serialized = new SerializedObject(point);
+            serialized.FindProperty("_isBreach").boolValue = true;
+            serialized.FindProperty("_hole").objectReferenceValue = renderer;
+            serialized.FindProperty("_holeClosed").objectReferenceValue = closed;
+            serialized.FindProperty("_holeOpen").objectReferenceValue = open;
+            if (serialized.FindProperty("_marker").objectReferenceValue is SpriteRenderer marker)
+            {
+                marker.sortingOrder = ArenaTestSceneBuilder.FloorMarkSortingOrder + 1;
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // One inactive template per boss of the config (issue #210): the boss built as in the campaign, its bodies as

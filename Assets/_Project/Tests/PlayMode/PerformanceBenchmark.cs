@@ -33,7 +33,7 @@ namespace RushOps.Tests.PlayMode
             var scenario = new StressScenario();
             yield return scenario.Load(StressScenario.EndlessScene);
             yield return scenario.EnterEndlessStress(
-                StressScenario.FastestWeapon, 100, "rapid_fire", "speed_boost", "shield");
+                StressScenario.FastestWeapon, 100, true, "rapid_fire", "speed_boost", "shield");
             yield return Measure(StressScenario.EndlessScene, scenario);
             scenario.RestoreEndlessConfig();
         }

@@ -90,7 +90,7 @@ namespace RushOps.Enemies
         private void FixedUpdate()
         {
             Transform target = _enemy.Target;
-            if (_logic == null || target == null || _enemy.IsDead)
+            if (_logic == null || target == null || _enemy.IsDead || _enemy.IsEmerging)
             {
                 return;
             }

@@ -45,6 +45,8 @@ namespace RushOps.Enemies
         private readonly ApproachTrigger _approach = new ApproachTrigger();
         private Transform _target;
         private FlowFieldNavigator _navigator;
+        private float _emergeElapsed = -1f;
+        private float _emergeDuration;
 
         /// <summary>Raised on every hit that counted, including the killing one (then <see cref="IsDead"/> is true).</summary>
         public event Action<Enemy> Hit;
@@ -77,6 +79,9 @@ namespace RushOps.Enemies
             }
         }
 
+        /// <summary>True while the enemy crawls out of a breach (F-END-15): it cannot be hit, does not move and does not hurt.</summary>
+        public bool IsEmerging => _emergeElapsed >= 0f;
+
         /// <summary>True while the enemy shows the white hit flash.</summary>
         public bool IsFlashing => _sinceHit >= 0f;
 
@@ -101,13 +106,13 @@ namespace RushOps.Enemies
         public Vector2 ExplosionPoint => _collider != null ? (Vector2)_collider.bounds.center : (Vector2)transform.position;
 
         /// <inheritdoc />
-        public bool CanBeHit => _health != null && !_health.IsDead && isActiveAndEnabled;
+        public bool CanBeHit => _health != null && !_health.IsDead && !IsEmerging && isActiveAndEnabled;
 
         /// <inheritdoc />
-        public bool CanBeHitByExplosion => _health != null && !_health.IsDead && isActiveAndEnabled;
+        public bool CanBeHitByExplosion => _health != null && !_health.IsDead && !IsEmerging && isActiveAndEnabled;
 
         /// <inheritdoc />
-        public int ContactDamage => _definition != null && !IsDead ? _definition.ContactDamage : 0;
+        public int ContactDamage => _definition != null && !IsDead && !IsEmerging ? _definition.ContactDamage : 0;
 
         /// <summary>
         /// Places the enemy at <paramref name="position"/> with full health, chasing via <paramref name="navigator"/>.
@@ -116,6 +121,7 @@ namespace RushOps.Enemies
         public void Spawn(Vector2 position, FlowFieldNavigator navigator, Action<Enemy> release)
         {
             _release = release;
+            _emergeElapsed = -1f;
             _health = new Health(_definition != null ? _definition.Health : 1);
             _dyingTime = -1f;
             SetFlash(-1f);
@@ -143,10 +149,30 @@ namespace RushOps.Enemies
                 navigator, _definition != null ? _definition.MoveSpeed : 0f, _definition != null ? _definition.SeparationScale : 1f);
         }
 
+        /// <summary>
+        /// Lets the enemy crawl out of a breach for <paramref name="duration"/> seconds (F-END-15): it rises out of the
+        /// ground at its feet, cannot be hit, does not move and does not hurt; then it starts chasing. Call right after
+        /// <see cref="Spawn"/>.
+        /// </summary>
+        public void BeginEmerge(float duration)
+        {
+            if (duration <= 0f || IsDead || _health == null)
+            {
+                return;
+            }
+
+            _emergeDuration = duration;
+            _emergeElapsed = 0f;
+            _movement.Stop();
+            _body.linearVelocity = Vector2.zero;
+            _body.simulated = false;
+            ApplyEmerge(0f);
+        }
+
         /// <inheritdoc />
         public bool TakeHit(int damage, Vector2 direction, bool lethal = false)
         {
-            if (_health == null)
+            if (_health == null || IsEmerging)
             {
                 return false;
             }
@@ -192,7 +218,7 @@ namespace RushOps.Enemies
         /// <inheritdoc />
         public bool Push(Vector2 direction, float speed, float duration)
         {
-            if (_health == null || _health.IsDead)
+            if (_health == null || _health.IsDead || IsEmerging)
             {
                 return false;
             }
@@ -251,6 +277,12 @@ namespace RushOps.Enemies
                 }
             }
 
+            if (_emergeElapsed >= 0f)
+            {
+                UpdateEmerge();
+                return;
+            }
+
             if (_dyingTime < 0f)
             {
                 CheckApproach();
@@ -270,6 +302,28 @@ namespace RushOps.Enemies
             {
                 Finish();
             }
+        }
+
+        private void UpdateEmerge()
+        {
+            _emergeElapsed += Time.deltaTime;
+            float progress = EmergeMath.Progress(_emergeElapsed, _emergeDuration);
+            ApplyEmerge(progress);
+            if (progress < 1f)
+            {
+                return;
+            }
+
+            _emergeElapsed = -1f;
+            _body.simulated = true;
+            _movement.Begin(
+                _navigator, _definition != null ? _definition.MoveSpeed : 0f, _definition != null ? _definition.SeparationScale : 1f);
+        }
+
+        private void ApplyEmerge(float progress)
+        {
+            transform.localScale = new Vector3(1f, EmergeMath.Scale(progress), 1f);
+            SetAlpha(EmergeMath.Alpha(progress));
         }
 
         // Explosive enemies blow up on touching the player they chase.
@@ -314,6 +368,13 @@ namespace RushOps.Enemies
 
         private void Die()
         {
+            if (_emergeElapsed >= 0f)
+            {
+                _emergeElapsed = -1f;
+                transform.localScale = Vector3.one;
+                SetAlpha(1f);
+            }
+
             _movement.Stop();
             _body.linearVelocity = Vector2.zero;
             _body.simulated = false;
