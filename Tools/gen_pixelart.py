@@ -45,6 +45,8 @@ Output (under Assets/_Project/Art/):
   Sprites/Effects/HitSpark_<F>.png         16x16, 3 frames of sparks flying towards +X (issue #107)
   Sprites/Effects/DeathSplat_<F>.png       32x32, 4 frames of blood flying apart when an enemy dies (issue #107)
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
+  Sprites/Effects/BreachHole_Closed.png    32x32 breach in the endless arena floor, dark pit in rubble (issue #313)
+  Sprites/Effects/BreachHole_Open.png      32x32 the same breach glowing while an enemy crawls out (issue #313)
   Sprites/Effects/Shield_Barrier.png       64x64 bubble around the player while the shield runs (issue #26)
   Sprites/Level/HoldZone_Ring.png          128x128 ring on the floor of a hold-the-line zone, radius 2 tiles (issue #31)
   Sprites/Level/HoldZone_Fill.png          128x128 disc inside the ring; the game scales it with the progress (issue #31)
@@ -2289,6 +2291,25 @@ def spawn_marker() -> Canvas:
                 c.set(x, y, "red_1")
     c.ellipse(16.0, 16.0, 3.0, 2.0, "orange")
     c.ellipse(16.0, 16.0, 1.6, 1.1, "yellow")
+    return c
+
+
+def breach_hole(open_: bool) -> Canvas:
+    """Breach where enemies of the endless arena crawl out (issue #313, F-END-15): a dark pit in a ring of rubble,
+    squashed for the oblique view. Open, it glows red from below while an enemy climbs out."""
+    c = Canvas(32, 32)
+    c.ellipse(16.0, 16.5, 14.5, 9.0, "slate_1")
+    c.ellipse(16.0, 16.5, 12.5, 7.4, "slate_0")
+    c.ellipse(16.0, 17.0, 10.5, 5.8, "outline")
+    c.ellipse(16.0, 17.5, 8.0, 4.0, "red_0" if open_ else "night")
+    if open_:
+        c.ellipse(16.0, 17.5, 5.0, 2.4, "red_1")
+        c.ellipse(16.0, 17.5, 2.4, 1.1, "orange")
+    for x, y, color in [(3, 12, "slate_3"), (6, 8, "slate_2"), (27, 11, "slate_3"), (25, 7, "slate_2"),
+                        (4, 21, "slate_2"), (28, 21, "slate_3"), (12, 4, "slate_3"), (21, 5, "slate_2"),
+                        (10, 27, "slate_2"), (22, 27, "slate_3"), (2, 16, "slate_4"), (29, 16, "slate_4")]:
+        c.set(x, y, color)
+        c.set(x + 1, y, "slate_1")
     return c
 
 
@@ -4931,6 +4952,8 @@ def outputs() -> dict[str, Image.Image]:
         "Tiles/Wall_Top.png": wall_top().to_image(),
         "Tiles/Wall_Front.png": wall_front().to_image(),
         "Sprites/Effects/SpawnMarker.png": spawn_marker().to_image(),
+        "Sprites/Effects/BreachHole_Closed.png": breach_hole(False).to_image(),
+        "Sprites/Effects/BreachHole_Open.png": breach_hole(True).to_image(),
         "Sprites/Effects/Shield_Barrier.png": shield_barrier().to_image(),
         "Sprites/Level/HoldZone_Ring.png": hold_zone_ring().to_image(),
         "Sprites/Level/HoldZone_Fill.png": hold_zone_fill().to_image(),

@@ -85,9 +85,9 @@ namespace RushOps.Tests.PlayMode
         /// them alive at once (spawning fast, the endless mode itself has no cap), gives the player
         /// <paramref name="weapon"/> and the perks of <paramref name="perkIds"/>, and on top lets the Mega-Boomer fight
         /// with puddles and explosions, which no real round does (boss rounds have no regular enemies). The boss cannot
-        /// fall during a measurement. Call <see cref="RestoreEndlessConfig"/> afterwards.
+        /// fall during a measurement. Without <paramref name="mustFill"/> a slow fill only logs. Call <see cref="RestoreEndlessConfig"/> afterwards.
         /// </summary>
-        public IEnumerator EnterEndlessStress(string weapon, int enemies, params string[] perkIds)
+        public IEnumerator EnterEndlessStress(string weapon, int enemies, bool mustFill, params string[] perkIds)
         {
             var controller = Object.FindAnyObjectByType<RushOps.Endless.EndlessRunController>();
             Assert.IsNotNull(controller, "no EndlessRunController in the arena");
@@ -128,6 +128,12 @@ namespace RushOps.Tests.PlayMode
             director.SetMaxActive(enemies);
             while (director.AliveCount < enemies)
             {
+                if (!mustFill && Time.realtimeSinceStartup >= end)
+                {
+                    Debug.Log($"[Perf] only {director.AliveCount} of {enemies} enemies alive after the wait; measuring anyway");
+                    break;
+                }
+
                 Assert.Less(Time.realtimeSinceStartup, end, $"timeout waiting for {enemies} enemies");
                 Tick(false);
                 yield return null;
