@@ -277,6 +277,21 @@ Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (De
 
 ---
 
+### 2.13 Arcade-Modus
+
+Der Endlos-Modus lässt sich optional in einem Arcade-Automaten spielen (Design-Fragen AR1 bis AR8, Backlog [`v1.11.0.md`](backlog/v1.11.0.md)). Die Regeln des Endlos-Modus bleiben unverändert.
+
+| ID | Anforderung | Prio |
+|---|---|---|
+| F-ARC-01 | Der **Arcade-Modus** zeigt einen 2D-Automaten in Frontansicht: oben ein **Marquee** mit dem RushOps-Logo, darunter der **Screen** in einem bemalten Bezel, unten das **Bedienfeld**. | Muss |
+| F-ARC-02 | Das Spiel läuft im Screen (fast quadratisch, *etwa 320×320 px, Startwert*). Er zeigt weniger Spielfeld als der normale Modus; die Regeln bleiben gleich. | Muss |
+| F-ARC-03 | Der HUD sowie Pause, Upgrade-Wahl und Game Over liegen im Screen-Bereich. | Muss |
+| F-ARC-04 | Das Bedienfeld hat zwei **Hebel** (links Bewegen, rechts Zielen) und einen großen gelben **Dash-Knopf** in der Mitte. Die Hebel kippen sichtbar mit dem Daumen. Weitere Knöpfe sind Dekoration. | Muss |
+| F-ARC-05 | Der Screen hat einen leichten **CRT-Effekt** (Scanlines, Glanz, abgerundete Ecken). | Soll |
+| F-ARC-06 | Der Automat ist Pixelart in der Spielpalette, per Skript erzeugt. | Muss |
+| F-ARC-07 | Beim Start zoomt das Menü raus, die Figur geht zum Automaten; der Übergang ist überspringbar. | Soll |
+| F-ARC-08 | Im Bereich „Endlos“ wählt ein Schalter zwischen **Normal** und **Arcade**. Arcade-Läufe führen **eigene** Top 10 und Tagesbestwerte. Die Kampagne bleibt unverändert. | Muss |
+
 ## 3. Benutzeroberfläche
 
 ### 3.1 Start und Hauptmenü
@@ -323,7 +338,7 @@ Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (De
 | F-DAT-01 | Gespeichert wird lokal als JSON-Datei im App-Speicher (`Application.persistentDataPath`). | Muss |
 | F-DAT-02 | Es gibt kein manuelles Speichern und keinen Speicherstand innerhalb eines Levels. | Muss |
 | F-DAT-03 | **Autosave** bei: Level geschafft, Tod der Spielfigur (Statistiken), Abbruch eines Levels oder Laufs, Kauf eines Skins, Änderung der Einstellungen. | Muss |
-| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08) und der Tagesläufe (F-END-14), Goldkontostand und Gold insgesamt (F-GLD-05), Abzeichen pro Level (F-SCO-04) und gezeigte Rätsel-Hinweise (F-RAE-13). | Muss |
+| F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08) und der Tagesläufe (F-END-14), Goldkontostand und Gold insgesamt (F-GLD-05), Abzeichen pro Level (F-SCO-04) und gezeigte Rätsel-Hinweise (F-RAE-13), Darstellungswahl und eigene Bestwerte des Arcade-Modus (F-ARC-08). | Muss |
 | F-DAT-05 | Das Speicherformat hat eine Versionsnummer, damit spätere Versionen alte Spielstände migrieren können. | Muss |
 | F-DAT-06 | Ein beschädigter Spielstand führt nicht zum Absturz. Es wird ein Backup geladen oder ein neuer Spielstand angelegt. | Muss |
 
@@ -380,6 +395,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.7.0 Endlos-Upgrades und Tageslauf**: siehe Abschnitt 2.10 (F-END-11 bis F-END-14).
 - **v1.8.0 Herausforderungen und Rätsel mit Zombies**: siehe Abschnitt 2.5 (F-LVL-07), 2.6 (F-RAE-09 bis F-RAE-13), 2.8 (F-SCO-04, F-SCO-05), 2.9 (F-SKN-05) und 3.2 (F-UI-08).
 - **v1.9.0 Feinschliff**: siehe Abschnitt 5 (F-AUD-01, F-AUD-05), 3.1 (F-UI-04) und 2.8 (F-SCO-03, Sterne-Schwellen per Simulation, N33); weiteres Balancing aus dem Gesamtspieltest.
+- **v1.11.0 Arcade-Modus**: siehe Abschnitt 2.13 (F-ARC-01 bis F-ARC-08).
 - Erledigt: **Waffensystem** (W1 bis W10), erschienen mit v1.0.0 ([`v1.0.0-waffen.md`](backlog/v1.0.0-waffen.md)).
 - Nach dem Release: Skins mit Modifikatoren, Dieb-Gegner, Mutatoren, weitere Inseln.
 
@@ -420,3 +436,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.5 | 11.11.2026 | Abschnitt 2.10 mit Endlos-Upgrades (F-END-11, F-END-12, Upgrade-Tabelle) und Tageslauf (F-END-13, F-END-14); F-DAT-04 mit Tagesbestwerten (Design-Fragen T1 bis T4, N19 bis N22). |
 | 1.6 | 11.11.2026 | Abschnitt 2.6 mit Zombie-Rätseln Druckplatte und rissige Wand samt Hinweisen (F-RAE-09 bis F-RAE-13); F-LVL-07 mit neuen Zonen in 1-2, 2-2 und 3-2; Abzeichen F-SCO-04, F-SCO-05, Skins F-SKN-05, Inselkarte F-UI-08; F-GEG-07 mit Hunden in den neuen Zonen; F-DAT-04 mit Abzeichen und Hinweisen (Design-Fragen CH1, Z1, Z2, N9, N23 bis N29). |
 | 1.7 | 11.11.2026 | F-AUD-01 mit zwei Tracks (Hauptmenü, Spiel) im Chiptune-Stil; neu F-AUD-05 Vibration; F-UI-04 mit Schalter „Vibration“ (Design-Fragen N30 bis N32). |
+| 1.8 | 12.11.2026 | Neuer Abschnitt 2.13 Arcade-Modus (F-ARC-01 bis F-ARC-08); F-DAT-04 mit Arcade-Bestwerten (Design-Fragen AR1 bis AR8). |

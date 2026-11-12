@@ -276,3 +276,15 @@ Beim Zerlegen von v1.9.0 am 11.11.2026 nachgefragt:
 | N32 | Wann vibriert das Handy? | Schaden am Spieler, Explosionen, Sieg; Schalter in den Einstellungen | Schaden am Spieler und Explosionen; Schalter „Vibration“ in den Einstellungen, Standard an; kein Muster beim Sieg |
 | N33 | Sterne-Schwellen ohne Spieltest? | Warten auf den Spieltest | **Per Simulation** aus dem Inhalt jedes Levels vorschlagen; Gefühl am Gerät |
 
+Beim Planen des Arcade-Modus am 12.11.2026 besprochen:
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| AR1 | Was ist der Arcade-Modus? | Reine Darstellung des Endlos-Modus, Regeln unverändert | V |
+| AR2 | Größe des Screens? | Spielbild verkleinert (9:16) oder breiter | **Breiter:** Screen fast quadratisch, zeigt weniger Spielfeld (etwa 10×10 Kacheln); das Gefühl nimmt Berat am Gerät ab |
+| AR3 | Bedienfeld? | Zwei Hebel, Dash-Knopf | Links Bewegen, rechts Zielen, großer gelber Dash-Knopf in der Mitte; Hebel kippen sichtbar; weitere Knöpfe nur Dekoration |
+| AR4 | Look? | Pixelart wie das Spiel | Klassischer Automat in Frontansicht (Marquee, Bezel, Screen, Bedienfeld), Marquee mit echtem Pixelart-Logo, Spielpalette, leichter CRT-Effekt |
+| AR5 | Übergang? | Menü zoomt raus, Figur geht zum Automaten | V, überspringbar |
+| AR6 | Wo wählt man den Modus? | Einstellungen oder Bereich „Endlos“ | Schalter im Bereich „Endlos“; eigene Top 10 und Tagesbestwerte, weil das Spielfeld kleiner ist |
+| AR7 | Welche Modi? | Alle | Nur Endlos und Tageslauf; die Kampagne bleibt unverändert |
+| AR8 | Version? | Nach v1.10.0 (Endlos-Spawns) | v1.11.0 |
