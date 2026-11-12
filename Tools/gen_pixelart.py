@@ -47,6 +47,7 @@ Output (under Assets/_Project/Art/):
   Sprites/Effects/SpawnMarker.png          32x32 ground mark shown before an enemy spawns
   Sprites/Effects/BreachHole_Closed.png    32x32 breach in the endless arena floor, dark pit in rubble (issue #313)
   Sprites/Effects/BreachHole_Open.png      32x32 the same breach glowing while an enemy crawls out (issue #313)
+  Sprites/Enemies/<Type>_Emerge_<F>.png    64x64, 6 frames facing the viewer: the enemy rises out of the ground (issue #314)
   Sprites/Effects/Shield_Barrier.png       64x64 bubble around the player while the shield runs (issue #26)
   Sprites/Level/HoldZone_Ring.png          128x128 ring on the floor of a hold-the-line zone, radius 2 tiles (issue #31)
   Sprites/Level/HoldZone_Fill.png          128x128 disc inside the ring; the game scales it with the progress (issue #31)
@@ -1133,6 +1134,43 @@ def keep_on_canvas(frames: list[Canvas], margin: int = 1) -> list[Canvas]:
         lift = max(lift, lowest_row(c) - (c.height - 1 - margin))
         out.append(shifted_up(c, lift) if lift > 0 else c)
     return out
+
+
+EMERGE_FRAMES = 6
+EMERGE_DIRECTION = DIRECTIONS.index("S")
+
+
+def emerge_frames(base: Canvas, count: int = EMERGE_FRAMES) -> list[Canvas]:
+    """An enemy rising out of the ground (issue #314, F-END-15): the figure of `base` (facing the viewer) sits lower
+    and lower below the ground line, so frame by frame more of it shows, from the head down to the feet. Soil clods
+    lie at the ground line, a few specks fly up and the body shakes while it climbs. The last frame is `base`."""
+    ground = lowest_row(base)
+    top = next(y for y in range(base.height) if any(px is not None for px in base.px[y]))
+    height = ground - top + 1
+    frames = []
+    for f in range(count):
+        shown = (f + 1) / count
+        shift = round(height * (1.0 - shown))
+        shake = 0 if f == count - 1 else (1 if f % 2 == 0 else -1)
+        out = Canvas(base.width, base.height)
+        for y in range(base.height):
+            ty = y + shift
+            if ty > ground:
+                continue
+            for x in range(base.width):
+                color = base.px[y][x]
+                if color is not None:
+                    out.set(x + shake, ty, color)
+        if f < count - 1:
+            cx = base.width // 2
+            for dx, color in ((-9, "brown_0"), (-6, "brown_1"), (5, "brown_1"), (8, "brown_0"), (-3, "brown_0"), (3, "brown_0")):
+                out.set(cx + dx, ground, color)
+                out.set(cx + dx + (1 if dx < 0 else -1), ground - 1, "brown_1")
+            for k, dx in enumerate((-8, -4, 6, 9)):
+                y = ground - 3 - ((f * 3 + k * 2) % 9)
+                out.set(cx + dx + (f % 2), y, "slate_3" if k % 2 == 0 else "brown_1")
+        frames.append(out)
+    return frames
 
 
 def death_frames(draw, direction: int, count: int) -> list[Canvas]:
@@ -5019,6 +5057,11 @@ def outputs() -> dict[str, Image.Image]:
     fire_trail_files(files)
     upgrade_files(files)
     rocket_files(files)
+    for enemy, base in (("Walker", walker_frame(EMERGE_DIRECTION, 0)), ("Runner", runner_frame(EMERGE_DIRECTION, 0)),
+                        ("Brute", brute_frame(EMERGE_DIRECTION, 0)), ("Boomer", boomer_frame(EMERGE_DIRECTION, 0)),
+                        ("Dog", dog_frame(EMERGE_DIRECTION, 0))):
+        for frame, c in enumerate(emerge_frames(base)):
+            files[f"Sprites/Enemies/{enemy}_Emerge_{frame}.png"] = c.to_image()
     for d, name in enumerate(DIRECTIONS):
         for frame in range(len(HIT_POSES)):
             files[f"Sprites/Enemies/Walker_Hit_{name}_{frame}.png"] = walker_hit(d, frame).to_image()

@@ -19,6 +19,18 @@ MonoBehaviour:
   _points: 15
   _gold: 1
   _isBoss: 0
+  _mass: 1
+  _knockbackScale: 1
+  _separationScale: 1
+  _dog: {fileID: 0}
+  _explosion: {fileID: 0}
+  _emergeFrames:
+  - {fileID: 21300000, guid: f57520e132a524ad4a5c1be95ee1284e, type: 3}
+  - {fileID: 21300000, guid: a5a29ad39c4074a7d8263bc1818b72ed, type: 3}
+  - {fileID: 21300000, guid: 935e84db6139949ffa794f0da6705e27, type: 3}
+  - {fileID: 21300000, guid: 96e7aa9137705411c8b5fff1451f68c1, type: 3}
+  - {fileID: 21300000, guid: ad8847b943f0843589dd7b8adc6e3544, type: 3}
+  - {fileID: 21300000, guid: d1a03639e883f4686b26dba7b1b5941d, type: 3}
   _spawnClip: {fileID: 8300000, guid: 7f1ca4352e6a44f2683be5bbb2667b58, type: 3}
   _approachClip: {fileID: 8300000, guid: f659a3369161248c28bfe096edd5e778, type: 3}
   _approachDistance: 4

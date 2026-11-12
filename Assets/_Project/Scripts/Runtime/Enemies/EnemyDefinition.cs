@@ -46,6 +46,10 @@ namespace RushOps.Enemies
         [Tooltip("Blows up when it dies or touches the player (boomer, issue #22); none if empty.")]
         [SerializeField] private ExplosionDefinition _explosion;
 
+        [Header("Crawl-out")]
+        [Tooltip("Frames of the crawl-out from a breach (F-END-15), facing the viewer, from the first bit of the head to the full body; empty = the sprite just rises (scale and fade).")]
+        [SerializeField] private Sprite[] _emergeFrames;
+
         [Header("Sound")]
         [Tooltip("Placeholder sound when the enemy appears; none if empty.")]
         [SerializeField] private AudioClip _spawnClip;
@@ -97,6 +101,9 @@ namespace RushOps.Enemies
 
         /// <summary>Explosion on death and on touching the player; null for enemies that do not explode.</summary>
         public ExplosionDefinition Explosion => _explosion;
+
+        /// <summary>Frames of the crawl-out from a breach; empty without own animation.</summary>
+        public Sprite[] EmergeFrames => _emergeFrames ?? System.Array.Empty<Sprite>();
 
         /// <summary>Sound when the enemy appears; may be null.</summary>
         public AudioClip SpawnClip => _spawnClip;

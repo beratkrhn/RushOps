@@ -84,7 +84,10 @@ namespace RushOps.Tests.PlayMode
             Assert.AreEqual(0, crawler.ContactDamage, "no contact damage while crawling out");
             Assert.IsFalse(crawler.TakeHit(1, Vector2.up), "a shot does not count");
             Vector2 start = crawler.transform.position;
-            Assert.Less(crawler.transform.localScale.y, 1f, "still rising out of the ground");
+            var sprites = crawler.GetComponentInChildren<SpriteRenderer>();
+            Sprite[] frames = crawler.Definition.EmergeFrames;
+            Assert.AreEqual(6, frames.Length, "the walker has its own crawl-out frames (issue #314)");
+            CollectionAssert.Contains(frames, sprites.sprite, "shows a crawl-out frame");
 
             yield return new WaitForSeconds(_director.Config.EmergeDuration + 0.3f);
 
@@ -92,6 +95,7 @@ namespace RushOps.Tests.PlayMode
             Assert.IsTrue(crawler.CanBeHit);
             Assert.Greater(crawler.ContactDamage, 0);
             Assert.AreEqual(1f, crawler.transform.localScale.y, 1e-4f);
+            CollectionAssert.DoesNotContain(frames, sprites.sprite, "the walking animation took over again");
             Assert.Greater(((Vector2)crawler.transform.position - start).sqrMagnitude, 0f, "it chases now");
         }
     }
