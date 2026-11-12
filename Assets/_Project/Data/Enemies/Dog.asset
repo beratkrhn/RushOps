@@ -24,6 +24,13 @@ MonoBehaviour:
   _separationScale: 1
   _dog: {fileID: 11400000, guid: 80a754ee48a5b473fb970e629189b2ce, type: 2}
   _explosion: {fileID: 0}
+  _emergeFrames:
+  - {fileID: 21300000, guid: 7e97998e8c191456599e13c0dcc72e7c, type: 3}
+  - {fileID: 21300000, guid: d5388f71cb2ba4e3f93dc38f050919d7, type: 3}
+  - {fileID: 21300000, guid: fb3a8e052bf9a47efbf0bd4a1dddd0d5, type: 3}
+  - {fileID: 21300000, guid: af512624253fa46dbaaeb3e536487931, type: 3}
+  - {fileID: 21300000, guid: 0a877911e179b41b28b54e615c0fd571, type: 3}
+  - {fileID: 21300000, guid: 4bbf9a0d439604cc7beaecffb2a3469b, type: 3}
   _spawnClip: {fileID: 8300000, guid: e907abe37158a46818ff725b5ad464b5, type: 3}
   _approachClip: {fileID: 0}
   _approachDistance: 4

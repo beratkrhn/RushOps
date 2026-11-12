@@ -47,6 +47,7 @@ namespace RushOps.Enemies
         private FlowFieldNavigator _navigator;
         private float _emergeElapsed = -1f;
         private float _emergeDuration;
+        private bool _emergeWithFrames;
 
         /// <summary>Raised on every hit that counted, including the killing one (then <see cref="IsDead"/> is true).</summary>
         public event Action<Enemy> Hit;
@@ -138,6 +139,7 @@ namespace RushOps.Enemies
             SetAlpha(1f);
             if (_view != null)
             {
+                _view.enabled = true;
                 _view.PlayLoop();
             }
 
@@ -163,9 +165,16 @@ namespace RushOps.Enemies
 
             _emergeDuration = duration;
             _emergeElapsed = 0f;
+            _emergeWithFrames = _renderer != null && _definition != null && _definition.EmergeFrames.Length > 0;
+            if (_emergeWithFrames && _view != null)
+            {
+                // The animator would swap the sprite every frame; the crawl-out frames take over until it is done.
+                _view.enabled = false;
+            }
+
+            // The body stays simulated: switching it off and on for every spawn is expensive. It is held still instead.
             _movement.Stop();
             _body.linearVelocity = Vector2.zero;
-            _body.simulated = false;
             ApplyEmerge(0f);
         }
 
@@ -307,6 +316,7 @@ namespace RushOps.Enemies
         private void UpdateEmerge()
         {
             _emergeElapsed += Time.deltaTime;
+            _body.linearVelocity = Vector2.zero;
             float progress = EmergeMath.Progress(_emergeElapsed, _emergeDuration);
             ApplyEmerge(progress);
             if (progress < 1f)
@@ -315,15 +325,39 @@ namespace RushOps.Enemies
             }
 
             _emergeElapsed = -1f;
-            _body.simulated = true;
+            EndEmergeVisuals();
             _movement.Begin(
                 _navigator, _definition != null ? _definition.MoveSpeed : 0f, _definition != null ? _definition.SeparationScale : 1f);
         }
 
         private void ApplyEmerge(float progress)
         {
+            if (_emergeWithFrames)
+            {
+                Sprite[] frames = _definition.EmergeFrames;
+                int index = Mathf.Min(frames.Length - 1, (int)(progress * frames.Length));
+                _renderer.sprite = frames[index];
+                transform.localScale = Vector3.one;
+                SetAlpha(1f);
+                return;
+            }
+
             transform.localScale = new Vector3(1f, EmergeMath.Scale(progress), 1f);
             SetAlpha(EmergeMath.Alpha(progress));
+        }
+
+        // Gives the sprite back to the animator after crawling out with frames.
+        private void EndEmergeVisuals()
+        {
+            transform.localScale = Vector3.one;
+            SetAlpha(1f);
+            if (_emergeWithFrames && _view != null)
+            {
+                _view.enabled = true;
+                _view.PlayLoop();
+            }
+
+            _emergeWithFrames = false;
         }
 
         // Explosive enemies blow up on touching the player they chase.
@@ -339,7 +373,7 @@ namespace RushOps.Enemies
 
         private void TryDetonate(Collision2D collision)
         {
-            if (_target != null && _definition != null && _definition.Explosion != null && !IsDead
+            if (_target != null && _definition != null && _definition.Explosion != null && !IsDead && !IsEmerging
                 && collision.rigidbody != null && collision.rigidbody.transform == _target)
             {
                 Kill();
@@ -371,8 +405,7 @@ namespace RushOps.Enemies
             if (_emergeElapsed >= 0f)
             {
                 _emergeElapsed = -1f;
-                transform.localScale = Vector3.one;
-                SetAlpha(1f);
+                EndEmergeVisuals();
             }
 
             _movement.Stop();
