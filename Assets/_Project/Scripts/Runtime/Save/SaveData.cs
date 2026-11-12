@@ -13,7 +13,7 @@ namespace RushOps.Save
     public class SaveData
     {
         /// <summary>Format version written by this build.</summary>
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
 
         /// <summary>Format version of this save.</summary>
         public int Version = CurrentVersion;
@@ -47,5 +47,8 @@ namespace RushOps.Save
 
         /// <summary>Story progress beyond the levels, e.g. the intro (issue #333, no version step).</summary>
         public StoryData Story = new StoryData();
+
+        /// <summary>Display choice and own lists of the arcade mode (F-ARC-08, since version 7).</summary>
+        public ArcadeData Arcade = new ArcadeData();
     }
 }
