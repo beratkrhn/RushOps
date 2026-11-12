@@ -120,3 +120,7 @@ In Stories zerlegt: [`v1.2.0.md`](v1.2.0.md) (#233 bis #237, Epic #214). Entsche
 ### Musik (#42)
 
 Ein Track für das Hauptmenü und ein Spieltrack für alles andere, Chiptune per Skript erzeugt (G11, G12, N30, N31). In Stories zerlegt mit v1.9.0.
+
+### v1.11.0 – Arcade-Modus
+
+In Stories zerlegt: [`v1.11.0.md`](v1.11.0.md) (Stories noch ohne Issue-Nummern). Entscheidungen AR1 bis AR8, Lastenheft Abschnitt 2.13.
