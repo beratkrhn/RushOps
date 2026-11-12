@@ -288,3 +288,16 @@ Beim Planen des Arcade-Modus am 12.11.2026 besprochen:
 | AR6 | Wo wählt man den Modus? | Einstellungen oder Bereich „Endlos“ | Schalter im Bereich „Endlos“; eigene Top 10 und Tagesbestwerte, weil das Spielfeld kleiner ist |
 | AR7 | Welche Modi? | Alle | Nur Endlos und Tageslauf; die Kampagne bleibt unverändert |
 | AR8 | Version? | Nach v1.10.0 (Endlos-Spawns) | v1.11.0 |
+
+Beim Planen der Story am 12.11.2026 besprochen:
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| S1 | Worum geht es? | Gerücht um den Toke, alle sterben und werden Zombies, der Held will den Toke vom mächtigen Mann | Wie in [`story.md`](../story.md); Ton **düster und ernst** |
+| S2 | Was ist der Toke? | Gift und Heilmittel | **Beides:** Gift in Echtzeit und zugleich das Heilmittel; nur der Mann hat ihn |
+| S3 | Motiv des Helden? Kampagne zurücksetzen? | Der Held will die Menschen retten; Reset in den Einstellungen | Der Held will ihn, um die Menschen zu retten, weil er jetzt sicher weiß, dass es den Toke gibt. **Reset:** nur die Kampagne, Gold, Skins, Statistiken, Endlos-Bestwerte und Einstellungen bleiben |
+| S4 | Motiv des Mannes? Warum bleibt er unversehrt? | Alleine übrig bleiben, Toke behalten, Immunität oder Gegenmittel | **Offen** |
+| S5 | Ende? | Rettung gelingt ganz, teilweise oder gar nicht | **Offen** |
+| S6 | Bosse in der Geschichte? | Die drei Bosse waren Handlanger des Mannes und wurden durch den Toke zu Monstern | V; Berat fand die Vorschläge sehr gut, Einzelheiten noch offen |
+| S7 | Umsetzung der Cutscenes? | Pixelart-Standbilder mit Textboxen und kurzer Animation | **Pixelart-Standbilder mit Textboxen** im Spielstil; Intro mit sieben Bildern (Storyboard in `story.md`); Toke immer golden; Finale als Showdown mit dem geflügelten Mann |
+| S8 | Aufbau? | Intro, je eine Szene nach den drei Bossen, Finale; die drei Inseln als drei Akte | V |

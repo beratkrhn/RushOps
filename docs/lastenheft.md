@@ -292,6 +292,15 @@ Der Endlos-Modus lässt sich optional in einem Arcade-Automaten spielen (Design-
 | F-ARC-07 | Beim Start zoomt das Menü raus, die Figur geht zum Automaten; der Übergang ist überspringbar. | Soll |
 | F-ARC-08 | Im Bereich „Endlos“ wählt ein Schalter zwischen **Normal** und **Arcade**. Arcade-Läufe führen **eigene** Top 10 und Tagesbestwerte. Die Kampagne bleibt unverändert. | Muss |
 
+### 2.14 Story
+
+Die Kampagne erzählt eine zusammenhängende Geschichte (Design-Fragen S1 bis S8, [`story.md`](story.md)). Ton: düster und ernst.
+
+| ID | Anforderung | Prio |
+|---|---|---|
+| F-STO-01 | Die Kampagne folgt der Geschichte aus [`story.md`](story.md): ein Gerücht um den **Toke** treibt alle Menschen in den Tod, sie werden zu Zombies, der Held will den Toke, der zugleich Gift und Heilmittel ist, vom mächtigen Mann holen. | Muss |
+| F-STO-02 | **Cutscenes** erzählen die Geschichte: ein Intro, eine Szene nach jedem der drei Bosse und ein Finale. Umfang und Stil werden beim Zerlegen festgelegt. | Soll |
+
 ## 3. Benutzeroberfläche
 
 ### 3.1 Start und Hauptmenü
@@ -302,6 +311,7 @@ Der Endlos-Modus lässt sich optional in einem Arcade-Automaten spielen (Design-
 | F-UI-02 | Das Hauptmenü hat vier Bereiche: **Story Mode**, **Endlos**, **Spielerauswahl**, **Einstellungen**. | Muss |
 | F-UI-03 | **Spielerauswahl**: horizontal scrollbares Karussell mit allen Skins. Gesperrte Skins zeigen ihre Freischaltbedingung. | Muss |
 | F-UI-04 | **Einstellungen**: Lautstärke (Gesamt, Musik, Effekte), Zielhilfe an/aus, Vibration an/aus, Credits. Die Sticks werden nicht eingestellt; Modus, Größe und Position sind fest (Design-Frage M3). | Muss |
+| F-UI-09 | In den **Einstellungen** gibt es **„Kampagne zurücksetzen“** mit Sicherheitsabfrage (Design-Frage S3). | Muss |
 
 ### 3.2 Story Mode (Levelauswahl)
 
@@ -341,6 +351,7 @@ Der Endlos-Modus lässt sich optional in einem Arcade-Automaten spielen (Design-
 | F-DAT-04 | Gespeichert werden: freigeschaltete Inseln und Level, Sterne und beste Scores, Kills insgesamt und weitere Statistiken, freigeschaltete Skins und aktueller Skin, alle Einstellungen, Bestwerte des Endlos-Modus (F-END-08) und der Tagesläufe (F-END-14), Goldkontostand und Gold insgesamt (F-GLD-05), Abzeichen pro Level (F-SCO-04) und gezeigte Rätsel-Hinweise (F-RAE-13), Darstellungswahl und eigene Bestwerte des Arcade-Modus (F-ARC-08). | Muss |
 | F-DAT-05 | Das Speicherformat hat eine Versionsnummer, damit spätere Versionen alte Spielstände migrieren können. | Muss |
 | F-DAT-06 | Ein beschädigter Spielstand führt nicht zum Absturz. Es wird ein Backup geladen oder ein neuer Spielstand angelegt. | Muss |
+| F-DAT-07 | **Kampagne zurücksetzen** löscht nur den Kampagnenfortschritt: freigeschaltete Inseln und Level, Sterne, beste Scores, Abzeichen pro Level (F-SCO-04) und gezeigte Rätsel-Hinweise (F-RAE-13); die Intro-Cutscene läuft danach wieder. **Bleiben:** Gold, Skins (auch durch Abzeichen freigeschaltete), Statistiken, Endlos- und Arcade-Bestwerte, Einstellungen. | Muss |
 
 ---
 
@@ -396,6 +407,7 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.8.0 Herausforderungen und Rätsel mit Zombies**: siehe Abschnitt 2.5 (F-LVL-07), 2.6 (F-RAE-09 bis F-RAE-13), 2.8 (F-SCO-04, F-SCO-05), 2.9 (F-SKN-05) und 3.2 (F-UI-08).
 - **v1.9.0 Feinschliff**: siehe Abschnitt 5 (F-AUD-01, F-AUD-05), 3.1 (F-UI-04) und 2.8 (F-SCO-03, Sterne-Schwellen per Simulation, N33); weiteres Balancing aus dem Gesamtspieltest.
 - **v1.11.0 Arcade-Modus**: siehe Abschnitt 2.13 (F-ARC-01 bis F-ARC-08).
+- **Story** (Kampagne mit Geschichte, Cutscenes, Reset): siehe Abschnitte 2.14, 3.1 (F-UI-09) und 4 (F-DAT-07), Geschichte in [`story.md`](story.md).
 - Erledigt: **Waffensystem** (W1 bis W10), erschienen mit v1.0.0 ([`v1.0.0-waffen.md`](backlog/v1.0.0-waffen.md)).
 - Nach dem Release: Skins mit Modifikatoren, Dieb-Gegner, Mutatoren, weitere Inseln.
 
@@ -437,3 +449,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.6 | 11.11.2026 | Abschnitt 2.6 mit Zombie-Rätseln Druckplatte und rissige Wand samt Hinweisen (F-RAE-09 bis F-RAE-13); F-LVL-07 mit neuen Zonen in 1-2, 2-2 und 3-2; Abzeichen F-SCO-04, F-SCO-05, Skins F-SKN-05, Inselkarte F-UI-08; F-GEG-07 mit Hunden in den neuen Zonen; F-DAT-04 mit Abzeichen und Hinweisen (Design-Fragen CH1, Z1, Z2, N9, N23 bis N29). |
 | 1.7 | 11.11.2026 | F-AUD-01 mit zwei Tracks (Hauptmenü, Spiel) im Chiptune-Stil; neu F-AUD-05 Vibration; F-UI-04 mit Schalter „Vibration“ (Design-Fragen N30 bis N32). |
 | 1.8 | 12.11.2026 | Neuer Abschnitt 2.13 Arcade-Modus (F-ARC-01 bis F-ARC-08); F-DAT-04 mit Arcade-Bestwerten (Design-Fragen AR1 bis AR8). |
+| 1.9 | 12.11.2026 | Neuer Abschnitt 2.14 Story (F-STO-01, F-STO-02, `story.md`); F-UI-09 und F-DAT-07 Kampagne zurücksetzen (Design-Fragen S1 bis S8). |
