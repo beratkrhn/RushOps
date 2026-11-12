@@ -32,6 +32,8 @@ namespace RushOps.Arcade
         [SerializeField] private RawImage _screen;
         [Tooltip("Canvas of the HUD; its content moves into the screen.")]
         [SerializeField] private Canvas _hud;
+        [Tooltip("The usual touch sticks; off in the cabinet, where the drawn joysticks take over (issue #322).")]
+        [SerializeField] private GameObject _touchControls;
 
         private RenderTexture _texture;
         private RectTransform _screenRoot;
@@ -138,6 +140,11 @@ namespace RushOps.Arcade
             if (_background != null)
             {
                 _background.color = Color.white;
+            }
+
+            if (_touchControls != null)
+            {
+                _touchControls.SetActive(false);
             }
 
             SetCabinetVisible(true);

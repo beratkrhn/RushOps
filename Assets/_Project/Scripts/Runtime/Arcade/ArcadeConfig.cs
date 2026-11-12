@@ -21,6 +21,17 @@ namespace RushOps.Arcade
         [SerializeField] private RectInt _stickRight;
         [SerializeField] private RectInt _dashButton;
         [SerializeField] private RectInt[] _decoButtons = System.Array.Empty<RectInt>();
+        [SerializeField] private RectInt _swapButton;
+
+        [Header("Controls")]
+        [Tooltip("Directions a joystick shows when tilted (start value 8).")]
+        [SerializeField, Range(4, 8)] private int _tiltSteps = 8;
+        [Tooltip("Stick value below which a joystick rests.")]
+        [SerializeField, Range(0f, 1f)] private float _tiltThreshold = 0.2f;
+        [Tooltip("Seconds a released joystick swings the other way before it rests.")]
+        [SerializeField, Min(0f)] private float _springBackTime = 0.06f;
+        [Tooltip("Tint of the dash button while the dash cools down or is locked.")]
+        [SerializeField] private Color _dashCooldownTint = new Color(0.45f, 0.45f, 0.5f);
 
         [Header("Screen")]
         [Tooltip("Pixels the game camera renders into; 320x320 shows 10x10 tiles at 32 px per tile (start value).")]
@@ -70,6 +81,21 @@ namespace RushOps.Arcade
         /// <summary>Canvases of the decorative buttons.</summary>
         public RectInt[] DecoButtons => _decoButtons;
 
+        /// <summary>Canvas of the weapon swap button on the panel.</summary>
+        public RectInt SwapButton => _swapButton;
+
+        /// <summary>Directions a joystick shows when tilted.</summary>
+        public int TiltSteps => _tiltSteps;
+
+        /// <summary>Stick value below which a joystick rests.</summary>
+        public float TiltThreshold => _tiltThreshold;
+
+        /// <summary>Seconds a released joystick swings the other way before it rests.</summary>
+        public float SpringBackTime => _springBackTime;
+
+        /// <summary>Tint of the dash button while the dash cools down or is locked.</summary>
+        public Color DashCooldownTint => _dashCooldownTint;
+
         /// <summary>Pixels the game camera renders into.</summary>
         public Vector2Int ScreenResolution => _screenResolution;
 
@@ -111,7 +137,7 @@ namespace RushOps.Arcade
 
         /// <summary>Sets the rectangles; used by the editor builder.</summary>
         public void SetLayout(Vector2Int reference, RectInt marquee, RectInt bezel, RectInt screen, RectInt panel,
-            RectInt stickLeft, RectInt stickRight, RectInt dashButton, RectInt[] decoButtons)
+            RectInt stickLeft, RectInt stickRight, RectInt dashButton, RectInt[] decoButtons, RectInt swapButton)
         {
             _reference = reference;
             _marquee = marquee;
@@ -122,6 +148,7 @@ namespace RushOps.Arcade
             _stickRight = stickRight;
             _dashButton = dashButton;
             _decoButtons = decoButtons ?? System.Array.Empty<RectInt>();
+            _swapButton = swapButton;
         }
 
         /// <summary>Sets the sprites; used by the editor builder.</summary>

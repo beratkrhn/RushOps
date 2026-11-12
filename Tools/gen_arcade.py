@@ -56,6 +56,9 @@ DASH_CANVAS = (52, 44)
 DASH = (180, 98)
 DECO_CANVAS = (16, 14)
 DECO = [("Red", (148, 34)), ("Blue", (180, 30)), ("Green", (212, 34))]
+# The weapon swap button of the game (W10) sits on the panel too; the runtime draws it only with two weapons.
+SWAP_CANVAS = (24, 24)
+SWAP = (246, 36)
 
 DIRECTIONS = ["E", "NE", "N", "NW", "W", "SW", "S", "SE"]
 KEY_OF_RGB = {rgb: key for key, rgb in PALETTE.items()}
@@ -523,6 +526,7 @@ def layout() -> dict:
         "stickRight": centred(STICK_RIGHT, STICK_CANVAS),
         "dashButton": centred(DASH, DASH_CANVAS),
         "decoButtons": [dict(name=name, **centred(pos, DECO_CANVAS)) for name, pos in DECO],
+        "swapButton": centred(SWAP, SWAP_CANVAS),
     }
 
 
