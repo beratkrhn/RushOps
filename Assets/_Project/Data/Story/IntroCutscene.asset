@@ -1,0 +1,178 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e911758ee65dd4e4db5c1e94e3ee5d2e, type: 3}
+  m_Name: IntroCutscene
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Story.CutsceneDefinition
+  _panelSize: {x: 180, y: 320}
+  _panels:
+  - _image: {fileID: 21300000, guid: 6844a6695fac241f391bd2f566aa0713, type: 3}
+    _boxes:
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: Es begann mit einem Satz.
+      _position: {x: 4, y: 4}
+      _width: 172
+    - _kind: 1
+      _speaker: DER MANN
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: "\"Der Toke. Wer ihn besitzt, hat alles, was er sich w\xFCnscht: Gold,
+        Kleidung, Essen, Besitz.\""
+      _position: {x: 4, y: 26}
+      _width: 172
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: "Den Toke trug er l\xE4ngst selbst in der Hand."
+      _position: {x: 4, y: 188}
+      _width: 172
+  - _image: {fileID: 21300000, guid: 16122b8b81d5a418cb7c652d9339e30a, type: 3}
+    _boxes:
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: "Alle machten sich auf die Suche: in Truhen, hinter Wasserf\xE4llen,
+        auf Inseln, auf Schiffen."
+      _position: {x: 4, y: 4}
+      _width: 172
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: Tag 1. Alle gesund.
+      _position: {x: 4, y: 46}
+      _width: 172
+  - _image: {fileID: 21300000, guid: 096a8ac089e394816b6efb8b291302c3, type: 3}
+    _boxes:
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: "Wochen sp\xE4ter. Die Ersten wurden krank. Gr\xFCne Adern, Husten,
+        Fieber."
+      _position: {x: 4, y: 4}
+      _width: 172
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: Sie suchten trotzdem weiter.
+      _position: {x: 4, y: 46}
+      _width: 172
+  - _image: {fileID: 21300000, guid: 0a3ef056e6ba24765955ee2e4d6a513e, type: 3}
+    _boxes:
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: "Nur einer h\xF6rte auf zu suchen."
+      _position: {x: 4, y: 4}
+      _width: 172
+    - _kind: 1
+      _speaker: HELD
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4289228335
+      _text: Retired die Suche nach dem Toke!
+      _position: {x: 4, y: 26}
+      _width: 172
+    - _kind: 1
+      _speaker: MENGE
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: Geh weg. Du bist nur neidisch.
+      _position: {x: 64, y: 58}
+      _width: 112
+  - _image: {fileID: 21300000, guid: ed5f70244163e4ab7ba4217d0993ca87, type: 3}
+    _boxes:
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: "Einer nach dem anderen. Tag f\xFCr Tag."
+      _position: {x: 4, y: 4}
+      _width: 172
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: Wer krank war, suchte weiter, bis nichts Menschliches mehr in ihm war.
+      _position: {x: 4, y: 36}
+      _width: 172
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: Wo sie zusammenbrachen, standen sie als Zombies wieder auf.
+      _position: {x: 4, y: 78}
+      _width: 172
+  - _image: {fileID: 21300000, guid: a47b443b0bf31449d858629381407a18, type: 3}
+    _boxes:
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: 'Alle Menschen waren Zombies geworden. Nur der Mann kannte die Wahrheit:'
+      _position: {x: 4, y: 4}
+      _width: 172
+    - _kind: 1
+      _speaker: DER MANN
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: Der Toke vergiftet jeden, der ihn sucht. Und nur er kann sie heilen.
+        Ich habe ihn.
+      _position: {x: 4, y: 46}
+      _width: 172
+  - _image: {fileID: 21300000, guid: f9133e9c6265f4f909048efe388b5c0d, type: 3}
+    _boxes:
+    - _kind: 0
+      _speaker: 
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: "Der Held stand dem Mann gegen\xFCber. Nur noch einer."
+      _position: {x: 4, y: 4}
+      _width: 172
+    - _kind: 1
+      _speaker: HELD
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4289228335
+      _text: assalamu aleykum wa rahmetullahi wa barakatuhu
+      _position: {x: 4, y: 140}
+      _width: 172
+    - _kind: 1
+      _speaker: DER MANN
+      _speakerColor:
+        serializedVersion: 2
+        rgba: 4282135240
+      _text: wa aleykum ya ars
+      _position: {x: 4, y: 262}
+      _width: 172

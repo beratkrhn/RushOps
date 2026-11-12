@@ -1,3 +1,4 @@
+using RushOps.Editor.Story;
 using UnityEditor;
 
 namespace RushOps.Editor.Scenes
@@ -30,6 +31,7 @@ namespace RushOps.Editor.Scenes
             IslandTestScenesBuilder.BuildVulkan();
             EndlessArenaSceneBuilder.Build();
             TestMenuSceneBuilder.Build();
+            IntroSceneBuilder.Build();
             MainMenuSceneBuilder.Build();
             IslandMapSceneBuilder.Build();
             BootSceneBuilder.Build();

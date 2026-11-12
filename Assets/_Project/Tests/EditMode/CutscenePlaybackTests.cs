@@ -1,7 +1,6 @@
+using System;
 using NUnit.Framework;
 using RushOps.Story;
-using UnityEngine.TestTools.Constraints;
-using Is = UnityEngine.TestTools.Constraints.Is;
 
 namespace RushOps.Tests.EditMode
 {
@@ -196,23 +195,32 @@ namespace RushOps.Tests.EditMode
         [Test]
         public void Playing_DoesNotAllocate()
         {
+            // The first run compiles every path (JIT allocates); only the second one is measured.
+            PlayThrough(Create(3, 3, 3));
             CutscenePlayback playback = Create(3, 3, 3);
-            playback.Tick(0.01f);
-            playback.Tap();
 
-            Assert.That(() =>
+            long before = GC.GetAllocatedBytesForCurrentThread();
+            PlayThrough(playback);
+            long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
+
+            Assert.AreEqual(0, allocated, "bytes allocated while playing");
+        }
+
+        private static void PlayThrough(CutscenePlayback playback)
+        {
+            for (int i = 0; i < 600; i++)
             {
-                for (int i = 0; i < 600; i++)
+                playback.Tick(0.016f);
+                playback.BoxAlpha(i % 3);
+                _ = playback.CoverAlpha;
+                _ = playback.WaitsForTap;
+                if (i % 50 == 0)
                 {
-                    playback.Tick(0.016f);
-                    playback.BoxAlpha(i % 3);
-                    _ = playback.CoverAlpha;
-                    if (i % 50 == 0)
-                    {
-                        playback.Tap();
-                    }
+                    playback.Tap();
                 }
-            }, Is.Not.AllocatingGCMemory());
+            }
+
+            playback.Skip();
         }
     }
 }
