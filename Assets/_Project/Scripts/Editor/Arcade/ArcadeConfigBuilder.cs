@@ -52,7 +52,7 @@ namespace RushOps.Editor.Arcade
 
             config.SetLayout(new Vector2Int(layout.reference.width, layout.reference.height), layout.marquee.ToRect(),
                 layout.bezel.ToRect(), layout.screen.ToRect(), layout.panel.ToRect(), layout.stickLeft.ToRect(),
-                layout.stickRight.ToRect(), layout.dashButton.ToRect(), deco);
+                layout.stickRight.ToRect(), layout.dashButton.ToRect(), deco, layout.swapButton.ToRect());
 
             var sticks = new Sprite[StickNames.Length];
             for (int i = 0; i < sticks.Length; i++)
@@ -94,6 +94,7 @@ namespace RushOps.Editor.Arcade
             public JsonRect stickRight;
             public JsonRect dashButton;
             public JsonRect[] decoButtons = Array.Empty<JsonRect>();
+            public JsonRect swapButton;
         }
 
         [Serializable]

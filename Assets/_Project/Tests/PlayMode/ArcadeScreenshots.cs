@@ -48,6 +48,45 @@ namespace RushOps.Tests.PlayMode
             yield return Capture("ingame_arcade_pause.png");
         }
 
+        [UnityTest]
+        public IEnumerator Shot_ArcadeControls()
+        {
+            RequireGraphics();
+            yield return ArcadeRunTests.Load(true);
+            yield return new WaitForSeconds(1f);
+            var player = Object.FindAnyObjectByType<PlayerMovement>();
+            Vector3 start = player.transform.position;
+            ArcadeStickView left = null;
+            ArcadeStickView right = null;
+            foreach (ArcadeStickView view in Object.FindObjectsByType<ArcadeStickView>(FindObjectsSortMode.None))
+            {
+                if (view.name == "StickLeft") left = view; else right = view;
+            }
+
+            Hold(left.Stick, 21, new Vector2(150f, 60f));
+            Hold(right.Stick, 22, new Vector2(-150f, 150f));
+            yield return new WaitForSeconds(1.2f);
+            Debug.Log($"[ArcadeScreenshots] player moved from {start} to {player.transform.position}");
+            Assert.Greater(player.transform.position.x, start.x + 0.5f, "the left joystick moves the player");
+            yield return Capture("ingame_arcade_controls.png");
+        }
+
+        private static void Hold(RushOps.UI.VirtualStick stick, int id, Vector2 offset)
+        {
+            var rect = (RectTransform)stick.transform;
+            var corners = new Vector3[4];
+            rect.GetWorldCorners(corners);
+            Vector2 press = (corners[0] + corners[2]) * 0.5f;
+            var pointer = new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current)
+            {
+                pointerId = id,
+                position = press,
+            };
+            stick.OnPointerDown(pointer);
+            pointer.position = press + offset;
+            stick.OnDrag(pointer);
+        }
+
         internal static void RequireGraphics()
         {
             if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)

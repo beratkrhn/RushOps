@@ -68,5 +68,11 @@
       "width": 16,
       "height": 14
     }
-  ]
+  ],
+  "swapButton": {
+    "x": 234,
+    "y": 440,
+    "width": 24,
+    "height": 24
+  }
 }

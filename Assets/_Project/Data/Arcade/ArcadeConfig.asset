@@ -61,6 +61,15 @@ MonoBehaviour:
     y: 443
     width: 16
     height: 14
+  _swapButton:
+    x: 234
+    y: 440
+    width: 24
+    height: 24
+  _tiltSteps: 8
+  _tiltThreshold: 0.2
+  _springBackTime: 0.06
+  _dashCooldownTint: {r: 0.45, g: 0.45, b: 0.5, a: 1}
   _screenResolution: {x: 320, y: 320}
   _hudSize: 560
   _background: {r: 0.12156863, g: 0.11372549, b: 0.16862746, a: 1}
