@@ -276,3 +276,12 @@ Beim Zerlegen von v1.9.0 am 11.11.2026 nachgefragt:
 | N32 | Wann vibriert das Handy? | Schaden am Spieler, Explosionen, Sieg; Schalter in den Einstellungen | Schaden am Spieler und Explosionen; Schalter „Vibration“ in den Einstellungen, Standard an; kein Muster beim Sieg |
 | N33 | Sterne-Schwellen ohne Spieltest? | Warten auf den Spieltest | **Per Simulation** aus dem Inhalt jedes Levels vorschlagen; Gefühl am Gerät |
 
+Beim Zerlegen von v1.10.0 am 12.11.2026 entschieden (Berat):
+
+| # | Frage | Vorschlag | Entscheidung |
+|---|---|---|---|
+| S1 | Obergrenze gleichzeitiger Gegner im Endlos-Modus? | 10, +1 alle 5 Runden, höchstens 20 | **Keine Obergrenze**; das Spiel ist klein genug, die Gegner erscheinen nacheinander im Takt der Runde. Optionale Sicherheitsgrenze in der Konfiguration (Startwert aus), Messung per Stresstest |
+| S2 | Wie erscheinen Gegner? | Blinkender Marker am Spawnpunkt | **Sichtbare Breschen in der Arenawand**, aus denen die Gegner herauskriechen (Vorbild: Barrikaden in Black Ops Zombies) |
+| S3 | Eine Animation für alle? | Ja | Erst eine allgemeine, danach **je Gegnertyp eine eigene** (Walker, Runner, Boomer, Brute, Hund) |
+| S4 | Kampagne? | Unverändert | Kampagne behält Obergrenze 10 (F-GEG-03) und Marker; Bosse behalten ihren Auftritt |
+

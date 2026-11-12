@@ -220,7 +220,7 @@ Neben dem Story Mode gibt es einen Endlos-Modus (Design-Fragen E1 bis E10, N2 bi
 | F-END-01 | Das Hauptmenü bekommt den Bereich **Endlos**. Er ist von Anfang an spielbar. | Muss |
 | F-END-02 | Gespielt wird in **einer runden Arena** im Stil eines Kolosseums mit einem **Brunnen in der Mitte**. Zombies spawnen an festen Punkten im **Norden, Osten, Süden und Westen**. | Muss |
 | F-END-03 | Ein Lauf besteht aus **Runden**. Eine Runde endet, wenn alle ihre Gegner besiegt sind; danach folgt eine kurze Pause mit Anzeige „Runde X“ *(Startwert 4 s)*. Es gibt keine Rätsel. | Muss |
-| F-END-04 | Jede Runde wird schwerer: mehr Gegner, mehr Runner, Boomer und Brutes. Die Höchstzahl gleichzeitiger Gegner darf über 10 steigen *(Startwert: 10, +1 alle 5 Runden, höchstens 20)*. | Muss |
+| F-END-04 | Jede Runde wird schwerer: mehr Gegner, mehr Runner, Boomer und Brutes. Es gibt **keine Obergrenze** für gleichzeitige Gegner; sie erscheinen nacheinander im Takt der Runde. Eine optionale Sicherheitsgrenze steht in der Konfiguration *(Startwert: 0 = aus)*. | Muss |
 | F-END-05 | Alle **10 Runden** kommt einer der drei Bosse, mit jedem Auftritt mehr Leben *(Startwert +25 %)*. Bosse gleiten am runden Brunnen entlang. | Muss |
 | F-END-06 | Nach jeder geschafften Runde gibt es **+1 Herz** bis zum Maximum. | Muss |
 | F-END-07 | Der Lauf startet mit der Pistole. **Alle 5 Runden** wird an der Arenawand eine weitere Waffe verfügbar; die Waffen hängen nebeneinander *(Startwert: Runde 5 Schrotflinte, 10 Sturmgewehr, 15 Dual-Pistolen)*. | Muss |
@@ -231,6 +231,7 @@ Neben dem Story Mode gibt es einen Endlos-Modus (Design-Fragen E1 bis E10, N2 bi
 | F-END-12 | Upgrades wirken nur im laufenden Endlos-Lauf und werden nicht gespeichert; es gibt 12 Upgrades mit Stufen (Tabelle unten). | Muss |
 | F-END-13 | Der **Tageslauf** nutzt das lokale Datum als Seed für alles Zufällige im Lauf; an einem Tag beginnt er immer gleich. Versuche sind beliebig viele, die Uhr des Geräts gilt. | Muss |
 | F-END-14 | Der beste Tageslauf jedes Tages wird gespeichert; der Bereich „Endlos“ zeigt die letzten 7 Tage. Tagesläufe kommen nicht in die Top 10 (F-END-08); Gold, Skins und Statistiken zählen wie immer. | Muss |
+| F-END-15 | In der Arena sind die vier Spawnpunkte **sichtbare Breschen in der Wand**. Ein Gegner kündigt sich dort an und **kriecht heraus**, bevor er sich bewegt; währenddessen ist er nicht treffbar und richtet keinen Schaden an. Jeder Gegnertyp hat eine eigene Kriech-Animation. Bosse behalten ihren Auftritt. | Soll |
 
 **Endlos-Upgrades** (Backlog [`v1.7.0.md`](backlog/v1.7.0.md), alle Werte *Startwerte*)
 
@@ -420,3 +421,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.5 | 11.11.2026 | Abschnitt 2.10 mit Endlos-Upgrades (F-END-11, F-END-12, Upgrade-Tabelle) und Tageslauf (F-END-13, F-END-14); F-DAT-04 mit Tagesbestwerten (Design-Fragen T1 bis T4, N19 bis N22). |
 | 1.6 | 11.11.2026 | Abschnitt 2.6 mit Zombie-Rätseln Druckplatte und rissige Wand samt Hinweisen (F-RAE-09 bis F-RAE-13); F-LVL-07 mit neuen Zonen in 1-2, 2-2 und 3-2; Abzeichen F-SCO-04, F-SCO-05, Skins F-SKN-05, Inselkarte F-UI-08; F-GEG-07 mit Hunden in den neuen Zonen; F-DAT-04 mit Abzeichen und Hinweisen (Design-Fragen CH1, Z1, Z2, N9, N23 bis N29). |
 | 1.7 | 11.11.2026 | F-AUD-01 mit zwei Tracks (Hauptmenü, Spiel) im Chiptune-Stil; neu F-AUD-05 Vibration; F-UI-04 mit Schalter „Vibration“ (Design-Fragen N30 bis N32). |
+| 1.8 | 12.11.2026 | F-END-04 ohne Obergrenze für gleichzeitige Gegner im Endlos-Modus; neu F-END-15 Breschen in der Arenawand mit Kriech-Animation (Design-Fragen S1 bis S4). |

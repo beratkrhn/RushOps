@@ -107,6 +107,7 @@ Entscheidungen A1 bis A5, B, K, W11 bis W15, H, E, RM, T, CH, Z und N1 bis N10 i
 | v1.7.0 | Endlos-Upgrades und Tageslauf | Upgrade-Wahl nach jeder dritten Runde, täglicher Lauf offline |
 | v1.8.0 | Herausforderungen und Rätsel mit Zombies | Abzeichen pro Level, Druckplatte und rissige Wand mit Hinweisen (nur Kampagne) |
 | v1.9.0 | Feinschliff | Musik (#42), Haptik, Balancing, Sterne-Schwellen neu |
+| v1.10.0 | Endlos-Spawns | keine Gegner-Obergrenze im Endlos-Modus, Breschen in der Arenawand, Kriech-Animation pro Gegnertyp |
 | Release | Release | #194 bis #196, Store-Material aktualisieren |
 
 ### v1.1.0 – Endlos-Modus
@@ -120,3 +121,7 @@ In Stories zerlegt: [`v1.2.0.md`](v1.2.0.md) (#233 bis #237, Epic #214). Entsche
 ### Musik (#42)
 
 Ein Track für das Hauptmenü und ein Spieltrack für alles andere, Chiptune per Skript erzeugt (G11, G12, N30, N31). In Stories zerlegt mit v1.9.0.
+
+### v1.10.0 – Endlos-Spawns
+
+In Stories zerlegt: [`v1.10.0.md`](v1.10.0.md) (#312 bis #314, Epic #311). Entscheidungen S1 bis S4, Lastenheft F-END-04 und F-END-15.
