@@ -1,0 +1,72 @@
+{
+  "reference": {
+    "width": 360,
+    "height": 640
+  },
+  "marquee": {
+    "x": 0,
+    "y": 0,
+    "width": 360,
+    "height": 56
+  },
+  "bezel": {
+    "x": 0,
+    "y": 56,
+    "width": 360,
+    "height": 360
+  },
+  "screen": {
+    "x": 20,
+    "y": 72,
+    "width": 320,
+    "height": 320
+  },
+  "panel": {
+    "x": 0,
+    "y": 416,
+    "width": 360,
+    "height": 224
+  },
+  "panelSurfaceHeight": 160,
+  "stickLeft": {
+    "x": 44,
+    "y": 468,
+    "width": 56,
+    "height": 64
+  },
+  "stickRight": {
+    "x": 260,
+    "y": 468,
+    "width": 56,
+    "height": 64
+  },
+  "dashButton": {
+    "x": 154,
+    "y": 492,
+    "width": 52,
+    "height": 44
+  },
+  "decoButtons": [
+    {
+      "name": "Red",
+      "x": 140,
+      "y": 443,
+      "width": 16,
+      "height": 14
+    },
+    {
+      "name": "Blue",
+      "x": 172,
+      "y": 439,
+      "width": 16,
+      "height": 14
+    },
+    {
+      "name": "Green",
+      "x": 204,
+      "y": 443,
+      "width": 16,
+      "height": 14
+    }
+  ]
+}
