@@ -16,6 +16,12 @@ namespace RushOps.Endless
         /// <summary>Whether the next run is the daily run (F-END-13).</summary>
         public static bool Daily { get; set; }
 
+        /// <summary>
+        /// Whether the next run shows in the arcade cabinet (F-ARC-08). Only the presentation changes, not the rules
+        /// (AR1). Set by the menu from the saved choice; stays for „Nochmal“.
+        /// </summary>
+        public static bool Arcade { get; set; }
+
         /// <summary>Returns the first round of the run that starts now and resets it to 1.</summary>
         public static int Consume()
         {

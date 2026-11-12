@@ -1,0 +1,107 @@
+using System.Collections;
+using System.IO;
+using NUnit.Framework;
+using RushOps.Arcade;
+using RushOps.Player;
+using RushOps.UI;
+using UnityEngine;
+using UnityEngine.TestTools;
+
+namespace RushOps.Tests.PlayMode
+{
+    /// <summary>
+    /// Screenshots of the arcade mode for its pull requests (issues #321 to #324), written to <c>docs/art/arcade/</c>
+    /// at iPhone size (1170x2532). Explicit, so normal test runs skip them; needs a graphics device.
+    /// </summary>
+    [Explicit("Produces the arcade screenshots")]
+    [Category("Screenshots")]
+    public class ArcadeScreenshots
+    {
+        internal const string OutputDir = "docs/art/arcade";
+        internal const int Width = 1170;
+        internal const int Height = 2532;
+
+        [TearDown]
+        public void TearDown()
+        {
+            RushOps.Endless.EndlessStart.Arcade = false;
+        }
+
+        [UnityTest]
+        public IEnumerator Shot_ArcadeRun()
+        {
+            RequireGraphics();
+            yield return ArcadeRunTests.Load(true);
+            var player = Object.FindAnyObjectByType<PlayerMovement>();
+            player.GetComponent<PlayerMoveInput>().enabled = false;
+            yield return new WaitForSeconds(6f);
+            yield return Capture("ingame_arcade.png");
+        }
+
+        [UnityTest]
+        public IEnumerator Shot_ArcadePause()
+        {
+            RequireGraphics();
+            yield return ArcadeRunTests.Load(true);
+            yield return new WaitForSeconds(1f);
+            Object.FindAnyObjectByType<PauseController>().Pause();
+            yield return Capture("ingame_arcade_pause.png");
+        }
+
+        internal static void RequireGraphics()
+        {
+            if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("no graphics device (-nographics): nothing can render");
+            }
+        }
+
+        /// <summary>Renders the cabinet with every overlay canvas at iPhone size and writes <paramref name="file"/>.</summary>
+        internal static IEnumerator Capture(string file)
+        {
+            var cabinet = Object.FindAnyObjectByType<ArcadeCabinet>();
+            Assert.IsTrue(cabinet != null && cabinet.IsActive, "arcade cabinet not active");
+            Camera camera = cabinet.DisplayCamera;
+            var target = new RenderTexture(Width, Height, 24);
+            camera.targetTexture = target;
+            // The canvases were built on the default layer; the opaque cabinet background hides the world behind them.
+            camera.cullingMask = ~0;
+
+            foreach (Canvas canvas in Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+            {
+                if (canvas.isRootCanvas && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                {
+                    canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                    canvas.worldCamera = camera;
+                    canvas.planeDistance = camera.nearClipPlane + 0.5f;
+                }
+            }
+
+            foreach (FpsCounter fps in Object.FindObjectsByType<FpsCounter>(FindObjectsSortMode.None))
+            {
+                fps.gameObject.SetActive(false);
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                yield return null;
+            }
+
+            var image = new Texture2D(Width, Height, TextureFormat.RGB24, false);
+            RenderTexture previous = RenderTexture.active;
+            RenderTexture.active = target;
+            image.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
+            image.Apply();
+            RenderTexture.active = previous;
+            camera.targetTexture = null;
+
+            string dir = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", OutputDir);
+            Directory.CreateDirectory(dir);
+            File.WriteAllBytes(Path.Combine(dir, file), image.EncodeToPNG());
+            Object.Destroy(image);
+            target.Release();
+            Object.Destroy(target);
+            Debug.Log($"[ArcadeScreenshots] {OutputDir}/{file}");
+        }
+    }
+}
