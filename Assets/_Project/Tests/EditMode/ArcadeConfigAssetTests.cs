@@ -58,6 +58,18 @@ namespace RushOps.Tests.EditMode
             CollectionAssert.AllItemsAreNotNull(_config.DecoSprites);
         }
 
+        [Test]
+        public void Crt_HasItsShaderAndSlightStartValues()
+        {
+            Assert.IsNotNull(_config.CrtMaterial, ArcadeConfigBuilder.CrtMaterialPath);
+            Assert.AreEqual(ArcadeConfigBuilder.CrtShaderName, _config.CrtMaterial.shader.name);
+            Assert.IsTrue(_config.CrtMaterial.shader.isSupported || Application.isBatchMode, "shader compiles");
+            Assert.That(_config.CrtCurvature, Is.InRange(0f, 0.1f), "only a slight curvature");
+            Assert.That(_config.CrtScanlines, Is.InRange(0f, 0.5f), "light scanlines");
+            Assert.That(_config.CrtVignette, Is.InRange(0f, 0.5f));
+            Assert.That(_config.CrtGloss, Is.InRange(0f, 0.5f));
+        }
+
         private static bool Contains(RectInt outer, RectInt inner)
         {
             return inner.xMin >= outer.xMin && inner.yMin >= outer.yMin && inner.xMax <= outer.xMax && inner.yMax <= outer.yMax;

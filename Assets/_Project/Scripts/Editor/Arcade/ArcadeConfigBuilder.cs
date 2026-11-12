@@ -23,6 +23,12 @@ namespace RushOps.Editor.Arcade
         /// <summary>Layout written by the generator.</summary>
         public const string LayoutPath = SpritesDir + "/Arcade_Layout.json";
 
+        /// <summary>Material of the CRT effect (issue #323).</summary>
+        public const string CrtMaterialPath = "Assets/_Project/Data/Arcade/ArcadeCRT.mat";
+
+        /// <summary>Name of the CRT shader.</summary>
+        public const string CrtShaderName = "RushOps/ArcadeCRT";
+
         private static readonly string[] StickNames = { "C", "E", "NE", "N", "NW", "W", "SW", "S", "SE" };
 
         [MenuItem("RushOps/Arcade/Arcade-Daten aktualisieren")]
@@ -63,9 +69,30 @@ namespace RushOps.Editor.Arcade
             config.SetSprites(LoadSprite("Arcade_Marquee"), LoadSprite("Arcade_Bezel"), LoadSprite("Arcade_ScreenFrame"),
                 LoadSprite("Arcade_ScreenGloss"), LoadSprite("Arcade_ControlPanel"), LoadSprite("Arcade_Body"), sticks,
                 LoadSprite("Arcade_DashButton"), LoadSprite("Arcade_DashButton_Pressed"), decoSprites);
+            config.SetCrtMaterial(LoadOrCreateCrtMaterial());
             EditorUtility.SetDirty(config);
             AssetDatabase.SaveAssets();
             return config;
+        }
+
+        private static Material LoadOrCreateCrtMaterial()
+        {
+            Shader shader = Shader.Find(CrtShaderName);
+            if (shader == null)
+            {
+                throw new InvalidOperationException($"Shader {CrtShaderName} not found");
+            }
+
+            var material = AssetDatabase.LoadAssetAtPath<Material>(CrtMaterialPath);
+            if (material == null)
+            {
+                material = new Material(shader) { name = "ArcadeCRT" };
+                AssetDatabase.CreateAsset(material, CrtMaterialPath);
+            }
+
+            material.shader = shader;
+            EditorUtility.SetDirty(material);
+            return material;
         }
 
         private static Sprite LoadSprite(string name)

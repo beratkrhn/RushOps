@@ -104,6 +104,32 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
+        public IEnumerator ArcadeRun_DrawsOnlyTheScreenWithTheCrtEffect()
+        {
+            yield return Load(true);
+            var cabinet = Object.FindAnyObjectByType<ArcadeCabinet>();
+            ArcadeConfig config = cabinet.Config;
+            var screen = cabinet.Cabinet.Find("Screen").GetComponent<RawImage>();
+
+            Material crt = cabinet.ScreenMaterial;
+            Assert.IsNotNull(crt);
+            Assert.AreSame(crt, screen.material);
+            Assert.AreNotSame(config.CrtMaterial, crt, "the run works on a copy, not on the asset");
+            Assert.AreEqual("RushOps/ArcadeCRT", crt.shader.name);
+            Assert.AreEqual(config.CrtCurvature, crt.GetFloat("_Curvature"), 1e-5f);
+            Assert.AreEqual(config.CrtScanlines, crt.GetFloat("_Scanlines"), 1e-5f);
+            Assert.AreEqual(config.CrtVignette, crt.GetFloat("_Vignette"), 1e-5f);
+            Assert.AreEqual(config.ScreenResolution.y, crt.GetFloat("_Lines"), 1e-5f);
+            Assert.AreEqual(config.CrtGloss, cabinet.Cabinet.Find("ScreenGloss").GetComponent<Image>().color.a, 1e-5f);
+
+            foreach (string part in new[] { "Panel", "Bezel", "Marquee", "StickLeft", "StickRight", "DashButton" })
+            {
+                Image image = cabinet.Cabinet.Find(part).GetComponent<Image>();
+                Assert.AreNotEqual(crt.shader, image.materialForRendering.shader, part + " is not drawn as a tube");
+            }
+        }
+
+        [UnityTest]
         public IEnumerator NormalRun_KeepsTheCameraOnTheDisplay()
         {
             yield return Load(false);

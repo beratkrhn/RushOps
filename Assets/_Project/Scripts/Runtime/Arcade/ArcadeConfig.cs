@@ -41,6 +41,18 @@ namespace RushOps.Arcade
         [Tooltip("Color behind the cabinet where the display is wider or taller than the cabinet.")]
         [SerializeField] private Color _background = new Color(31f / 255f, 29f / 255f, 43f / 255f);
 
+        [Header("CRT effect (F-ARC-05)")]
+        [Tooltip("Material with the shader RushOps/ArcadeCRT; the screen draws the game with a copy of it.")]
+        [SerializeField] private Material _crtMaterial;
+        [Tooltip("Barrel curvature of the tube; 0 is flat (start value 0.04).")]
+        [SerializeField, Range(0f, 0.3f)] private float _crtCurvature = 0.04f;
+        [Tooltip("How much darker the lower part of each game pixel row is (start value 0.18).")]
+        [SerializeField, Range(0f, 1f)] private float _crtScanlines = 0.18f;
+        [Tooltip("How much darker the edges of the tube are (start value 0.25).")]
+        [SerializeField, Range(0f, 1f)] private float _crtVignette = 0.25f;
+        [Tooltip("Opacity of the reflection on the glass (start value 0.12).")]
+        [SerializeField, Range(0f, 1f)] private float _crtGloss = 0.12f;
+
         [Header("Sprites")]
         [SerializeField] private Sprite _marqueeSprite;
         [SerializeField] private Sprite _bezelSprite;
@@ -105,6 +117,21 @@ namespace RushOps.Arcade
         /// <summary>Color behind the cabinet.</summary>
         public Color Background => _background;
 
+        /// <summary>Material of the CRT effect.</summary>
+        public Material CrtMaterial => _crtMaterial;
+
+        /// <summary>Barrel curvature of the tube.</summary>
+        public float CrtCurvature => _crtCurvature;
+
+        /// <summary>Strength of the scanlines.</summary>
+        public float CrtScanlines => _crtScanlines;
+
+        /// <summary>Strength of the vignette.</summary>
+        public float CrtVignette => _crtVignette;
+
+        /// <summary>Opacity of the reflection on the glass.</summary>
+        public float CrtGloss => _crtGloss;
+
         /// <summary>Marquee sprite.</summary>
         public Sprite MarqueeSprite => _marqueeSprite;
 
@@ -149,6 +176,21 @@ namespace RushOps.Arcade
             _dashButton = dashButton;
             _decoButtons = decoButtons ?? System.Array.Empty<RectInt>();
             _swapButton = swapButton;
+        }
+
+        /// <summary>Sets the CRT material; used by the editor builder.</summary>
+        public void SetCrtMaterial(Material material)
+        {
+            _crtMaterial = material;
+        }
+
+        /// <summary>Sets the CRT strengths, e.g. for a performance comparison.</summary>
+        public void ConfigureCrt(float curvature, float scanlines, float vignette, float gloss)
+        {
+            _crtCurvature = curvature;
+            _crtScanlines = scanlines;
+            _crtVignette = vignette;
+            _crtGloss = gloss;
         }
 
         /// <summary>Sets the sprites; used by the editor builder.</summary>
