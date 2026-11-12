@@ -25,6 +25,9 @@ namespace RushOps.Story
         /// <summary>Text of the speaker line, for tests.</summary>
         public string SpeakerText => _speaker != null && _speaker.gameObject.activeSelf ? _speaker.text : "";
 
+        /// <summary>Bottom right corner of the box in place, in panel pixels from the top left (y negative).</summary>
+        public Vector2 BottomRight => new Vector2(_rect.anchoredPosition.x + _rect.sizeDelta.x, _baseY - _rect.sizeDelta.y);
+
         /// <summary>Current opacity.</summary>
         public float Alpha => _group != null ? _group.alpha : 0f;
 

@@ -22,5 +22,6 @@ MonoBehaviour:
   - MainMenu
   - IslandMap
   - TestMenu
+  - Intro
   _silentScenes:
   - Boot

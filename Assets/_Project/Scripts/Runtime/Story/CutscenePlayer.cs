@@ -20,6 +20,10 @@ namespace RushOps.Story
         /// <summary>Text of the skip button.</summary>
         public const string SkipText = "Überspringen";
 
+        // Panel pixels between the last box and the hint, and the strip at the bottom kept for „Überspringen“.
+        private const float HintGap = 2f;
+        private const float HintBottomMargin = 18f;
+
         [SerializeField] private CutsceneDefinition _cutscene;
         [SerializeField] private CutsceneConfig _config;
         [Tooltip("Starts the cutscene on Start; otherwise call Play.")]
@@ -198,6 +202,21 @@ namespace RushOps.Story
                     _boxes[i].Hide();
                 }
             }
+
+            PlaceHint(panel.BoxCount > 0 ? _boxes[panel.BoxCount - 1].BottomRight : (Vector2)_cutscene.PanelSize * new Vector2(1f, -1f));
+        }
+
+        // The hint sits right under the last box of the panel, so it never covers text; without boxes in the corner.
+        private void PlaceHint(Vector2 bottomRight)
+        {
+            if (_hint == null)
+            {
+                return;
+            }
+
+            RectTransform rect = _hint.rectTransform;
+            float lowest = -_cutscene.PanelSize.y + HintBottomMargin + rect.sizeDelta.y;
+            rect.anchoredPosition = new Vector2(bottomRight.x, Mathf.Max(bottomRight.y - HintGap, lowest));
         }
 
         private void EnsureBoxes(int count)
@@ -286,8 +305,9 @@ namespace RushOps.Story
             coverImage.raycastTarget = false;
             player._cover = coverImage;
 
-            Text hint = CreateLabel("Hint", panel, font, fontSize, HintText, new Vector2(1f, 0f), new Vector2(-4f, 4f));
-            hint.alignment = TextAnchor.LowerRight;
+            Text hint = CreateLabel("Hint", panel, font, fontSize, HintText, new Vector2(0f, 1f), new Vector2(176f, -300f));
+            hint.rectTransform.pivot = new Vector2(1f, 1f);
+            hint.alignment = TextAnchor.UpperRight;
             player._hint = hint;
 
             Text skip = CreateLabel("Skip", panel, font, fontSize, SkipText, new Vector2(0f, 0f), new Vector2(4f, 4f));

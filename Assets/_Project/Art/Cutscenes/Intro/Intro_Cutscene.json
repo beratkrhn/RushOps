@@ -1,0 +1,203 @@
+{
+  "panelWidth": 180,
+  "panelHeight": 320,
+  "panels": [
+    {
+      "image": "Intro_1.png",
+      "boxes": [
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Es begann mit einem Satz.",
+          "x": 4,
+          "y": 4,
+          "width": 172
+        },
+        {
+          "kind": "Speech",
+          "speaker": "DER MANN",
+          "speakerColor": "c8323c",
+          "text": "\"Der Toke. Wer ihn besitzt, hat alles, was er sich wünscht: Gold, Kleidung, Essen, Besitz.\"",
+          "x": 4,
+          "y": 26,
+          "width": 172
+        },
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Den Toke trug er längst selbst in der Hand.",
+          "x": 4,
+          "y": 188,
+          "width": 172
+        }
+      ]
+    },
+    {
+      "image": "Intro_2.png",
+      "boxes": [
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Alle machten sich auf die Suche: in Truhen, hinter Wasserfällen, auf Inseln, auf Schiffen.",
+          "x": 4,
+          "y": 4,
+          "width": 172
+        },
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Tag 1. Alle gesund.",
+          "x": 4,
+          "y": 46,
+          "width": 172
+        }
+      ]
+    },
+    {
+      "image": "Intro_3.png",
+      "boxes": [
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Wochen später. Die Ersten wurden krank. Grüne Adern, Husten, Fieber.",
+          "x": 4,
+          "y": 4,
+          "width": 172
+        },
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Sie suchten trotzdem weiter.",
+          "x": 4,
+          "y": 46,
+          "width": 172
+        }
+      ]
+    },
+    {
+      "image": "Intro_4.png",
+      "boxes": [
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Nur einer hörte auf zu suchen.",
+          "x": 4,
+          "y": 4,
+          "width": 172
+        },
+        {
+          "kind": "Speech",
+          "speaker": "HELD",
+          "speakerColor": "2f6ea8",
+          "text": "Retired die Suche nach dem Toke!",
+          "x": 4,
+          "y": 26,
+          "width": 172
+        },
+        {
+          "kind": "Speech",
+          "speaker": "MENGE",
+          "speakerColor": "c8323c",
+          "text": "Geh weg. Du bist nur neidisch.",
+          "x": 64,
+          "y": 58,
+          "width": 112
+        }
+      ]
+    },
+    {
+      "image": "Intro_5.png",
+      "boxes": [
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Einer nach dem anderen. Tag für Tag.",
+          "x": 4,
+          "y": 4,
+          "width": 172
+        },
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Wer krank war, suchte weiter, bis nichts Menschliches mehr in ihm war.",
+          "x": 4,
+          "y": 36,
+          "width": 172
+        },
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Wo sie zusammenbrachen, standen sie als Zombies wieder auf.",
+          "x": 4,
+          "y": 78,
+          "width": 172
+        }
+      ]
+    },
+    {
+      "image": "Intro_6.png",
+      "boxes": [
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Alle Menschen waren Zombies geworden. Nur der Mann kannte die Wahrheit:",
+          "x": 4,
+          "y": 4,
+          "width": 172
+        },
+        {
+          "kind": "Speech",
+          "speaker": "DER MANN",
+          "speakerColor": "c8323c",
+          "text": "Der Toke vergiftet jeden, der ihn sucht. Und nur er kann sie heilen. Ich habe ihn.",
+          "x": 4,
+          "y": 46,
+          "width": 172
+        }
+      ]
+    },
+    {
+      "image": "Intro_7.png",
+      "boxes": [
+        {
+          "kind": "Narration",
+          "speaker": "",
+          "speakerColor": "c8323c",
+          "text": "Der Held stand dem Mann gegenüber. Nur noch einer.",
+          "x": 4,
+          "y": 4,
+          "width": 172
+        },
+        {
+          "kind": "Speech",
+          "speaker": "HELD",
+          "speakerColor": "2f6ea8",
+          "text": "assalamu aleykum wa rahmetullahi wa barakatuhu",
+          "x": 4,
+          "y": 140,
+          "width": 172
+        },
+        {
+          "kind": "Speech",
+          "speaker": "DER MANN",
+          "speakerColor": "c8323c",
+          "text": "wa aleykum ya ars",
+          "x": 4,
+          "y": 262,
+          "width": 172
+        }
+      ]
+    }
+  ]
+}
