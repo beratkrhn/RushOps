@@ -1,3 +1,4 @@
+using RushOps.Save;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -5,7 +6,8 @@ namespace RushOps.Story
 {
     /// <summary>
     /// The intro scene (issue #332, F-STO-02): plays the intro cutscene and opens the island map when it ends, played
-    /// through or skipped. Thin adapter around <see cref="CutscenePlayer"/>.
+    /// through or skipped. Then the intro counts as seen and is saved (issue #333, F-DAT-03), so „Story Mode“ goes
+    /// straight to the map next time. Thin adapter around <see cref="CutscenePlayer"/>.
     /// </summary>
     public class IntroScene : MonoBehaviour
     {
@@ -13,6 +15,7 @@ namespace RushOps.Story
         public const string SceneName = "Intro";
 
         [SerializeField] private CutscenePlayer _player;
+        [SerializeField] private SaveGameService _save;
         [Tooltip("Scene after the intro: the island map.")]
         [SerializeField] private string _nextScene = "IslandMap";
 
@@ -42,6 +45,11 @@ namespace RushOps.Story
             }
 
             _leaving = true;
+            if (_save != null && StoryRules.MarkIntroSeen(_save.Data.Story))
+            {
+                _save.Save();
+            }
+
             Time.timeScale = 1f;
             SceneManager.LoadScene(_nextScene);
         }

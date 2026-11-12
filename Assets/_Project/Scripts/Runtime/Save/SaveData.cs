@@ -44,5 +44,8 @@ namespace RushOps.Save
 
         /// <summary>Puzzle hints already shown (issue #287, version 6).</summary>
         public HintsData Hints = new HintsData();
+
+        /// <summary>Story progress beyond the levels, e.g. the intro (issue #333, no version step).</summary>
+        public StoryData Story = new StoryData();
     }
 }

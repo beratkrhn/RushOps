@@ -1,3 +1,5 @@
+using RushOps.Save;
+using RushOps.Story;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -5,7 +7,7 @@ using UnityEngine.UI;
 namespace RushOps.UI
 {
     /// <summary>
-    /// Main menu (issue #125, F-UI-02): Story Mode opens the island map (#127), Endlos the endless arena (#208), Spielerauswahl, Einstellungen. Shows
+    /// Main menu (issue #125, F-UI-02): Story Mode opens the intro the first time (#333) and the island map (#127) after that, Endlos the endless arena (#208), Spielerauswahl, Einstellungen. Shows
     /// the build version and, in development builds only, a button to the test menu. Buttons call <see cref="StartStory"/> and
     /// <see cref="OpenTestMenu"/>.
     /// </summary>
@@ -19,6 +21,9 @@ namespace RushOps.UI
         [Tooltip("Scene „Endlos“ opens: the endless arena, available from the start (E7).")]
         [SerializeField] private string _endlessScene = "Endless_Arena";
         [SerializeField] private string _testMenuScene = "TestMenu";
+        [Tooltip("Scene „Story Mode“ opens the first time: the intro (issue #333).")]
+        [SerializeField] private string _introScene = "Intro";
+        [SerializeField] private SaveGameService _save;
 
         [Tooltip("Shows the build version, e.g. „v0.5.0“.")]
         [SerializeField] private Text _version;
@@ -26,10 +31,11 @@ namespace RushOps.UI
         [Tooltip("Only shown in development builds (and in the editor).")]
         [SerializeField] private GameObject _testMenuButton;
 
-        /// <summary>Opens the island map („Story Mode“).</summary>
+        /// <summary>„Story Mode“: the intro until it was seen, then the island map (issue #333).</summary>
         public void StartStory()
         {
-            Load(_storyScene);
+            StoryData story = _save != null ? _save.Data.Story : null;
+            Load(StoryRules.SceneOnStoryStart(story, _introScene, _storyScene));
         }
 
         /// <summary>Starts an endless run in the arena at round 1.</summary>
