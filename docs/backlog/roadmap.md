@@ -121,6 +121,10 @@ In Stories zerlegt: [`v1.2.0.md`](v1.2.0.md) (#233 bis #237, Epic #214). Entsche
 
 Ein Track für das Hauptmenü und ein Spieltrack für alles andere, Chiptune per Skript erzeugt (G11, G12, N30, N31). In Stories zerlegt mit v1.9.0.
 
-### v1.11.0 – Arcade-Modus
+### v1.11.0 – Story
 
-In Stories zerlegt: [`v1.11.0.md`](v1.11.0.md) (#320 bis #325). Entscheidungen AR1 bis AR8, Lastenheft Abschnitt 2.13.
+In Stories zerlegt: [`v1.11.0.md`](v1.11.0.md) (#331 bis #333 und #328, Epic #329). Entscheidungen S1 bis S8, Lastenheft Abschnitt 2.14, F-UI-09, F-DAT-07, Geschichte in [`../story.md`](../story.md).
+
+### v1.12.0 – Arcade-Modus
+
+In Stories zerlegt: [`v1.12.0.md`](v1.12.0.md) (#320 bis #325). Entscheidungen AR1 bis AR8, Lastenheft Abschnitt 2.13.

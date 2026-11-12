@@ -287,7 +287,7 @@ Beim Planen des Arcade-Modus am 12.11.2026 besprochen:
 | AR5 | Übergang? | Menü zoomt raus, Figur geht zum Automaten | V, überspringbar |
 | AR6 | Wo wählt man den Modus? | Einstellungen oder Bereich „Endlos“ | Schalter im Bereich „Endlos“; eigene Top 10 und Tagesbestwerte, weil das Spielfeld kleiner ist |
 | AR7 | Welche Modi? | Alle | Nur Endlos und Tageslauf; die Kampagne bleibt unverändert |
-| AR8 | Version? | Nach v1.10.0 (Endlos-Spawns) | v1.11.0 |
+| AR8 | Version? | Nach v1.10.0 (Endlos-Spawns) | v1.12.0; die Story (v1.11.0) kommt zuerst (12.11.2026) |
 
 Beim Planen der Story am 12.11.2026 besprochen:
 
