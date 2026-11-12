@@ -90,8 +90,20 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator StoryMode_OpensTheIslandMap()
+        public IEnumerator StoryMode_FirstTime_OpensTheIntro()
         {
+            FindButton("StoryButton").onClick.Invoke();
+            yield return null;
+            yield return null;
+
+            Assert.AreEqual("Intro", SceneManager.GetActiveScene().name);
+        }
+
+        [UnityTest]
+        public IEnumerator StoryMode_AfterTheIntro_OpensTheIslandMap()
+        {
+            SaveGameIsolation.Service.Data.Story.IntroSeen = true;
+
             FindButton("StoryButton").onClick.Invoke();
             yield return null;
             yield return null;

@@ -68,6 +68,8 @@ namespace RushOps.Editor.Story
             var introSettings = new SerializedObject(intro);
             introSettings.FindProperty("_player").objectReferenceValue = player;
             introSettings.FindProperty("_nextScene").stringValue = IslandMap.SceneName;
+            introSettings.FindProperty("_save").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<RushOps.Save.SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
             introSettings.ApplyModifiedPropertiesWithoutUndo();
 
             EditorSceneManager.SaveScene(scene, ScenePath);

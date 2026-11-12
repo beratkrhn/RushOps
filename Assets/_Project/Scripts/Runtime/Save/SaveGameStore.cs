@@ -160,6 +160,7 @@ namespace RushOps.Save
                 data.Daily.Days ??= new List<DailyScore>();
                 data.Hints ??= new HintsData();
                 data.Hints.Seen ??= new List<string>();
+                data.Story ??= new StoryData();
                 return true;
             }
             catch (Exception)

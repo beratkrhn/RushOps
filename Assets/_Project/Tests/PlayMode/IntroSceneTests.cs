@@ -41,5 +41,20 @@ namespace RushOps.Tests.PlayMode
 
             Assert.AreEqual(IslandMap.SceneName, SceneManager.GetActiveScene().name);
         }
+
+        [UnityTest]
+        public IEnumerator Skip_MarksTheIntroSeenAndSaves()
+        {
+            RushOps.Save.SaveGameService save = SaveGameIsolation.Reset();
+            yield return SceneManager.LoadSceneAsync(IntroScene.SceneName, LoadSceneMode.Single);
+            yield return null;
+            Assert.IsFalse(save.Data.Story.IntroSeen);
+
+            Object.FindAnyObjectByType<CutscenePlayer>().Skip();
+            yield return null;
+
+            Assert.IsTrue(save.Data.Story.IntroSeen);
+            Assert.IsTrue(new RushOps.Save.SaveGameStore(SaveGameIsolation.Files, "playmode-tests").Load().Story.IntroSeen, "saved");
+        }
     }
 }

@@ -87,6 +87,9 @@ namespace RushOps.Editor.Scenes
             serialized.FindProperty("_storyScene").stringValue = IslandMap.SceneName;
             serialized.FindProperty("_endlessScene").stringValue = EndlessArenaSceneBuilder.SceneName;
             serialized.FindProperty("_testMenuScene").stringValue = TestMenuSceneBuilder.SceneName;
+            serialized.FindProperty("_introScene").stringValue = RushOps.Story.IntroScene.SceneName;
+            serialized.FindProperty("_save").objectReferenceValue =
+                ArenaTestSceneBuilder.LoadOrCreateConfig<RushOps.Save.SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
             serialized.FindProperty("_version").objectReferenceValue = version;
             serialized.FindProperty("_testMenuButton").objectReferenceValue = testButton;
             serialized.ApplyModifiedPropertiesWithoutUndo();
