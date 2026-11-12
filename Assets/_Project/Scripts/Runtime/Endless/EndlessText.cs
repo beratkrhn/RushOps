@@ -18,6 +18,18 @@ namespace RushOps.Endless
         /// <summary>Heading of the top list on the result screen.</summary>
         public const string TopTitle = "Top 10";
 
+        /// <summary>Heading of the top list after an arcade run, which has its own list (F-ARC-08).</summary>
+        public const string ArcadeTopTitle = "Top 10 Arcade";
+
+        /// <summary>Caption of the switch between Normal and Arcade in the endless area (F-ARC-08).</summary>
+        public const string DisplayTitle = "Darstellung";
+
+        /// <summary>Label of the display switch: „Arcade“ or „Normal“.</summary>
+        public static string Display(bool arcade)
+        {
+            return arcade ? "Arcade" : "Normal";
+        }
+
         /// <summary>Column headings of the top list: place, score, round, date.</summary>
         public static readonly string[] TopHeadings = { "Platz", "Score", "Runde", "Datum" };
 

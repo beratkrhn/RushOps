@@ -148,6 +148,20 @@ namespace RushOps.Tests.PlayMode
             stick.OnDrag(pointer);
         }
 
+        [UnityTest]
+        public IEnumerator Shot_EndlessMenuWithArcade()
+        {
+            RequireGraphics();
+            SaveGameIsolation.Reset();
+            SaveGameIsolation.Service.Data.Arcade.Selected = true;
+            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("MainMenu");
+            yield return null;
+            Object.FindAnyObjectByType<EndlessMenu>().Open();
+            yield return null;
+            yield return StoreScreenshots.Capture("menu_arcade.png", OutputDir);
+            SaveGameIsolation.Reset();
+        }
+
         internal static void RequireGraphics()
         {
             if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)

@@ -9,18 +9,27 @@ namespace RushOps.UI
     /// <summary>
     /// The area „Endlos“ of the main menu (F-UI-02, F-END-14, N22, issue #280): „Starten“ for a normal run, „Tageslauf“
     /// for the daily run, today's best and the best daily runs of the last 7 days (date, score, round). Refreshed from the
-    /// save game each time it opens.
+    /// save game each time it opens. The switch „Darstellung“ chooses between Normal and Arcade (F-ARC-08, issue #325);
+    /// the choice is saved at once, and the daily bests shown are those of the chosen display.
     /// </summary>
     public class EndlessMenu : MonoBehaviour
     {
         [SerializeField] private SaveGameService _save;
         [SerializeField] private GameObject _panel;
         [SerializeField] private Text _today;
+        [Tooltip("Label of the switch „Darstellung“: „Normal“ or „Arcade“.")]
+        [SerializeField] private Text _display;
         [Tooltip("Columns of the list of the last days: date, score, round.")]
         [SerializeField] private Text[] _columns = System.Array.Empty<Text>();
 
         /// <summary>True while the area shows.</summary>
         public bool IsOpen => _panel != null && _panel.activeSelf;
+
+        /// <summary>True if the arcade display is chosen.</summary>
+        public bool ArcadeSelected => _save != null && ArcadeRecords.IsSelected(_save.Data);
+
+        /// <summary>Label of the switch „Darstellung“, e.g. for tests.</summary>
+        public string DisplayText => _display != null ? _display.text : string.Empty;
 
         /// <summary>Text of today's line, e.g. for tests.</summary>
         public string TodayText => _today != null ? _today.text : string.Empty;
@@ -41,6 +50,19 @@ namespace RushOps.UI
             }
         }
 
+        /// <summary>Switches between Normal and Arcade and saves the choice.</summary>
+        public void ToggleDisplay()
+        {
+            if (_save == null)
+            {
+                return;
+            }
+
+            ArcadeRecords.Select(_save.Data, !ArcadeSelected);
+            _save.Save();
+            Refresh();
+        }
+
         /// <summary>Hides the area.</summary>
         public void Close()
         {
@@ -53,7 +75,14 @@ namespace RushOps.UI
         /// <summary>Reads the daily bests of the save game into the texts.</summary>
         public void Refresh()
         {
-            DailyData data = _save != null ? _save.Data.Daily : null;
+            bool arcade = ArcadeSelected;
+            EndlessStart.Arcade = arcade;
+            if (_display != null)
+            {
+                _display.text = EndlessText.Display(arcade);
+            }
+
+            DailyData data = _save != null ? ArcadeRecords.Daily(_save.Data, arcade) : null;
             string today = DailySeed.Today();
             if (_today != null)
             {

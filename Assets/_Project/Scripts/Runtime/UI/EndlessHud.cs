@@ -190,6 +190,7 @@ namespace RushOps.UI
             if (_topTitle != null)
             {
                 _topTitle.enabled = data != null;
+                _topTitle.text = recorded && _recorder.IsArcadeRecord ? EndlessText.ArcadeTopTitle : EndlessText.TopTitle;
             }
 
             string hex = "#" + ColorUtility.ToHtmlStringRGB(_highlight);

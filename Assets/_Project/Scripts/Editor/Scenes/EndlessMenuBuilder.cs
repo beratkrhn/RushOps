@@ -14,13 +14,16 @@ namespace RushOps.Editor.Scenes
     /// </summary>
     internal static class EndlessMenuBuilder
     {
-        private const float TitleY = 220f;
-        private const float StartY = 150f;
-        private const float DailyY = 100f;
-        private const float TodayY = 45f;
-        private const float ListTitleY = 5f;
-        private const float HeadingY = -20f;
-        private const float ColumnTop = -30f;
+        private const float TitleY = 238f;
+        // Switch „Darstellung: Normal | Arcade“ (issue #325): caption above a button that shows the choice.
+        private const float DisplayTitleY = 200f;
+        private const float DisplayY = 164f;
+        private const float StartY = 112f;
+        private const float DailyY = 62f;
+        private const float TodayY = 22f;
+        private const float ListTitleY = -12f;
+        private const float HeadingY = -34f;
+        private const float ColumnTop = -44f;
         private const float BackY = -200f;
         private static readonly float[] ColumnX = { -85f, 15f, 95f };
 
@@ -35,6 +38,10 @@ namespace RushOps.Editor.Scenes
             var endless = root.AddComponent<EndlessMenu>();
             ArenaTestSceneBuilder.CreateText("Title", panel, font, "ENDLOS", ArenaTestSceneBuilder.TitlePixelScale,
                 new Vector2(0f, TitleY));
+            ArenaTestSceneBuilder.CreateText("DisplayTitle", panel, font, EndlessText.DisplayTitle,
+                ArenaTestSceneBuilder.HudPixelScale, new Vector2(0f, DisplayTitleY));
+            Button display = MainMenuSceneBuilder.CreateButton("DisplayButton", panel, font, EndlessText.Display(false),
+                new Vector2(0f, DisplayY), false, true, endless.ToggleDisplay);
             MainMenuSceneBuilder.CreateButton("StartButton", panel, font, "Starten", new Vector2(0f, StartY), true, true,
                 menu.StartEndless);
             MainMenuSceneBuilder.CreateButton("DailyButton", panel, font, EndlessText.Daily, new Vector2(0f, DailyY), false, true,
@@ -64,6 +71,7 @@ namespace RushOps.Editor.Scenes
                 ArenaTestSceneBuilder.LoadOrCreateConfig<SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
             serialized.FindProperty("_panel").objectReferenceValue = panel.gameObject;
             serialized.FindProperty("_today").objectReferenceValue = today;
+            serialized.FindProperty("_display").objectReferenceValue = display.GetComponentInChildren<Text>();
             SerializedProperty list = serialized.FindProperty("_columns");
             list.arraySize = columns.Length;
             for (int i = 0; i < columns.Length; i++)

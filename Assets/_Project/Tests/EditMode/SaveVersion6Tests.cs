@@ -22,11 +22,11 @@ namespace RushOps.Tests.EditMode
         }
 
         [Test]
-        public void NewSave_IsVersion6WithNoHints()
+        public void NewSave_IsAtLeastVersion6WithNoHints()
         {
             SaveData data = _store.Load();
 
-            Assert.AreEqual(6, SaveData.CurrentVersion);
+            Assert.GreaterOrEqual(SaveData.CurrentVersion, 6);
             Assert.IsNotNull(data.Hints);
             Assert.IsEmpty(data.Hints.Seen);
         }
@@ -43,7 +43,7 @@ namespace RushOps.Tests.EditMode
             SaveData data = _store.Load();
 
             Assert.AreEqual(SaveLoadSource.Main, _store.LastSource);
-            Assert.AreEqual(6, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.AreEqual(77, data.Gold.Balance);
             Assert.AreEqual(3, ProgressRules.StarsOf(data.Progress, "Level_1-1"));
             Assert.AreEqual(BadgeKind.None, ProgressRules.BadgesOf(data.Progress, "Level_1-1"));
@@ -58,7 +58,7 @@ namespace RushOps.Tests.EditMode
 
             SaveData data = _store.Load();
 
-            Assert.AreEqual(6, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.AreEqual(2, ProgressRules.StarsOf(data.Progress, "Level_2-2"));
             Assert.AreEqual(0, ProgressRules.TotalBadges(data.Progress));
             Assert.IsEmpty(data.Hints.Seen);
@@ -91,7 +91,7 @@ namespace RushOps.Tests.EditMode
             SaveData data = _store.Load();
 
             Assert.AreEqual(SaveLoadSource.Backup, _store.LastSource);
-            Assert.AreEqual(6, data.Version);
+            Assert.AreEqual(SaveData.CurrentVersion, data.Version);
             Assert.AreEqual(31, data.Gold.Balance);
             Assert.IsEmpty(data.Hints.Seen);
         }

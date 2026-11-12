@@ -144,6 +144,11 @@ namespace RushOps.Tests.PlayMode
         internal static IEnumerator Load(bool arcade)
         {
             SaveGameIsolation.Reset();
+            yield return LoadWithoutReset(arcade);
+        }
+
+        internal static IEnumerator LoadWithoutReset(bool arcade)
+        {
             EndlessStart.Round = 1;
             EndlessStart.Daily = false;
             EndlessStart.Arcade = arcade;

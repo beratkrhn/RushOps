@@ -98,6 +98,9 @@ namespace RushOps.Endless
         /// <summary>Whether the running run is the daily run (F-END-13).</summary>
         public bool IsDaily { get; private set; }
 
+        /// <summary>True if the run shows in the arcade cabinet; it then has its own lists (F-ARC-08).</summary>
+        public bool IsArcade { get; private set; }
+
         /// <summary>Day of the running daily run as <c>yyyy-MM-dd</c>; empty for a normal run.</summary>
         public string DailyDate { get; private set; } = string.Empty;
 
@@ -174,6 +177,7 @@ namespace RushOps.Endless
             }
 
             IsDaily = daily;
+            IsArcade = EndlessStart.Arcade;
             DailyDate = daily ? dailyDate ?? DailySeed.Today() : string.Empty;
             RunBegan?.Invoke(this);
 

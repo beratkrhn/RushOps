@@ -43,6 +43,7 @@ namespace RushOps.UI
         {
             RushOps.Endless.EndlessStart.Round = 1;
             RushOps.Endless.EndlessStart.Daily = false;
+            RushOps.Endless.EndlessStart.Arcade = ArcadeChosen();
             Load(_endlessScene);
         }
 
@@ -54,6 +55,7 @@ namespace RushOps.UI
         {
             RushOps.Endless.EndlessStart.Round = 1;
             RushOps.Endless.EndlessStart.Daily = true;
+            RushOps.Endless.EndlessStart.Arcade = ArcadeChosen();
             Load(_endlessScene);
         }
 
@@ -74,6 +76,12 @@ namespace RushOps.UI
             {
                 _testMenuButton.SetActive(Debug.isDebugBuild);
             }
+        }
+
+        // The display chosen in the endless area (F-ARC-08); the campaign never uses it (AR7).
+        private bool ArcadeChosen()
+        {
+            return _save != null && ArcadeRecords.IsSelected(_save.Data);
         }
 
         private static void Load(string scene)

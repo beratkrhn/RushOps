@@ -79,7 +79,10 @@ namespace RushOps.Save
         public DailyRecord LastDailyRecord { get; private set; }
 
         /// <summary>The endless best scores of the save game; null without a save.</summary>
-        public EndlessData EndlessData => _save != null ? _save.Data.Endless : null;
+        public EndlessData EndlessData => _save != null ? ArcadeRecords.Top(_save.Data, IsArcadeRecord) : null;
+
+        /// <summary>True if the last recorded run was an arcade run; its lists are the arcade ones.</summary>
+        public bool IsArcadeRecord { get; private set; }
 
         private void Awake()
         {
@@ -190,18 +193,18 @@ namespace RushOps.Save
             int score = _score != null ? _score.Keeper.Score : 0;
             string date = DateTime.Now.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
             IsDailyRecord = _endless != null && _endless.IsDaily;
+            IsArcadeRecord = _endless != null && _endless.IsArcade;
             if (IsDailyRecord)
             {
                 // A daily run counts as a run and for the highest round, but its best goes into the daily list, not into
-                // the top 10 (F-END-14, N22). Gold, kills and skins are saved as for every run.
-                data.Daily ??= new DailyData();
-                LastDailyRecord = DailyRecords.Record(data.Daily, score, round, _endless.DailyDate);
-                EndlessRecords.CountRun(data.Endless, round);
+                // the top 10 (F-END-14, N22). Gold, kills and skins are saved as for every run. Arcade runs keep their
+                // own lists (F-ARC-08).
+                LastDailyRecord = ArcadeRecords.RecordDaily(data, IsArcadeRecord, score, round, _endless.DailyDate);
                 LastEndlessRecord = new EndlessRecord(Math.Max(0, score), Math.Max(0, round), 0, false);
             }
             else
             {
-                LastEndlessRecord = EndlessRecords.Record(data.Endless, score, round, date);
+                LastEndlessRecord = ArcadeRecords.RecordRun(data, IsArcadeRecord, score, round, date);
             }
 
             HasEndlessRecord = true;
