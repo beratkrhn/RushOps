@@ -133,5 +133,45 @@ namespace RushOps.Tests.PlayMode
             Assert.IsFalse(Object.FindFirstObjectByType<AimAssist>().Enabled, "aim assist still on in the level");
             Assert.AreEqual(0.5f, Object.FindFirstObjectByType<AudioVolumes>().GetVolume(AudioChannel.Master), 1e-4f);
         }
+
+        [UnityTest]
+        public IEnumerator ResetCampaign_AsksFirst_AndCancelKeepsEverything()
+        {
+            ProgressRules.RecordCompletion(_save.Data.Progress, "Level_1-1", 3, 2000);
+            Find<Button>("SettingsButton").onClick.Invoke();
+            yield return null;
+
+            Find<Button>("ResetCampaignButton").onClick.Invoke();
+            yield return null;
+            Assert.IsTrue(_settings.AsksToReset);
+            Find<Button>("ResetCancelButton").onClick.Invoke();
+            yield return null;
+
+            Assert.IsFalse(_settings.AsksToReset);
+            Assert.IsTrue(ProgressRules.IsCompleted(_save.Data.Progress, "Level_1-1"));
+        }
+
+        [UnityTest]
+        public IEnumerator ResetCampaign_Confirmed_ClearsTheCampaignAndSaves_KeepsGold()
+        {
+            ProgressRules.RecordCompletion(_save.Data.Progress, "Level_1-1", 3, 2000);
+            _save.Data.Story.IntroSeen = true;
+            _save.Data.Gold.Balance = 120;
+            _save.Save();
+            Find<Button>("SettingsButton").onClick.Invoke();
+            yield return null;
+
+            Find<Button>("ResetCampaignButton").onClick.Invoke();
+            yield return null;
+            Find<Button>("ResetConfirmButton").onClick.Invoke();
+            yield return null;
+
+            Assert.IsFalse(_settings.AsksToReset);
+            Assert.IsTrue(_settings.IsOpen, "back on the settings screen");
+            SaveData disk = OnDisk();
+            Assert.IsEmpty(disk.Progress.Levels);
+            Assert.IsFalse(disk.Story.IntroSeen);
+            Assert.AreEqual(120, disk.Gold.Balance);
+        }
     }
 }

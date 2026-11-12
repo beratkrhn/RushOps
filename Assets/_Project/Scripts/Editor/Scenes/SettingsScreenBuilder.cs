@@ -11,13 +11,18 @@ namespace RushOps.Editor.Scenes
 {
     /// <summary>
     /// Builds the settings screen and the credits of the main menu (issue #126, F-UI-04) and wires them to the
-    /// <see cref="SettingsMenu"/>: three volume sliders, aim assist, credits and „Zurück“. No stick settings
-    /// (design question M3).
+    /// <see cref="SettingsMenu"/>: three volume sliders, aim assist, vibration, „Kampagne zurücksetzen“ with its
+    /// confirmation (issue #328), credits and „Zurück“. No stick settings (design question M3).
     /// </summary>
     internal static class SettingsScreenBuilder
     {
         private const string CreditsConfigPath = "Assets/_Project/Data/UI/CreditsConfig.asset";
         private const float TitleY = 220f;
+        private const float FirstButtonY = -35f;
+        private const float ButtonStep = 50f;
+        private const float BackGap = 8f;
+        private const string ResetMessage =
+            "Inseln, Level, Sterne und\nAbzeichen werden gelöscht,\ndas Intro läuft wieder.\n\nGold, Skins, Waffen und\nBestwerte bleiben.";
         private const float FirstSliderY = 150f;
         private const float SliderStep = 60f;
         private const float SliderLabelGap = 22f;
@@ -35,13 +40,26 @@ namespace RushOps.Editor.Scenes
             Slider music = CreateVolumeSlider("Music", settingsPanel, font, "Musik", 1, menu.SetMusicVolume);
             Slider effects = CreateVolumeSlider("Effects", settingsPanel, font, "Effekte", 2, menu.SetEffectsVolume);
             Button aim = MainMenuSceneBuilder.CreateButton("AimAssistButton", settingsPanel, font, SettingsMenu.AimAssistText(true),
-                new Vector2(0f, -40f), false, true, menu.ToggleAimAssist);
+                new Vector2(0f, FirstButtonY), false, true, menu.ToggleAimAssist);
             Button vibration = MainMenuSceneBuilder.CreateButton("VibrationButton", settingsPanel, font,
-                SettingsMenu.VibrationText(true), new Vector2(0f, -95f), false, true, menu.ToggleVibration);
-            MainMenuSceneBuilder.CreateButton("CreditsButton", settingsPanel, font, "Credits", new Vector2(0f, -150f), false, true,
-                menu.OpenCredits);
-            MainMenuSceneBuilder.CreateButton("BackButton", settingsPanel, font, "Zurück", new Vector2(0f, -200f), true, true,
-                menu.Close);
+                SettingsMenu.VibrationText(true), new Vector2(0f, FirstButtonY - ButtonStep), false, true, menu.ToggleVibration);
+            MainMenuSceneBuilder.CreateButton("ResetCampaignButton", settingsPanel, font, "Story zurücksetzen",
+                new Vector2(0f, FirstButtonY - 2f * ButtonStep), false, true, menu.OpenResetConfirm);
+            MainMenuSceneBuilder.CreateButton("CreditsButton", settingsPanel, font, "Credits",
+                new Vector2(0f, FirstButtonY - 3f * ButtonStep), false, true, menu.OpenCredits);
+            MainMenuSceneBuilder.CreateButton("BackButton", settingsPanel, font, "Zurück",
+                new Vector2(0f, FirstButtonY - 4f * ButtonStep - BackGap), true, true, menu.Close);
+
+            // Asks before the campaign is reset; „Abbrechen“ is the highlighted choice (issue #328, F-UI-09).
+            RectTransform resetPanel = CreatePanel("ResetConfirmPanel", parent, 0.97f);
+            ArenaTestSceneBuilder.CreateText("Title", resetPanel, font, "KAMPAGNE ZURÜCKSETZEN?", ArenaTestSceneBuilder.HudPixelScale,
+                new Vector2(0f, 110f));
+            ArenaTestSceneBuilder.CreateText("Message", resetPanel, font, ResetMessage, ArenaTestSceneBuilder.HudPixelScale,
+                new Vector2(0f, 30f));
+            MainMenuSceneBuilder.CreateButton("ResetCancelButton", resetPanel, font, "Abbrechen", new Vector2(0f, -70f), true, true,
+                menu.CancelReset);
+            MainMenuSceneBuilder.CreateButton("ResetConfirmButton", resetPanel, font, "Zurücksetzen", new Vector2(0f, -125f), false,
+                true, menu.ConfirmReset);
 
             RectTransform creditsPanel = CreatePanel("CreditsPanel", parent, 1f);
             ArenaTestSceneBuilder.CreateText("Title", creditsPanel, font, "CREDITS", ArenaTestSceneBuilder.TitlePixelScale,
@@ -63,6 +81,7 @@ namespace RushOps.Editor.Scenes
                 ArenaTestSceneBuilder.LoadOrCreateConfig<CreditsConfig>(CreditsConfigPath);
             serialized.FindProperty("_settingsPanel").objectReferenceValue = settingsPanel.gameObject;
             serialized.FindProperty("_creditsPanel").objectReferenceValue = creditsPanel.gameObject;
+            serialized.FindProperty("_resetPanel").objectReferenceValue = resetPanel.gameObject;
             serialized.FindProperty("_master").objectReferenceValue = master;
             serialized.FindProperty("_music").objectReferenceValue = music;
             serialized.FindProperty("_effects").objectReferenceValue = effects;
@@ -73,6 +92,7 @@ namespace RushOps.Editor.Scenes
 
             settingsPanel.gameObject.SetActive(false);
             creditsPanel.gameObject.SetActive(false);
+            resetPanel.gameObject.SetActive(false);
         }
 
         // Full-screen panel that blocks the menu behind it.
