@@ -123,4 +123,4 @@ Ein Track für das Hauptmenü und ein Spieltrack für alles andere, Chiptune per
 
 ### v1.11.0 – Arcade-Modus
 
-In Stories zerlegt: [`v1.11.0.md`](v1.11.0.md) (Stories noch ohne Issue-Nummern). Entscheidungen AR1 bis AR8, Lastenheft Abschnitt 2.13.
+In Stories zerlegt: [`v1.11.0.md`](v1.11.0.md) (#320 bis #325). Entscheidungen AR1 bis AR8, Lastenheft Abschnitt 2.13.
