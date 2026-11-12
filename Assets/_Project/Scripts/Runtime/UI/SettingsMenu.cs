@@ -8,7 +8,8 @@ namespace RushOps.UI
 {
     /// <summary>
     /// Settings screen of the main menu (issue #126, F-UI-04, F-AUD-04): sliders for the three volumes, aim assist on
-    /// and off, vibration on and off (issue #300), and the credits. Volume changes are audible at once; the settings are saved when the screen closes,
+    /// and off, vibration on and off (issue #300), „Kampagne zurücksetzen“ behind a confirmation (issue #328, F-UI-09),
+    /// and the credits. Volume changes are audible at once; the settings are saved when the screen closes,
     /// when aim assist is switched and when the app goes to the background (F-DAT-03). Thin adapter; the rules live
     /// in <see cref="SettingsRules"/>. Buttons and sliders call the public methods.
     /// </summary>
@@ -23,6 +24,7 @@ namespace RushOps.UI
         [Header("Screens")]
         [SerializeField] private GameObject _settingsPanel;
         [SerializeField] private GameObject _creditsPanel;
+        [SerializeField] private GameObject _resetPanel;
 
         [Header("Controls")]
         [SerializeField] private Slider _master;
@@ -37,6 +39,9 @@ namespace RushOps.UI
 
         /// <summary>True while the settings screen shows.</summary>
         public bool IsOpen => _settingsPanel != null && _settingsPanel.activeSelf;
+
+        /// <summary>True while the reset confirmation shows.</summary>
+        public bool AsksToReset => _resetPanel != null && _resetPanel.activeSelf;
 
         /// <summary>True while the credits show.</summary>
         public bool ShowsCredits => _creditsPanel != null && _creditsPanel.activeSelf;
@@ -58,6 +63,7 @@ namespace RushOps.UI
         {
             Refresh();
             SetActive(_creditsPanel, false);
+            SetActive(_resetPanel, false);
             SetActive(_settingsPanel, true);
         }
 
@@ -66,7 +72,33 @@ namespace RushOps.UI
         {
             SaveIfChanged();
             SetActive(_creditsPanel, false);
+            SetActive(_resetPanel, false);
             SetActive(_settingsPanel, false);
+        }
+
+        /// <summary>„Kampagne zurücksetzen“: asks first (issue #328).</summary>
+        public void OpenResetConfirm()
+        {
+            SetActive(_resetPanel, true);
+        }
+
+        /// <summary>„Abbrechen“: keeps the campaign.</summary>
+        public void CancelReset()
+        {
+            SetActive(_resetPanel, false);
+        }
+
+        /// <summary>„Zurücksetzen“: clears the campaign and saves at once (F-DAT-07, F-DAT-03).</summary>
+        public void ConfirmReset()
+        {
+            SetActive(_resetPanel, false);
+            if (_save == null)
+            {
+                return;
+            }
+
+            CampaignReset.Apply(_save.Data);
+            _save.Save();
         }
 
         /// <summary>Shows the credits over the settings.</summary>
@@ -137,6 +169,7 @@ namespace RushOps.UI
         {
             SetActive(_settingsPanel, false);
             SetActive(_creditsPanel, false);
+            SetActive(_resetPanel, false);
             if (_creditsText != null && _credits != null)
             {
                 _creditsText.text = string.Join("\n", _credits.Lines);
