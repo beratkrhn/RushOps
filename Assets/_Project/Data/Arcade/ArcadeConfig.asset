@@ -1,0 +1,88 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 15e30035d6cd44016a90acf78391255f, type: 3}
+  m_Name: ArcadeConfig
+  m_EditorClassIdentifier: RushOps.Runtime::RushOps.Arcade.ArcadeConfig
+  _reference: {x: 360, y: 640}
+  _marquee:
+    x: 0
+    y: 0
+    width: 360
+    height: 56
+  _bezel:
+    x: 0
+    y: 56
+    width: 360
+    height: 360
+  _screen:
+    x: 20
+    y: 72
+    width: 320
+    height: 320
+  _panel:
+    x: 0
+    y: 416
+    width: 360
+    height: 224
+  _stickLeft:
+    x: 44
+    y: 468
+    width: 56
+    height: 64
+  _stickRight:
+    x: 260
+    y: 468
+    width: 56
+    height: 64
+  _dashButton:
+    x: 154
+    y: 492
+    width: 52
+    height: 44
+  _decoButtons:
+  - x: 140
+    y: 443
+    width: 16
+    height: 14
+  - x: 172
+    y: 439
+    width: 16
+    height: 14
+  - x: 204
+    y: 443
+    width: 16
+    height: 14
+  _screenResolution: {x: 320, y: 320}
+  _hudSize: 560
+  _background: {r: 0.12156863, g: 0.11372549, b: 0.16862746, a: 1}
+  _marqueeSprite: {fileID: 21300000, guid: f294f08a027e8471b9d6bdbd6a1a9b8e, type: 3}
+  _bezelSprite: {fileID: 21300000, guid: 416de970ea7f64f67bc12083268d8107, type: 3}
+  _screenFrameSprite: {fileID: 21300000, guid: a57edb4ea8f7a437cb034fb6b775ab63, type: 3}
+  _screenGlossSprite: {fileID: 21300000, guid: 60943281fd6c64f75b8a825b55d30b79, type: 3}
+  _panelSprite: {fileID: 21300000, guid: a1e1157df087a49798d82e8530e70825, type: 3}
+  _bodySprite: {fileID: 21300000, guid: 4ab10edb2f6f0469287a5107dce21473, type: 3}
+  _stickSprites:
+  - {fileID: 21300000, guid: ca684bb768bb84a4f9488d7a9d34b4a6, type: 3}
+  - {fileID: 21300000, guid: 79d95aa2aafe8401292af08ffcaec470, type: 3}
+  - {fileID: 21300000, guid: 8f2e2615ce6654ac5af0ec182add15bb, type: 3}
+  - {fileID: 21300000, guid: fcebcd8b88dc8457f9ec3ec855dc54e5, type: 3}
+  - {fileID: 21300000, guid: 9eb87dd3c816a4041bc5939a340d5849, type: 3}
+  - {fileID: 21300000, guid: b51019691ff63421c9858397ab7b2fac, type: 3}
+  - {fileID: 21300000, guid: 457bec60ea1fc4ab1a1e632793fc0b0e, type: 3}
+  - {fileID: 21300000, guid: 23e6107ae227a4973aad4ef5335214fd, type: 3}
+  - {fileID: 21300000, guid: 0942c7c3d778642f19f0bd13b9c413c1, type: 3}
+  _dashSprite: {fileID: 21300000, guid: a86e415a7d7e84ccea19b55b996c1d26, type: 3}
+  _dashPressedSprite: {fileID: 21300000, guid: 20779b19025f84973989c5536cf14b17, type: 3}
+  _decoSprites:
+  - {fileID: 21300000, guid: f5da0f7b9807b43fb8d6ad48cfd5b65c, type: 3}
+  - {fileID: 21300000, guid: b12ec6620530d46969f5a0506f29cee1, type: 3}
+  - {fileID: 21300000, guid: 5128aa2012dbc47eea919b1dc562d81a, type: 3}

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using RushOps.Bosses;
 using RushOps.Combat;
+using RushOps.Editor.Arcade;
 using RushOps.Editor.Art;
 using RushOps.Editor.Combat;
 using RushOps.Editor.Endless;
@@ -91,6 +92,8 @@ namespace RushOps.Editor.Scenes
             WallWeapon[] wall = CreateWallWeapons(arena);
             EndlessBosses bosses = CreateBosses(arena, fountain);
             CreateRunFlow(arena, zone, wall, bosses);
+            // The arcade cabinet (issue #321): only shows when the run starts in the arcade mode.
+            ArcadeCabinetBuilder.Create();
         }
 
         // One inactive template per boss of the config (issue #210): the boss built as in the campaign, its bodies as
