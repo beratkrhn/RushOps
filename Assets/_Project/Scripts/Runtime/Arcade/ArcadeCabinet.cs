@@ -29,13 +29,22 @@ namespace RushOps.Arcade
         [Tooltip("Root of the cabinet parts, laid out in reference pixels (origin top left).")]
         [SerializeField] private RectTransform _cabinet;
         [SerializeField] private Image _background;
+        [Tooltip("Shows the game texture; draws it with the CRT effect (issue #323).")]
         [SerializeField] private RawImage _screen;
+        [Tooltip("Reflection on the glass of the screen.")]
+        [SerializeField] private Image _gloss;
         [Tooltip("Canvas of the HUD; its content moves into the screen.")]
         [SerializeField] private Canvas _hud;
         [Tooltip("The usual touch sticks; off in the cabinet, where the drawn joysticks take over (issue #322).")]
         [SerializeField] private GameObject _touchControls;
 
+        private static readonly int CurvatureId = Shader.PropertyToID("_Curvature");
+        private static readonly int ScanlinesId = Shader.PropertyToID("_Scanlines");
+        private static readonly int LinesId = Shader.PropertyToID("_Lines");
+        private static readonly int VignetteId = Shader.PropertyToID("_Vignette");
+
         private RenderTexture _texture;
+        private Material _crt;
         private RectTransform _screenRoot;
         private Vector2 _appliedDisplay;
         private Rect _appliedSafeArea;
@@ -53,6 +62,9 @@ namespace RushOps.Arcade
 
         /// <summary>Texture the game camera renders into while the cabinet is active.</summary>
         public RenderTexture ScreenTexture => _texture;
+
+        /// <summary>Material the screen draws the game with; a copy of the CRT material with the config values.</summary>
+        public Material ScreenMaterial => _crt;
 
         /// <summary>Camera that draws the cabinet to the display.</summary>
         public Camera DisplayCamera => _displayCamera;
@@ -98,6 +110,40 @@ namespace RushOps.Arcade
                 Destroy(_texture);
                 _texture = null;
             }
+
+            if (_crt != null)
+            {
+                Destroy(_crt);
+                _crt = null;
+            }
+        }
+
+        /// <summary>Applies the CRT strengths of the config to the screen, e.g. after they changed.</summary>
+        public void ApplyCrt()
+        {
+            if (_screen == null)
+            {
+                return;
+            }
+
+            if (_crt == null && _config.CrtMaterial != null)
+            {
+                _crt = new Material(_config.CrtMaterial) { name = "ArcadeCRT (run)" };
+                _screen.material = _crt;
+            }
+
+            if (_crt != null)
+            {
+                _crt.SetFloat(CurvatureId, _config.CrtCurvature);
+                _crt.SetFloat(ScanlinesId, _config.CrtScanlines);
+                _crt.SetFloat(LinesId, _config.ScreenResolution.y);
+                _crt.SetFloat(VignetteId, _config.CrtVignette);
+            }
+
+            if (_gloss != null)
+            {
+                _gloss.color = new Color(1f, 1f, 1f, _config.CrtGloss);
+            }
         }
 
         private void Activate()
@@ -131,6 +177,8 @@ namespace RushOps.Arcade
             {
                 _screen.texture = _texture;
             }
+
+            ApplyCrt();
 
             if (_displayCamera != null)
             {

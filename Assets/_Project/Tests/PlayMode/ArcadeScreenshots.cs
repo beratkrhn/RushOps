@@ -71,6 +71,67 @@ namespace RushOps.Tests.PlayMode
             yield return Capture("ingame_arcade_controls.png");
         }
 
+        // Average frame time of the arcade run with and without the CRT effect (issue #323), written to the log and to
+        // Logs/arcade-crt.txt. Batch mode with Metal: no vsync, so the numbers compare, but are not the phone's.
+        [UnityTest]
+        public IEnumerator Measure_CrtCost()
+        {
+            RequireGraphics();
+            yield return ArcadeRunTests.Load(true);
+            var cabinet = Object.FindAnyObjectByType<ArcadeCabinet>();
+            ArcadeConfig config = cabinet.Config;
+            float curvature = config.CrtCurvature, scanlines = config.CrtScanlines;
+            float vignette = config.CrtVignette, gloss = config.CrtGloss;
+            var screen = cabinet.Cabinet.Find("Screen").GetComponent<UnityEngine.UI.RawImage>();
+            Camera camera = cabinet.DisplayCamera;
+            var target = new RenderTexture(Width, Height, 24);
+            camera.targetTexture = target;
+            // The game caps at 60 fps; lift the cap so the cost shows in the frame time.
+            int frameRate = Application.targetFrameRate;
+            int vSync = QualitySettings.vSyncCount;
+            Application.targetFrameRate = -1;
+            QualitySettings.vSyncCount = 0;
+            yield return new WaitForSeconds(1f);
+
+            var results = new System.Text.StringBuilder();
+            for (int round = 0; round < 2; round++)
+            {
+                screen.material = null;
+                yield return MeasureFrames(results, "ohne CRT");
+                screen.material = cabinet.ScreenMaterial;
+                cabinet.ApplyCrt();
+                yield return MeasureFrames(results, "mit CRT ");
+            }
+
+            config.ConfigureCrt(curvature, scanlines, vignette, gloss);
+            Application.targetFrameRate = frameRate;
+            QualitySettings.vSyncCount = vSync;
+            camera.targetTexture = null;
+            target.Release();
+            Object.Destroy(target);
+            string path = Path.Combine(Path.GetDirectoryName(Application.dataPath) ?? ".", "Logs/arcade-crt.txt");
+            File.WriteAllText(path, results.ToString());
+            Debug.Log("[ArcadeScreenshots] CRT\n" + results);
+        }
+
+        private static IEnumerator MeasureFrames(System.Text.StringBuilder results, string label)
+        {
+            const int Frames = 300;
+            for (int i = 0; i < 30; i++)
+            {
+                yield return null;
+            }
+
+            float start = Time.realtimeSinceStartup;
+            for (int i = 0; i < Frames; i++)
+            {
+                yield return null;
+            }
+
+            float ms = (Time.realtimeSinceStartup - start) * 1000f / Frames;
+            results.AppendLine($"{label}: {ms:0.000} ms pro Frame ({Frames} Frames, 1170x2532)");
+        }
+
         private static void Hold(RushOps.UI.VirtualStick stick, int id, Vector2 offset)
         {
             var rect = (RectTransform)stick.transform;

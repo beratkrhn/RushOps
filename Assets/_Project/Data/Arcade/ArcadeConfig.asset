@@ -73,6 +73,11 @@ MonoBehaviour:
   _screenResolution: {x: 320, y: 320}
   _hudSize: 560
   _background: {r: 0.12156863, g: 0.11372549, b: 0.16862746, a: 1}
+  _crtMaterial: {fileID: 2100000, guid: 2cf6181869f334568b4f16c74b022185, type: 2}
+  _crtCurvature: 0.04
+  _crtScanlines: 0.18
+  _crtVignette: 0.25
+  _crtGloss: 0.12
   _marqueeSprite: {fileID: 21300000, guid: f294f08a027e8471b9d6bdbd6a1a9b8e, type: 3}
   _bezelSprite: {fileID: 21300000, guid: 416de970ea7f64f67bc12083268d8107, type: 3}
   _screenFrameSprite: {fileID: 21300000, guid: a57edb4ea8f7a437cb034fb6b775ab63, type: 3}

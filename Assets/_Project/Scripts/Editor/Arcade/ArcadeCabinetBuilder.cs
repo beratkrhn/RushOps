@@ -66,8 +66,12 @@ namespace RushOps.Editor.Arcade
             Place((RectTransform)screenObject.transform, config.Screen);
             var screen = screenObject.AddComponent<RawImage>();
             screen.raycastTarget = false;
+            screen.material = config.CrtMaterial;
 
             Place(CreateImage("ScreenFrame", cabinet, config.ScreenFrameSprite), config.Screen);
+            Image gloss = CreateImage("ScreenGloss", cabinet, config.ScreenGlossSprite);
+            Place(gloss, config.Screen);
+            gloss.color = new Color(1f, 1f, 1f, config.CrtGloss);
             Place(CreateImage("Bezel", cabinet, config.BezelSprite), config.Bezel);
             Place(CreateImage("Marquee", cabinet, config.MarqueeSprite), config.Marquee);
             Place(CreateImage("Panel", cabinet, config.PanelSprite), config.Panel);
@@ -98,6 +102,7 @@ namespace RushOps.Editor.Arcade
             serialized.FindProperty("_cabinet").objectReferenceValue = cabinet;
             serialized.FindProperty("_background").objectReferenceValue = background;
             serialized.FindProperty("_screen").objectReferenceValue = screen;
+            serialized.FindProperty("_gloss").objectReferenceValue = gloss;
             serialized.FindProperty("_hud").objectReferenceValue = hud;
             serialized.FindProperty("_touchControls").objectReferenceValue =
                 Object.FindAnyObjectByType<TouchControlsVisibility>().gameObject;
