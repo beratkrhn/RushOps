@@ -220,16 +220,10 @@ namespace RushOps.Endless
         }
 
         /// <summary>
-        /// Most regular enemies alive at once in <paramref name="round"/> (F-END-04, N3): start value, grown by a step at
-        /// every n-th round, at most the upper limit.
+        /// Most regular enemies alive at once (F-END-04, S1): no limit, so <see cref="int.MaxValue"/>, unless the config
+        /// sets an emergency brake. The spawn interval of the round is the only pacing.
         /// </summary>
-        public int MaxActive(int round)
-        {
-            long steps = Clamp(round) / _config.MaxActiveEveryRounds;
-            long value = _config.MaxActiveStart + steps * _config.MaxActiveStep;
-            long cap = Math.Max(_config.MaxActiveCap, _config.MaxActiveStart);
-            return (int)Math.Min(cap, value);
-        }
+        public int MaxActive => _config.MaxActiveLimit > 0 ? _config.MaxActiveLimit : int.MaxValue;
 
         /// <summary>Whether <paramref name="weapon"/> can be used in <paramref name="round"/> (F-END-07).</summary>
         public bool IsWeaponAvailable(WeaponDefinition weapon, int round)
@@ -303,7 +297,7 @@ namespace RushOps.Endless
         public EndlessRound Build(int round)
         {
             round = Clamp(round);
-            return new EndlessRound(round, EnemyMix(round), SpawnInterval(round), MaxActive(round), Boss(round),
+            return new EndlessRound(round, EnemyMix(round), SpawnInterval(round), MaxActive, Boss(round),
                 BossHealthFactor(round), AvailableWeapons(round), NewWeapon(round), IsDogRound(round));
         }
 

@@ -43,17 +43,8 @@ namespace RushOps.Endless
         [Tooltip("Shortest spawn interval in seconds.")]
         [SerializeField, Min(0f)] private float _spawnIntervalMin = 0.3f;
 
-        [Tooltip("Most enemies alive at once in rounds 1 to 4; bosses do not count (N3).")]
-        [SerializeField, Min(0)] private int _maxActiveStart = 10;
-
-        [Tooltip("Added to the most enemies alive at once every few rounds.")]
-        [SerializeField, Min(0)] private int _maxActiveStep = 1;
-
-        [Tooltip("Every how many rounds the most enemies alive at once grows; it grows at round 5, 10, … for 5.")]
-        [SerializeField, Min(1)] private int _maxActiveEveryRounds = 5;
-
-        [Tooltip("Upper limit of enemies alive at once, checked against the frame budget (N3, issue #212).")]
-        [SerializeField, Min(0)] private int _maxActiveCap = 20;
+        [Tooltip("Emergency brake: most enemies alive at once in the endless mode, bosses do not count. 0 = no limit (F-END-04, S1); the spawn interval is the only brake.")]
+        [SerializeField, Min(0)] private int _maxActiveLimit;
 
         [Header("Bosses")]
         [Tooltip("Every how many rounds a boss round comes (E3).")]
@@ -119,17 +110,8 @@ namespace RushOps.Endless
         /// <summary>Shortest spawn interval.</summary>
         public float SpawnIntervalMin => _spawnIntervalMin;
 
-        /// <summary>Most enemies alive at once at the start of a run.</summary>
-        public int MaxActiveStart => _maxActiveStart;
-
-        /// <summary>Growth of the most enemies alive at once.</summary>
-        public int MaxActiveStep => _maxActiveStep;
-
-        /// <summary>Every how many rounds the most enemies alive at once grows.</summary>
-        public int MaxActiveEveryRounds => Math.Max(1, _maxActiveEveryRounds);
-
-        /// <summary>Upper limit of enemies alive at once.</summary>
-        public int MaxActiveCap => _maxActiveCap;
+        /// <summary>Emergency brake for enemies alive at once; 0 means no limit (F-END-04).</summary>
+        public int MaxActiveLimit => _maxActiveLimit;
 
         /// <summary>Every how many rounds a boss comes.</summary>
         public int BossEveryRounds => Math.Max(1, _bossEveryRounds);
@@ -180,17 +162,13 @@ namespace RushOps.Endless
             _enemyShares = shares ?? Array.Empty<EndlessEnemyShare>();
         }
 
-        /// <summary>Sets spawn interval and the most enemies alive at once, for editor scripts and tests.</summary>
-        public void ConfigureSpawning(float intervalFirstRound, float intervalStep, float intervalMin, int maxActiveStart,
-            int maxActiveStep, int maxActiveEveryRounds, int maxActiveCap)
+        /// <summary>Sets spawn interval and the emergency brake (0 = none), for editor scripts and tests.</summary>
+        public void ConfigureSpawning(float intervalFirstRound, float intervalStep, float intervalMin, int maxActiveLimit)
         {
             _spawnIntervalFirstRound = Mathf.Max(0f, intervalFirstRound);
             _spawnIntervalStep = Mathf.Max(0f, intervalStep);
             _spawnIntervalMin = Mathf.Max(0f, intervalMin);
-            _maxActiveStart = Math.Max(0, maxActiveStart);
-            _maxActiveStep = Math.Max(0, maxActiveStep);
-            _maxActiveEveryRounds = Math.Max(1, maxActiveEveryRounds);
-            _maxActiveCap = Math.Max(0, maxActiveCap);
+            _maxActiveLimit = Math.Max(0, maxActiveLimit);
         }
 
         /// <summary>Sets the boss values, for editor scripts and tests.</summary>

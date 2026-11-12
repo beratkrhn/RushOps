@@ -42,7 +42,7 @@ namespace RushOps.Editor.Endless
                     new EndlessEnemyShare(Load<EnemyDefinition>($"{EnemiesDir}/Boomer.asset"), 5, 0.10f, 0.01f, 0.20f),
                     new EndlessEnemyShare(Load<EnemyDefinition>($"{EnemiesDir}/Brute.asset"), 7, 0.05f, 0.01f, 0.15f),
                 });
-                config.ConfigureSpawning(0.8f, 0.05f, 0.3f, 10, 1, 5, 20);
+                config.ConfigureSpawning(0.8f, 0.05f, 0.3f, 0);
             }
 
             config.ConfigureBosses(exists ? config.BossEveryRounds : 10, new[]

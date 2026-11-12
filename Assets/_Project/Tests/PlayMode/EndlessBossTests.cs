@@ -113,7 +113,7 @@ namespace RushOps.Tests.PlayMode
         }
 
         [UnityTest]
-        public IEnumerator Round20_BringsTheBroodMother_WithAQuarterMoreHealth_AndHerRunnersCountTowardsTheCap()
+        public IEnumerator Round20_BringsTheBroodMother_WithAQuarterMoreHealth_AndHerRunnersCountAsAliveEnemies()
         {
             _controller.BeginRun(20);
             yield return WaitFor(() => _controller.Run.Phase == EndlessPhase.Running, "round 20 to start");
@@ -123,14 +123,14 @@ namespace RushOps.Tests.PlayMode
             Assert.AreEqual(Mathf.RoundToInt(boss.Definition.Health * 1.25f), boss.MaxHealth, "second boss appearance: +25 %");
 
             var director = Object.FindAnyObjectByType<WaveDirector>();
-            Assert.AreEqual(_controller.Rules.MaxActive(20), director.MaxActive);
+            Assert.AreEqual(_controller.Rules.MaxActive, director.MaxActive);
             var mother = (BroodMother)boss;
             yield return WaitFor(() =>
             {
                 _health.Heal(_health.Max);
                 return mother.BornCount > 0;
             }, "a runner");
-            Assert.Less(director.FreeSlots, director.MaxActive, "her runners take slots of the cap");
+            Assert.Greater(director.AliveCount, 0, "her runners count as alive enemies");
 
             boss.TakeHit(boss.CurrentHealth, Vector2.down);
             yield return WaitFor(() => _controller.Run.RoundsCleared == 1, "round 20 to end");

@@ -15,7 +15,7 @@ namespace RushOps.Enemies
         [SerializeField] private Enemy _prefab;
         [SerializeField] private FlowFieldNavigator _navigator;
         [SerializeField, Min(0)] private int _defaultCapacity = 10;
-        [SerializeField, Min(1)] private int _maxSize = 32;
+        [SerializeField, Min(1)] private int _maxSize = 160;
         [Tooltip("Each spawn is shifted by up to this distance in units. Physics cannot separate bodies placed exactly on top of each other.")]
         [SerializeField, Min(0f)] private float _spawnJitter = 0.05f;
 

@@ -32,10 +32,7 @@ namespace RushOps.Tests.PlayMode
         private float _interval;
         private float _step;
         private float _min;
-        private int _maxStart;
-        private int _maxStep;
-        private int _maxEvery;
-        private int _maxCap;
+        private int _maxLimit;
 
         [UnitySetUp]
         public IEnumerator LoadScene()
@@ -63,15 +60,12 @@ namespace RushOps.Tests.PlayMode
             _interval = _config.SpawnIntervalFirstRound;
             _step = _config.SpawnIntervalStep;
             _min = _config.SpawnIntervalMin;
-            _maxStart = _config.MaxActiveStart;
-            _maxStep = _config.MaxActiveStep;
-            _maxEvery = _config.MaxActiveEveryRounds;
-            _maxCap = _config.MaxActiveCap;
+            _maxLimit = _config.MaxActiveLimit;
 
             // Short breaks and two walkers per round, so a round is over in a moment.
             _config.ConfigureRounds(0.2f, 1);
             _config.ConfigureEnemies(2, 0, _baseEnemy, new EndlessEnemyShare[0]);
-            _config.ConfigureSpawning(0.1f, 0f, 0.1f, _maxStart, _maxStep, _maxEvery, _maxCap);
+            _config.ConfigureSpawning(0.1f, 0f, 0.1f, _maxLimit);
         }
 
         [TearDown]
@@ -81,7 +75,7 @@ namespace RushOps.Tests.PlayMode
             {
                 _config.ConfigureRounds(_pauseSeconds, _hearts);
                 _config.ConfigureEnemies(_first, _perRound, _baseEnemy, _shares);
-                _config.ConfigureSpawning(_interval, _step, _min, _maxStart, _maxStep, _maxEvery, _maxCap);
+                _config.ConfigureSpawning(_interval, _step, _min, _maxLimit);
             }
 
             Time.timeScale = 1f;
