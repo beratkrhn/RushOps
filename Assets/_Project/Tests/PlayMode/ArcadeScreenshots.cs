@@ -162,6 +162,38 @@ namespace RushOps.Tests.PlayMode
             SaveGameIsolation.Reset();
         }
 
+        [UnityTest]
+        public IEnumerator Shot_ArcadeIntro()
+        {
+            RequireGraphics();
+            SaveGameIsolation.Reset();
+            SaveGameIsolation.Service.Data.Arcade.Selected = true;
+            yield return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync("MainMenu");
+            yield return null;
+            Object.FindAnyObjectByType<EndlessMenu>().Open();
+            var intro = Object.FindAnyObjectByType<ArcadeIntro>();
+            ArcadeConfig config = intro.Config;
+            float zoomOut = config.IntroZoomOut, walk = config.IntroWalk, zoomIn = config.IntroZoomIn;
+            // Slowed down, so the shots catch each phase while the capture takes its frames.
+            config.ConfigureIntro(zoomOut * 4f, walk * 4f, zoomIn * 4f);
+            try
+            {
+                Object.FindAnyObjectByType<RushOps.UI.MainMenu>().StartEndless();
+                yield return new WaitForSecondsRealtime(zoomOut * 4f * 0.45f);
+                yield return StoreScreenshots.Capture("intro_zoom.png", OutputDir);
+                yield return new WaitForSecondsRealtime(zoomOut * 4f * 0.55f + walk * 4f * 0.6f);
+                yield return StoreScreenshots.Capture("intro_walk.png", OutputDir);
+                intro.Skip();
+                yield return null;
+            }
+            finally
+            {
+                config.ConfigureIntro(zoomOut, walk, zoomIn);
+            }
+
+            SaveGameIsolation.Reset();
+        }
+
         internal static void RequireGraphics()
         {
             if (SystemInfo.graphicsDeviceType == UnityEngine.Rendering.GraphicsDeviceType.Null)

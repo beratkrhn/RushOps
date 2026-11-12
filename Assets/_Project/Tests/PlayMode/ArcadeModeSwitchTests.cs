@@ -44,6 +44,10 @@ namespace RushOps.Tests.PlayMode
             Assert.IsTrue(loaded.Arcade.Selected, "saved at once");
 
             GameObject.Find("StartButton").GetComponent<Button>().onClick.Invoke();
+            // The walk to the cabinet plays first (issue #324); a tap skips it.
+            var intro = Object.FindAnyObjectByType<ArcadeIntro>();
+            Assert.IsTrue(intro.IsPlaying);
+            intro.Skip();
             yield return null;
             yield return null;
             Assert.AreEqual("Endless_Arena", SceneManager.GetActiveScene().name);

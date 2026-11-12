@@ -99,6 +99,12 @@ namespace RushOps.Arcade
 
         private void OnDestroy()
         {
+            // Back in the menu after an arcade run, the menu fades in briefly (issue #324).
+            if (IsActive)
+            {
+                ArcadeTransition.FadeInMenu = true;
+            }
+
             if (_gameCamera != null && _gameCamera.targetTexture == _texture)
             {
                 _gameCamera.targetTexture = null;
