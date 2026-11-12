@@ -279,7 +279,7 @@ Kills füllen eine Rush-Leiste; voll löst sie einen kurzen Spezialmodus aus (De
 
 ### 2.13 Arcade-Modus
 
-Der Endlos-Modus lässt sich optional in einem Arcade-Automaten spielen (Design-Fragen AR1 bis AR8, Backlog [`v1.11.0.md`](backlog/v1.11.0.md)). Die Regeln des Endlos-Modus bleiben unverändert.
+Der Endlos-Modus lässt sich optional in einem Arcade-Automaten spielen (Design-Fragen AR1 bis AR8, Backlog [`v1.12.0.md`](backlog/v1.12.0.md)). Die Regeln des Endlos-Modus bleiben unverändert.
 
 | ID | Anforderung | Prio |
 |---|---|---|
@@ -406,8 +406,8 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 - **v1.7.0 Endlos-Upgrades und Tageslauf**: siehe Abschnitt 2.10 (F-END-11 bis F-END-14).
 - **v1.8.0 Herausforderungen und Rätsel mit Zombies**: siehe Abschnitt 2.5 (F-LVL-07), 2.6 (F-RAE-09 bis F-RAE-13), 2.8 (F-SCO-04, F-SCO-05), 2.9 (F-SKN-05) und 3.2 (F-UI-08).
 - **v1.9.0 Feinschliff**: siehe Abschnitt 5 (F-AUD-01, F-AUD-05), 3.1 (F-UI-04) und 2.8 (F-SCO-03, Sterne-Schwellen per Simulation, N33); weiteres Balancing aus dem Gesamtspieltest.
-- **v1.11.0 Arcade-Modus**: siehe Abschnitt 2.13 (F-ARC-01 bis F-ARC-08).
-- **Story** (Kampagne mit Geschichte, Cutscenes, Reset): siehe Abschnitte 2.14, 3.1 (F-UI-09) und 4 (F-DAT-07), Geschichte in [`story.md`](story.md).
+- **v1.12.0 Arcade-Modus**: siehe Abschnitt 2.13 (F-ARC-01 bis F-ARC-08).
+- **v1.11.0 Story** (Kampagne mit Geschichte, Intro-Cutscene, Reset; Backlog [`v1.11.0.md`](backlog/v1.11.0.md)): siehe Abschnitte 2.14, 3.1 (F-UI-09) und 4 (F-DAT-07), Geschichte in [`story.md`](story.md).
 - Erledigt: **Waffensystem** (W1 bis W10), erschienen mit v1.0.0 ([`v1.0.0-waffen.md`](backlog/v1.0.0-waffen.md)).
 - Nach dem Release: Skins mit Modifikatoren, Dieb-Gegner, Mutatoren, weitere Inseln.
 
@@ -450,3 +450,4 @@ Geplant ab v1.0.0 (Roadmap in `docs/backlog/roadmap.md`, Entscheidungen in `docs
 | 1.7 | 11.11.2026 | F-AUD-01 mit zwei Tracks (Hauptmenü, Spiel) im Chiptune-Stil; neu F-AUD-05 Vibration; F-UI-04 mit Schalter „Vibration“ (Design-Fragen N30 bis N32). |
 | 1.8 | 12.11.2026 | Neuer Abschnitt 2.13 Arcade-Modus (F-ARC-01 bis F-ARC-08); F-DAT-04 mit Arcade-Bestwerten (Design-Fragen AR1 bis AR8). |
 | 1.9 | 12.11.2026 | Neuer Abschnitt 2.14 Story (F-STO-01, F-STO-02, `story.md`); F-UI-09 und F-DAT-07 Kampagne zurücksetzen (Design-Fragen S1 bis S8). |
+| 1.10 | 12.11.2026 | Reihenfolge getauscht: v1.11.0 Story vor v1.12.0 Arcade-Modus. |
