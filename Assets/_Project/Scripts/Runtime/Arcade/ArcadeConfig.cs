@@ -53,6 +53,28 @@ namespace RushOps.Arcade
         [Tooltip("Opacity of the reflection on the glass (start value 0.12).")]
         [SerializeField, Range(0f, 1f)] private float _crtGloss = 0.12f;
 
+        [Header("Transition from the menu (F-ARC-07)")]
+        [Tooltip("Seconds the menu shrinks away while the hall fades in.")]
+        [SerializeField, Min(0f)] private float _introZoomOut = 0.7f;
+        [Tooltip("Seconds the figure walks up to the cabinet.")]
+        [SerializeField, Min(0f)] private float _introWalk = 1.8f;
+        [Tooltip("Seconds the view dives into the screen. Together about 3 s (start value).")]
+        [SerializeField, Min(0f)] private float _introZoomIn = 0.5f;
+        [Tooltip("Size the menu shrinks to.")]
+        [SerializeField, Range(0.05f, 1f)] private float _introMenuScale = 0.3f;
+        [Tooltip("Size of the cabinet in the hall, relative to the reference grid.")]
+        [SerializeField, Range(0.1f, 1f)] private float _introCabinetScale = 0.45f;
+        [Tooltip("Where the screen centre of the cabinet stands in the hall (reference units from the centre).")]
+        [SerializeField] private Vector2 _introCabinetPosition = new Vector2(0f, 60f);
+        [Tooltip("Size of the cabinet at the end of the dive; its screen then fills the width.")]
+        [SerializeField, Min(0.1f)] private float _introDiveScale = 1.15f;
+        [Tooltip("Feet of the figure when the walk starts (reference units from the centre).")]
+        [SerializeField] private Vector2 _introFigureStart = new Vector2(0f, -330f);
+        [Tooltip("Feet of the figure in front of the cabinet.")]
+        [SerializeField] private Vector2 _introFigureEnd = new Vector2(0f, -150f);
+        [Tooltip("Seconds the menu fades in from black after an arcade run.")]
+        [SerializeField, Min(0f)] private float _menuFadeIn = 0.35f;
+
         [Header("Sprites")]
         [SerializeField] private Sprite _marqueeSprite;
         [SerializeField] private Sprite _bezelSprite;
@@ -131,6 +153,44 @@ namespace RushOps.Arcade
 
         /// <summary>Opacity of the reflection on the glass.</summary>
         public float CrtGloss => _crtGloss;
+
+        /// <summary>Seconds the menu shrinks away.</summary>
+        public float IntroZoomOut => _introZoomOut;
+
+        /// <summary>Seconds the figure walks.</summary>
+        public float IntroWalk => _introWalk;
+
+        /// <summary>Seconds of the dive into the screen.</summary>
+        public float IntroZoomIn => _introZoomIn;
+
+        /// <summary>Size the menu shrinks to.</summary>
+        public float IntroMenuScale => _introMenuScale;
+
+        /// <summary>Size of the cabinet in the hall.</summary>
+        public float IntroCabinetScale => _introCabinetScale;
+
+        /// <summary>Screen centre of the cabinet in the hall.</summary>
+        public Vector2 IntroCabinetPosition => _introCabinetPosition;
+
+        /// <summary>Size of the cabinet at the end of the dive.</summary>
+        public float IntroDiveScale => _introDiveScale;
+
+        /// <summary>Feet of the figure when the walk starts.</summary>
+        public Vector2 IntroFigureStart => _introFigureStart;
+
+        /// <summary>Feet of the figure in front of the cabinet.</summary>
+        public Vector2 IntroFigureEnd => _introFigureEnd;
+
+        /// <summary>Seconds the menu fades in from black after an arcade run.</summary>
+        public float MenuFadeIn => _menuFadeIn;
+
+        /// <summary>Sets the lengths of the transition, e.g. for tests.</summary>
+        public void ConfigureIntro(float zoomOut, float walk, float zoomIn)
+        {
+            _introZoomOut = zoomOut;
+            _introWalk = walk;
+            _introZoomIn = zoomIn;
+        }
 
         /// <summary>Marquee sprite.</summary>
         public Sprite MarqueeSprite => _marqueeSprite;

@@ -24,6 +24,8 @@ namespace RushOps.UI
         [Tooltip("Scene „Story Mode“ opens the first time: the intro (issue #333).")]
         [SerializeField] private string _introScene = "Intro";
         [SerializeField] private SaveGameService _save;
+        [Tooltip("Plays the walk to the cabinet before an arcade run (issue #324).")]
+        [SerializeField] private RushOps.Arcade.ArcadeIntro _arcadeIntro;
 
         [Tooltip("Shows the build version, e.g. „v0.5.0“.")]
         [SerializeField] private Text _version;
@@ -44,7 +46,7 @@ namespace RushOps.UI
             RushOps.Endless.EndlessStart.Round = 1;
             RushOps.Endless.EndlessStart.Daily = false;
             RushOps.Endless.EndlessStart.Arcade = ArcadeChosen();
-            Load(_endlessScene);
+            LoadEndless();
         }
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace RushOps.UI
             RushOps.Endless.EndlessStart.Round = 1;
             RushOps.Endless.EndlessStart.Daily = true;
             RushOps.Endless.EndlessStart.Arcade = ArcadeChosen();
-            Load(_endlessScene);
+            LoadEndless();
         }
 
         /// <summary>Opens the developer test menu.</summary>
@@ -76,6 +78,18 @@ namespace RushOps.UI
             {
                 _testMenuButton.SetActive(Debug.isDebugBuild);
             }
+        }
+
+        // An arcade run starts with the walk to the cabinet (F-ARC-07), a normal run at once.
+        private void LoadEndless()
+        {
+            if (RushOps.Endless.EndlessStart.Arcade && _arcadeIntro != null)
+            {
+                _arcadeIntro.Play(_endlessScene);
+                return;
+            }
+
+            Load(_endlessScene);
         }
 
         // The display chosen in the endless area (F-ARC-08); the campaign never uses it (AR7).

@@ -92,6 +92,8 @@ namespace RushOps.Editor.Scenes
                 ArenaTestSceneBuilder.LoadOrCreateConfig<RushOps.Save.SaveGameService>(ArenaTestSceneBuilder.SaveGameServicePath);
             serialized.FindProperty("_version").objectReferenceValue = version;
             serialized.FindProperty("_testMenuButton").objectReferenceValue = testButton;
+            // The walk to the cabinet before an arcade run (issue #324); the whole menu shrinks away.
+            serialized.FindProperty("_arcadeIntro").objectReferenceValue = RushOps.Editor.Arcade.ArcadeIntroBuilder.Create(safeArea, font);
             serialized.ApplyModifiedPropertiesWithoutUndo();
 
             var audio = new GameObject("Audio");
